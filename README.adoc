@@ -1,0 +1,37 @@
+= Asalto y Castigo
+:revdate: 2016-06-11
+
+== English
+
+_Asalto y Castigo_ (Assault and Punishment) is an improved version,
+under development, of the homonymous text adventure written by
+http://caad.es/baltasarq/[Baltasar el Arquero] (for ZX Spectrum and
+other micros).
+
+This version is written in http://forth-standard.org[Forth] with
+http://gnu.org/software/gforth/[Gforth].
+
+The project started on 2011-07-05.  On 2016-06-11 a Git repository
+was created from the development backups, in order to help the
+development.
+
+The home page of the project is
+<http://programandala.net/es.programa.asalto_y_castigo.forth.html>
+(only in Spanish).
+
+== Español
+
+_Asalto y castigo_ es una versión mejorada en desarrollo, de la
+aventura de texto, homónima escrita por
+http://caad.es/baltasarq/[Baltasar el Arquero] (para ZX Spectrum y
+otros micros).
+
+Esta versión está escrita en http://forth-standard.org[Forth] con
+http://gnu.org/software/gforth/[Gforth].
+
+El proyecto empezó en 2011-07-05. En 2016-06-11 se creó un repositorio
+de Git a partir de las copias de respaldo del desarrollo, para hacer
+éste más fácil.
+
+La página del proyecto es
+<http://programandala.net/es.programa.asalto_y_castigo.forth.html>.
