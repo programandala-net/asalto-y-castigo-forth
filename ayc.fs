@@ -5,7 +5,7 @@ cr .( Asalto y castigo )
 \ A text adventure in Spanish.
 \ Un juego conversacional en castellano.
 
-: version$  s" A-20110711"  ;
+: version$  s" A-20110715"  ;
 version$ type cr
 
 \ Programado en SP-Forth
@@ -39,6 +39,8 @@ version$ type cr
 \ Crear otra cadena dinámica para los usos genéricos con «+ y palabras similares.
 \ Comprobar los usos de TMP_STR .
 \ Implementar indentación opcional y configurable en los párrafos, con caracteres comodín que serán traducidos a espacios antes de imprimir la primera línea del párrafo.
+\ Escribir  : free_exit?  ( a -- )  no_exit <>  ;
+\ Escribir  : no_exit?  ( a -- )  no_exit =  ;
 
 \ #############################################################
 \ Términos usados en los comentarios del programa
@@ -366,6 +368,9 @@ trm.foreground-black-high trm.foreground-black - constant >lighter  \ Diferencia
 	;
 : speak_color  \ Pone el color de texto de los diálogos
 	common_paper  brown pen 
+	;
+: answer_color  \ Pone el color de texto de las preguntas de tipo «sí o no»
+	common_paper  white pen
 	;
 
 \ -------------------------------------------------------------
@@ -804,6 +809,7 @@ cell -- >container?  \ Indicador: ¿es un contenedor?
 cell -- >open?  \ Indicador: ¿está abierto? 
 cell -- >location?  \ Indicador: ¿es un lugar? 
 cell -- >location  \ Identificador del ente en que está localizado (sea lugar, contenedor, personaje o «limbo»)
+cell -- >location_plot_xt  \ Dirección de ejecución de la palabra que se ocupa de la trama del lugar 
 cell -- >stamina  \ Energía de los entes vivos
 cell -- >familiar  \ Contador de familiaridad (cuánto le es conocido el ente al protagonista)
 cell -- >north_exit  \ Ente de destino hacia el norte
@@ -916,8 +922,16 @@ entity: sword_e
 entity: thread_e
 entity: torch_e
 entity: waterfall_e
+entity: bed_e
+entity: candles_e
+entity: table_e
 
-\ Entes que son lugares: 
+\ Entes que son escenarios
+\ (en lugar de usar su nombre en el identificador,
+\ se conserva el número que tienen en la versión
+\ original; para que algunos cálculos tomados del código
+\ original en BASIC funcionen, es preciso que los 
+\ entes escenarios se creen aquí ordenados por ese número):
 entity: location_01_e
 entity: location_02_e
 entity: location_03_e
@@ -976,7 +990,8 @@ entity: floor_e
 entity: ceiling_e
 entity: clouds_e
 
-\ Entes que son virtuales, necesarios para la ejecución de comandos:
+\ Entes que son virtuales
+\ (necesarios para la ejecución de comandos):
 entity: inventory_e
 entity: exit_e
 entity: north_e
@@ -1228,6 +1243,9 @@ para nombrar los entes.
 	s" hilo" thread_e >name!
 	s" antorcha" torch_e >fname!
 	s" cascada" waterfall_e >fname!
+	s" catre" bed_e >name!
+	s" velas" candles_e >fnames!
+	s" mesa" table_e >fname!
 
 	\ Entes escenarios: 
 	s" aldea sajona" location_01_e >fname!
@@ -1341,12 +1359,12 @@ descriptions_xt swap 0 fill  \ Borrar la zona con ceros para reconocer después 
 : :description  ( a -- xt a ) \ Crea una palabra sin nombre que describirá un ente
 	:noname swap
 	;
-: ;description  ( xt a -- )  \ Termina la creación de una palabra que describe un ente
+: ;description  ( xt a -- )  \ Termina la definición de una palabra que describe un ente
 	\ a = Ente cuya palabra de descripción se ha creado
 	\ xt = Dirección de ejecución de la palabra de descripción
 	2dup  entity># cell *  descriptions_xt + !  \ Guardar xt en la posición de la tabla DESCRIPTIONS_XT correspondiente al ente
 	>description_xt !  \ Guardar xt en la ficha del ente
-	postpone ;  \ Terminar la definición de la palabra de descripción
+	postpone ;  \ Terminar la definición de la palabra 
 	; immediate
 : default_description  \ Descripción predeterminada de los entes para los que no se ha creado una palabra propia de descripción; no hace nada
 	;
@@ -1488,6 +1506,15 @@ piece_e :description
 lock_e :description
 	s" Está cerrado. Es muy grande y parece resistente."
 	tell
+	;description
+bed_e :description
+	s" Parece poco confortable."
+	;description
+candles_e :description
+	s" Están muy consumidas."
+	;description
+table_e :description
+	s" Pequeña y de basta madera."
 	;description
 
 \ Los entes lugares:
@@ -1850,7 +1877,10 @@ up_e :description
 	location_41_e idol_e be_there
 	location_43_e snake_e be_there
 	location_44_e lake_e be_there
+	location_46_e bed_e be_there
+	location_46_e candles_e be_there
 	location_46_e key_e be_there
+	location_46_e table_e be_there
 	location_47_e door_e be_there
 	location_47_e lock_e be_there
 	ulfius_e cloak_e be_there
@@ -1889,6 +1919,7 @@ up_e :description
 	init_entity_names  \ Nombres de los entes
 	init_entity_locations  \ Localizaciones de los entes
 	init_entity_descriptions  \ Descripciones de los entes
+	init_location_plots  \ Tramas de los entes escenarios
 	;
 
 \ ##############################################################
@@ -2389,7 +2420,9 @@ variable #free_exits  \ Contador de las salidas posibles
 
 : enter  ( a -- )  \ Entra en un lugar
 	dup protagonist be_there
-	dup describe  more_familiar  .present
+	dup describe
+	dup more_familiar  
+	location_plot  .present
 	;
 : (do_go)  ( a -- )  \ Comprueba si el movimiento es posible y lo efectúa
 	\ a = Ente supuestamente de tipo dirección
@@ -2915,6 +2948,12 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 : antorcha  torch_e complement!  ;
 : cascada  waterfall_e complement!  ;
 ' cascada synonym: catarata
+: catre  bed_e complement!  ;
+' catre 2 synonyms: cama camastro
+: velas  candles_e complement!  ;
+' velas synonym: vela
+: mesa  table_e complement!  ;
+' mesa 2 synonyms: mesita pupitre
 
 : n  do_go_north_xt north_e action|complement!  ;
 ' n 2 synonyms: norte septentrión
@@ -3004,8 +3043,8 @@ cr .( Entrada de comandos)
 
 Para la entrada de comandos se usa la palabra de Forth
 ACCEPT , que permite limitar el número máximo de caracteres
-que serán aceptados (aunque permite escribir más y después
-trunca la cadena).
+que serán aceptados (aunque por desgracia permite escribir
+más y después trunca la cadena).
 
 [then]  \ ......................................
 
@@ -3035,7 +3074,7 @@ cr .( Entrada de respuestas a preguntas de tipo «sí o no»)
 : answer@  ( a u -- u2 )  \ Devuelve el contenido de ANSWER tras formular una pregunta del tipo «sí o no»
 	\ a u = Pregunta
 	\ u2 = Contenido de la variable ANSWER
-	cr type wait_for_input
+	answer_color cr type wait_for_input
 	answer_undefined evaluate_answer  answer @
 	;
 : yes?  ( a u -- f )  \ ¿Es afirmativa la respuesta a una pregunta?
@@ -3086,18 +3125,103 @@ drop
 	;
 
 \ -------------------------------------------------------------
-\ Trama
+\ Tramas asociadas a lugares
 
-: location_plot ( u -- )  \ 
-	\ Pendiente!!!
+: :location_plot  ( a -- xt a ) \ Crea una palabra sin nombre que manejará la trama de un ente escenario
+	:noname swap
 	;
+: ;location_plot  ( xt a -- )  \ Termina la definición de una palabra que manejará la trama de un ente escenario
+	\ a = Ente escenario cuya palabra de trama se ha creado
+	\ xt = Dirección de ejecución de la palabra de trama
+	2dup  entity># cell *  location_plots_xt + !  \ Guardar xt en la posición de la tabla LOCATION_PLOTS_XT correspondiente al ente
+	>location_plot_xt !  \ Guardar xt en la ficha del ente
+	postpone ;  \ Terminar la definición de la palabra 
+	; immediate
+: init_location_plots  \ Restaura las tramas originales de los entes escenarios
+	#entities 0  do
+		i cell * location_plots_xt + @  \ Tomar de la tabla la dirección de ejecución 
+		?dup if  i #>entity >location_plot_xt !  then  \ Si no es cero, guardarla en su ficha
+	loop
+	;
+
+: your_soldiers_follow  \ Tus hombres siguen tus pasos.
+	location_08_e >north_exit @ no_exit <>  if
+		s" Tus" s" Todos tus" 2 schoose s&
+		s" hombres" s" soldados" 2 schoose s&
+		s" siguen tus pasos."
+		s" te siguen." 2 choose s&
+		narrate
+	then
+	;
+
+location_01_e :location_plot
+	your_soldiers_follow  
+	;location_plot
+location_02_e :location_plot
+	your_soldiers_follow  
+	;location_plot
+location_03_e :location_plot
+	your_soldiers_follow  
+	;location_plot
+location_04_e :location_plot
+	your_soldiers_follow  
+	;location_plot
+location_05_e :location_plot
+	your_soldiers_follow  
+	;location_plot
+location_06_e :location_plot
+	your_soldiers_follow  
+	;locat6on_plot
+location_07_e :location_plot
+	your_soldiers_follow  
+	;location_plot
+location_08_e :location_plot
+	your_soldiers_follow  
+	;location_plot
+location_09_e :location_plot
+	your_soldiers_follow  
+	;location_plot
+location_11_e :location_plot
+    my_location lake_e be_there
+	;location_plot
+location_16_e :location_plot
+	s" En la distancia, por entre los resquicios de las rocas,"
+	s" y allende el canal de agua, los sajones tratan de buscar" s&
+	s" la salida que encontraste por casualidad."
+	narrate
+	;location_plot
+location_28_e :location_plot
+	no_exit location_28_e >east_exit !
+	;location_plot
+location_31_e :location_plot
+	location_31_e >north_exit @ no_exit <>  if
+		s" Las rocas yacen desmoronadas a lo largo del pasaje."
+	else
+        s" Las rocas bloquean el camino."
+	then
+	narrate
+	;location_plot
+location_38_e :location_plot
+    my_location lake_e be_there
+	;location_plot
+location_44_e :location_plot
+    my_location lake_e be_there
+	;location_plot
+
+: location_plot  ( a -- )  \ Ejecuta la palabra de trama de un ente escenario
+	>location_plot @ ?dup  if  execute  then
+	;
+
+\ -------------------------------------------------------------
+\ Trama global
+
 : ambush?  ( -- f )  \ ¿Ha caído el protagonista en la emboscada?
 	my_location location_08_e =
 	location_08_e >north_exit @ no_exit <>  and
 	;
 : ambush  \ Emboscada
 	no_exit location_08_e >north_exit !  \ Cerrar la salida norte
-	saxons_steps on  \ Los sajones empiezan la persecución
+	1 saxons_steps !  \ Los sajones empiezan la persecución
     s" Una partida sajona aparece por el este."
 	s" Para cuando te vuelves al norte," s&
 	s" ya no te queda ninguna duda:" s&
@@ -3108,12 +3232,20 @@ drop
 	s" encerrona."
 	s" trampa." 4 schoose s&
 	narrate short_pause
-    s" En el estrecho paso es posible resistir,
-	s" aunque por desgracia sus efectivos son muy superiores a los tuyos." s&
+    s" En el estrecho paso es posible resistir,"
+	s" aunque por desgracia"
+	\ s" sus efectivos son muy superiores a los tuyos."  \ Anulado porque «efectivo» en ese sentido es acepción moderna.
+	s" sus soldados son más numerosos que los tuyos"
+	s" sus tropas son más numerosas que las tuyas"
+	s" sus hombres son más numerosos que los tuyos."
+	s" ellos son muy superiores en número."
+	s" ellos son mucho más numerosos." 5 schoose s&
 	narrate end_of_scene
     s" Tus oficiales te"
 	s" conminan a huir."
-	s" piden que huyas." 2 schoose s&
+	s" conminan a ponerte a salvo."
+	s" piden que te pongas a salvo."
+	s" piden que huyas." 4 schoose s&
 	narrate
 	s" Sire, capturando" 
     s" Capturando" 
@@ -3121,7 +3253,7 @@ drop
     s" Sire, si capturan" 4 schoose
 	s" a un general britano" s&
 	s" su victoria será doble."
-	s" su victoria será mayor. 
+	s" su victoria será mayor." 
 	s" ganan doblemente."
 	s" ganan por partida doble." 4 schoose s&
 	speak
@@ -3135,17 +3267,19 @@ drop
 	;
 : pursued?  ( -- f ) \ ¿Los sajones persiguen al protagonista?
 	saxons_steps @ 0>
-	my_location location_12_e <  and  \ mejorar este cálculo!!! (usar una propiedad de los escenarios)
+	my_location location_12_e <  and
 	;
 : pursued  \ Perseguido por los sajones
-	1 saxons_steps +!
-    s" No sabes cuánto tiempo te queda..."
-    s" Te queda poco tiempo..."
-    s" El tiempo apremia..." 3 schoose
+	1 saxons_steps +!  \ Incrementar el contador
+    s" No sabes cuánto tiempo te queda"
+    s" Sabes que no puedes perder tiempo"
+    s" No hay tiempo que perder"
+    s" Te queda poco tiempo"
+    s" El tiempo apremia" 5 schoose s" ..." s+
 	narrate
 	;
 : ambush_battle?  \ ¿En la batalla tras la emboscada?
-	my_location location_10_e <  \ Mejorar este cálculo!!!
+	my_location location_10_e < 
 	location_08_e >north_exit @ no_exit =  and
 	;
 : ambush_battle  \ Batalla de la emboscada.
@@ -3163,11 +3297,7 @@ drop
 	s" esforzadamente"
 	s" valientemente"
 	s" como valientes" 5 schoose s&
-    s" contra los" s&
-	s" "
-	s" malditos"
-	s" miserables" 3 schoose s&
-	s" sajones." s&
+    s" contra los sajones." s&
 	narrate
 	;
 : dark_cave?  ( -- f )  \ ¿En la cueva y sin luz?
@@ -3182,11 +3312,15 @@ drop
     narrate short_pause
     location_17_e my_location!  do_look
 	;
-: plot  \ Trama
-	ambush?  if  ambush exit  then
-	pursued?  if  pursued exit  then
-	ambush_battle?  if  ambush_battle exit  then
-	dark_cave?  if  dark_cave  then
+: plot  \ Trama global
+	\ Nota: Las subtramas deben comprobarse en orden cronológico:
+	true case
+		ambush?  of  ambush  endof
+		pursued?  of  pursued  endof
+		ambush_battle?  of  ambush_battle  endof
+		dark_cave?  of  dark_cave  endof
+	endcase
+	[then]
 	;
 
 \ ##############################################################
@@ -3240,15 +3374,15 @@ cr .( Fin)
 	success?  if  play_again?$  else  retry?$  then  no?
 	;
 : surrender?  ( -- f )  \ ¿Quiere el jugador dejar el juego?
-	\ inconcluso!!! no se usa!!!
+	\ No se usa!!!
 	s" ¿Quieres"
+	s" ¿En serio quieres"
 	s" ¿De verdad quieres"
 	s" ¿Estás segur" player_o/a+ s" de que quieres" s& 
-	s" ¿Estás decidid" player_o/a+ s" a" s& 4 schoose
+	s" ¿Estás decidid" player_o/a+ s" a" s& 5 schoose
 	s" dejarlo?"
 	s" rendirte?"
-	s" abandonar?" 3 schoose s&
-	yes?  if  do_bye  then
+	s" abandonar?" 3 schoose s&  yes? 
 	;
 : game_over?  ( -- f )  \ ¿Se terminó ya el juego?
 	success? failure? or
@@ -3344,27 +3478,24 @@ also config_vocabulary  definitions
 : \  ( "texto<fin de línea>" -- ) \ Comentario de línea
 	postpone \ 
 	; immediate
+
 : columnas  ( u -- )  \ Cambia el número de columnas
 	1- to max_x
 	;
 : líneas ( u -- )  \ Cambia el número de líneas
 	1- to max_y
 	;
+
 : varón  \ Indica que el jugador es un varón
 	woman_player? off
 	;
-: hombre  \ Indica que el jugador es un varón
-	woman_player? off
-	;
-: masculino  \ Indica que el jugador es un varón
-	woman_player? off
-	;
+' varón alias hombre
+' varón alias masculino
 : mujer  \ Indica que el jugador es una mujer
 	woman_player? on
 	;
-: femenino  \ Indica que el jugador es una mujer
-	woman_player? on
-	;
+' mujer alias femenino
+
 : raya  \ Indica que se use la raya en las citas 
 	castilian_quotes? off
 	;
