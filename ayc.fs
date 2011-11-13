@@ -1928,7 +1928,10 @@ leader_e :description
 \ Los entes objetos:
 
 altar_e :description
-	s" Justo en la mitad del puente, debe sostener algo importante."
+	s" Está colocado justo en la mitad del puente."
+	idol_e is_known? 0=  if
+		s" Debe sostener algo importante." s&
+	then
 	paragraph
 	;description
 arch_e :description
@@ -2279,11 +2282,13 @@ location_49_e :description
 	paragraph
 	;description
 location_50_e :description
-	s" El camino norte de Westmorland se interna hacia el bosque, al Norte (en tu estado no puedes ir), y a Westmorland, al Sur."
+	s" El camino norte de Westmorland se interna hacia el bosque,"
+	s" al Norte (en tu estado no puedes ir), y a Westmorland, al Sur." s&
 	paragraph
 	;description
 location_51_e :description
-	s" La villa bulle de actividad con el mercado en el centro de la plaza, donde se encuentra el castillo."
+	s" La villa bulle de actividad con el mercado en el centro de la plaza,"
+	s" donde se encuentra el castillo." s&
 	paragraph
 	;description
 
