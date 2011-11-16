@@ -57,13 +57,18 @@ cr .( Asalto y castigo )
 Programación 
 -------------------------------------------------------------
 
+Crear un mensaje de error más laborado para las
+acciones que precisan objeto directo, con el infinitivo
+como parámetro:
+«¿Matar por matar?» «Normalmente hay que matar a alguien o algo».
+
 Usar [ y ] para permitir comandos de configuración dentro
 de los comandos del jugador.
 
 Implementar pronombres. Para empezar, que la forma «mírate»
 sea compatible con «mírate la capa». Para esto habría que
 distiguir dos variantes de complemento directo, y que al
-asignar cualquiera de ellas compruebo si había ya otro
+asignar cualquiera de ellas se compruebe si había ya otro
 complemento directo del otro tipo.
 
 Limitar los usos de PRINT_STR a la impresión. Renombrarla.
@@ -102,7 +107,7 @@ Hacer que «salir», si no hay dirección de salida en el ente,
 calcule la dirección con la del último movimiento.
 
 Añadir a la configuración si los errores lingüísticos deben
-ser detallados o vagos.
+ser detallados (técnicos) o vagos (narrativos).
 
 -------------------------------------------------------------
 Trama y puzles 
@@ -1281,8 +1286,9 @@ cell field >cloth?  \ Indicador: ¿el ente es una prenda que puede ser llevada c
 cell field >worn?  \ Indicador: ¿el ente, que es una prenda, está puesto? 
 cell field >light?  \ Indicador: ¿el ente es una fuente de luz que puede ser encendida?
 cell field >lit?  \ Indicador: ¿el ente, que es una fuente de luz que puede ser encendida, está encendido?
-\ cell field >vegetal?  \ Indicador: ¿es un vegetal?
-\ cell field >animal?  \ Indicador: ¿es un animal? 
+cell field >vegetal?  \ Indicador: ¿es vegetal?
+cell field >animal?  \ Indicador: ¿es animal? 
+cell field >human?  \ Indicador: ¿es humano? 
 \ cell field >container?  \ Indicador: ¿es un contenedor? 
 cell field >open?  \ Indicador: ¿está abierto? 
 cell field >location?  \ Indicador: ¿es un lugar? 
@@ -1364,7 +1370,7 @@ sufijo _e en sus nombres.
 [then]  \ ......................................
 
 \ **********************
-\ Paso 1/6 para crear un nuevo ente:
+\ Paso 1 de 6 para crear un nuevo ente:
 \ Crear su identificador
 \ **********************
 
@@ -1403,6 +1409,7 @@ entity: waterfall_e
 entity: bed_e
 entity: candles_e
 entity: table_e
+entity: bridge_e
 
 \ Entes que son escenarios
 \ (en lugar de usar su nombre en el identificador,
@@ -1512,6 +1519,12 @@ Otras actúan como procedimientos para realizar operaciones
 frecuentes con los entes.
 
 [then]  \ ......................................
+
+: >living_being?  ( a -- f )  \ ¿El ente es un ser vivo (aunque esté muerto)?
+	dup >vegetal? @
+	over >animal? @ or
+	swap >human? @ or
+	;
 
 create 'articles  \ Tabla de artículos
 	s" un  " s,
@@ -1739,7 +1752,7 @@ para nombrar los entes.
 [then]  \ ......................................
 
 \ **********************
-\ Paso 2/6 para crear un nuevo ente:
+\ Paso 2 de 6 para crear un nuevo ente:
 \ Crear su nombre (el que se usará al citarlo)
 \ **********************
 
@@ -1754,6 +1767,7 @@ para nombrar los entes.
 	\ Entes objetos:
 	s" altar" altar_e >name!
 	s" arco" arch_e >name!
+	s" puente" bridge_e >name!
 	s" capa" cloak_e >fname!
 	s" coraza" cuirasse_e >fname!
 	s" puerta" door_e >fname!
@@ -1857,7 +1871,7 @@ para nombrar los entes.
 \ Atributos
 
 \ **********************
-\ Paso 3/6 para crear un nuevo ente:
+\ Paso 3 de 6 para crear un nuevo ente:
 \ Definir sus atributos
 \ **********************
 
@@ -1868,7 +1882,9 @@ para nombrar los entes.
 	\ pues todos quedan a cero tras borrar la base de datos,
 	\ operación que se hace al inicio del programa.
 	ambrosio_e >character? on
+	ambrosio_e >human? on
 	arch_e >decoration? on
+	bridge_e >decoration? on
 	cave_e >global_inside? on
 	ceiling_e >global_inside? on
 	cloak_e >cloth? on
@@ -1883,8 +1899,10 @@ para nombrar los entes.
 	floor_e >global_outside? on
 	lake_e >decoration? on
 	leader_e >character? on
+	leader_e >human? on
 	rocks_e >decoration? on
 	sky_e >global_outside? on
+	snake_e >animal? on
 	sword_e >owned? on
 	torch_e >light? on
 	torch_e >lit? off
@@ -1964,7 +1982,7 @@ descriptions_xt swap 0 fill  \ Borrar la zona con ceros para reconocer después 
 	;
 
 \ **********************
-\ Paso 4/6 para crear un nuevo ente:
+\ Paso 4 de 6 para crear un nuevo ente:
 \ Crear una palabra de descripción, con la sintaxis específica
 \ **********************
 
@@ -2009,6 +2027,11 @@ altar_e :description
 arch_e :description
 	\ Provisional!!!
 	s" Un sólido arco de piedra, de una sola pieza."
+	paragraph
+	;description
+bridge_e :description
+	\ Provisional!!!
+	s" Está semipodrido."
 	paragraph
 	;description
 torch_e :description
@@ -2466,7 +2489,7 @@ up_e :description
 \ Localización de los entes
 
 \ **********************
-\ Paso 5/6 para crear un nuevo ente:
+\ Paso 5 de 6 para crear un nuevo ente:
 \ Fijar su localización inicial
 \ **********************
 
@@ -2479,6 +2502,7 @@ up_e :description
 	location_15_e log_e be_there
 	location_18_e altar_e be_there
 	location_18_e arch_e be_there
+	location_13_e bridge_e be_there
 	location_18_e stone_e be_there
 	location_19_e ambrosio_e be_there
 	location_28_e flags_e be_there
@@ -3255,7 +3279,7 @@ section( Tratamiento de errores del analizador)
 En el estándar ANS Forth los códigos de error de -1 a -255
 están reservados para el propio estándar; el resto de
 números negativos son para que los asigne cada sistema Forth
-a sus propios mensajes de error; del 1 en adelante puede
+a sus propios mensajes de error; del 1 en adelante pueden
 usarlos libremente cada programa.
 
 [then]  \ ......................................
@@ -3373,7 +3397,10 @@ drop
 : no_direct_complement_error  \ Informa de que se ha producido un error por falta de complemento directo en el comando
 	there_is_no$ s" complemento directo" s& language_error
 	;
+
+\ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 [false] [if]
+\ Sistema antiguo!!!
 create errors_xt  \ Sistema alternativo a CASE , inacabado!!!
 	' noop ,
 	' 2-action_error ,
@@ -3391,6 +3418,7 @@ create errors_xt  \ Sistema alternativo a CASE , inacabado!!!
 	endcase
 	;
 [then]
+\ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 false constant no_error_id
 ' 2-action_error constant 2-action_error_id
@@ -3438,7 +3466,7 @@ variable last_masculine_plural_complement
 \ Tratamiento de errores de las acciones
 
 : is_not_here  ( a -- )  \  Informa de que un ente no está presente
-	\ Inacabado!!!
+	\ Inacabado!!! Falta distinguir si es conocido o desconocido
 	>full_name@
 	s" no está aquí" 
 	s" no está por aquí" 2 schoose s& narrate
@@ -3453,14 +3481,43 @@ variable last_masculine_plural_complement
 : cannot_see  ( a -- )  \ Informa de que un ente no puede ser mirado
 	cannot_see$ rot >subjective_name@ s& period+ narrate
 	;
+: crazy_thing$  ( -- a u )
+	s" cosa"
+	s" ocurrencia"
+	s" disparate" 3 schoose
+	;
+: so_crazy$  ( -- a u )
+	s" así"
+	s" tal"
+	s" semejante" 3 schoose
+	;
+: something_so_crazy$  ( -- a u )  \ Devuelve una variante de «hacer algo semejante»
+	s" " s" hacer" 2 schoose
+	s" algo" so_crazy$ s&
+	s" cosa" so_crazy$ s&
+	s" eso"
+	s" semejante" crazy_thing$ s&
+	s" tal" crazy_thing$ s&
+	s" tamaña" crazy_thing$ s&
+	s" un disparate" so_crazy$ s&
+	7 schoose s&
+	;
+: like_that$  ( -- a u )
+	s" así"
+	s" como eso"
+	2 schoose
+	;
 : something_like_that$  ( -- a u )  \ Devuelve una variante de «hacer eso»
 	s" " s" hacer" 2 schoose
-	s" eso"
 	s" algo así"
 	s" algo semejante"
-	s" cosa semejante" 4 schoose s&
+	s" eso"
+	s" semejante cosa"
+	s" tal cosa"
+	s" una cosa así"
+	6 schoose s&
 	;
-: impossible$  ( -- a u )  \ Devuelve una cadena con una variante de «es imposible», que formará parte de mensajes personalizados por cada acción
+: is_impossible$  ( -- a u )  \ Devuelve una cadena con una variante de «es imposible», que formará parte de mensajes personalizados por cada acción
 	s" es imposible"
 	s" es inviable"
 	s" no es posible"
@@ -3471,17 +3528,17 @@ variable last_masculine_plural_complement
 	s" sería inviable"
 	8 schoose
 	;
-: ^impossible$  ( -- a u )  \ Devuelve una cadena con una variante de «Es imposible» (con la primera letra en mayúsculas) que formará parte de mensajes personalizados por cada acción
-	impossible$ >^uppercase
+: ^is_impossible$  ( -- a u )  \ Devuelve una cadena con una variante de «Es imposible» (con la primera letra en mayúsculas) que formará parte de mensajes personalizados por cada acción
+	is_impossible$ >^uppercase
 	;
 : x_is_impossible$  ( a1 u1 -- a2 u2 )  \ Devuelve una variante «X es imposible»
 	dup
-	if  >^uppercase impossible$ s&
-	else  2drop ^impossible$
+	if  >^uppercase is_impossible$ s&
+	else  2drop ^is_impossible$
 	then
 	;
 : it_is_impossible_x$  ( a1 u1 -- a2 u2 )  \ Devuelve una variante «Es imposible x»
-	^impossible$ 2swap s& 
+	^is_impossible$ 2swap s& 
 	;
 : is_impossible  ( a u -- )  \ Informa de que una acción indicada (en infinitivo) es imposible
 	\ a u = Acción imposible, en infinitivo, o una cadena vacía
@@ -3498,8 +3555,6 @@ variable last_masculine_plural_complement
 	;
 : nonsense$  ( -- a u )  \ Devuelve una cadena con una variante de «no tiene sentido», que formará parte de mensajes personalizados por cada acción
 	\ Pendiente!!! Quitar las variantes que no sean adecuadas a todos los casos.
-	s" es algo descabellado"
-	s" es descabellado"
 	s" es ilógico"
 	s" es una insensatez"
 	s" no es nada razonable"
@@ -3526,12 +3581,10 @@ variable last_masculine_plural_complement
 	s" no tiene ninguna lógica"
 	s" no tiene ningún sentido"
 	s" no tiene sentido"
-	s" sería algo descabellado"
 	s" sería algo ilógico"
-	s" sería descabellado"
 	s" sería ilógico" 
 	s" sería una insensatez"
-	33 schoose 
+	29 schoose 
 	;
 : ^nonsense$  ( -- a u )  \ Devuelve una cadena con una variante de «No tiene sentido» (con la primera letra en mayúsculas) que formará parte de mensajes personalizados por cada acción
 	nonsense$ >^uppercase
@@ -3554,10 +3607,12 @@ variable last_masculine_plural_complement
 : nonsense  \ Informa de que alguna acción no especificada no tiene sentido
 	\ Provisional!!!
 	[debug] [if] s" En NONSENSE" debug [then]  \ Depuración!!!
-	something_like_that$ is_nonsense 
+	something_so_crazy$ is_nonsense 
 	;
+' nonsense alias nonsense_error_id
 : dangerous$  ( -- a u )  \ Devuelve una cadena con una variante de «es peligroso», que formará parte de mensajes personalizados por cada acción
 	\ Pendiente!!! Quitar las variantes que no sean adecuadas a todos los casos.
+	s" es algo descabellado"
 	s" es descabellado"
 	s" es muy arriesgado"
 	s" es peligroso" 
@@ -3570,7 +3625,7 @@ variable last_masculine_plural_complement
 	s" sería descabellado"
 	s" sería peligroso" 
 	s" sería una insensatez"
-	12 schoose 
+	13 schoose 
 	;
 : ^dangerous$  ( -- a u )  \ Devuelve una cadena con una variante de «Es peligroso» (con la primera letra en mayúsculas) que formará parte de mensajes personalizados por cada acción
 	dangerous$ >^uppercase
@@ -3593,6 +3648,7 @@ variable last_masculine_plural_complement
 : dangerous  \ Informa de que alguna acción no especificada no tiene sentido
 	something_like_that$ is_dangerous
 	;
+' dangerous alias dangerous_error_id
 : ?full_name&  ( a1 u1 a2 -- )  \ Añade a una cadena el nombre de un posible ente
 	\ No se usa!!!
 	\ a1 u1 = Cadena
@@ -3983,8 +4039,28 @@ variable #free_exits  \ Contador de las salidas posibles
 	s" atacar" direct_complement+is_nonsense
 	;
 ' do_attack constant do_attack_xt
+: actually_do_kill  ( a -- )  \ Mata un ser vivo
+	\ Pendiente!!! 
+	s" Matas " rot >full_name@ s& narrate
+	;
+: do_kill_if_living  ( a -- )  \ Acción de matar, si se trata de un ser vivo
+	>living_being?
+	if  actually_do_kill
+	else  nonsense
+	then
+	;
+: do_kill_if_possible  ( a -- )  \ Acción de matar, si es posible
+	dup is_here?
+	if  do_kill_if_living
+	else  do_take_if_exception
+	then
+	;
 : do_kill  \ Acción de matar
-	s" matar"  direct_complement+is_nonsense
+	\ s" matar"  direct_complement+is_nonsense
+	direct_complement @ ?dup
+	if  do_kill_if_possible
+	else  no_direct_complement_error
+	then
 	;
 ' do_kill constant do_kill_xt
 : do_break  \ Acción de romper
@@ -4091,7 +4167,7 @@ variable #free_exits  \ Contador de las salidas posibles
 : impossible_move  ( a -- )  \ El movimiento es imposible
 	\ a = Ente de dirección
 	\ Inacabado!!! Añadir una tercera variante «ir en esa dirección»; y otras específicas como «no es posible subir».
-	^impossible$ s" ir" s&  rot
+	^is_impossible$ s" ir" s&  rot
 	3 random 
 	if  that_way_0$
 	else  drop that_way_1$
@@ -4623,11 +4699,24 @@ vocabulary player_vocabulary  \ Vocabulario para guardar en él las palabras del
 	[debug] [if] s" En UNDERSTOOD?" debug [then]  \ Depuración!!!
 	dup misunderstood 0=
 	;
+: (call_action)  ( xt -- )  \ Ejecuta la acción del comando
+	[debug] [if] s" En (CALL_ACTION)" debug [then]  \ Depuración!!!
+	['] execute catch
+	?dup  if  misunderstood  then
+	[debug] [if] s" Al final de (CALL_ACTION)" debug [then]  \ Depuración!!!
+	;
 : call_action  \ Ejecuta la acción del comando, si existe
 	[debug] [if] s" En CALL_ACTION" debug [then]  \ Depuración!!!
+	[false] [if]  \ Sistema antiguo!!!
 	action @ ?dup  if  execute
 	else  no_verb_error_id misunderstood
 	then
+	[then]
+	action @ ?dup
+	if  (call_action)
+	else  no_verb_error_id misunderstood
+	then
+	[debug] [if] s" Al final de CALL_ACTION" debug [then]  \ Depuración!!!
 	;
 : (obbey)  ( a u -- u2 )  \ Evalúa un comando con el vocabulario del juego
 	\ a u = Comando
@@ -4635,6 +4724,12 @@ vocabulary player_vocabulary  \ Vocabulario para guardar en él las palabras del
 	[debug] [if] s" Entrando en (OBBEY)" debug [then]  \ Depuración!!!
 	only player_vocabulary  \ Dejar solo el diccionario PLAYER_VOCABULARY activo
 	['] evaluate catch  \ Llamar a EVALUATE a través de CATCH para poder regresar directamente en caso de error
+	?dup if  \ Hubo error
+		\ Pendiente!!!
+		misunderstood
+	else  \ No hubo error
+		\ Pendiente!!!
+	then
 	restore_vocabularies
 	[debug] [if] s" Saliendo de (OBBEY)" debug [then]  \ Depuración!!!
 	;
@@ -4816,7 +4911,7 @@ adecuado.
 also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY para crear en él las nuevas palabras
 
 \ **********************
-\ Paso 6/6 para crear un nuevo ente:
+\ Paso 6 de 6 para crear un nuevo ente:
 \ Crear las palabras relacionadas con él en el vocabulario del jugador, y sus sinónimos
 \ **********************
 
@@ -4855,8 +4950,9 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 : registrar  do_search_xt action!  ;
 ' registrar synonym: registra
 
-: forth  actually_do_finish  ;  \ Deburación!!!
+: forth  actually_do_finish  ;  \ Depuración!!!
 : bye  bye  ;  \ Depuración!!!
+: quit quit  ;  \ Depuración!!!
 
 : i  do_inventory_xt inventory_e action|complement!  ;
 ' i synonym: inventario
@@ -4945,6 +5041,7 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 ' velas synonym: vela
 : mesa  table_e complement!  ;
 ' mesa 2 synonyms: mesita pupitre
+: puente  bridge_e complement!  ;
 
 : n  do_go_north_xt north_e action|complement!  ;
 ' n 2 synonyms: norte septentrión
