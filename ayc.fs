@@ -8,7 +8,7 @@ cr .( Asalto y castigo )
 \ A text adventure in Spanish, written in SP-Forth.
 \ Un juego conversacional en castellano, escrito en SP-Forth.
 
-: version$  s" A-20110905"  ;  version$ type cr
+: version$  s" A-20111115"  ;  version$ type cr
 
 \ Copyright (C) 2011 Marcos Cruz (programandala.net)
 
@@ -257,7 +257,8 @@ require csb csb2.fs  \ Almacén circular de cadenas, con definición de cadenas 
 	;
 
 : section(  ( "text" -- )  \ Notación para los títulos de sección en el código fuente
-	\ Esta palabra permite hacer tareas de depuración mientras se compila el programa; por ejemplo detectar el origen de descuadres en la pila.
+	\ Esta palabra permite hacer tareas de depuración mientras se compila el programa;
+	\ por ejemplo detectar el origen de descuadres en la pila.
 	cr postpone .( .s?
 	;
 
@@ -276,6 +277,7 @@ section( Constantes)
 \ {{{
 
 false value [debug] immediate  \ Indicador: ¿Modo de depuración global?
+false value [debug_do_exits] immediate  \ Indicador: ¿Depurar la acción DO_EXITS ?
 true value [status] immediate  \ Indicador: ¿Mostrar info de depuración sobre el presto de comandos? 
 
 true constant [true] immediate  \ Para usar en compilación condicional 
@@ -653,12 +655,62 @@ trm.foreground-black-high trm.foreground-black - constant >lighter  \ Diferencia
 : clear_screen  \ Restaura el color de tinta y borra la pantalla
 	gray pen  page  \ Nota!!!: ¿Por qué esa tinta?
 	;
+: clear_screen_for_location  \ Restaura el color de tinta y borra la pantalla para cambiar de escenario
+	location_page? @  if  clear_screen  then
+	;
 : init_screen/once  \ Prepara la pantalla la primera vez
 	trm+reset init_cursor default_color home
 	;
 
 \ }}}
 
+\ ##############################################################
+section( Depuración)
+
+\ {{{
+
+: fatal_error  ( f a u -- )  \ Informa de un error y sale del sistema, si el indicador de error es distinto de cero
+	\ f = Indicador de error
+	\ a u = Mensaje de error
+	rot if  ." Error fatal: " type cr bye
+	else  2drop 
+	then
+	;
+: wait  \ Hace una pausa
+	1000 2 * pause
+	;
+: .stack  \ Imprime el estado de la pila
+	[false] [if]  \ versión antigua!!!
+	." Pila" depth
+	if  ." :" .s ." ( " depth . ." )"
+	else  ."  vacía."
+	then
+	[else]  \ nueva versión
+	depth  if  cr ." Pila descuadrada:" .s cr  then
+	[then]
+	;
+: .csb  \ Imprime el estado del almacén circular de cadenas
+	." Espacio para cadenas:" csb ?
+	;
+: .cursor  \ Imprime las coordenadas del cursor
+	." Cursor:" cursor_x ? cursor_y ?
+	;
+: .system_status  \ Muestra el estado del sistema
+	( .csb ) .stack ( .cursor )
+	;
+: .debug_message  ( a u -- )  \ Imprime el mensaje del punto de chequeo, si no está vacío
+	dup  if  cr type cr  else  2drop  then
+	;
+: debug_pause  \ Pausa tras mostrar la información de depuración
+	\ key drop
+	;
+: (debug)  ( a u -- )  \ Punto de chequeo: imprime un mensaje y muestra el estado del sistema
+	debug_color .debug_message .system_status debug_pause
+	;
+' (debug) is debug
+
+
+\ }}}
 \ ##############################################################
 section( Manipulación de textos)
 
@@ -812,8 +864,17 @@ section( Textos variables)
 	\ No se usa!!!
 	s" aun" s" incluso" 2 schoose
 	;
+: toward$  ( -- a u )
+	s" hacia" s" " 2 schoose
+	;
 : to_the$  ( -- a u )
 	s" hacia el" s" al" 2 schoose
+	;
+: possible1$  ( -- a u )  \ Devuelve «posible» o una cadena vacía
+	s" posible" s" " 2 schoose
+	;
+: possible2$  ( -- a u )  \ Devuelve «posibles» o una cadena vacía
+	s" posibles" s" " 2 schoose
 	;
 
 : player_o/a  ( -- a 1 )  \ Devuelve la terminación «a» u «o» según el sexo del jugador
@@ -981,11 +1042,11 @@ dtm-create deadline  \ Variable para guardar el momento final de las pausas
 	;
 : short_pause  \ Hace una pausa corta; se usa entre ciertos párrafos.
 	\ duración provisional!!!
-	5 wait_for_key_press
+	1 wait_for_key_press
 	;
 : long_pause  \ Hace una pausa larga; se usa tras cada escena.
 	\ duración provisional!!!
-	5 wait_for_key_press
+	1 wait_for_key_press
 	;
 : .scene_prompt$  \ Imprime el presto de fin de escena
 	scene_prompt_color .pause_prompt$ 
@@ -1499,9 +1560,20 @@ create 'articles  \ Tabla de artículos
 : >negative_article@  ( a -- a1 u1 | a 0 )
 	\ Inacabado!!!
 	;
+: >plural_ending@  ( a -- a u )  \ Devuelve la terminación adecuada del plural para el nombre de un ente
+	>plural? @  if  s" s"  else  s" "  then
+	;
+: >gender_ending@  ( a -- a u )  \ Devuelve la terminación adecuada del género gramatical para el nombre de un ente
+	>feminine? @  if  s" a"  else  s" o"  then
+	;
 : >noun_ending@  ( a -- a1 u1 )  \ Devuelve la terminación adecuada para el nombre de un ente
-	dup >feminine? @  if  s" a"  else  s" o"  then
-	rot >plural? @  if  s" s"  else  s" "  then  s+
+	dup >gender_ending@ rot >plural_ending@ s+
+	;
+: >direct_pronoun@  ( a -- a1 u1 )  \ Devuelve el pronombre de objeto directo para un ente («la/s» o «lo/s»)
+	s" l" rot >noun_ending@ s+
+	;
+: >indirect_pronoun@  ( a -- a1 u1 )  \ Devuelve el pronombre de objeto indirecto para un ente («le/s»)
+	s" le" rot >plural_ending@ s+
 	;
 : noun_ending+  ( a1 u1 a -- a2 u2 )  \ Añade a una cadena la terminación adecuada para el nombre de un ente
 	>noun_ending@ s+
@@ -1770,10 +1842,10 @@ para nombrar los entes.
 	s" cueva" cave_e >fname!
 
 	\ Entes virtuales:
-	s" norte" north_e >name!  north_e >definite_article? on
-	s" sur" south_e >name!  south_e >definite_article? on
-	s" este" east_e >name!  east_e >definite_article? on
-	s" oeste" west_e >name!  west_e >definite_article? on
+	s" Norte" north_e >name!  north_e >definite_article? on
+	s" Sur" south_e >name!  south_e >definite_article? on
+	s" Este" east_e >name!  east_e >definite_article? on
+	s" Oeste" west_e >name!  west_e >definite_article? on
 	s" arriba" up_e >name!  up_e >no_article? on
 	s" abajo" down_e >name!  down_e >no_article? on
 	s" afuera" out_e >name!  out_e >no_article? on
@@ -1878,7 +1950,7 @@ descriptions_xt swap 0 fill  \ Borrar la zona con ceros para reconocer después 
 	;
 : describe_location  ( a -- )  \ Imprime el nombre y la descripción de un ente escenario, y llama a su trama
 	[debug] [if] s" En DESCRIBE_LOCATION" debug [then]  \ Depuración!!!
-	location_page? @  if  clear_screen  then
+	clear_screen_for_location
 	dup .location_name  dup (describe_location)
 	location_plot 
 	;
@@ -2115,7 +2187,7 @@ location_14_e :description
 	paragraph
 	;description
 location_15_e :description
-	s" La gruta desciende de Norte a Sur sobre un lecho arenoso. Al este, un agujero del que llega claridad."
+	s" La gruta desciende de Norte a Sur sobre un lecho arenoso. Al Este, un agujero del que llega claridad."
 	paragraph
 	;description
 location_16_e :description
@@ -2236,7 +2308,7 @@ location_39_e :description
 	;description
 location_40_e :description
 	s" Una gran explanada enlosetada contempla un bello panorama de estalactitas."
-	s" Unos casi imperceptibles escalones conducen al este." s&
+	s" Unos casi imperceptibles escalones conducen al Este." s&
 	paragraph
 	;description
 location_41_e :description
@@ -2273,7 +2345,7 @@ location_47_e :description
 	paragraph
 	;description
 location_48_e :description
-	s" Apenas se puede reconocer la entrada de la cueva, al este."
+	s" Apenas se puede reconocer la entrada de la cueva, al Este."
 	s" El sendero sale del bosque hacia el Oeste." s&
 	paragraph
 	;description
@@ -2493,7 +2565,7 @@ escenario asignando en una sola operación todas sus salidas.
 	\ Inacabado!!!
 	;
 
-: -->  ( a1 a2 u -- )  \ Comunica la salida el ente a1 con el ente a2 mediante la salida indicada por el desplazamiento u
+: -->  ( a1 a2 u -- )  \ Comunica el ente a1 con el ente a2 mediante la salida indicada por el desplazamiento u
 	\ a1 = Ente escenario origen
 	\ a2 = Ente escenario destino
 	\ u = Desplazamiento del campo de dirección a usar en a1
@@ -3413,10 +3485,9 @@ variable last_masculine_plural_complement
 	;
 : is_impossible  ( a u -- )  \ Informa de que una acción indicada (en infinitivo) es imposible
 	\ a u = Acción imposible, en infinitivo, o una cadena vacía
-	2 random
-	if  x_is_impossible$
-	else  it_is_impossible_x$
-	then  period+ narrate
+	['] x_is_impossible$
+	['] it_is_impossible_x$
+	2 choose execute  period+ narrate
 	;
 : impossible  \ Informa de que una acción no especificada es imposible
 	[debug] [if] s" En IMPOSSIBLE" debug [then]  \ Depuración!!!
@@ -3476,10 +3547,9 @@ variable last_masculine_plural_complement
 	;
 : is_nonsense  ( a u -- ) \ Informa de una acción dada (en infinitivo) no tiene sentido
 	\ a u = Acción que no tiene sentido, en infinitivo, o una cadena vacía
-	2 random
-	if  x_is_nonsense$
-	else  it_is_nonsense_x$ 
-	then  period+ narrate
+	['] x_is_nonsense$
+	['] it_is_nonsense_x$ 
+	2 choose execute  period+ narrate
 	;
 : nonsense  \ Informa de que alguna acción no especificada no tiene sentido
 	\ Provisional!!!
@@ -3516,10 +3586,9 @@ variable last_masculine_plural_complement
 	;
 : is_dangerous  ( a u -- )  \ Informa de una acción dada (en infinitivo) no tiene sentido
 	\ a u = Acción que no tiene sentido, en infinitivo, o una cadena vacía
-	2 random
-	if  x_is_dangerous$
-	else  it_is_dangerous_x$ 
-	then  period+ narrate
+	['] x_is_dangerous$
+	['] it_is_dangerous_x$ 
+	2 choose execute  period+ narrate
 	;
 : dangerous  \ Informa de que alguna acción no especificada no tiene sentido
 	something_like_that$ is_dangerous
@@ -3568,7 +3637,7 @@ variable last_masculine_plural_complement
 	\ Provisional!!!
 	s" Hecho." narrate
 	;
-: (do_not_worry_0)  ( -- a u)  \ Primera versión posible del mensaje de DO_NOT_WORRY
+: (do_not_worry_0)$  ( -- a u)  \ Primera versión posible del mensaje de DO_NOT_WORRY
 	s" Hay"
 	s" cosas" s" tareas" s" asuntos" s" cuestiones" 4 schoose s&
 	s" más" s&
@@ -3577,7 +3646,7 @@ variable last_masculine_plural_complement
 	s" para prestarles atención"
 	s" de que ocuparse" 3 schoose s& 
 	;
-: (do_not_worry_1)  ( -- a u)  \ Segunda versión posible del mensaje de DO_NOT_WORRY
+: (do_not_worry_1)$  ( -- a u)  \ Segunda versión posible del mensaje de DO_NOT_WORRY
 	s" Eso no"
 	s" tiene importancia"
 	s" tiene utilidad"
@@ -3589,25 +3658,35 @@ variable last_masculine_plural_complement
 	;
 : do_not_worry  \ Informa de que una acción no tiene importancia
 	\ Provisional!!!
-	['] (do_not_worry_0)
-	['] (do_not_worry_1) 2 choose execute
+	['] (do_not_worry_0)$
+	['] (do_not_worry_1)$ 2 choose execute
 	now$ s&
 	period+ narrate
 	;
 : that$  ( a -- a1 u1 )  \  Devuelve el nombre de un ente, o un pronombre demostrativo
-	2 random  if  s" eso"
-	else  >full_name@
-	then
+	2 random
+	if  drop s" eso"  else  >full_name@  then
+	;
+: you_do_not_have_it_(0)$  ( a -- )  \ Devuelve mensaje de que el protagonista no tiene un ente (variante 0)
+	s" No" you_carry$ s& rot that$ s& with_you$ s&
+	;
+: you_do_not_have_it_(1)$  ( a -- )  \ Devuelve mensaje de que el protagonista no tiene un ente (variante 1, solo para entes conocidos)
+	s" No" rot >direct_pronoun@ s& you_carry$ s& with_you$ s&
 	;
 : you_do_not_have_it  ( a -- )  \ Informa de que el protagonista no tiene un ente
-	s" No" you_carry$ s& that$ s& with_you$ s& period+ narrate
+	dup >familiar @ over >owned? or   if
+		['] you_do_not_have_it_(0)$
+		['] you_do_not_have_it_(1)$
+		2 choose execute
+	else  you_do_not_have_it_(0)$
+	then  period+ narrate
 	;
 : (you_do_not_wear_it)  ( a -- )  \ Informa de que el protagonista no lleva puesto un ente prenda
 	>r s" No llevas puest" r@ noun_ending+
 	r> >full_name@ s& period+ narrate
 	;
 : you_do_not_wear_it  ( a -- )  \ Informa de que el protagonista no lleva puesto un ente prenda, según lo lleve o no consigo
-	dup is_hold? @
+	dup is_hold?
 	if  you_do_not_have_it
 	else  (you_do_not_wear_it) 
 	then
@@ -3615,6 +3694,23 @@ variable last_masculine_plural_complement
 : you_already_wear_it  ( a -- )  \ Informa de que el protagonista lleva puesto un ente prenda
 	>r s" Ya llevas puest" r@ noun_ending+
 	r> >full_name@ s& period+ narrate
+	;
+: not_by_hand$  ( -- a u )  \ Devuelve el mensaje de NOT_BY_HAND
+	s" En cualquier caso,"
+	s" En todo caso,"
+	2 schoose
+	s" no con las manos desnudas." s&
+	;
+: not_by_hand  \ Informa de que la acción no puede hacerse sin una herramienta
+	not_by_hand$ narrate
+	;
+: not_with_that$  ( -- a u )  \ Devuelve el mensaje de NOT_WITH_THAT
+	s" Con eso no..." 
+	s" No con eso..." 
+	2 schoose
+	;
+: not_with_that  \ Informa de que la acción no puede hacerse con la herramienta elegida
+	not_with_that$ narrate
 	;
 
 \ -------------------------------------------------------------
@@ -3664,44 +3760,73 @@ down_e do_exits_table >down_exit first_exit - !
 out_e do_exits_table >out_exit first_exit - !
 in_e do_exits_table >in_exit first_exit - !
 
-\ Inacabado!!!
+\ Inacabado!!! No se usa!!!
 create do_exits_table_index  \ Tabla para desordenar el listado de salidas
 #exits cells allot
 \ Esta tabla permite que las salidas se muestren cada vez en un orden diferente
 
 variable #free_exits  \ Contador de las salidas posibles
-: .exits  \ Imprime las salidas posibles
+: no_exit$  ( -- a u )  \ Devuelve mensaje usado cuando no hay salidas que listar
+	s" No hay salidas"
+	s" No hay salida"
+	s" No hay ninguna salida"
+	3 schoose
+	;
+: go_out$  ( -- a u )
+	s" salir" s" seguir" 2 schoose
+	;
+: go_out_to& ( a u -- a1 u1 )
+	go_out$ s& s" hacia" s&
+	;
+: one_exit_only$  ( -- a u )  \ Devuelve mensaje usado cuando solo hay una salidas que listar
+	s" La única salida" possible1$ s& s" es" s& toward$ s&
+	s" Solo hay salida" possible1$ s& s" hacia" s&
+	s" Solo es posible" go_out_to&
+	s" Solo se puede" go_out_to&
+	4 schoose
+	;
+: several_exits$  ( -- a u )  \ Devuelve mensaje usado cuando hay varias salidas que listar
+	s" Hay salidas" possible2$ s& s" hacia" s&
+	s" Las salidas" possible2$ s& s" son" s&
+	2 schoose
+	;
+: .exits  ( -- )  \ Imprime las salidas posibles
 	#listed @  case
-		0  of  s" No hay salidas"  endof
-		1  of  s" Solo hay una salida hacia "  endof
-		s" Hay salidas hacia " rot
+		0  of  no_exit$  endof
+		1  of  one_exit_only$  endof
+		several_exits$ rot
 	endcase
-	2swap s& period+ narrate
+	«& «»@ period+ narrate
 	;
 : exit_separator$  ( -- a u )  \ Devuelve una cadena con el separador adecuado a la salida actual
 	#free_exits @ #listed @ list_separator$
 	;
 : (do_exit)  ( u -- )  \ Lista una salida
 	\ u = Desplazamiento del campo de salida
-	exit_separator$ s&
-	first_exit - do_exits_table + @ >full_name@ s&
+	[debug_do_exits] [if]  cr ." (do_exit)" cr .stack [then]  \ Depuración!!!
+	exit_separator$ »+
+	first_exit - do_exits_table + @ >full_name@ »+
 	#listed ++
+	[debug_do_exits] [if]  cr .stack [then]  \ Depuración!!!
 	;
 : free_exits  ( a -- u )  \ Devuelve el número de salidas posibles de un ente
+	[debug_do_exits] [if]  cr ." free_exits" cr .stack [then]  \ Depuración!!!
 	0 swap
 	>first_exit /exits bounds  do
-		[debug] [if]  i i cr . @ .  [then]  \ Depuración!!!
+		[debug_do_exits] [if]  i i cr . @ .  [then]  \ Depuración!!!
 		i @ 0<> abs +
 	cell  +loop 
+	[debug_do_exits] [if] cr .stack [then]  \ Depuración!!!
 	;
 : do_exits  \ Lista las salidas posibles del lugar del protagonista
 	\ No funciona todavía!!!
+	«»-clear  \ Borrar la cadena dinámica de impresión, que servirá para guardar la lista de salidas.
 	#listed off
 	my_location@ dup free_exits #free_exits !
 	last_exit 1+ first_exit  do
-		[debug] [if]  i cr .  [then]  \ Depuración!!!
+		[debug_do_exits] [if]  i cr .  [then]  \ Depuración!!!
 		dup i + @
-		[debug] [if]  dup .  [then]  \ Depuración!!!
+		[debug_do_exits] [if]  dup .  [then]  \ Depuración!!!
 		if  i (do_exit)  then
 	cell  +loop  drop
 	.exits
@@ -3810,7 +3935,7 @@ variable #free_exits  \ Contador de las salidas posibles
 		if  you_already_wear_it
 		else
 			dup >cloth? @
-			if  actually_do_put_on  else  drop nonsense  then	
+			if  actually_do_put_on  else  drop nonsense  then
 		then
 	else  you_do_not_have_it  \ Provisional!!! Cambiar el mensaje si no es prenda.
 	then
@@ -3826,7 +3951,7 @@ variable #free_exits  \ Contador de las salidas posibles
 	>worn? off  well_done
 	;
 : do_take_off_if_possible  ( a -- )  \ Quitarse una prenda, si es posible
-	dup >worn? @
+	dup is_worn?
 	if  actually_do_take_off
 	else  you_do_not_wear_it
 	then
@@ -3907,12 +4032,12 @@ variable #free_exits  \ Contador de las salidas posibles
 	log_already_sharpened$ >^uppercase period+ s&
 	;
 : log_already_sharpened  \ Informa de que el tronco ya estaba afilado
-	2 random
-	if log_already_sharpened_0$
-	else  log_already_sharpened_1$
-	then  narrate
+	['] log_already_sharpened_0$
+	['] log_already_sharpened_1$
+	2 choose execute  narrate
 	;
 : do_sharpen_the_log  \ Afila el tronco
+	\ Inacabado!!! ?
 	hacked_the_log? @
 	if
 	else  hacked_the_log? on  well_done
@@ -4115,13 +4240,13 @@ variable #free_exits  \ Contador de las salidas posibles
 	;
 : you_swim$  ( -- a u )  \  Devuelve el mensaje sobre nadar
 	cuirasse_e is_hold?  \ ¿Llevamos la coraza?
-	if  you_swim_with_cuirasse$ 
+	if  you_swim_with_cuirasse$  cuirasse_e vanish
 	else  s" "
 	then  swiming$ s&
 	;
 : do_swim  \ Acción de nadar
 	my_location@ location_11_e =  if
-		clear_screen
+		clear_screen_for_location
 		you_swim$ narrate short_pause
 		location_12_e enter  the_battle_ends
 	else
@@ -5118,7 +5243,7 @@ section( Fin)
 	s" No cabe duda de que hoy es"
 	s" Hoy es" 4 schoose s" mi día de suerte..." s&
 	s" Bien, bien..."
-	s" Excelente..." 3 schoose
+	s" Excelente..." 2 schoose s&
 	s" Por el gran Ulfius podremos pedir un buen rescate."
 	s" Del gran Ulfius podremos sacar una buena ventaja."
 	2 schoose s&  speak
@@ -5205,7 +5330,11 @@ section( Introducción)
 	;
 : intro_3  \ Muestra la introducción al juego (parte 3)
 	s" Sire Ulfius,"
-	s" la batalla" s" el combate" s" todo" 3 schoose s&
+	s" el asalto"
+	s" el combate"
+	s" la batalla"
+	s" la lucha"
+	s" todo" 5 schoose s&
 	s" ha terminado."
 	s" ha concluido." 2 schoose s&
 	speak
@@ -5226,9 +5355,11 @@ section( Introducción)
 	s" oficiales" s&
 	s" intentan detener"
 	s" detienen como pueden"
-	s" hacen lo que pueden para detener"
-	s" hacen lo que pueden por detener"
-	4 schoose s&
+	s" hacen lo que pueden"
+	s" hacen todo lo que pueden"
+	s" hacen lo imposible" 3 schoose
+	s" para detener" s" por detener" 2 schoose s&
+	3 schoose s&
 	s" el saqueo." s&
 	narrate  end_of_scene
 	;
@@ -5301,19 +5432,18 @@ also config_vocabulary  definitions
 \ Nota!!!: no se puede definir NOTFOUND así porque los números no serían reconocidos:
 \ : notfound  ( a u -- )  2drop  ;
 
-\ Fin de las palabras que pueden usarse
-\ en el fichero configuración.
+\ Fin de las palabras permitidas en el fichero configuración.
 
 restore_vocabularies
 
 : init_config  \ Inicializa las variables de configuración
 	woman_player? off
 	castilian_quotes? on
-	location_page? on
+	location_page? off
 	cr? off
 	ignore_unknown_words? off
 	4 /indentation !
-	scene_page? on
+	scene_page? off
 	;
 
 : read_config  \ Lee el fichero de configuración
@@ -5360,53 +5490,10 @@ section( Principal)
 
 \ }}}
 
-\ ##############################################################
-section( Depuración)
-
-\ {{{
-
-: fatal_error  ( f a u -- )  \ Informa de un error y sale del sistema, si el indicador de error es distinto de cero
-	\ f = Indicador de error
-	\ a u = Mensaje de error
-	rot if  ." Error fatal: " type cr bye
-	else  2drop 
-	then
-	;
-: wait  \ Hace una pausa
-	1000 2 * pause
-	;
-: .stack  \ Imprime el estado de la pila
-	." Pila" depth
-	if  ." :" .s ." ( " depth . ." )"
-	else  ."  vacía."
-	then
-	;
-: .csb  \ Imprime el estado del almacén circular de cadenas
-	." Espacio para cadenas:" csb ?
-	;
-: .cursor  \ Imprime las coordenadas del cursor
-	." Cursor:" cursor_x ? cursor_y ?
-	;
-: .system_status  \ Muestra el estado del sistema
-	( .csb ) .stack ( .cursor )
-	;
-: .debug_message  ( a u -- )  \ Imprime el mensaje del punto de chequeo, si no está vacío
-	dup  if  cr type cr  else  2drop  then
-	;
-: debug_pause  \ Pausa tras mostrar la información de depuración
-	\ key drop
-	;
-: (debug)  ( a u -- )  \ Punto de chequeo: imprime un mensaje y muestra el estado del sistema
-	debug_color .debug_message .system_status debug_pause
-	;
-' (debug) is debug
 
 i0 cr
 \ ayc
-
-\eof
-
-\ }}}
+\eof  \ Marca del final efectivo del programa; el resto del fichero es ignorado
 
 \ ##############################################################
 section( Grabación del sistema)
@@ -5415,13 +5502,13 @@ section( Grabación del sistema)
 : save_ayc
 	0 to spf-init?  \ Desactivar la inicialización del sistema
 	1 to console?  \ Activar el modo de consola
-	['] ug to <main>  \ Actualizar la palabra que se ejecutará al arrancar
+	['] main to <main>  \ Actualizar la palabra que se ejecutará al arrancar
 	s" ayc" save  \ Grabar el sistema en un fichero
 	;
 [then]
 
 
-\eof  \ Marca del final efectivo del programa; el resto del fichero contiene comentarios
+\eof  \ Marca del final efectivo del programa; el resto del fichero es ignorado
 
 0 [if]  \ ......................................
 [then]  \ ......................................
