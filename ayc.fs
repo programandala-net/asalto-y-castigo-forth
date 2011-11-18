@@ -1,4 +1,4 @@
-#! /usr/bin/spf4
+\ #! /usr/bin/spf4
 
 \ #############################################################
 cr .( Asalto y castigo )
@@ -257,15 +257,47 @@ require csb csb2.fs  \ Almacén circular de cadenas, con definición de cadenas 
 \ ##############################################################
 \ Meta
 
-: .s?  \ Imprime el contenido de la pila si no está vacía
-	depth  if  cr ." Pila descuadrada:" .s key drop  then
-	;
+\ {{{
 
+false value [debug] immediate  \ Indicador: ¿Modo de depuración global?
+false value [debug_do_exits] immediate  \ Indicador: ¿Depurar la acción DO_EXITS ?
+false value [debug_catch] immediate  \ Indicador: ¿Depurar CATCH y THROW ?
+true value [status] immediate  \ Indicador: ¿Mostrar info de depuración sobre el presto de comandos? 
+
+true constant [true] immediate  \ Para usar en compilación condicional 
+false constant [false] immediate  \ Para usar en compilación condicional 
+false constant [0] immediate  \ Para usar en comentarios multilínea con [IF] dentro de las definiciones de palabras
+
+S" /COUNTED-STRING" environment?  [if]  [else]  256 chars  [then]
+constant /counted_string  \ Longitud máxima de una cadena contada (incluyendo la cuenta)
+
+: .s?  \ Imprime el contenido de la pila si no está vacía
+	depth  if  cr ." Pila: " .s key drop  then
+	;
 : section(  ( "text" -- )  \ Notación para los títulos de sección en el código fuente
 	\ Esta palabra permite hacer tareas de depuración mientras se compila el programa;
 	\ por ejemplo detectar el origen de descuadres en la pila.
-	cr postpone .( .s?
+	cr postpone .(  \ El nombre de sección a imprimir terminará por tanto en )
+	.s?
 	;
+: windows?  ( -- f )  \ ¿Está el programa corriendo en Windows?
+	[defined] winapi: literal
+	;
+: gnu/linux?  ( -- f )  \ ¿Está el programa corriendo en GNU/Linux?
+	windows? 0=
+	;
+defer main
+: save_ayc  \ Crea un ejecutable con el programa
+	\ Aún no se usa!!!
+	\ Inacabado!!! Hacer el nombre de fichero semiautemático con la fecha y la hora 
+	0 to spf-init?  \ Desactivar la inicialización del sistema
+	\ 1 to console?  \ Activar el modo de consola
+	['] main to <main>  \ Actualizar la palabra que se ejecutará al arrancar
+	s" ayc"  windows?  if  s" .exe" s+  then  \ Nombre del fichero ejecutable
+	save  \ Grabar el sistema en el fichero
+	;
+
+\ }}}
 
 \ ##############################################################
 section( Inicio)
@@ -280,17 +312,6 @@ restore_vocabularies
 section( Constantes)
 
 \ {{{
-
-false value [debug] immediate  \ Indicador: ¿Modo de depuración global?
-false value [debug_do_exits] immediate  \ Indicador: ¿Depurar la acción DO_EXITS ?
-true value [status] immediate  \ Indicador: ¿Mostrar info de depuración sobre el presto de comandos? 
-
-true constant [true] immediate  \ Para usar en compilación condicional 
-false constant [false] immediate  \ Para usar en compilación condicional 
-false constant [0] immediate  \ Para usar en comentarios multilínea con [IF] dentro de las definiciones de palabras
-
-S" /COUNTED-STRING" environment?  [if]  [else]  256 chars  [then]
-constant /counted_string  \ Longitud máxima de una cadena contada (incluyendo la cuenta)
 
 \ }}}
 
@@ -707,7 +728,7 @@ section( Depuración)
 	dup  if  cr type cr  else  2drop  then
 	;
 : debug_pause  \ Pausa tras mostrar la información de depuración
-	\ key drop
+	key drop
 	;
 : (debug)  ( a u -- )  \ Punto de chequeo: imprime un mensaje y muestra el estado del sistema
 	debug_color .debug_message .system_status debug_pause
@@ -3397,6 +3418,7 @@ drop
 : no_direct_complement_error  \ Informa de que se ha producido un error por falta de complemento directo en el comando
 	there_is_no$ s" complemento directo" s& language_error
 	;
+' no_direct_complement_error constant no_direct_complement_error_id 
 
 \ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 [false] [if]
@@ -3426,9 +3448,11 @@ false constant no_error_id
 ' no_verb_error constant no_verb_error_id
 ' no_direct_complement_error constant no_direct_complement_error_id
 
-: misunderstood  ( xt | 0 -- )  \ Informa, si es preciso, de un error en el comando
-	\ xt = Dirección de ejecución de la palabra de error
+: ?misunderstood  ( xt | 0 -- )  \ Informa, si es preciso, de un error en el comando
+	\ xt = Dirección de ejecución de la palabra de error (que se usa también como código del error)
+	[debug_catch] [if] s" Al entrar en ?MISUNDERSTOOD" debug [then]  \ Depuración!!!
 	?dup  if  execute  then
+	[debug_catch] [if] s" Al salir de ?MISUNDERSTOOD" debug [then]  \ Depuración!!!
 	;
 
 \ }}}
@@ -3729,7 +3753,7 @@ variable last_masculine_plural_complement
 : you_do_not_have_it_(1)$  ( a -- )  \ Devuelve mensaje de que el protagonista no tiene un ente (variante 1, solo para entes conocidos)
 	s" No" rot >direct_pronoun@ s& you_carry$ s& with_you$ s&
 	;
-: you_do_not_have_it  ( a -- )  \ Informa de que el protagonista no tiene un ente
+: you_do_not_have_it_error  ( a -- )  \ Informa de que el protagonista no tiene un ente
 	dup >familiar @ over >owned? or   if
 		['] you_do_not_have_it_(0)$
 		['] you_do_not_have_it_(1)$
@@ -3737,13 +3761,14 @@ variable last_masculine_plural_complement
 	else  you_do_not_have_it_(0)$
 	then  period+ narrate
 	;
+' you_do_not_have_it_error constant you_do_not_have_it_error_id
 : (you_do_not_wear_it)  ( a -- )  \ Informa de que el protagonista no lleva puesto un ente prenda
 	>r s" No llevas puest" r@ noun_ending+
 	r> >full_name@ s& period+ narrate
 	;
 : you_do_not_wear_it  ( a -- )  \ Informa de que el protagonista no lleva puesto un ente prenda, según lo lleve o no consigo
 	dup is_hold?
-	if  you_do_not_have_it
+	if  you_do_not_have_it_error
 	else  (you_do_not_wear_it) 
 	then
 	;
@@ -3958,23 +3983,33 @@ variable #free_exits  \ Contador de las salidas posibles
 	then
 	;
 : do_take  \ Acción de tomar
-	direct_complement @ ?dup
-	if  do_take_if_possible
-	else  no_direct_complement_error
-	then
+	direct_complement @
+	\ Error si no hay objeto directo:
+	dup 0= no_direct_complement_error_id and throw
+	\ Acción posible:
+	do_take_if_possible
 	;
 ' do_take constant do_take_xt
-: do_drop_if_possible  ( a -- )  \ Suelta un objeto si es posible
-	dup is_hold?
-	if  dup >worn? off  be_here  well_done
-	else  you_do_not_have_it
-	then
-	;
+\ antiguo!!!
+\ : do_drop_if_possible  ( a -- )  \ Suelta un objeto si es posible
+\ 	dup is_hold?
+\ 	if  dup >worn? off  be_here  well_done
+\ 	else  you_do_not_have_it_error
+\ 	then
+\ 	;
 : do_drop  \ Acción de soltar
-	direct_complement @ ?dup
-	if  do_drop_if_possible
-	else  no_direct_complement_error
-	then
+\	\ Antiguo!!!
+\ 	direct_complement @ ?dup
+\ 	if  do_drop_if_possible
+\ 	else  no_direct_complement_error
+\ 	then
+	direct_complement @
+	\ Error si no hay objeto directo:
+	dup 0= no_direct_complement_error_id and throw
+	\ Error si no lo llevamos: 
+	dup is_hold? 0= you_do_not_have_it_error_id and throw
+	\ Realizar la acción:
+	dup >worn? off  be_here  well_done
 	;
 ' do_drop constant do_drop_xt
 
@@ -3993,7 +4028,7 @@ variable #free_exits  \ Contador de las salidas posibles
 			dup >cloth? @
 			if  actually_do_put_on  else  drop nonsense  then
 		then
-	else  you_do_not_have_it  \ Provisional!!! Cambiar el mensaje si no es prenda.
+	else  you_do_not_have_it_error  \ Provisional!!! Cambiar el mensaje si no es prenda.
 	then
 	;
 : do_put_on  \ Acción de ponerse una prenda
@@ -4204,7 +4239,9 @@ variable #free_exits  \ Contador de las salidas posibles
 	;
 ' do_go_north constant do_go_north_xt
 : do_go_south  \ Acción de ir al Sur
+	[debug_catch] [if] s" Al entrar en DO_GO_SOUTH" debug [then]  \ Depuración!!!
 	south_e do_go_if_possible
+	[debug_catch] [if] s" Al salir de DO_GO_SOUTH" debug [then]  \ Depuración!!!
 	;
 ' do_go_south constant do_go_south_xt
 : do_go_east  \ Acción de ir al Este
@@ -4693,51 +4730,55 @@ vocabulary player_vocabulary  \ Vocabulario para guardar en él las palabras del
 	action off
 	direct_complement off
 	;
-: understood?  ( u -- f )  \ Comprueba si se ha producido un error en el comando; devuelve 0 si hubo
-	\ u = Código de error, o cero si no se produjo un error
-	\ f = Cero si se produjo un error; -1 si no se produjo un error
-	[debug] [if] s" En UNDERSTOOD?" debug [then]  \ Depuración!!!
-	dup misunderstood 0=
-	;
+\ : understood?  ( u -- f )  \ Comprueba si se ha producido un error en el comando; devuelve 0 si hubo
+\ 	\ antiguo!!! no se usa!!!
+\ 	\ u = Código de error, o cero si no se produjo un error
+\ 	\ f = Cero si se produjo un error; -1 si no se produjo un error
+\ 	[debug] [if] s" En UNDERSTOOD?" debug [then]  \ Depuración!!!
+\ 	\ dup ?misunderstood 0= \ antiguo!!!
+\ 	dup 0= swap ?misunderstood
+\ 	;
 : (call_action)  ( xt -- )  \ Ejecuta la acción del comando
 	[debug] [if] s" En (CALL_ACTION)" debug [then]  \ Depuración!!!
-	['] execute catch
-	?dup  if  misunderstood  then
+	[debug_catch] [if] s" En (CALL_ACTION) antes de CATCH" debug [then]  \ Depuración!!!
+	['] execute catch  ?misunderstood
+	[debug_catch] [if] s" En (CALL_ACTION) después de CATCH" debug [then]  \ Depuración!!!
 	[debug] [if] s" Al final de (CALL_ACTION)" debug [then]  \ Depuración!!!
 	;
 : call_action  \ Ejecuta la acción del comando, si existe
 	[debug] [if] s" En CALL_ACTION" debug [then]  \ Depuración!!!
-	[false] [if]  \ Sistema antiguo!!!
-	action @ ?dup  if  execute
-	else  no_verb_error_id misunderstood
-	then
-	[then]
+	[debug_catch] [if] s" En CALL_ACTION" debug [then]  \ Depuración!!!
+\ 	\ Sistema antiguo!!!
+\ 	action @ ?dup  if  execute
+\ 	else  no_verb_error_id ?misunderstood
+\ 	then
 	action @ ?dup
+	[debug_catch] [if] s" En CALL_ACTION tras ACTION @ ?DUP" debug [then]  \ Depuración!!!
 	if  (call_action)
-	else  no_verb_error_id misunderstood
+	else  no_verb_error_id ?misunderstood
 	then
+	[debug_catch] [if] s" Al final de CALL_ACTION" debug [then]  \ Depuración!!!
 	[debug] [if] s" Al final de CALL_ACTION" debug [then]  \ Depuración!!!
 	;
-: (obbey)  ( a u -- u2 )  \ Evalúa un comando con el vocabulario del juego
+: valid_parsing?  ( a u -- f )  \ Evalúa un comando con el vocabulario del juego
 	\ a u = Comando
-	\ u2 = Código de error; o cero si no se produjo un error
-	[debug] [if] s" Entrando en (OBBEY)" debug [then]  \ Depuración!!!
+	\ f = ¿El comando se analizó sin error?
+	[debug] [if] s" Entrando en VALID_PARSING?" debug [then]  \ Depuración!!!
 	only player_vocabulary  \ Dejar solo el diccionario PLAYER_VOCABULARY activo
+	[debug_catch] [if] s" En VALID_PARSING? antes de CATCH" debug [then]  \ Depuración!!!
 	['] evaluate catch  \ Llamar a EVALUATE a través de CATCH para poder regresar directamente en caso de error
-	?dup if  \ Hubo error
-		\ Pendiente!!!
-		misunderstood
-	else  \ No hubo error
-		\ Pendiente!!!
-	then
+	[debug_catch] [if] s" En VALID_PARSING? después de CATCH" debug [then]  \ Depuración!!!
+	dup 0= swap ?misunderstood
 	restore_vocabularies
-	[debug] [if] s" Saliendo de (OBBEY)" debug [then]  \ Depuración!!!
+	[debug] [if] s" Saliendo de VALID_PARSING?" debug [then]  \ Depuración!!!
+	[debug_catch] [if] s" Saliendo de VALID_PARSING?" debug [then]  \ Depuración!!!
 	;
 : obbey  ( a u -- )  \ Evalúa un comando con el vocabulario del juego
 	[debug] [if] s" Al entrar en OBBEY" debug [then]  \ Depuración!!!
 	dup  if
-		init_parsing (obbey)
-		understood?  if  call_action  then
+		init_parsing valid_parsing?
+		\ understood?  if  call_action  then \ antiguo!!!
+		if  call_action  then
 	else  2drop
 	then
 	[debug] [if] s" Al final de OBBEY" debug [then]  \ Depuración!!!
@@ -5502,10 +5543,16 @@ also config_vocabulary  definitions
 	;
 ' varón alias hombre
 ' varón alias masculino
+' varón alias macho
+' varón alias chico
+' varón alias señor
 : mujer  \ Indica que el jugador es una mujer
 	woman_player? on
 	;
 ' mujer alias femenino
+' mujer alias hembra
+' mujer alias chica
+' mujer alias señora
 
 : raya  \ Indica que se use la raya en las citas 
 	castilian_quotes? off
@@ -5564,48 +5611,35 @@ section( Principal)
 : game_preparation  \ Preparación de la partida
 	init/game
 	init_config read_config
-	\ about cr intro
-	\ location_01_e enter
-	location_08_e enter
+	\ about cr intro  \ Anulado para depuración!!!
+	\ location_01_e enter  \ Anulado para depuración!!!
+	location_08_e enter  \ Depuración!!!
 	;
-: main  \ Palabra principal que arranca el juego
+: (main)  \ Palabra principal que arranca el juego
 	init/once
 	begin
 		game_preparation game the_end
 	enough? until
 	do_bye
 	;
+' (main) is main
 ' main alias ayc
 ' main alias go
 ' main alias run
 
 : i0  \ Hace toda la inicialización
 	\ Palabra temporal para la depuración del programa!!!
-	init/once init/game read_config
+	init/once game_preparation
 	." Datos preparados."
 	;
+
+i0 cr  \ Para depuración!!!
+\ main
 
 \ }}}
 
 
-i0 cr
-\ ayc
-\eof  \ Marca del final efectivo del programa; el resto del fichero es ignorado
-
-\ ##############################################################
-section( Grabación del sistema)
-
-0 [if]
-: save_ayc
-	0 to spf-init?  \ Desactivar la inicialización del sistema
-	1 to console?  \ Activar el modo de consola
-	['] main to <main>  \ Actualizar la palabra que se ejecutará al arrancar
-	s" ayc" save  \ Grabar el sistema en un fichero
-	;
-[then]
-
-
-\eof  \ Marca del final efectivo del programa; el resto del fichero es ignorado
+\eof  \ Final del programa; el resto del fichero es ignorado por SP-Forth
 
 0 [if]  \ ......................................
 [then]  \ ......................................
