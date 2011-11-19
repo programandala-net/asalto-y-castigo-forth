@@ -8,7 +8,7 @@ cr .( Asalto y castigo )
 \ A text adventure in Spanish, written in SP-Forth.
 \ Un juego conversacional en castellano, escrito en SP-Forth.
 
-: version$  s" A-20111119"  ;  version$ type cr
+: version$  s" A-2011111923"  ;  version$ type cr
 
 \ Copyright (C) 2011 Marcos Cruz (programandala.net)
 
@@ -141,6 +141,9 @@ puesta.
 Código fuente
 -------------------------------------------------------------
 
+Unificar los nombres de las palabras que muestrar errores:
+usar o no el sufijo «_error».
+
 Homogeneizar el uso de los puntos finales de los comentarios.
 
 Unificar la terminología: localización / lugar /escenario.
@@ -267,7 +270,7 @@ require csb csb2.fs  \ Almacén circular de cadenas, con definición de cadenas 
 false value [debug] immediate  \ Indicador: ¿Modo de depuración global?
 false value [debug_do_exits] immediate  \ Indicador: ¿Depurar la acción DO_EXITS ?
 false value [debug_catch] immediate  \ Indicador: ¿Depurar CATCH y THROW ?
-false value [status] immediate  \ Indicador: ¿Mostrar info de depuración sobre el presto de comandos? 
+true value [status] immediate  \ Indicador: ¿Mostrar info de depuración sobre el presto de comandos? 
 false value [debug_pause] immediate  \ Indicador: ¿Hacer una pausa en cada punto de depuración?
 
 true constant [true] immediate  \ Para usar en compilación condicional 
@@ -833,12 +836,12 @@ section( Textos variables)
 : carries$  ( -- a u )
 	s" tiene"
 	s" lleva"
-	s" porta" 3 schoose
+	2 schoose
 	;
 : you_carry$  ( -- a u )
 	s" tienes"
 	s" llevas"
-	s" portas" 3 schoose
+	2 schoose
 	;
 : ^you_carry$  ( -- a u )
 	you_carry$ >^uppercase
@@ -1296,7 +1299,7 @@ cell field >description_xt  \ Dirección de ejecución de la palabra que describ
 cell field >character?  \ Indicador: ¿el ente es un personaje?
 cell field >conversations  \ Contador para personajes: número de conversaciones tenidas con el protagonista
 cell field >decoration?  \ Indicador: ¿el ente forma parte de la decoración de su lugar?
-cell field >take_error#  \ Identificador del error adecuado al intentar tomar el ente (cero si no hay error); se usa para casos especiales; los errores apuntados por este campo no deben necesitar parámetros
+cell field >take_error#  \ Identificador del error adecuado al intentar tomar el ente (cero si no hay error); se usa para casos especiales; los errores apuntados por este campo no deben necesitar parámetros, o esperarlo
 cell field >global_outside?  \ Indicador ¿el ente es global (común) en los lugares al aire libre?
 cell field >global_inside?  \ Indicador ¿el ente es global (común) en los lugares interiores? 
 cell field >owned?  \ Indicador: ¿el ente pertenece al protagonista? 
@@ -1397,7 +1400,16 @@ frecuentes con los entes.
 	over >animal? @ or
 	swap >human? @ or
 	;
-
+: >known?@  ( a -- f )  \ El ente es conocido del protagonista?
+	dup >owned? @
+	swap >familiar @ 0> or
+	;
+: >open?@  ( a -- f )  \ ¿Está abierto un ente?
+	>open? @
+	;
+: >close?@  ( a -- f )  \ ¿Está cerrado un ente?
+	>open?@ 0=
+	;
 create 'articles  \ Tabla de artículos
 	\ Indefinidos:
 	s" un       " s,
@@ -1432,7 +1444,7 @@ create 'articles  \ Tabla de artículos
 	;
 : >definite_article  ( a -- 0 | 1 )  \ Calcula el desplazamiento (en número de grupos) para apuntar a los artículos definidos de la tabla, si ente indicado necesita uno
 	dup >definite_article? @  \ Si el ente necesita siempre artículo definido
-	swap >familiar @ 0<>  or abs  \ O bien si el ente es ya familiar al protagonista
+	swap >known?@ or abs  \ O bien si el ente es ya conocido por el protagonista
 	;
 : >possesive_article  ( a -- 0 | 2 )  \ Calcula el desplazamiento (en número de grupos) para apuntar a los artículos posesivos de la tabla, si el ente indicado necesita uno
 	>owned? @ abs 2 *
@@ -1535,7 +1547,7 @@ create 'articles  \ Tabla de artículos
 	6 schoose  \ Elegir entre todos
 	;
 : >human_subjective_negative_name@  ( a -- a1 u1 )  \ Devuelve el nombre subjetivo (negativo) de un ente (humano), desde el punto de vista del protagonista
-	dup >familiar @
+	dup >known?@
 	if  >full_name@  else  drop s" nadie"  then
 	;
 : >subjective_negative_name@  ( a -- a1 u1 )  \ Devuelve el nombre subjetivo (negativo) de un ente, desde el punto de vista del protagonista
@@ -1609,7 +1621,6 @@ create 'articles  \ Tabla de artículos
 	>location protagonist swap !
 	;
 : is_worn?  ( a -- )  \ ¿El protagonista lleva puesto el ente indicado?
-	\ Quizá innecesario!!!
 	dup is_hold?  swap >worn? @  and
 	;
 : is_known?  ( a -- f )  \ ¿El protagonista ya conoce al ente?
@@ -1636,16 +1647,13 @@ create 'articles  \ Tabla de artículos
 	;
 : can_be_looked_at?  ( a -- )  \ ¿El ente puede ser mirado?
 	dup my_location@ =  \ ¿Es el lugar del protagonista?
-	over is_here? or  \ ¿O está en el lugar del protagonista?
-	swap is_hold?  or  \ ¿O lo tiene el protagonista?
+	swap is_accessible?  or  \ ¿O está accesible? 
 	;
-
 : more_familiar  ( a -- )  \ Aumenta el grado de familiaridad de un ente con el protagonista
-	>familiar ++
-	\ Nota: no comprobamos el límite porque en la práctica es inalcanzable (un número de 32 bitios)
-	\ Comprobar el límite!!!
+	\ Nota: comprobamos el límite, aunque en la práctica es inalcanzable (un número de 32 bitios)
+	>familiar dup @ 1+ ?dup
+	if  swap !  else  drop  then
 	;
-
 : vanish  ( a -- )  \ Hace desaparecer un ente llevándolo al «limbo»
 	limbo swap be_there
 	;
@@ -1943,33 +1951,31 @@ variable main_complement  \ Código del complemento principal del comando (gener
 variable other_complement  \ Código del complemento indirecto o preposicional del comando
 variable what  \ Ente que ha provocado un error y debe ser citado en el mensaje de error correspondiente
 
-: known_entity_is_not_here  ( a -- )  \  Informa de que un ente conocido no está presente
-	>full_name@
-	s" no está aquí" 
-	s" no está por aquí" 2 schoose s& narrate
+: known_entity_is_not_here$  ( a -- a1 u1 )  \  Devuelve el mensaje de que un ente conocido no está presente
+	>full_name@ s" no está" s&
+	s" aquí" s" por aquí" 2 schoose s& 
 	;
-: unknown_entity_is_not_here  ( a -- )  \  Informa de que un ente desconocido no está presente
-	s" Aquí" 
-	s" Por aquí" 2 schoose
+: unknown_entity_is_not_here$  ( a -- a1 u1 ) \  Devuelve el mensaje de que un ente desconocido no está presente
+	s" Aquí" s" Por aquí" 2 schoose
 	s" no hay" s&
-	
-	narrate
+	rot >subjective_negative_name@ s&
 	;
 : is_not_here  ( a -- )  \  Informa de que un ente no está presente
-	\ Inacabado!!! Falta distinguir si es conocido o desconocido
-	drop
+	dup >familiar @
+	if  known_entity_is_not_here$
+	else  unknown_entity_is_not_here$
+	then  period+ narrate
 	;
 ' is_not_here constant is_not_here_error#
-: is_not_here_what  \  Informa de que el ente en WHAT no está presente
+: is_not_here_what  \  Informa de que el ente WHAT no está presente
 	what @ is_not_here
 	;
 ' is_not_here_what constant is_not_here_what_error#
 : cannot_see$  ( -- a u )  \ Devuelve una forma de decir «no ves»
 	s" No"
 	s" ves"
-	s" puedes ver"
-	s" encuentras"
-	s" puedes encontrar" 4 schoose s&
+	s" se ve"
+	s" puedes ver" 3 schoose s&
 	;
 : cannot_see  ( a -- )  \ Informa de que un ente no puede ser mirado
 	cannot_see$
@@ -1977,7 +1983,7 @@ variable what  \ Ente que ha provocado un error y debe ser citado en el mensaje 
 	period+ narrate
 	;
 ' cannot_see constant cannot_see_error#
-: cannot_see_what   \ Informa de que el ente en WHAT no puede ser mirado
+: cannot_see_what   \ Informa de que el ente WHAT no puede ser mirado
 	what @ cannot_see
 	;
 ' cannot_see_what constant cannot_see_what_error#
@@ -2003,7 +2009,7 @@ variable what  \ Ente que ha provocado un error y debe ser citado en el mensaje 
 	s" no es posible"
 	s" no es viable" 
 	s" no sería posible"
-	s" no sería viable 
+	s" no sería viable"
 	s" sería imposible"
 	s" sería inviable"
 	8 schoose
@@ -2108,9 +2114,7 @@ variable what  \ Ente que ha provocado un error y debe ser citado en el mensaje 
 	2 choose execute  period+ narrate
 	;
 : dangerous  \ Informa de que alguna acción no especificada no tiene sentido
-	s" Entro en DANGEROUS" debug
 	something_like_that$ is_dangerous
-	s" Salgo de DANGEROUS" debug
 	;
 ' dangerous constant dangerous_error#
 : ?full_name&  ( a1 u1 a2 -- )  \ Añade a una cadena el nombre de un posible ente
@@ -2153,9 +2157,11 @@ variable what  \ Ente que ha provocado un error y debe ser citado en el mensaje 
 	\ No se usa todavía!!!
 	2 random  if  nonsense  else  no_reason  then
 	;
+variable silent_well_done?  silent_well_done? off
 : well_done  \ Informa de que una acción se ha realizado
-	\ Provisional!!!
-	s" Hecho." narrate
+	silent_well_done? @ 0=
+	if  s" Hecho." narrate  then
+	silent_well_done? off
 	;
 : (do_not_worry_0)$  ( -- a u)  \ Primera versión posible del mensaje de DO_NOT_WORRY
 	s" Hay"
@@ -2177,11 +2183,10 @@ variable what  \ Ente que ha provocado un error y debe ser citado en el mensaje 
 	s" es necesario" 7 schoose s&
 	;
 : do_not_worry  \ Informa de que una acción no tiene importancia
-	\ Provisional!!!
+	\ Provisional!!! No se usa!!!
 	['] (do_not_worry_0)$
 	['] (do_not_worry_1)$ 2 choose execute
-	now$ s&
-	period+ narrate
+	now$ s&  period+ narrate
 	;
 : that$  ( a -- a1 u1 )  \  Devuelve el nombre de un ente, o un pronombre demostrativo
 	2 random
@@ -2193,8 +2198,11 @@ variable what  \ Ente que ha provocado un error y debe ser citado en el mensaje 
 : you_do_not_have_it_(1)$  ( a -- )  \ Devuelve mensaje de que el protagonista no tiene un ente (variante 1, solo para entes conocidos)
 	s" No" rot >direct_pronoun@ s& you_carry$ s& with_you$ s&
 	;
+: you_do_not_have_it_(2)$  ( a -- )  \ Devuelve mensaje de que el protagonista no tiene un ente (variante 2, solo para entes no citados en el comando)
+	s" No" you_carry$ s& rot >full_name@ s& with_you$ s&
+	;
 : you_do_not_have_it_error  ( a -- )  \ Informa de que el protagonista no tiene un ente
-	dup >familiar @ over >owned? or   if
+	dup >known?@  if
 		['] you_do_not_have_it_(0)$
 		['] you_do_not_have_it_(1)$
 		2 choose execute
@@ -2202,10 +2210,32 @@ variable what  \ Ente que ha provocado un error y debe ser citado en el mensaje 
 	then  period+ narrate
 	;
 ' you_do_not_have_it_error constant you_do_not_have_it_error#
-: you_do_not_have_it_what_error  ( a -- )  \ Informa de que el protagonista no tiene el ente en WHAT
+: you_do_not_have_what_error  \ Informa de que el protagonista no tiene el ente WHAT
 	what @ you_do_not_have_it_error
 	;
-' you_do_not_have_it_what_error constant you_do_not_have_it_what_error#
+' you_do_not_have_what_error constant you_do_not_have_what_error#
+: not_by_hand$  ( -- a u )  \ Devuelve el mensaje de NOT_BY_HAND
+	s" En cualquier caso,"
+	s" En todo caso," 2 schoose
+	s" no con las manos desnudas."
+	s" no simplemente con las manos."
+	s" no con las manos."
+	s" hará falta algo."
+	s" habrá que usar algo." 5 schoose s&
+	;
+: not_by_hand  \ Informa de que la acción no puede hacerse sin una herramienta
+	not_by_hand$ narrate
+	;
+: you_need_error  ( a -- )  \ Informa de que el protagonista no tiene un ente necesario
+	2 random
+	if  you_do_not_have_it_(2)$ period+ narrate
+	else  drop not_by_hand
+	then
+	;
+: you_need_what_error  \ Informa de que el protagonista no tiene el ente WHAT necesario
+	what @ you_need_error
+	;
+' you_need_what_error constant you_need_what_error#
 : you_already_have_it_(0)$  ( a -- )  \ Devuelve mensaje de que el protagonista ya tiene un ente (variante 0)
 	s" Ya" you_carry$ s& rot that$ s& with_you$ s&
 	;
@@ -2221,10 +2251,10 @@ variable what  \ Ente que ha provocado un error y debe ser citado en el mensaje 
 	then  period+ narrate
 	;
 ' you_already_have_it_error constant you_already_have_it_error#
-: you_already_have_it_what_error  ( a -- )  \ Informa de que el protagonista ya tiene el ente en WHAT
+: you_already_have_what_error  ( a -- )  \ Informa de que el protagonista ya tiene el ente WHAT
 	what @ you_already_have_it_error
 	;
-' you_already_have_it_what_error constant you_already_have_it_what_error#
+' you_already_have_what_error constant you_already_have_what_error#
 : (you_do_not_wear_it)  ( a -- )  \ Informa de que el protagonista no lleva puesto un ente prenda
 	>r s" No llevas puest" r@ noun_ending+
 	r> >full_name@ s& period+ narrate
@@ -2235,19 +2265,18 @@ variable what  \ Ente que ha provocado un error y debe ser citado en el mensaje 
 	else  (you_do_not_wear_it) 
 	then
 	;
+: you_do_not_wear_what  \ Informa de que el protagonista no lleva puesto el ente WHAT , según lo lleve o no consigo
+	what @ you_do_not_wear_it
+	;
+' you_do_not_wear_what constant you_do_not_wear_what_error#
 : you_already_wear_it  ( a -- )  \ Informa de que el protagonista lleva puesto un ente prenda
 	>r s" Ya llevas puest" r@ noun_ending+
 	r> >full_name@ s& period+ narrate
 	;
-: not_by_hand$  ( -- a u )  \ Devuelve el mensaje de NOT_BY_HAND
-	s" En cualquier caso,"
-	s" En todo caso,"
-	2 schoose
-	s" no con las manos desnudas." s&
+: you_already_wear_what_error  \ Informa de que el protagonista lleva puesto el ente WHAT
+	what @ you_already_wear_it
 	;
-: not_by_hand  \ Informa de que la acción no puede hacerse sin una herramienta
-	not_by_hand$ narrate
-	;
+' you_already_wear_what_error constant you_already_wear_what_error#
 : not_with_that$  ( -- a u )  \ Devuelve el mensaje de NOT_WITH_THAT
 	s" Con eso no..." 
 	s" No con eso..." 
@@ -2256,6 +2285,20 @@ variable what  \ Ente que ha provocado un error y debe ser citado en el mensaje 
 : not_with_that  \ Informa de que la acción no puede hacerse con la herramienta elegida
 	not_with_that$ narrate
 	;
+: it_is_already_open  ( a -- )  \ Informa de que un ente ya está abierto
+	s" Ya está abiert" r@ noun_ending+ period+ narrate
+	;
+: what_is_already_open_error  \ Informa de que el ente WHAT ya está abierto
+	what @ it_is_already_open
+	;
+' what_is_already_open_error constant what_is_already_open_error#
+: it_is_already_close  ( a -- )  \ Informa de que un ente ya está cerrado
+	s" Ya está cerrad" r@ noun_ending+ period+ narrate
+	;
+: what_is_already_close_error  \ Informa de que el ente WHAT ya está cerrado
+	what @ it_is_already_close
+	;
+' what_is_already_close_error constant what_is_already_close_error#
 
 \ }}}
 
@@ -2509,6 +2552,13 @@ stone_e :description
 	;description
 door_e :description
 	s" Es muy recia y tiene un gran candado."
+\ Inacabado!!!
+\	s" Es muy recia y"
+\	door_e >open? @
+\	if  s" tiene un gran candado."
+\	else  s" tiene un gran candado."
+\	then  s&
+	door_e >location @ lock_e be_there
 	paragraph
 	;description
 rocks_e :description
@@ -2532,10 +2582,10 @@ piece_e :description
 	paragraph
 	;description
 lock_e :description
-	lock_e >open?
-	if  s" Está cerrado."
-	else  s" Está abierto."
-	then  s" Es muy grande y parece resistente." s&
+	lock_e >open? @
+	if  s" Está abierto."
+	else  s" Está cerrado."
+	then  s" Es grande y parece resistente." s&
 	paragraph
 	;description
 bed_e :description
@@ -2925,7 +2975,7 @@ up_e :description
 	location_46_e key_e be_there
 	location_46_e table_e be_there
 	location_47_e door_e be_there
-	location_47_e lock_e be_there
+	\ location_47_e lock_e be_there
 	ulfius_e cloak_e be_there
 	ulfius_e cuirasse_e be_there
 	ulfius_e sword_e be_there
@@ -3878,58 +3928,124 @@ variable last_masculine_plural_complement
 \ -------------------------------------------------------------
 \ Comprobación de los requisitos de las acciones
 
-\ Palabras en pruebas!!!
-\ No usado!!!
+0 [if]  \ ......................................
 
-: main_complement:forbidden \ Provoca un error si hay complemento directo
+En las siguientes palabras usamos las llaves en sus nombres
+como una notación, para hacer más legible y más fácil de
+modificar el código.  El texto entre las llaves indica la
+condición que se ha de cumplir.
+
+Si la condición no se cumple, se provocará un error con
+THROW que devolverá el flujo al último CATCH .
+
+Este sistema de filtros y errores permite simplificar el
+código de las acciones porque ahorra muchas estructuras
+condicionales anidadas.
+
+[then]  \ ......................................
+
+: main_complement{forbidden} \ Provoca un error si hay complemento directo
 	main_complement @
 	0<> main_complement_error# and throw
 	;
-: main_complement:required  \ Provoca un error si no hay complemento directo
+: main_complement{required}  \ Provoca un error si no hay complemento directo
 	main_complement @
 	0= no_main_complement_error# and throw
 	;
-: main_complement:hold  \ Provoca un error si el complemento directo no está en inventario
-	main_complement @ dup what !
-	is_hold? 0= you_do_not_have_it_what_error# and throw
+: {hold}  ( a -- )  \ Provoca un error si un ente no está en inventario
+	dup what !
+	is_hold? 0= you_do_not_have_what_error# and throw
 	;
-: main_complement:not_hold  \ Provoca un error si el complemento directo está en inventario
-	main_complement @ dup what !
-	is_hold? you_already_have_it_what_error# and throw
+: main_complement{hold}  \ Provoca un error si el complemento directo no está en inventario
+	main_complement @ {hold}
 	;
-: main_complement:here  \ Provoca un error si el complemento directo no está presente
-	main_complement @ dup what !
+: {not_hold}  ( a -- )  \ Provoca un error si un ente está en inventario
+	dup what !
+	is_hold? you_already_have_what_error# and throw
+	;
+: main_complement{not_hold}  \ Provoca un error si el complemento directo está en inventario
+	main_complement @ {not_hold}
+	;
+: {worn}  ( a -- )  \ Provoca un error si un ente no lo llevamos puesto
+	dup what !
+	is_worn? 0= you_do_not_wear_what_error# and throw
+	;
+: {open}  ( a -- )  \ Provoca un error si un ente no está abierto
+	dup what !
+	>close?@ what_is_already_close_error# and throw
+	;
+: {close}  ( a -- )  \ Provoca un error si un ente no está cerrado
+	dup what !
+	>open?@ what_is_already_open_error# and throw
+	;
+: main_complement{worn}  \ Provoca un error si el complemento directo no lo llevamos puesto
+	main_complement @ {worn}
+	;
+: {not_worn}  ( a -- )  \ Provoca un error si un ente lo llevamos puesto
+	dup what !
+	is_worn? you_already_wear_what_error# and throw
+	;
+: main_complement{not_worn}  \ Provoca un error si el complemento directo lo llevamos puesto
+	main_complement @ {not_worn}
+	;
+: {cloth}  ( a -- )  \ Provoca un error si un ente no se puede llevar puesto
+	>cloth? @ 0= nonsense_error# and throw
+	;
+: main_complement{cloth}  \ Provoca un error si el complemento directo no se puede llevar puesto
+	main_complement @ {cloth}
+	;
+: {here}  ( a -- )  \ Provoca un error si un ente no está presente
+	dup what !
 	is_here? 0= is_not_here_what_error# and throw
 	;
-: main_complement:accessible  \ Provoca un error si el complemento directo no está accessible
-	main_complement @ dup what !
+: main_complement{here}  \ Provoca un error si el complemento directo no está presente
+	main_complement @ {here}
+	;
+: {accessible}  \ Provoca un error si un ente no está accessible
+	dup what !
 	is_accessible? 0= cannot_see_what_error# and throw
 	;
-: main_complement:taken  \ Provoca un error si el complemento directo no puede ser tomado
-	\ Nota: los errores apuntados por el campo >TAKE_error# no deben necesitar parámetros
-	main_complement @ >take_error# @ throw
+: main_complement{accessible}  \ Provoca un error si el complemento directo no está accessible
+	main_complement @ {accessible}
 	;
-: main_complement:living  \ Provoca un error si el complemento directo no es un ser vivo
-	main_complement @
+: {taken}  \ Provoca un error si un ente no puede ser tomado
+	\ Nota: los errores apuntados por el campo >TAKE_ERROR# no deben necesitar parámetros, o esperarlo
+	dup what ! >take_error# @ throw
+	;
+: main_complement{taken}  \ Provoca un error si el complemento directo no puede ser tomado
+	main_complement @ {taken}
+	;
+: {looked}  ( a -- )  \ Provoca un error si un ente no puede ser mirado
+	\ Nota: los errores apuntados por el campo >TAKE_ERROR# no deben necesitar parámetros, o esperarlo en WHAT
+	dup what !
+	can_be_looked_at? 0= cannot_see_what_error# and throw
+	;
+: main_complement{looked}  \ Provoca un error si el complemento directo no puede ser mirado
+	main_complement @  {looked}
+	;
+: {living}  \ Provoca un error si un ente no es un ser vivo
 	>living_being?@ 0= nonsense_error# and throw
+	;
+: main_complement{living}  \ Provoca un error si el complemento directo no es un ser vivo
+	main_complement @ {living}
+	;
+: {needed}  ( a -- )  \ Provoca un error si un ente no está en inventario, pues lo necesitamos
+	dup what !
+	is_hold? 0= you_need_what_error# and throw
+	;
+: main_complement{needed}  \ Provoca un error si el complemento directo no está en inventario, pues lo necesitamos
+	main_complement @ {needed}
 	;
 
 \ -------------------------------------------------------------
 \ Mirar, examinar y registrar
 
-: actually_do_look  ( a -- )  \ Mira un ente
-	dup describe
-	>location? @  if  .present  then
-	;
-: do_look_if_possible  ( a -- )  \ Mira un ente si es posible
-	dup can_be_looked_at?
-	if  actually_do_look
-	else  cannot_see
-	then
+: (do_look)  ( a -- )  \ Mira un ente
+	dup describe  >location? @  if  .present  then
 	;
 : do_look  \  Acción de mirar
-	main_complement @ ?dup 0=  if  my_location@  then  \ Si no hay complemento, usa el lugar actual
-	do_look_if_possible
+	main_complement @ ?dup 0=  if  my_location@  then
+	dup {looked} (do_look)
 	;
 ' do_look constant do_look_xt
 : do_examine  \ Acción de examinar
@@ -4037,6 +4153,7 @@ variable #free_exits  \ Contador de las salidas posibles
 \ -------------------------------------------------------------
 \ Tomar y dejar
 
+\ Antiguo!!! Puede que áun sirva:
 \ : cannot_take_the_altar  \ No se puede tomar el altar
 \ 	s" [el altar no se toca]" narrate  \ tmp!!!
 \ 	impossible
@@ -4077,10 +4194,10 @@ variable #free_exits  \ Contador de las salidas posibles
 	dup be_hold more_familiar well_done
 	;
 : do_take  \ Acción de tomar
-	main_complement:required
-	main_complement:not_hold
-	main_complement:here
-	main_complement:taken
+	main_complement{required}
+	main_complement{not_hold}
+	main_complement{here}
+	main_complement{taken}
 	main_complement @ actually_do_take
 	;
 ' do_take constant do_take_xt
@@ -4088,8 +4205,8 @@ variable #free_exits  \ Contador de las salidas posibles
 	dup >worn? off  be_here  well_done
 	;
 : do_drop  \ Acción de dejar
-	main_complement:required
-	main_complement:hold
+	main_complement{required}
+	main_complement{hold}
 	main_complement @ actually_do_drop
 	;
 ' do_drop constant do_drop_xt
@@ -4100,51 +4217,86 @@ variable #free_exits  \ Contador de las salidas posibles
 : actually_do_put_on  ( a -- )  \ Ponerse una prenda
 	>worn? on  well_done
 	;
-: do_put_on_if_possible  ( a -- )  \ Ponerse una prenda, si está en inventario y es tal
-	\ Pendiente!!! Hacer que tome la prenda si no la tiene.
-	dup is_hold?  if
-		dup >worn? @
-		if  you_already_wear_it
-		else
-			dup >cloth? @
-			if  actually_do_put_on  else  drop nonsense  then
-		then
-	else  you_do_not_have_it_error  \ Provisional!!! Cambiar el mensaje si no es prenda.
-	then
-	;
 : do_put_on  \ Acción de ponerse una prenda
-	main_complement @ ?dup
-	if  do_put_on_if_possible
-	else  no_main_complement_error
-	then
+	\ Pendiente!!! Hacer que tome la prenda si no la tiene.
+	main_complement{required}
+	main_complement{cloth}
+	main_complement{not_worn}
+	main_complement{hold}
+	main_complement @ actually_do_put_on
 	;
 ' do_put_on constant do_put_on_xt
 : actually_do_take_off  ( a -- )  \ Quitarse una prenda
 	>worn? off  well_done
 	;
-: do_take_off_if_possible  ( a -- )  \ Quitarse una prenda, si es posible
-	dup is_worn?
-	if  actually_do_take_off
-	else  you_do_not_wear_it
-	then
-	;
 : do_take_off  \ Acción de quitarse una prenda
-	main_complement @ ?dup
-	if  do_take_off_if_possible
-	else  no_main_complement_error
-	then
+	main_complement{required}
+	main_complement{worn}
+	main_complement @ actually_do_take_off
 	;
 ' do_take_off constant do_take_off_xt
 
 \ -------------------------------------------------------------
 \ Cerrar y abrir
 
+\ Inacabado!!!
+\ Falta terminar cosas, como la lógica de la combinación
+\ de estados de puerta y candado.
+
+: (do_close)  ( a -- )  \ Cerrar un ente
+	>open? off
+	;
+: close_the_door  \ Cerrar la puerta, si es posible
+	door_e {open}
+	key_e {hold}
+	door_e (do_close)  well_done
+	;
+: close_the_lock  \ Cerrar el candado, si es posible
+	lock_e {open}
+	key_e {hold}
+	lock_e (do_close)  well_done
+	;
+: close_it  ( a -- )  \ Cerrar un ente, si es posible
+	case
+		door_e  of  close_the_door  endof
+		lock_e  of  close_the_lock  endof
+		nonsense
+	endcase
+	;
 : do_close  \ Acción de cerrar
-	s" cerrar" narrate  
+	main_complement{required}
+	main_complement{accessible}
+	main_complement @ close_it
 	;
 ' do_close constant do_close_xt
+: (do_open)  ( a -- )  \ Abrir un ente
+	>open? on
+	;
+: open_the_door  \ Abrir la puerta, si es posible
+	door_e {close}
+	lock_e >close?@
+	if
+		s" El candado bloquea la puerta." narrate
+		key_e {needed}
+		door_e (do_open)
+	then
+	;
+: open_the_lock  \ Abrir el candado, si es posible
+	lock_e {close}
+	key_e {needed}
+	lock_e (do_open)
+	;
+: open_it  ( a -- )  \ Abrir un ente, si es posible
+	case
+		door_e  of  open_the_door  endof
+		lock_e  of  open_the_lock  endof
+		nonsense
+	endcase
+	;
 : do_open  \ Acción de abrir
-	s" abrir" narrate  
+	main_complement{required}
+	main_complement{accessible}
+	main_complement @ open_it
 	;
 ' do_open constant do_open_xt
 
@@ -4180,9 +4332,9 @@ variable #free_exits  \ Contador de las salidas posibles
 \ 	;
 : do_kill  \ Acción de matar
 	\ s" matar"  main_complement+is_nonsense
-	main_complement:required
-	main_complement:accessible
-	main_complement:living
+	main_complement{required}
+	main_complement{accessible}
+	main_complement{living}
 	main_complement @ actually_do_kill
 	;
 ' do_kill constant do_kill_xt
@@ -4320,54 +4472,54 @@ variable #free_exits  \ Contador de las salidas posibles
 	;
 ' do_go constant do_go_xt
 : do_go_north  \ Acción de ir al Norte
-	main_complement:forbidden
+	main_complement{forbidden}
 	north_e do_go_if_possible
 	;
 ' do_go_north constant do_go_north_xt
 : do_go_south  \ Acción de ir al Sur
 	[debug_catch] [if] s" Al entrar en DO_GO_SOUTH" debug [then]  \ Depuración!!!
-	main_complement:forbidden
+	main_complement{forbidden}
 	south_e do_go_if_possible
 	[debug_catch] [if] s" Al salir de DO_GO_SOUTH" debug [then]  \ Depuración!!!
 	;
 ' do_go_south constant do_go_south_xt
 : do_go_east  \ Acción de ir al Este
-	main_complement:forbidden
+	main_complement{forbidden}
 	east_e do_go_if_possible
 	;
 ' do_go_east constant do_go_east_xt
 : do_go_west  \ Acción de ir al Oeste
-	main_complement:forbidden
+	main_complement{forbidden}
 	west_e do_go_if_possible
 	;
 ' do_go_west constant do_go_west_xt
 : do_go_up  \ Acción de ir hacia arriba
-	main_complement:forbidden
+	main_complement{forbidden}
 	up_e do_go_if_possible
 	;
 ' do_go_up constant do_go_up_xt
 : do_go_down  \ Acción de ir hacia abajo
-	main_complement:forbidden
+	main_complement{forbidden}
 	down_e do_go_if_possible
 	;
 ' do_go_down constant do_go_down_xt
 : do_go_out  \ Acción de ir hacia fuera
-	main_complement:forbidden
+	main_complement{forbidden}
 	s" voy fuera" narrate \ tmp!!!
 	;
 ' do_go_out constant do_go_out_xt
 : do_go_in  \ Acción de ir hacia dentro
-	main_complement:forbidden
+	main_complement{forbidden}
 	s" voy dentro" narrate \ tmp!!!
 	;
 ' do_go_in constant do_go_in_xt
 : do_go_back  \ Acción de ir hacia atrás
-	main_complement:forbidden
+	main_complement{forbidden}
 	s" voy atrás" narrate \ tmp!!!
 	;
 ' do_go_back constant do_go_back_xt
 : do_go_ahead  \ Acción de ir hacia delante
-	main_complement:forbidden
+	main_complement{forbidden}
 	s" voy alante" narrate \ tmp!!!
 	;
 ' do_go_ahead constant do_go_ahead_xt
@@ -4589,12 +4741,12 @@ variable #free_exits  \ Contador de las salidas posibles
 	s" con" 
 	s" llevando"
 	s" portando"
-	s" portador"
+	s" portador de"
 	s" que porte"
 	s" que lleve" 6 schoose s&
 	s" armas" s" un arma" s" una espada" 3 schoose s&
 	with_him$ s&
-	s" debe" s" puede " 2 schoose s& 
+	s" debe" s" puede " s" podrá" 3 schoose s& 
 	s" pasar." s&
 	speak
 	;
@@ -4788,7 +4940,7 @@ variable #free_exits  \ Contador de las salidas posibles
 \ -------------------------------------------------------------
 \ Terminar de jugar
 
-defer actually_do_finish  \ Abandonar el juego
+defer (do_finish)  \ Abandonar el juego
 defer do_finish  \ Acción de abandonar el juego
 
 \ }}}
@@ -5083,7 +5235,7 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 : registrar  do_search_xt action!  ;
 ' registrar synonym: registra
 
-: forth  actually_do_finish  ;  \ Depuración!!!
+: forth  (do_finish)  ;  \ Depuración!!!
 : bye  bye  ;  \ Depuración!!!
 : quit quit  ;  \ Depuración!!!
 
@@ -5485,17 +5637,17 @@ section( Fin)
 \ -------------------------------------------------------------
 \ Acción de terminar de jugar
 
-: (actually_do_finish)  \ Abandonar el juego
+: (_do_finish)  \ Abandonar el juego
 	restore_vocabularies default_color cr (title) quit
 	;
-' (actually_do_finish) is actually_do_finish
-: (do_finish)  \ Acción de abandonar el juego
+' (_do_finish) is (do_finish)
+: _do_finish  \ Acción de abandonar el juego
 	surrender?  if
-		\ retry?$  cr+ no?  if  actually_do_finish  then
-		actually_do_finish  
+		\ retry?$  cr+ no?  if  (_do_finish)  then
+		(_do_finish)
 	then
 	;
-' (do_finish) is do_finish
+' _do_finish is do_finish
 
 \ }}}
 
@@ -5695,7 +5847,8 @@ section( Principal)
 	init_config read_config
 	\ about cr intro  \ Anulado para depuración!!!
 	\ location_01_e enter  \ Anulado para depuración!!!
-	location_08_e enter  \ Depuración!!!
+	\ location_08_e enter  \ Depuración!!!
+	location_47_e enter  \ Depuración!!!
 	snake_e be_here  \ Depuración!!!
 	;
 : (main)  \ Palabra principal que arranca el juego
