@@ -1531,6 +1531,93 @@ create 'articles  \ Tabla de artículos
 
 \ }}}
 \ ------------------------------------------------
+subsection( Códigos de error)
+\ {{{
+
+0 [if]  \ ......................................
+
+Sobre los códigos de error
+
+En el estándar ANS Forth los códigos de error de -1 a -255
+están reservados para el propio estándar; el resto de
+números negativos se reservan para que los asigne cada
+sistema Forth a sus propios mensajes de error; del 1 en
+adelante puede usarlos libremente cada programa.
+
+En este programa usamos como códigos de error las
+direcciones de ejecución de las palabras que muestran los
+errores.  En Forth, la dirección de ejecución de una palabra
+se llama tradicionalmente «code field address» («cfa» en
+notación de la pila). Pero en el estándar ANS Forth de 1994,
+el más extendido en la actualidad, a utiliza el nombre
+«execution token» («xt» en la notación de la pila), pues en
+algunos sistemas Forth no es una dirección real de la
+memoria sino un código interno.
+
+En este programa lo llamamos «dirección de ejecución» pero
+en la notación de pila lo representamos como «xt».
+
+En cualquier caso es lo mismo en cualquier sistema Forth: es
+el valor que devuelven las palabras ' y ['] y que sirve de
+parámetro a EXECUTE .
+
+Ejemplo 1:
+
+	: palabrita  ." ¡Hola mundo!"  ;
+	variable palabrita_xt
+	' palabrita palabrita_xt !
+	palabrita_xt @ execute
+
+Como se ve, usar como códigos de error las direcciones de
+ejecución de las palabras de error tiene la ventaja de que
+no hace falta ningún mecanismo adicional para encontrar las
+palabras de error a partir de los códigos (como podría ser
+una estructura CASE o una tabla): basta poner el código de
+error en la pila y llamar a EXECUTE .
+
+Dado que algunos los códigos de error se necesitan antes de
+haber sido creados (por ejemplo durante la creación de los
+entes), los creamos aquí por adelantado como vectores y los
+actualizaremos posteriormente, cuando se definan las
+palabras de error, exactamente como se muestra en este
+ejemplo:
+
+	defer la_cagaste_error#
+
+	: la_cagaste  ." ¡La cagaste!"  ;
+	' la_cagaste constant (la_cagaste_error#)
+	' (la_cagaste_error#) is la_cagaste_error#
+
+[then]  \ ......................................
+
+
+false constant no_error#
+
+\ Los errores se crean como
+
+defer cannot_see_error#
+defer cannot_see_what_error#
+defer dangerous_error#
+defer impossible_error#
+defer is_normal_error#
+defer is_not_here_error#
+defer is_not_here_what_error#
+defer main_complement_error# 
+defer no_main_complement_error# 
+defer no_verb_error#
+defer nonsense_error#
+defer what_is_already_close_error#
+defer what_is_already_open_error#
+defer you_already_have_it_error#
+defer you_already_have_what_error#
+defer you_already_wear_what_error#
+defer you_do_not_have_it_error#
+defer you_do_not_have_what_error#
+defer you_do_not_wear_what_error#
+defer you_need_what_error#
+
+\ }}}
+\ ------------------------------------------------
 subsection( Identificadores de entes)
 \ {{{
 
@@ -1552,7 +1639,11 @@ sufijo _e en sus nombres.
 \ Crear su identificador
 \ **********************
 
-\ El ente protagonista debe ser el primero (el orden de los restantes es indiferente):
+\ El ente protagonista debe ser el primer ente cuya identificador sea creado. 
+\ El orden en que se definan los restantes identificadores
+\ es irrelevante salvo para los entes escenario, como se explica después.
+\ Si están agrupados por tipos y en orden alfabético es solo por claridad. 
+
 entity: ulfius_e
 ' ulfius_e is protagonist  \ Actualizar el vector que apunta al ente protagonista
 
@@ -1563,6 +1654,9 @@ entity: leader_e
 \ Entes que son objetos:
 entity: altar_e
 entity: arch_e
+entity: bed_e
+entity: bridge_e
+entity: candles_e
 entity: cloak_e
 entity: cuirasse_e
 entity: door_e
@@ -1581,21 +1675,18 @@ entity: rocks_e
 entity: snake_e
 entity: stone_e
 entity: sword_e
+entity: table_e
 entity: thread_e
 entity: torch_e
 entity: waterfall_e
-entity: bed_e
-entity: candles_e
-entity: table_e
-entity: bridge_e
 
-\ Entes que son escenarios
-\ (en lugar de usar su nombre en el identificador,
+\ Entes escenario
+\ En lugar de usar su nombre en el identificador,
 \ se conserva el número que tienen en la versión
 \ original.
 \ Además, para que algunos cálculos tomados del código
 \ original en BASIC funcionen, es preciso que los 
-\ entes escenarios se creen aquí ordenados por ese número):
+\ entes escenarios se creen aquí ordenados por ese número:
 entity: location_01_e
 entity: location_02_e
 entity: location_03_e
@@ -1648,14 +1739,14 @@ entity: location_49_e
 entity: location_50_e
 entity: location_51_e
 
-\ Entes que son globales:
+\ Entes globales:
 entity: sky_e
 entity: floor_e
 entity: ceiling_e
 entity: clouds_e
 entity: cave_e  \ Inacabado!!!
 
-\ Entes que son virtuales
+\ Entes virtuales
 \ (necesarios para la ejecución de algunos comandos):
 entity: inventory_e
 entity: exit_e
@@ -1804,6 +1895,49 @@ para nombrar los entes.
 	s" abajo" down_e >name!  down_e >no_article? on
 	s" afuera" out_e >name!  out_e >no_article? on
 	s" adentro" in_e >name!  in_e >no_article? on
+
+
+	altar_e >decoration? on
+	altar_e >take_error# impossible_error# swap !
+	ambrosio_e >character? on
+	ambrosio_e >human? on
+	arch_e >decoration? on
+	bridge_e >decoration? on
+	cave_e >global_inside? on
+	ceiling_e >global_inside? on
+	cloak_e >cloth? on
+	cloak_e >owned? on
+	cloak_e >worn? on
+	clouds_e >global_outside? on
+	cuirasse_e >cloth? on
+	cuirasse_e >owned? on
+	cuirasse_e >worn? on
+	door_e >take_error# impossible_error# swap !
+	fallen_away_e >decoration? on
+	fallen_away_e >take_error# nonsense_error# swap !
+	flags_e >decoration? on
+	flags_e >take_error# nonsense_error# swap !
+	floor_e >global_inside? on
+	floor_e >global_outside? on
+	idol_e >decoration? on
+	idol_e >take_error# impossible_error# swap !
+	lake_e >decoration? on
+	lake_e >take_error# nonsense_error# swap !
+	leader_e >character? on
+	leader_e >human? on
+	lock_e >decoration? on
+	lock_e >take_error# impossible_error# swap !
+	rocks_e >decoration? on
+	sky_e >global_outside? on
+	snake_e >animal? on
+	snake_e >take_error# dangerous_error# swap !
+	sword_e >owned? on
+	torch_e >light? on
+	torch_e >lit? off
+	ulfius_e >human? on
+	waterfall_e >decoration? on
+	waterfall_e >take_error# nonsense_error# swap !
+
 
 	;
 
@@ -2234,53 +2368,55 @@ subsection( Atributos)
 \ Definir sus atributos
 \ **********************
 
-: init_entity_attributes  \ Guarda en las fichas los atributos de los entes (salvo los lingüísticos)
-	\ Nota: No es necesario poner a cero ningún atributo
-	\ (salvo los que puedan haber cambiado durante
-	\ una partida y deban estar a cero)
-	\ pues todos quedan a cero tras borrar la base de datos,
-	\ operación que se hace al inicio del programa.
-	altar_e >decoration? on
-	altar_e >take_error# impossible_error# swap !
-	ambrosio_e >character? on
-	ambrosio_e >human? on
-	arch_e >decoration? on
-	bridge_e >decoration? on
-	cave_e >global_inside? on
-	ceiling_e >global_inside? on
-	cloak_e >cloth? on
-	cloak_e >owned? on
-	cloak_e >worn? on
-	clouds_e >global_outside? on
-	cuirasse_e >cloth? on
-	cuirasse_e >owned? on
-	cuirasse_e >worn? on
-	door_e >take_error# impossible_error# swap !
-	fallen_away_e >decoration? on
-	fallen_away_e >take_error# nonsense_error# swap !
-	flags_e >decoration? on
-	flags_e >take_error# nonsense_error# swap !
-	floor_e >global_inside? on
-	floor_e >global_outside? on
-	idol_e >decoration? on
-	idol_e >take_error# impossible_error# swap !
-	lake_e >decoration? on
-	lake_e >take_error# nonsense_error# swap !
-	leader_e >character? on
-	leader_e >human? on
-	lock_e >decoration? on
-	lock_e >take_error# impossible_error# swap !
-	rocks_e >decoration? on
-	sky_e >global_outside? on
-	snake_e >animal? on
-	snake_e >take_error# dangerous_error# swap !
-	sword_e >owned? on
-	torch_e >light? on
-	torch_e >lit? off
-	ulfius_e >human? on
-	waterfall_e >decoration? on
-	waterfall_e >take_error# nonsense_error# swap !
-	;
+\ 2011-11-27 Obsoleto!!!
+\ Juntado experimentalmente con la definición de nombres.
+\  : init_entity_attributes  \ Guarda en las fichas los atributos de los entes (salvo los lingüísticos)
+\  	\ Nota: No es necesario poner a cero ningún atributo
+\  	\ (salvo los que puedan haber cambiado durante
+\  	\ una partida y deban estar a cero)
+\  	\ pues todos quedan a cero tras borrar la base de datos,
+\  	\ operación que se hace al inicio del programa.
+\  	altar_e >decoration? on
+\  	altar_e >take_error# impossible_error# swap !
+\  	ambrosio_e >character? on
+\  	ambrosio_e >human? on
+\  	arch_e >decoration? on
+\  	bridge_e >decoration? on
+\  	cave_e >global_inside? on
+\  	ceiling_e >global_inside? on
+\  	cloak_e >cloth? on
+\  	cloak_e >owned? on
+\  	cloak_e >worn? on
+\  	clouds_e >global_outside? on
+\  	cuirasse_e >cloth? on
+\  	cuirasse_e >owned? on
+\  	cuirasse_e >worn? on
+\  	door_e >take_error# impossible_error# swap !
+\  	fallen_away_e >decoration? on
+\  	fallen_away_e >take_error# nonsense_error# swap !
+\  	flags_e >decoration? on
+\  	flags_e >take_error# nonsense_error# swap !
+\  	floor_e >global_inside? on
+\  	floor_e >global_outside? on
+\  	idol_e >decoration? on
+\  	idol_e >take_error# impossible_error# swap !
+\  	lake_e >decoration? on
+\  	lake_e >take_error# nonsense_error# swap !
+\  	leader_e >character? on
+\  	leader_e >human? on
+\  	lock_e >decoration? on
+\  	lock_e >take_error# impossible_error# swap !
+\  	rocks_e >decoration? on
+\  	sky_e >global_outside? on
+\  	snake_e >animal? on
+\  	snake_e >take_error# dangerous_error# swap !
+\  	sword_e >owned? on
+\  	torch_e >light? on
+\  	torch_e >lit? off
+\  	ulfius_e >human? on
+\  	waterfall_e >decoration? on
+\  	waterfall_e >take_error# nonsense_error# swap !
+\  	;
 
 \ }}}
 \ ------------------------------------------------
@@ -3799,42 +3935,6 @@ false [if]
 \ ##############################################################
 section( Errores del analizador)
 \ {{{
-
-0 [if]  \ ......................................
-
-Sobre los códigos de error
-
-En el estándar ANS Forth los códigos de error de -1 a -255
-están reservados para el propio estándar; el resto de
-números negativos son para que los asigne cada sistema Forth
-a sus propios mensajes de error; del 1 en adelante pueden
-usarlos libremente cada programa.
-
-En este programa usamos como códigos de error las
-direcciones de ejecución de las palabras que muestran los
-errores, lo que en Forth se llama tradicionalmente «code
-field address» («cfa» en notación de la pila) de la palabra
-y en el estándar ANS Forth se llama «execution token» («xt»
-en la notación de la pila). Es la dirección de memoria que
-devuelven las palabras ' y ['] y que a su vez sirve de
-parámetro a EXECUTE . Ejemplo:
-
-	: palabrita ." ¡Hola mundo!" ;
-	variable palabrita_xt
-	' palabrita palabrita_xt !
-	palabrita_xt @ execute
-
-Usar como códigos de error las direcciones de ejecución de
-las palabras de error tiene la ventaja de que no hace falta
-ningún mecanismo adicional para encontrar las palabras a
-partir de los códigos (como podría ser una estructura CASE o
-una tabla): basta poner el código de error en la pila y
-llamar a EXECUTE .
-
-Las palabras usadas para almacenar códigos de error son
-constantes cuyo nombre termina en «_error#».
-
-[then]  \ ......................................
 
 : please$  ( -- a u )  \ Devuelve «por favor» o vacía
 	s" " s" por favor" 2 schoose
@@ -6228,3 +6328,5 @@ Unificar la terminología: localización / lugar /escenario.
 [then]
 ))
 \ }}}
+
+
