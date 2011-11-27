@@ -1,13 +1,13 @@
 \ #! /usr/bin/spf4
 
 \ #############################################################
-cr .( Asalto y castigo )
+CR .( Asalto y castigo )
 \ {{{
 
 \ A text adventure in Spanish, written in SP-Forth.
 \ Un juego conversacional en castellano, escrito en SP-Forth.
 
-: version$  s" A-2011112000"  ;  version$ type cr
+: version$  S" A-2011271748"  ;  version$ TYPE CR
 
 \ Copyright (C) 2011 Marcos Cruz (programandala.net)
 
@@ -38,177 +38,24 @@ cr .( Asalto y castigo )
 \ http://spf.sf.net
 
 \ #############################################################
-\ Historial de desarrollo
+\ Documentación
 
-\ Véase:
-\ http://programandala.net/es.programa.ayc.forth.historial
+\ El historial de desarrollo está en:
+\ http://programandala.net/es.programa.asalto_y_castigo.sp-forth.historial
 
-\ }}}
-\ #############################################################
-\ Tareas pendientes
-\ {{{
+\ La lista de tareas pendientes está al final de este fichero.
 
-0 [if]  \ ......................................
-
-------------------------------------------------
-Programación 
-{{{
-
-Hacer que no salga el presto de pausa si las pausas son cero.
-
-Hacer variantes de CHOOSE y DCHOOSE para elegir un elemento
-con un cálculo en lugar de al azar. 
-
-Crear un mensaje de error más laborado para las
-acciones que precisan objeto directo, con el infinitivo
-como parámetro:
-«¿Matar por matar?» «Normalmente hay que matar a alguien o algo».
-
-Usar [ y ] para permitir comandos de configuración dentro
-de los comandos del jugador.
-
-Implementar pronombres. Para empezar, que la forma «mírate»
-sea compatible con «mírate la capa». Para esto habría que
-distiguir dos variantes de complemento directo, y que al
-asignar cualquiera de ellas se compruebe si había ya otro
-complemento directo del otro tipo.
-
-Limitar los usos de PRINT_STR a la impresión. Renombrarla.
-Crear otra cadena dinámica para los usos genéricos con «+ y
-palabras similares.
-
-Comprobar los usos de TMP_STR .
-
-Poner en fichero de configuración el número de líneas
-necesario para mostrar un presto de pausa.
-
-Poner en fichero de configuración los colores de los textos.
-
-Implementar opción para tener en cuenta las palabras no
-reconocidas y detener el análisis.
-
-Poner en fichero de configuración si las palabras no
-reconocidas deben interrumpir el análisis.
-
-Poner todos los textos relativos al protagonista en segunda 
-persona.
-
-Implementar acciones intermedias automáticas, como quitarse
-una prenda antes de dejarla, y que el mensaje sea correcto:
-«Ulfius se quita la corbata y a continuación la deja».
-
-Hacer que el color de fondo y de texto cambie en los
-escenarios al aire libre.
-
-Añadir las salidas hacia fuera y dentro.
-
-Implementar el recuerdo de la dirección del último
-movimiento.
-
-Hacer que «salir», si no hay dirección de salida en el ente,
-calcule la dirección con la del último movimiento.
-
-Añadir a la configuración si los errores lingüísticos deben
-ser detallados (técnicos) o vagos (narrativos).
-
-}}}
-------------------------------------------------
-Trama y puzles 
-{{{
-
-Hacer que la espada corte en más pedazos la capa si ha sido
-afilada con la piedra. Hacer que su descripción varíe.
-
-Hace que el altar solo aparezca al examinar el puente, y la
-piedra al examinar el altar.
-
-Escenario y subtrama bajo el agua.
-
-Distinguir nadar de bucear.
-
-Quitarse la coraza o la capa antes de nadar (ambas son
-demasiado pesadas para cruzar el lago con 100% de éxito)
-
-No poder nadar si llevamos algo en las manos aparte de la
-espada.
-
-Posibilidad de perder la capa al nadar si no la llevamos
-puesta.
-
-}}}
-------------------------------------------------
-Código fuente
-{{{
-
-Unificar los nombres de las palabras que muestran errores:
-usar o no el sufijo «_error».
-
-Homogeneizar el uso de los puntos finales de los comentarios.
-
-Unificar la terminología: localización / lugar /escenario.
-
-[then]  \ ......................................
-
-\ }}}
-\ #############################################################
-\ Notas
-\ {{{
-
-0 [if]  \ ......................................
-
-\ ------------------------------------------------
-\ Novedades significativas respecto a la versión en SuperBASIC y a las versiones originales
-\ {{{
-
-Todos los objetos citados en las descripciones exiten como
-tales (p.e. catre, puente, pared...) y por tanto son
-manipulables, pero no se incluyen en la lista de los objetos
-presentes.
-
-Objetos globales (p.e. cielo, suelo, techo, pared...)
-
-Las direcciones de salida son objetos virtuales, lo que
-permite expresiones como «ve al Norte» o «mira hacia el Sur».
-
-La condición final de la batalla no es un número fijo de
-pasos sino aleatorio.
-
-Algunas de las descripciones de los objetos y personajes
-varían en función de la trama y la situación. \ Pendiente!!!
-
-\ }}}
-\ ------------------------------------------------
-\ Términos usados en los comentarios del programa
-\ {{{
-
-«ente»
-«lugar»
-«salida»/«dirección»
-«protagonista»
-«base de datos»
-«ficha»
-«campo»/«atributo»
-
-\ }}}
-\ ------------------------------------------------
-\ Dudas
-\ {{{
-
-¿Cómo saber la dirección de la pila? No hay SP0 .
-
-¿Cómo saber el tamaño de la pantalla? No hay FORM .
-
-¿Cómo borrar la pantalla? No hay PAGE .
-
-¿Cómo saber si estoy en SP-Forth o en otro Forth?
-
-[then]  \ ......................................
-
-\ }}}
 \ }}}
 \ ##############################################################
-cr .( Requisitos)
+CR .( Requisitos)
 \ {{{
+
+: windows?  ( -- f )  \ ¿Está el programa corriendo en Windows?
+	[DEFINED] WINAPI: LITERAL
+	;
+: gnu/linux?  ( -- f )  \ ¿Está el programa corriendo en GNU/Linux?
+	windows? 0=
+	;
 
 \ ------------------------------------------------
 \ De la librería de SP-Forth 
@@ -221,8 +68,10 @@ REQUIRE CASE-INS lib/ext/caseins.f  \ Para que el sistema no distinga mayúscula
 CASE-INS ON  \ Activarlo
 require ansi-file lib/include/ansi-file.f  \ Para que el sistema sea lo más compatible posible con el estándar ANS Forth de 1994
 \ require random lib/ext/rnd.f  \ Generador de números aleatorios
-\ require key-termios lib/posix/key.f  \ Palabra KEY 
-require key-termios key.f  \ Palabra KEY (copia modificada del fichero original debido a un problema con la ruta de una librería)
+windows?
+[if]  require key-termios lib/posix/key.f  \ Palabra KEY 
+[else]  require key-termios key.f  \ Palabra KEY (copia modificada del fichero original debido a un problema con la ruta de una librería)
+[then]
 
 \ ------------------------------------------------
 \ De la librería de contribuciones de SP-Forth 
@@ -258,6 +107,27 @@ require csb csb2.fs  \ Almacén circular de cadenas, con definición de cadenas 
 \ Véase: http://programandala.net/es.programa.csb2
 
 \ }}}
+\ #############################################################
+\ Herramientas
+\ {{{
+
+: ((  \ Comentarios de bloque
+	\ Código tomado de:
+	\ tools.f for advtr.f   Leo Wong 27 June 02003 fyj +
+	startlog
+	begin
+		bl word dup count s" ))" compare 
+	while
+		\ dup c@ 2 =  if  dup count type space  then 
+		dup dup count cr type space c@ .
+		c@ 0=  if refill 0= abort" (( needs ))"  then
+	repeat 
+	count cr ." Found:" type
+	\ drop
+	endlog
+	; immediate
+
+\ }}}
 \ ##############################################################
 \ Meta
 \ {{{
@@ -287,12 +157,6 @@ constant /counted_string  \ Longitud máxima de una cadena contada (incluyendo l
 : subsection(  ( "text" -- )  \ Notación para los títulos de subsección en el código fuente
 	[char] * emit space postpone .(  \ El nombre de subsección terminará con: )
 	space .s?
-	;
-: windows?  ( -- f )  \ ¿Está el programa corriendo en Windows?
-	[defined] winapi: literal
-	;
-: gnu/linux?  ( -- f )  \ ¿Está el programa corriendo en GNU/Linux?
-	windows? 0=
 	;
 defer main
 : save_game  \ Crea un ejecutable con el programa
@@ -457,7 +321,6 @@ variable cursor_y  \ Fila actual del cursor
 \ ------------------------------------------------
 subsection( Colores)
 \ {{{
-
 0 [if]  \ ......................................
 
 Notas sobre las pruebas realizadas en Debian
@@ -886,35 +749,35 @@ section( Textos variables)
 	s" Tus" soldiers$ s&
 	;
 
-: the_enemies$  ( -- a u )  \ Devuelve una cadena con una variante de «los enemigos».
+: the_enemies$  ( -- a u )  \ Devuelve una variante de «los enemigos».
 	s" los sajones"
 	s" las tropas" s" las huestes" 2 schoose
 	s" enemigas" s" sajonas" 2 schoose s&
 	2 schoose
 	;
-: the_enemy$  ( -- a u )  \ Devuelve una cadena con una variante de «el enemigo».
+: the_enemy$  ( -- a u )  \ Devuelve una variante de «el enemigo».
 	s" el enemigo"
 	s" la tropa" s" la hueste" 2 schoose
 	s" enemiga" s" sajona" 2 schoose s&
 	2 schoose
 	;
-: (the_enemy/enemies)  ( -- a u f )  \ Devuelve una cadena con una variante de «el/los enemigo/s», y un indicador del número
+: (the_enemy/enemies)  ( -- a u f )  \ Devuelve una variante de «el/los enemigo/s», y un indicador del número
 	\ a u = Cadena con el texto
 	\ f = ¿El texto está en plural?
 	2 random dup  if  the_enemies$  else  the_enemy$  then  rot
 	;
-: the_enemy/enemies$  ( -- a u )  \ Devuelve una cadena con una variante de «el/los enemigo/s»
+: the_enemy/enemies$  ( -- a u )  \ Devuelve una variante de «el/los enemigo/s»
 	(the_enemy/enemies) drop
 	;
 : «de_el»>«del»  ( a1 u1 -- a1 u1 | a2 u2 )  \ Remplaza las apariciones de «de el» en una cadena por «del»
 	s" del " s" de el " sreplace
 	;
-: of_the_enemy/enemies$  ( -- a u )  \ Devuelve una cadena con una variante de «del/de los enemigo/s»
+: of_the_enemy/enemies$  ( -- a u )  \ Devuelve una variante de «del/de los enemigo/s»
 	(the_enemy/enemies) >r
 	s" de" 2swap s&
 	r> 0=  if  «de_el»>«del»  then
 	;
-: ^the_enemy/enemies  ( -- a u f )  \ Devuelve una cadena con una variante de «El/Los enemigo/s», y un indicador del número
+: ^the_enemy/enemies  ( -- a u f )  \ Devuelve una variante de «El/Los enemigo/s», y un indicador del número
 	\ a u = Cadena con el texto
 	\ f = ¿El texto está en plural?
 	(the_enemy/enemies) >r  >^uppercase  r>
@@ -1120,7 +983,7 @@ variable /indentation  \ Longitud de la indentación de cada párrafo
 subsection( Impresión de citas de diálogos)
 \ {{{
 
-s" —" sconstant dash$  \ Raya (código Unicode U+2014)
+s" —" sconstant dash$  \ Raya (código Unicode 2014 en hexadecimal, 8212 en decimal)
 s" «" sconstant lquote$ \ Comilla castellana de apertura
 s" »" sconstant rquote$  \ Comilla castellana de cierre
 : str-with-rquote-only?  ( a -- f )  \ ¿Hay en una cadena dinámica una comilla castellana de cierre pero no una de apertura?
@@ -1193,7 +1056,6 @@ defer location_plot  \ Vector que después se redirigirá a la palabra que gesti
 	no_exit =
 	;
 
-\ }}}
 \ ------------------------------------------------
 subsection( Definición de la ficha de un ente)
 \ {{{
@@ -1391,6 +1253,11 @@ create 'articles  \ Tabla de artículos
 	s" ninguna  " s,
 	s" ningunos " s,
 	s" ningunas " s,
+	\ Adjetivos que se tratan como «artículos distantes»:
+	s" ese      " s,
+	s" esa      " s,
+	s" esos     " s,
+	s" esas     " s,
 9 constant /article  \ Longitud máxima de un artículo en la tabla, con sus espacios finales
 1 /article * constant /article_gender_set  \ Separación entre cada grupo según el género (masculino y femenino)
 2 /article * constant /article_number_set  \ Separación entre cada grupo según el número (singular y plural)
@@ -1402,21 +1269,34 @@ create 'articles  \ Tabla de artículos
 : on_article_gender  ( a -- u )  \ Devuelve un desplazamiento parcial en la tabla de artículos según el género gramatical del ente
 	>feminine? @ abs /article_gender_set *
 	;
-: >definite_article  ( a -- 0 | 1 )  \ Calcula el desplazamiento (en número de grupos) para apuntar a los artículos definidos de la tabla, si ente indicado necesita uno
+: on_article_gender_and_number  ( a -- u )  \ Devuelve un desplazamiento parcial en la tabla de artículos según el género gramatical y el número del ente
+	dup on_article_gender 
+	swap on_article_number +
+	;
+: >definite_article  ( a -- 0 | 1 )  \ Devuelve el desplazamiento (en número de grupos) para apuntar a los artículos definidos de la tabla, si el ente indicado necesita uno
 	dup >definite_article? @  \ Si el ente necesita siempre artículo definido
 	swap >known?@ or abs  \ O bien si el ente es ya conocido por el protagonista
 	;
-: >possesive_article  ( a -- 0 | 2 )  \ Calcula el desplazamiento (en número de grupos) para apuntar a los artículos posesivos de la tabla, si el ente indicado necesita uno
+: >possesive_article  ( a -- 0 | 2 )  \ Devuelve el desplazamiento (en número de grupos) para apuntar a los artículos posesivos de la tabla, si el ente indicado necesita uno
 	>owned? @ abs 2 *
 	;
-: >negative_article  ( -- u )  \ Calcula el desplazamiento (en número de caracteres) para apuntar a los artículos negativos de la tabla
+: >negative_articles  ( -- u )  \ Devuelve el desplazamiento (en número de caracteres) para apuntar a los «artículos negativos» de la tabla
 	/article_type_set 3 *
+	;
+: >undefined_articles  ( -- u )  \ Devuelve el desplazamiento (en número de caracteres) para apuntar a los artículos indefinidos de la tabla
+	0
+	;
+: >defined_articles  ( -- u )  \ Devuelve el desplazamiento (en número de caracteres) para apuntar a los artículos definidos de la tabla
+	/article_type_set 
+	;
+: >distant_articles  ( -- u )  \ Devuelve el desplazamiento (en número de caracteres) para apuntar a los «artículos distantes» de la tabla
+	/article_type_set 4 *
 	;
 : on_article_type  ( a -- u )  \ Devuelve un desplazamiento parcial en la tabla de artículos según el ente requiera un artículo definido, indefinido o posesivo
 	dup >definite_article swap >possesive_article	
 	max /article_type_set *
 	;
-: article$  ( u -- a1 u1 )  \ Devuelve una cadena de la tabla de artículos a partir de su índice
+: article$  ( u -- a1 u1 )  \ Devuelve artículo de la tabla de artículos a partir de su índice
 	'articles + /article -trailing
 	;
 : (>article@)  ( a -- a1 u1 )  \ Devuelve el artículo apropiado para un ente
@@ -1428,11 +1308,24 @@ create 'articles  \ Tabla de artículos
 : >article@  ( a -- a1 u1 | a 0 )  \ Devuelve el artículo apropiado para un ente, si lo necesita; en caso contrario devuelve una cadena vacía 
 	dup >no_article? @  if  0  else  (>article@)  then
 	;
-: >negative_article@  ( a -- a1 u1 | a 0 )
-	>negative_article  \ Apuntar a los artículos negativos
-	over on_article_gender +  \ Sumar el desplazamiento según el género
-	swap on_article_number +  \ Sumar al desplazamiento según el número
+: >undefined_article@  ( a -- a1 u1 )  \ Devuelve el artículo indefinido correspondiente al género y número de un ente
+	on_article_gender_and_number >undefined_articles +
+	article$
+	;
+: >defined_article@  ( a -- a1 u1 )  \ Devuelve el artículo definido correspondiente al género y número de un ente
+	on_article_gender_and_number >defined_articles +
+	article$
+	;
+: >pronoun@  ( a -- a1 u1 )  \ Devuelve el pronombre correspondiente al género y número de un ente
+	>defined_article@  s" lo" s" el" sreplace
+	;
+: >negative_article@  ( a -- a1 u1 )  \ Devuelve el «artículo negativo» correspondiente al género y número de un ente
+	on_article_gender_and_number >negative_articles +
 	article$  s" ú" s" X" sreplace
+	;
+: >distant_article@  ( a -- a1 u1 )  \ Devuelve el «artículo distante» correspondiente al género y número de un ente
+	on_article_gender_and_number >distant_articles +
+	article$
 	;
 : >plural_ending@  ( a -- a u )  \ Devuelve la terminación adecuada del plural para el nombre de un ente
 	>plural? @  if  s" s"  else  s" "  then
@@ -1495,11 +1388,20 @@ create 'articles  \ Tabla de artículos
 	\ a2 u2 = Nombre completo
 	rot >name@ s& 
 	;
-: >full_name@  ( a -- a1 u1 )  \ Devuelve el nombre completo de un ente, con su artículo
+: >full_name@  ( a -- a1 u1 )  \ Devuelve el nombre completo de un ente, con el artículo que le corresponda
 	dup >article@ name& 
+	;
+: >defined_full_name@  ( a -- a1 u1 )  \ Devuelve el nombre completo de un ente, con un artículo definido
+	dup >defined_article@ name&
+	;
+: >undefined_full_name@  ( a -- a1 u1 )  \ Devuelve el nombre completo de un ente, con un artículo indefinido
+	dup >undefined_article@ name&
 	;
 : >negative_full_name@  ( a -- a1 u1 )  \ Devuelve el nombre completo de un ente, con un «artículo negativo»
 	dup >negative_article@ name&
+	;
+: >distant_full_name@  ( a -- a1 u1 )  \ Devuelve el nombre completo de un ente, con un «artículo distante»
+	dup >distant_article@ name&
 	;
 : >nonhuman_subjective_negative_name@  ( a -- a1 u1 )  \ Devuelve el nombre subjetivo (negativo) de un ente (no humano), desde el punto de vista del protagonista
 	>negative_full_name@ 2dup 2dup  \ Tres nombres repetidos con «artículo negativo»
@@ -1908,7 +1810,7 @@ para nombrar los entes.
 \ }}}
 \ }}}
 \ ##############################################################
-section( Tratamiento de errores de las acciones)
+section( Errores de las acciones)
 \ {{{
 
 variable action  \ Código de la acción del comando
@@ -1969,7 +1871,7 @@ variable what  \ Ente que ha provocado un error y puede ser citado en el mensaje
 	s" una cosa así"
 	6 schoose s&
 	;
-: is_impossible$  ( -- a u )  \ Devuelve una cadena con una variante de «es imposible», que formará parte de mensajes personalizados por cada acción
+: is_impossible$  ( -- a u )  \ Devuelve una variante de «es imposible», que formará parte de mensajes personalizados por cada acción
 	s" es imposible"
 	s" es inviable"
 	s" no es posible"
@@ -1980,7 +1882,7 @@ variable what  \ Ente que ha provocado un error y puede ser citado en el mensaje
 	s" sería inviable"
 	8 schoose
 	;
-: ^is_impossible$  ( -- a u )  \ Devuelve una cadena con una variante de «Es imposible» (con la primera letra en mayúsculas) que formará parte de mensajes personalizados por cada acción
+: ^is_impossible$  ( -- a u )  \ Devuelve una variante de «Es imposible» (con la primera letra en mayúsculas) que formará parte de mensajes personalizados por cada acción
 	is_impossible$ >^uppercase
 	;
 : x_is_impossible$  ( a1 u1 -- a2 u2 )  \ Devuelve una variante «X es imposible»
@@ -2003,10 +1905,10 @@ variable what  \ Ente que ha provocado un error y puede ser citado en el mensaje
 	something_like_that$ is_impossible
 	;
 ' impossible constant impossible_error#
-: try$  ( -- a u )  \ Devuelve una cadena con una variante de «intentar» (o vacía)
+: try$  ( -- a u )  \ Devuelve una variante de «intentar» (o vacía)
 	s" intentar" s" " 2dup 3 schoose 
 	;
-: nonsense$  ( -- a u )  \ Devuelve una cadena con una variante de «no tiene sentido», que formará parte de mensajes personalizados por cada acción
+: nonsense$  ( -- a u )  \ Devuelve una variante de «no tiene sentido», que formará parte de mensajes personalizados por cada acción
 	\ Pendiente!!! Quitar las variantes que no sean adecuadas a todos los casos.
 	s" es ilógico"
 	s" no parece lógico"
@@ -2020,20 +1922,20 @@ variable what  \ Ente que ha provocado un error y puede ser citado en el mensaje
 	s" no tiene sentido"
 	10 schoose 
 	;
-: ^nonsense$  ( -- a u )  \ Devuelve una cadena con una variante de «No tiene sentido» (con la primera letra en mayúsculas) que formará parte de mensajes personalizados por cada acción
+: ^nonsense$  ( -- a u )  \ Devuelve una variante de «No tiene sentido» (con la primera letra en mayúsculas) que formará parte de mensajes personalizados por cada acción
 	nonsense$ >^uppercase
 	;
-: x_is_nonsense$  ( a1 u1 -- a2 u2 )  \ Devuelve una variante «X no tiene sentido»
+: x_is_nonsense$  ( a1 u1 -- a2 u2 )  \ Devuelve una variante de «X no tiene sentido»
 	dup
 	if  try$ 2swap s& >^uppercase nonsense$ s&
 	else  2drop ^nonsense$
 	then
 	;
-: it_is_nonsense_x$  ( a1 u1 -- a2 u2 )  \ Devuelve una variante «No tiene sentido x»
+: it_is_nonsense_x$  ( a1 u1 -- a2 u2 )  \ Devuelve una variante de «No tiene sentido x»
 	^nonsense$ try$ s& 2swap s& 
 	;
-: is_nonsense  ( a u -- ) \ Informa de una acción dada (en infinitivo) no tiene sentido
-	\ a u = Acción que no tiene sentido, en infinitivo, o una cadena vacía
+: is_nonsense  ( a u -- ) \ Informa de que una acción dada no tiene sentido
+	\ a u = Acción que no tiene sentido; es un verbo en infinitivo, un sustantivo o una cadena vacía
 	['] x_is_nonsense$
 	['] it_is_nonsense_x$ 
 	2 choose execute  period+ narrate
@@ -2044,7 +1946,7 @@ variable what  \ Ente que ha provocado un error y puede ser citado en el mensaje
 	s" eso" is_nonsense 
 	;
 ' nonsense constant nonsense_error#
-: dangerous$  ( -- a u )  \ Devuelve una cadena con una variante de «es peligroso», que formará parte de mensajes personalizados por cada acción
+: dangerous$  ( -- a u )  \ Devuelve una variante de «es peligroso», que formará parte de mensajes personalizados por cada acción
 	\ Pendiente!!! Quitar las variantes que no sean adecuadas a todos los casos.
 	s" es algo descabellado"
 	s" es descabellado"
@@ -2061,7 +1963,7 @@ variable what  \ Ente que ha provocado un error y puede ser citado en el mensaje
 	s" sería una insensatez"
 	13 schoose 
 	;
-: ^dangerous$  ( -- a u )  \ Devuelve una cadena con una variante de «Es peligroso» (con la primera letra en mayúsculas) que formará parte de mensajes personalizados por cada acción
+: ^dangerous$  ( -- a u )  \ Devuelve una variante de «Es peligroso» (con la primera letra en mayúsculas) que formará parte de mensajes personalizados por cada acción
 	dangerous$ >^uppercase
 	;
 : x_is_dangerous$  ( a1 u1 -- a2 u2 )  \ Devuelve una variante «X es peligroso»
@@ -2103,7 +2005,7 @@ variable what  \ Ente que ha provocado un error y puede ser citado en el mensaje
 : other_complement+is_nonsense  ( a u -- ) \ Informa de una acción dada (en infinitivo), que hay que completar con el nombre del complemento auxiliar, no tiene sentido
 	other_complement @ +is_nonsense
 	;
-: no_reason_for$  ( -- a u )  \ Devuelve una cadena con una variante de «no hay motivo para»
+: no_reason_for$  ( -- a u )  \ Devuelve una variante de «no hay motivo para»
 	\ Pendiente!!! Quitar las variantes que no sean adecuadas a todos los casos.
 	s" No hay"
 	s" razón para"
@@ -2160,13 +2062,16 @@ variable silent_well_done?  silent_well_done? off
 	;
 : (do_not_worry_1)$  ( -- a u)  \ Segunda versión posible del mensaje de DO_NOT_WORRY
 	s" Eso no"
+	s" es importante"
+	s" es menester" 
+	s" es necesario"
+	s" hace falta" 
+	s" importa"
+	s" parece importante"
+	s" parece necesario" 
 	s" tiene importancia"
 	s" tiene utilidad"
-	s" importa"
-	s" hace falta" 
-	s" es menester" 
-	s" es importante"
-	s" es necesario" 7 schoose s&
+	9 schoose s&
 	;
 : do_not_worry  \ Informa de que una acción no tiene importancia
 	\ Provisional!!! No se usa!!!
@@ -2174,6 +2079,40 @@ variable silent_well_done?  silent_well_done? off
 	['] (do_not_worry_1)$ 2 choose execute
 	now_$ s&  period+ narrate
 	;
+
+0 [if]  \ Error «no tiene nada especial», aún en desarrollo!!!
+
+: rimarkable$  ( -- a u )  \ Devuelve una variante de «destacable»
+	s" de especial"
+	s" de particular"
+	s" de peculiar"
+	s" destacable" 
+	s" especial"
+	s" peculiar"
+	s" que llame la atención" 
+	s" que destacar" 8 schoose s&
+	;
+: has_nothing$  ( -- a u )
+	s" no tiene nada"
+	;
+: is_normal$  ( -- a u )  \ Devuelve una variante de «no tiene nada especial»
+	has_nothing$ rimarkable$ s&
+	;
+: ^is_normal$  ( -- a u )  \ Devuelve una variante de «No tiene nada especial» (con la primera letra en mayúscula)
+	;
+: it_is_normal_x$  ( a1 u1 -- a2 u2 )  \ Devuelve una variante de «no tiene nada especial x»
+	^normal$ try$ s& 2swap s& 
+	;
+: is_normal  ( a -- )  \ Informa de que un ente no tiene nada especial
+	\ a u = Acción que no tiene nada especial; es un verbo en infinitivo, un sustantivo o una cadena vacía
+	['] x_is_normal$
+	['] it_is_normal_x$ 
+	2 choose execute  period+ narrate
+	;
+' is_normal constant is_normal_error#
+
+[then]
+
 : that$  ( a -- a1 u1 )  \  Devuelve el nombre de un ente, o un pronombre demostrativo
 	2 random
 	if  drop s" eso"  else  >full_name@  then
@@ -2286,7 +2225,6 @@ variable silent_well_done?  silent_well_done? off
 	;
 ' what_is_already_close_error constant what_is_already_close_error#
 
-\ }}}
 \ ------------------------------------------------
 subsection( Atributos)
 \ {{{
@@ -2401,7 +2339,7 @@ descriptions_xt swap 0 fill  \ Borrar la zona con ceros para reconocer después 
 : .location_name  ( a -- )  \ Imprime el nombre de un ente escenario, como cabecera de su descripción
 	>name@ >^uppercase location_name_color paragraph default_color
 	;
-: (describe_location)  ( a -- )  \ Imprime la descripición de un ente escenario
+: (describe_location)  ( a -- )  \ Imprime la descripción de un ente escenario
 	location_description_color (describe)
 	;
 : describe_location  ( a -- )  \ Imprime el nombre y la descripción de un ente escenario, y llama a su trama
@@ -2621,7 +2559,26 @@ location_03_e :description
 	paragraph
 	;description
 location_04_e :description
+	\ Versión actual!!!:
 	s" Una senda parte al Oeste, a la sierra por el paso del Perro, y otra hacia el Norte, por un frondoso bosque que la rodea."
+	paragraph
+	exit \ tmp!!!
+	\ Versión nueva!!! en preparación: 
+	case
+	location_04_e  of
+		s" Una senda parte al Oeste, a la sierra por el paso del Perro, y otra hacia el Norte, por un frondoso bosque que la rodea."
+		endof
+	west_e  of
+		s" Una senda parte al Oeste, a la sierra por el paso del Perro."
+		endof
+	north_e  of
+		s" Una senda parte hacia el Norte, por un frondoso bosque que rodea la sierra."
+		endof
+	floor_e  of  endof
+	down_e  of  endof
+	sky_e  of  endof
+	up_e  of  endof
+	endcase
 	paragraph
 	;description
 location_05_e :description
@@ -3051,14 +3008,75 @@ escenario asignando en una sola operación todas sus salidas.
 
 [then]  \ ......................................
 
-\ }}}
 \ ------------------------------------------------
 subsection( Interfaz para crear conexiones entre los escenarios)
 \ {{{
 
-: opposite_exit  ( a1 -- a2 )  \ Devuelve la dirección cardinal opuesta a la indicada
-	\ Inacabado!!!
+0 [if]  \ Inacabado!!!
+
+create opposite_exits
+south_exit ,
+north_exit ,
+west_exit ,
+east_exit ,
+down_exit ,
+up_exit ,
+in_exit ,
+out_exit ,
+
+create opposite_direction_entities
+south_e ,
+north_e ,
+west_e ,
+east_e ,
+down_e ,
+up_e ,
+in_e ,
+out_e ,
+
+[then]
+
+create exits_table  \ Tabla de traducción de salidas
+#exits cells allot  \ Reservar espacio para tantas celdas como salidas
+
+\ Rellenar cada elemento de la tabla con un ente de salida,
+\ usando como puntero el campo análogo de la ficha.
+\ Haciéndolo de esta manera no importa el orden en que se rellenen los elementos.
+0 [if]  \ Versión antigua!!!:
+north_e exits_table >north_exit first_exit - !
+south_e exits_table >south_exit first_exit - !
+east_e exits_table >east_exit first_exit - !
+west_e exits_table >west_exit first_exit - !
+up_e exits_table >up_exit first_exit - !
+down_e exits_table >down_exit first_exit - !
+out_e exits_table >out_exit first_exit - !
+in_e exits_table >in_exit first_exit - !
+[then]  \ Versión nueva!!!:
+north_e exits_table north_exit + !
+south_e exits_table south_exit + !
+east_e exits_table east_exit + !
+west_e exits_table west_exit + !
+up_e exits_table up_exit + !
+down_e exits_table down_exit + !
+out_e exits_table out_exit + !
+in_e exits_table in_exit + !
+
+: dir>entity  ( u -- a )  \ Devuelve un ente de dirección a partir de un campo de dirección
+	\ u = Desplazamiento del campo de dirección
+	\ a = Ente de dirección correspondiente a la expresada por u
+	first_exit - exits_table + @ 
 	;
+
+0 [if]  \ Inacabado!!!
+: opposite_exit  ( a1 -- a2 )  \ Devuelve la dirección cardinal opuesta a la indicada
+	first_exit - opposite_exits + @
+	;
+: opposite_exit_e  ( a1 -- a2 )  \ Devuelve el ente de dirección cuya direccién es opuesta a la indicada
+	\ a1 = entidad de dirección
+	\ a2 = entidad de dirección, opuesta a a1
+	first_exit - opposite_direction_entities + @
+	;
+[then]
 
 : -->  ( a1 a2 u -- )  \ Comunica el ente a1 con el ente a2 mediante la salida indicada por el desplazamiento u
 	\ a1 = Ente escenario origen
@@ -3123,8 +3141,8 @@ subsection( Interfaz para crear conexiones entre los escenarios)
 
 \ Múltiples conexiones a la vez
 
-: exits!  ( a1..a6 a0 -- )  \ Asigna todas las salidas de un ente escenario.
-	\ a1..a8 = Entes escenario de salida (o cero) en el orden: norte, sur, este, oeste, arriba, abajo, dentro, fuera
+: exits!  ( a1..a8 a0 -- )  \ Asigna todas las salidas de un ente escenario.
+	\ a1..a8 = Entes escenario de salida (o cero) en el orden habitual: norte, sur, este, oeste, arriba, abajo, dentro, fuera
 	\ a0 = Ente escenario cuyas salidas hay que modificar
 	dup >r >out_exit !
 	r@ >in_exit !
@@ -3136,7 +3154,7 @@ subsection( Interfaz para crear conexiones entre los escenarios)
 	r> >north_exit !
 	;
 : init_location  ( a1..a8 a0 -- )  \ Marca un ente como escenario y le asigna todas las salidas. 
-	\ a1..a8 = Entes escenario de salida (o cero) en el orden: norte, sur, este, oeste, arriba, abajo, dentro, fuera
+	\ a1..a8 = Entes escenario de salida (o cero) en el orden habitual: norte, sur, este, oeste, arriba, abajo, dentro, fuera
 	\ a0 = Ente escenario cuyas salidas hay que modificar
 	dup >location? on  exits!
 	;
@@ -3209,7 +3227,7 @@ section( Listas)
 variable #listed  \ Contador de elementos listados, usado en varias acciones
 variable #elements  \ Total de los elementos de una lista
 
-: list_separator$  ( u1 u2 -- a u )  \ Devuelve una cadena con el separador adecuado a un elemento de una lista
+: list_separator$  ( u1 u2 -- a u )  \ Devuelve el separador adecuado a un elemento de una lista
 	\ Versión abandonada!!!
 	\ u1 = Elementos que tiene la lista
 	\ u2 = Elementos listados hasta el momento
@@ -3269,7 +3287,7 @@ variable #elements  \ Total de los elementos de una lista
 	\ u = Número de entes que serán listados
 	#listed off  /list dup #elements !
 	;
-: content_list  ( a -- a1 u1 )  \ Devuelve una cadena con una lista de entes cuyo lugar es el ente indicado
+: content_list  ( a -- a1 u1 )  \ Devuelve una lista de entes cuyo lugar es el ente indicado
 	\ a = Ente que actúa como localización.
 	\ a1 u1 = Lista de objetos localizados en dicho ente.
 	«»-clear
@@ -3542,29 +3560,29 @@ subsection( Trama global)
 : ?plural_verb  ( a1 u1 f -- a1 u1 | a2 u2 )  \ Pone un verbo en plural si es preciso
 	if  s" n" s+  then
 	;
-: fight/s$  ( f -- a u )  \ Devuelve una cadena con una variante de «lucha/n».
+: fight/s$  ( f -- a u )  \ Devuelve una variante de «lucha/n».
 	\ f = ¿El resultado debe estar en plural?
 	\ a u = Resultado.
 	s" lucha" s" combate" s" pelea" s" se bate" 4 schoose
 	rot ?plural_verb
 	;
-: resist/s$  ( f -- a u )  \ Devuelve una cadena con una variante de «resiste/n».
+: resist/s$  ( f -- a u )  \ Devuelve una variante de «resiste/n».
 	\ f = ¿El resultado debe estar en plural?
 	\ a u = Resultado.
 	s" resiste" s" aguanta" s" contiene" 3 schoose
 	rot ?plural_verb
 	;
-: like_a_heroe$ ( -- a u )  \ Devuelve una cadena con una variante de «como un héroe».
+: like_a_heroe$ ( -- a u )  \ Devuelve una variante de «como un héroe».
 	s" como un"
 	s" auténtico" s" " 2 schoose s&
 	s" héroe" s" valiente" s" jabato"  3 schoose s&
 	;
-: like_heroes$ ( -- a u )  \ Devuelve una cadena con una variante de «como héroes».
+: like_heroes$ ( -- a u )  \ Devuelve una variante de «como héroes».
 	s" como"
 	s" auténticos" s" " 2 schoose s&
 	s" héroes" s" valientes" s" jabatos"  3 schoose s&
 	;
-: (bravery)$  ( -- a u )  \ Devuelve una cadena con una variante de «con denuedo».
+: (bravery)$  ( -- a u )  \ Devuelve una variante de «con denuedo».
 	s" con denuedo"
 	s" con bravura"
 	s" con coraje"
@@ -3572,7 +3590,7 @@ subsection( Trama global)
 	s" esforzadamente"
 	s" valientemente"  6 schoose
 	;
-: bravery$  ( f -- a u )  \ Devuelve una cadena con una variante de «con denuedo», en singular o plural.
+: bravery$  ( f -- a u )  \ Devuelve una variante de «con denuedo», en singular o plural.
 	\ f = ¿El resultado debe estar en plural?
 	\ a u = Resultado.
 	(bravery)$  rot
@@ -3818,7 +3836,7 @@ constantes cuyo nombre termina en «_error#».
 
 [then]  \ ......................................
 
-: please$  ( -- a u )  \ Devuelve una cadena con «por favor» o vacía
+: please$  ( -- a u )  \ Devuelve «por favor» o vacía
 	s" " s" por favor" 2 schoose
 	;
 : (please&)  ( a1 u1 a2 u2 -- a3 u3 )  \ Añade una cadena al inicio o al final de otra, con una coma de separación
@@ -3830,7 +3848,7 @@ constantes cuyo nombre termina en «_error#».
 : please&  ( a1 u1 -- a1 u1 | a2 u2 )  \ Añade «por favor» al inicio o al final de una cadena, con una coma de separación; o la deja sin tocar
 	please$ dup  if  (please&)  else  2drop  then
 	;
-: in_the_sentence$  ( -- a u )  \ Devuelve una cadena con una variante de «en la frase» (o una cadena vacía)
+: in_the_sentence$  ( -- a u )  \ Devuelve una variante de «en la frase» (o una cadena vacía)
 	s" " s" en la frase" s" en el comando" s" en el texto"
 	4 schoose
 	;
@@ -3864,11 +3882,11 @@ constantes cuyo nombre termina en «_error#».
 	\ Elegir un final:
 	2 schoose s&
 	;
-: error_comment$  ( -- a u )  \ Devuelve una cadena con un mensaje de acompañamiento para los errores lingüísticos
+: error_comment$  ( -- a u )  \ Devuelve un mensaje de acompañamiento para los errores lingüísticos
 	error_comment_0$ error_comment_1$ error_comment_2$
 	3 schoose please&
 	;
-: ^error_comment$  ( -- a u )  \ Devuelve una cadena con un mensaje de acompañamiento para los errores lingüísticos, con la primera letra mayúscula
+: ^error_comment$  ( -- a u )  \ Devuelve un mensaje de acompañamiento para los errores lingüísticos, con la primera letra mayúscula
 	error_comment$ >^uppercase
 	;
 : language_error  ( a u -- )  \ Combina un mensaje de error con un comentario común e informa de él
@@ -4133,7 +4151,7 @@ subsection( Mirar, examinar y registrar)
 	;
 : do_look  \  Acción de mirar
 	main_complement @ ?dup 0=  if  my_location@  then
-	dup {looked} (do_look)
+	dup {looked}  (do_look)
 	;
 ' do_look constant do_look_xt
 : do_examine  \ Acción de examinar
@@ -4152,25 +4170,10 @@ subsection( Mirar, examinar y registrar)
 subsection( Salidas)
 \ {{{
 
-create do_exits_table  \ Tabla de traducción de salidas
-#exits cells allot  \ Reservar espacio para tantas celdas como salidas
-
-\ Rellenar cada elemento de la tabla con un ente de salida,
-\ usando como puntero el campo análogo de la ficha.
-\ Haciéndolo de esta manera no importa el orden en que se rellenen los elementos.
-north_e do_exits_table >north_exit first_exit - !
-south_e do_exits_table >south_exit first_exit - !
-east_e do_exits_table >east_exit first_exit - !
-west_e do_exits_table >west_exit first_exit - !
-up_e do_exits_table >up_exit first_exit - !
-down_e do_exits_table >down_exit first_exit - !
-out_e do_exits_table >out_exit first_exit - !
-in_e do_exits_table >in_exit first_exit - !
-
 \ Inacabado!!! No se usa!!!
 create do_exits_table_index  \ Tabla para desordenar el listado de salidas
 #exits cells allot
-\ Esta tabla permite que las salidas se muestren cada vez en un orden diferente
+\ Esta tabla permitirá que las salidas se muestren cada vez en un orden diferente
 
 variable #free_exits  \ Contador de las salidas posibles
 : no_exit$  ( -- a u )  \ Devuelve mensaje usado cuando no hay salidas que listar
@@ -4205,14 +4208,14 @@ variable #free_exits  \ Contador de las salidas posibles
 	endcase
 	«& «»@ period+ narrate
 	;
-: exit_separator$  ( -- a u )  \ Devuelve una cadena con el separador adecuado a la salida actual
+: exit_separator$  ( -- a u )  \ Devuelve el separador adecuado a la salida actual
 	#free_exits @ #listed @ list_separator$
 	;
 : (do_exit)  ( u -- )  \ Lista una salida
 	\ u = Desplazamiento del campo de salida
 	[debug_do_exits] [if]  cr ." (do_exit)" cr .stack [then]  \ Depuración!!!
 	exit_separator$ »+
-	first_exit - do_exits_table + @ >full_name@ »+
+	dir>entity >full_name@ »+
 	#listed ++
 	[debug_do_exits] [if]  cr .stack [then]  \ Depuración!!!
 	;
@@ -4239,6 +4242,33 @@ variable #free_exits  \ Contador de las salidas posibles
 	.exits
 	;
 ' do_exits constant do_exits_xt
+
+\ }}}
+\ ------------------------------------------------
+subsection( Ponerse y quitarse prendas)
+\ {{{
+
+: (do_put_on)  ( a -- )  \ Ponerse una prenda
+	>worn? on  well_done
+	;
+: do_put_on  \ Acción de ponerse una prenda
+	\ Pendiente!!! Hacer que tome la prenda si no la tiene.
+	main_complement{required}
+	main_complement{cloth}
+	main_complement{not_worn}
+	main_complement{hold}
+	main_complement @ (do_put_on)
+	;
+' do_put_on constant do_put_on_xt
+: (do_take_off)  ( a -- )  \ Quitarse una prenda
+	>worn? off  well_done
+	;
+: do_take_off  \ Acción de quitarse una prenda
+	main_complement{required}
+	main_complement{worn}
+	main_complement @ (do_take_off)
+	;
+' do_take_off constant do_take_off_xt
 
 \ }}}
 \ ------------------------------------------------
@@ -4302,33 +4332,6 @@ subsection( Tomar y dejar)
 	main_complement @ (do_drop)
 	;
 ' do_drop constant do_drop_xt
-
-\ }}}
-\ ------------------------------------------------
-subsection( Ponerse y quitarse prendas)
-\ {{{
-
-: (do_put_on)  ( a -- )  \ Ponerse una prenda
-	>worn? on  well_done
-	;
-: do_put_on  \ Acción de ponerse una prenda
-	\ Pendiente!!! Hacer que tome la prenda si no la tiene.
-	main_complement{required}
-	main_complement{cloth}
-	main_complement{not_worn}
-	main_complement{hold}
-	main_complement @ (do_put_on)
-	;
-' do_put_on constant do_put_on_xt
-: (do_take_off)  ( a -- )  \ Quitarse una prenda
-	>worn? off  well_done
-	;
-: do_take_off  \ Acción de quitarse una prenda
-	main_complement{required}
-	main_complement{worn}
-	main_complement @ (do_take_off)
-	;
-' do_take_off constant do_take_off_xt
 
 \ }}}
 \ ------------------------------------------------
@@ -4464,7 +4467,7 @@ subsection( Agredir)
 	s" Ya tiene una buena punta"
 	3 schoose
 	;
-: no_need_to_do_it_again$  ( -- a u )  \ Devuelve una cadena con una variante de «no hace falta hacerlo otra vez»
+: no_need_to_do_it_again$  ( -- a u )  \ Devuelve una variante de «no hace falta hacerlo otra vez»
 	s" no es necesario"
 	s" no hace falta" 
 	s" no es menester" 
@@ -4479,7 +4482,7 @@ subsection( Agredir)
 	s" repetirlo" 3 schoose s&
 	again$ s&
 	;
-: ^no_need_to_do_it_again$  ( -- a u )  \ Devuelve una cadena con una variante de «No hace falta hacerlo otra vez»
+: ^no_need_to_do_it_again$  ( -- a u )  \ Devuelve una variante de «No hace falta hacerlo otra vez»
 	no_need_to_do_it_again$ >^uppercase
 	;
 : log_already_sharpened_0$  ( -- a u )  \ Devuelve un mensaje de que el tronco ya estaba afilado (variante 0)
@@ -4742,7 +4745,7 @@ subsection( Escalar)
 subsection( Inventario)
 \ {{{
 
-: anything_with_you$  ( -- a u )  \ Devuelve una cadena con una variante de «nada contigo»
+: anything_with_you$  ( -- a u )  \ Devuelve una variante de «nada contigo»
 	s" nada" with_you$  ?dup  if
 		2 random  if  2swap  then  s&
 	else drop
@@ -5078,7 +5081,6 @@ Forth.
 
 [then]  \ ......................................
 
-\ }}}
 \ ------------------------------------------------
 subsection( Analizador)
 \ {{{
@@ -5490,11 +5492,11 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 ' hablar 4 synonyms: contar cuenta contarle cuéntale 
 
 : nubes  clouds_e complement!  ;
-' nubes 3 synonyms: nube estratocúmulo estratocúmulos
+' nubes 5 synonyms: nube estratocúmulo estratocúmulos cirro cirros
 : suelo  floor_e complement!  ;
-' suelo 3 synonyms: suelos tierra firme
+' suelo 4 synonyms: suelos tierra firme tierra
 : cielo  sky_e complement!  ;
-' cielo 4 synonyms: cielos firmamento cirro cirros
+' cielo 4 synonyms: cielos firmamento 
 : techo  ceiling_e complement!  ;
 : cueva  «cave»>entity complement!  ;
 ' cueva 2 synonyms: caverna gruta
@@ -5713,11 +5715,11 @@ section( Fin)
 	castilian_quotes? @
 	if  \ Comillas castellanas
 		s" El rey" rquote$ s+ s" , te indica el valido," s+
-		lquote$ s" ha ordenado que no se le moleste," s+ s&
+		lquote$ s" ha ordenado que no se lo moleste," s+ s&
 	else  \ Raya
 		s" El rey" 
 		dash$ s" te indica el valido" dash$ comma+ s+ s+ s&
-		s" ha ordenado que no se le moleste," s&
+		s" ha ordenado que no se lo moleste," s&
 	then
 	s" pues sufre una amarga tristeza." s&
 	speak  short_pause
@@ -5730,11 +5732,7 @@ section( Fin)
     s" Te has ganado un buen descanso."
 	narrate
 	;
-: the_sad_end  \ Final del juego con fracaso
-    s" Los sajones te"
-	s" hacen prisionero"
-	s" capturan"
-	s" atrapan" 3 schoose s& period+
+: enemy_speech  \ Palabras del general enemigo
 	s" Su general, sonriendo ampliamente, dice:" s&
 	narrate  short_pause
 	s" Hoy parece ser" 
@@ -5743,20 +5741,21 @@ section( Fin)
 	s" Hoy es" 4 schoose s" mi día de suerte..." s&
 	s" Bien, bien..."
 	s" Excelente..." 2 schoose s&
-	s" Por el gran Ulfius podremos pedir un buen rescate."
-	s" Del gran Ulfius podremos sacar una buena ventaja."
-	2 schoose s&  speak
+	s" Por el gran Ulfius podremos pedir un buen rescate"
+	s" Del gran Ulfius podremos sacar una buena ventaja"
+	2 schoose s& period+  speak
+	;
+: the_sad_end  \ Final del juego con fracaso
+    s" Los sajones te"
+	s" hacen prisionero"
+	s" capturan"
+	s" atrapan" 3 schoose s& period+
+	enemy_speech
 	;
 : the_end  \ Mensaje final del juego
 	success?  if  the_happy_end  else  the_sad_end  then
     end_of_scene 
 	;
-
-\ }}}
-\ ------------------------------------------------
-subsection( Acción de terminar de jugar)
-\ {{{
-
 : (_do_finish)  \ Abandonar el juego
 	restore_vocabularies default_color cr (title) quit
 	;
@@ -5769,7 +5768,6 @@ subsection( Acción de terminar de jugar)
 	;
 ' _do_finish is do_finish
 
-\ }}}
 \ }}}
 \ ##############################################################
 section( Acerca del programa)
@@ -5837,14 +5835,19 @@ section( Introducción)
 	s" ha concluido." 2 schoose s&
 	speak
 	;
+: needed_orders$  ( -- a u )  \ Devuelve una variante de «órdenes necesarias»
+	s" órdenes"
+	s" necesarias" s" pertinentes" s" " 3 schoose s&
+	;
 : intro_4  \ Muestra la introducción al juego (parte 4)
 	s" Lentamente,"
 	s" ordenas"
 	s" das la orden de"
-	s" das las órdenes para"
-	s" das las órdenes necesarias para"
-	4 schoose s&
-	s" volver" s" regresar" 2 schoose s&
+	s" das las" needed_orders$ s& s" para" s&
+	3 schoose s&
+	s" volver"
+	s" regresar"
+	2 schoose s&
 	s" a casa." s&
 	narrate short_pause
 	;
@@ -5858,7 +5861,8 @@ section( Introducción)
 	s" hacen lo imposible" 3 schoose
 	s" para detener" s" por detener" 2 schoose s&
 	3 schoose s&
-	s" el saqueo." s&
+	s" el saqueo" 2dup s" el pillaje"
+	3 schoose s& period+
 	narrate  end_of_scene
 	;
 : intro  \ Muestra la introducción al juego 
@@ -5964,7 +5968,7 @@ section( Principal)
 	\ about cr intro  
 	\ location_01_e enter
 
-	\ Provisional para depuración:!!!
+	\ Provisional para depuración!!!:
 	\ location_08_e enter  \ Emboscada 
 	location_47_e enter
 	snake_e be_here
@@ -6004,5 +6008,223 @@ i0 cr  \ Para depuración!!!
 
 \ }}}
 \eof  \ Final del programa; el resto del fichero es ignorado por SP-Forth
+
 0 [if]  \ ......................................
 [then]  \ ......................................
+
+\ #############################################################
+\ Notas
+\ {{{
+
+0 [if]  \ ......................................
+
+------------------------------------------------
+Novedades significativas respecto a la versión en SuperBASIC y a las versiones originales
+\ {{{
+
+Todos los objetos citados en las descripciones exiten como
+tales (p.e. catre, puente, pared...) y por tanto son
+manipulables, pero no se incluyen en la lista de los objetos
+presentes.
+
+Objetos globales (p.e. cielo, suelo, techo, pared...)
+
+Las direcciones de salida son objetos virtuales, lo que
+permite expresiones como «ve al Norte» o «mira hacia el Sur».
+
+La condición final de la batalla no es un número fijo de
+pasos sino aleatorio.
+
+Algunas de las descripciones de los objetos y personajes
+varían en función de la trama y la situación. \ Pendiente!!!
+
+\ }}}
+------------------------------------------------
+Términos usados en los comentarios del programa
+\ {{{
+
+«ente»
+«lugar»
+«salida»/«dirección»
+«protagonista»
+«base de datos»
+«ficha»
+«campo»/«atributo»
+
+\ }}}
+------------------------------------------------
+Dudas
+\ {{{
+
+¿Cómo saber la dirección de la pila? No hay SP0 .
+
+¿Cómo saber el tamaño de la pantalla? No hay FORM .
+
+¿Cómo borrar la pantalla? No hay PAGE .
+
+¿Cómo saber si estoy en SP-Forth o en otro Forth?
+
+[then]  \ ......................................
+
+\ }}}
+\ }}}
+\ #############################################################
+\ Tareas pendientes
+\ {{{
+
+((
+0 [if]
+
+------------------------------------------------
+Programación 
+{{{
+
+Hacer que se acepten los movimientos a entes de decoración o
+mobiliario, y que se conserve el ente junto al que estamos,
+para ilustrar textos.
+Idea sacada de Transilvania Corruption:
+
+>ve fregadero
+No es algo donde pueda ir.
+
+...........................
+
+Hacer que no salga el presto de pausa si las pausas son
+cero.
+
+...........................
+
+Hacer variantes de CHOOSE y DCHOOSE para elegir un elemento
+con un cálculo en lugar de al azar. 
+
+...........................
+
+Crear un mensaje de error más laborado para las
+acciones que precisan objeto directo, con el infinitivo
+como parámetro:
+«¿Matar por matar?» «Normalmente hay que matar a alguien o algo».
+
+...........................
+
+Usar [ y ] para permitir comandos de configuración dentro
+de los comandos del jugador.
+
+...........................
+
+Implementar pronombres. Para empezar, que la forma «mírate»
+sea compatible con «mírate la capa». Para esto habría que
+distiguir dos variantes de complemento directo, y que al
+asignar cualquiera de ellas se compruebe si había ya otro
+complemento directo del otro tipo.
+
+...........................
+
+Limitar los usos de PRINT_STR a la impresión. Renombrarla.
+Crear otra cadena dinámica para los usos genéricos con «+ y
+palabras similares.
+
+...........................
+
+Comprobar los usos de TMP_STR .
+
+...........................
+
+Poner en fichero de configuración el número de líneas
+necesario para mostrar un presto de pausa.
+
+...........................
+
+Poner en fichero de configuración los colores de los textos.
+
+...........................
+
+Implementar opción para tener en cuenta las palabras no
+reconocidas y detener el análisis.
+
+...........................
+
+Poner en fichero de configuración si las palabras no
+reconocidas deben interrumpir el análisis.
+
+...........................
+
+Poner todos los textos relativos al protagonista en segunda 
+persona.
+
+...........................
+
+Implementar acciones intermedias automáticas, como quitarse
+una prenda antes de dejarla, y que el mensaje sea correcto:
+«Ulfius se quita la corbata y a continuación la deja».
+
+...........................
+
+Hacer que el color de fondo y de texto cambie en los
+escenarios al aire libre.
+
+...........................
+
+Añadir las salidas hacia fuera y dentro.
+
+...........................
+
+Implementar el recuerdo de la dirección del último
+movimiento.
+
+...........................
+
+Hacer que «salir», si no hay dirección de salida en el ente,
+calcule la dirección con la del último movimiento.
+
+...........................
+
+Añadir a la configuración si los errores lingüísticos deben
+ser detallados (técnicos) o vagos (narrativos).
+
+...........................
+
+Lista de puzles completados (como Transilvania Corruption).
+
+...........................
+
+}}}
+------------------------------------------------
+Trama y puzles 
+{{{
+
+Hacer que la espada corte en más pedazos la capa si ha sido
+afilada con la piedra. Hacer que su descripción varíe.
+
+Hace que el altar solo aparezca al examinar el puente, y la
+piedra al examinar el altar.
+
+Escenario y subtrama bajo el agua.
+
+Distinguir nadar de bucear.
+
+Quitarse la coraza o la capa antes de nadar (ambas son
+demasiado pesadas para cruzar el lago con 100% de éxito)
+
+No poder nadar si llevamos algo en las manos aparte de la
+espada.
+
+Posibilidad de perder la capa al nadar si no la llevamos
+puesta.
+
+}}}
+------------------------------------------------
+Código fuente
+{{{
+
+Unificar los nombres de las palabras que muestran errores:
+usar o no el sufijo «_error».
+
+Homogeneizar el uso de los puntos finales de los comentarios.
+
+Unificar la terminología: localización / lugar /escenario.
+
+}}}
+
+[then]
+))
+\ }}}
