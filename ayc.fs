@@ -7,7 +7,7 @@ CR .( Asalto y castigo )
 \ A text adventure in Spanish, written in SP-Forth.
 \ Un juego conversacional en castellano, escrito en SP-Forth.
 
-: version$  S" A-2011271748"  ;  version$ TYPE CR
+: version$  S" A-2011280145"  ;  version$ TYPE CR
 
 \ Copyright (C) 2011 Marcos Cruz (programandala.net)
 
@@ -129,14 +129,26 @@ require csb csb2.fs  \ Almacén circular de cadenas, con definición de cadenas 
 
 \ }}}
 \ ##############################################################
-\ Meta
-\ {{{
+\ Indicadores para depuración
+
+\ Cada indicador activado hace que se muestren mensajes de
+\ depuración durante la ejecución del programa:
 
 false value [debug] immediate  \ Indicador: ¿Modo de depuración global?
 false value [debug_do_exits] immediate  \ Indicador: ¿Depurar la acción DO_EXITS ?
 false value [debug_catch] immediate  \ Indicador: ¿Depurar CATCH y THROW ?
-true value [status] immediate  \ Indicador: ¿Mostrar info de depuración sobre el presto de comandos? 
-false value [debug_pause] immediate  \ Indicador: ¿Hacer una pausa en cada punto de depuración?
+false value [debug_info] immediate  \ Indicador: ¿Mostrar info de depuración sobre el presto de comandos? 
+true value [debug_pause] immediate  \ Indicador: ¿Hacer una pausa en cada punto de depuración?
+
+[debug]  [if]  startlog  [then]
+
+\ Indicadores para poder elegir alternativas que aún son experimentales:
+true constant [old_method]  immediate
+[old_method] 0= constant [new_method]  immediate
+
+\ ##############################################################
+\ Meta
+\ {{{
 
 true constant [true] immediate  \ Para usar en compilación condicional 
 false constant [false] immediate  \ Para usar en compilación condicional 
@@ -246,6 +258,14 @@ variable seed
 	;
 ' dchoose alias schoose  \ Alias de DCHOOSE para usar con cadenas de texto (solo por estética)
 
+variable schoose_depth  \ Guardará la profundidad de la pila cuando se ejecute SCHOOSE{
+: schoose{  \ Inicia una zona de selección aleatoria de cadenas
+	depth schoose_depth !
+	;
+: }schoose  ( a1 u1 .. an un -- a' u' )  \ Devuelve una cadena entre todas las puestas en la pila desde que se ejecutó SCHOOSE{
+	depth schoose_depth @ - 2 / schoose
+	;
+
 \ }}}
 \ ##############################################################
 section( Variables)
@@ -321,7 +341,7 @@ variable cursor_y  \ Fila actual del cursor
 \ ------------------------------------------------
 subsection( Colores)
 \ {{{
-0 [if]  \ ......................................
+0  [if]  \ ......................................
 
 Notas sobre las pruebas realizadas en Debian
 con el módulo trm de Forth Foundation Library:
@@ -397,7 +417,7 @@ subsection( Colores utilizados)
 : location_name_color  \ Pone el color de texto del nombre de los escenarios
 	green paper  black pen
 	;
-: location_description_color  \ Pone el color de texto de las descripciones de los entes escenarios
+: location_description_color  \ Pone el color de texto de las descripciones de los entes escenario
 	common_paper  green pen
 	;
 : description_color  \ Pone el color de texto de las descripciones de los entes que no son escenarios
@@ -462,7 +482,7 @@ subsection( Otros atributos)
 : inverse  ( f -- )  \ Activa o desactiva la inversión de colores (papel y pluma)
 	if  trm.reverse-on  else  trm.reverse-off  then  1 sgr
 	;
-0 [if]
+0  [if]
 : blink ( f -- )  \ Activa o desactiva el parpadeo
 	\ No funciona!!!
 	if  trm.blink-on  else  trm.blink-off  then  1 sgr
@@ -516,6 +536,7 @@ section( Depuración)
 \ {{{
 
 : fatal_error  ( f a u -- )  \ Informa de un error y sale del sistema, si el indicador de error es distinto de cero
+	\ No se usa!!!
 	\ f = Indicador de error
 	\ a u = Mensaje de error
 	rot if  ." Error fatal: " type cr bye
@@ -526,7 +547,7 @@ section( Depuración)
 	1000 2 * pause
 	;
 : .stack  \ Imprime el estado de la pila
-	[false] [if]  \ versión antigua!!!
+	[false]  [if]  \ versión antigua!!!
 	." Pila" depth
 	if  ." :" .s ." ( " depth . ." )"
 	else  ."  vacía."
@@ -548,7 +569,7 @@ section( Depuración)
 	dup  if  cr type cr  else  2drop  then
 	;
 : debug_pause  \ Pausa tras mostrar la información de depuración
-	[debug_pause] [if]  key drop  [then]
+	[debug_pause]  [if]  key drop  [then]
 	;
 : debug  ( a u -- )  \ Punto de chequeo: imprime un mensaje y muestra el estado del sistema
 	debug_color .debug_message .system_status debug_pause
@@ -724,7 +745,7 @@ section( Textos variables)
 	;
 
 : player_o/a  ( -- a 1 )  \ Devuelve la terminación «a» u «o» según el sexo del jugador
-	[false] [if]
+	[false]  [if]
 		\ Método 1, «estilo BASIC»:
 		woman_player? @  if  s" a"  else  s" o"  then
 	[else]
@@ -940,14 +961,14 @@ variable /indentation  \ Longitud de la indentación de cada párrafo
 	/indentation @ ?dup  if  trm+move-cursor-right  then
 	;
 : indentation>  ( a1 u1 -- a2 u2 ) \ Prepara la indentación de una línea
-	[debug] [if] s" Al entrar en INDENTATION>" debug [then]  \ Depuración!!!
+	[debug]  [if]  s" Al entrar en INDENTATION>" debug  [then]  \ Depuración!!!
 	not_at_the_top?  if
 		indentation- indent
 	then
-	[debug] [if] s" Al salir de INDENTATION>" debug [then]  \ Depuración!!!
+	[debug]  [if]  s" Al salir de INDENTATION>" debug  [then]  \ Depuración!!!
 	;
 : .line  ( a u  -- )  \ Imprime una línea de texto y un salto de línea
-	[debug] [if] s" En .LINE" debug [then]  \ Depuración!!!
+	[debug]  [if]  s" En .LINE" debug  [then]  \ Depuración!!!
 	type cr+
 	;
 : .lines  ( a1 u1 ... an un n -- )  \ Imprime n líneas de texto
@@ -960,7 +981,7 @@ variable /indentation  \ Longitud de la indentación de cada párrafo
 : (paragraph)  \ Imprime la cadena dinámica PRINT_STR ajustándose al ancho de la pantalla
 	indentation+  \ Añade indentación ficticia
 	print_str str-get max_x str+columns  \ Divide la cadena dinámica PRINT_STR en tantas líneas como haga falta
-	[debug] [if] s" En (PARAGRAPH)" debug [then]  \ Depuración!!!
+	[debug]  [if]  s" En (PARAGRAPH)" debug  [then]  \ Depuración!!!
 	>r indentation> r>  \ Prepara la indentación efectiva de la primera línea
 	.lines  \ Imprime las líneas
 	print_str str-init  \ Vacía la cadena dinámica
@@ -1035,7 +1056,7 @@ s" »" sconstant rquote$  \ Comilla castellana de cierre
 section( Entes)
 \ {{{
 
-0 [if]  \ ......................................
+0  [if]  \ ......................................
 
 Denominamos «ente» a cualquier componente del mundo virtual
 del juego que está descrito en la base de datos. Un «ente»
@@ -1045,22 +1066,11 @@ jugador, interactivo o no; un lugar; o el protagonista.
 [then]  \ ......................................
 
 defer protagonist  \ Vector que después se redirigirá a la ficha del protagonista en la base de datos
-0 constant no_exit  \ Marcador para salidas sin salida
-0 constant limbo \ Marcador para usar como localización de entes inexistentes
-defer location_plot  \ Vector que después se redirigirá a la palabra que gestiona la trama de los entes escenarios
-
-: exit?  ( a -- f )  \ ¿Está abierta una dirección de salida de un ente escenario?
-	no_exit <>
-	;
-: no_exit?  ( a -- f )  \ ¿Está cerrada una dirección de salida de un ente escenario?
-	no_exit =
-	;
-
 \ ------------------------------------------------
 subsection( Definición de la ficha de un ente)
 \ {{{
 
-0 [if]  \ ......................................
+0  [if]  \ ......................................
 
 La palabra provista por SP-Forth para crear campos de
 estructuras de datos es -- (dos guiones); para usar este
@@ -1102,7 +1112,7 @@ mismo tamaño en todos los campos.  De este modo la
 aplicación puede usar con todos los campos las palabras
 habituales para leer la memoria y modificarla.
 
-[then] \ .......................................
+[then]  \ .......................................
 
 0 \ Valor inicial de desplazamiento para el primer campo
 cell field >desambiguation_xt  \ Dirección de ejecución de la palabra que desambigua e identifica el ente (aún no se usa!!!)
@@ -1113,6 +1123,7 @@ cell field >plural?  \ Indicador: ¿el nombre es plural?
 cell field >no_article?  \ Indicador: ¿el nombre no debe llevar artículo?
 cell field >definite_article?  \ Indicador: ¿el artículo debe ser siempre el artículo definido?
 cell field >description_xt  \ Dirección de ejecución de la palabra que describe el ente
+cell field >init_xt  \ Dirección de ejecución de la palabra que inicializa las propiedades de un ente (experimental!!!)
 cell field >character?  \ Indicador: ¿el ente es un personaje?
 cell field >conversations  \ Contador para personajes: número de conversaciones tenidas con el protagonista
 cell field >decoration?  \ Indicador: ¿el ente forma parte de la decoración de su lugar?
@@ -1136,7 +1147,6 @@ cell field >location_plot_xt  \ Dirección de ejecución de la palabra que se oc
 \ cell field >stamina  \ Energía de los entes vivos
 cell field >familiar  \ Contador de familiaridad (cuánto le es conocido el ente al protagonista)
 cell field >north_exit  \ Ente de destino hacia el Norte
-' >north_exit alias >first_exit
 cell field >south_exit  \ Ente de destino hacia el Sur
 cell field >east_exit  \ Ente de destino hacia el Este
 cell field >west_exit  \ Ente de destino hacia el Oeste
@@ -1144,62 +1154,33 @@ cell field >up_exit  \ Ente de destino hacia arriba
 cell field >down_exit  \ Ente de destino hacia abajo
 cell field >out_exit  \ Ente de destino hacia fuera
 cell field >in_exit  \ Ente de destino hacia dentro
-' >in_exit alias >last_exit
 cell field >direction  \ Desplazamiento del campo de dirección al que corresponde el ente (solo se usa en los entes que son direcciones)
 constant /entity  \ Tamaño de cada ficha
 
+' >north_exit alias >first_exit  \ Primera salida definida en la ficha
+' >in_exit alias >last_exit  \ Última salida definida en la ficha
+
+\ Guardar el desplazamiento de cada campo de dirección respecto al primero de ellos:
 0 >first_exit constant first_exit
 0 >last_exit constant last_exit
+0 >north_exit constant north_exit
+0 >south_exit constant south_exit
+0 >east_exit constant east_exit
+0 >west_exit constant west_exit
+0 >up_exit constant up_exit
+0 >down_exit constant down_exit
+0 >out_exit constant out_exit
+0 >in_exit constant in_exit
+
 last_exit cell+ first_exit - constant /exits  \ Espacio en octetos ocupado por los campos de salidas
 /exits cell / constant #exits  \ Número de salidas
-
-\ }}}
-\ ------------------------------------------------
-subsection( Base de datos)
-\ {{{
-
-0 [if]  \ ......................................
-
-La «base de datos» del juego es tan solo una zona de memoria
-dividida en partes iguales, una para cada ficha. El
-identificador de ficha es una palabra que al ejecutarse deja
-en la pila la dirección de la ficha en la memoria.
-
-No se puede reservar el espacio necesario para las fichas
-hasta saber cuántas son (a menos que usáramos una estructura
-un poco más sofisticada con fichas separadas pero enlazadas
-entre sí, muy habitual también y fácil de crear).  Por ello
-la palabra 'ENTITIES (que devuelve la dirección de la base
-de datos) se crea como un vector, para asignarle
-posteriormente su dirección de ejecución.  Esto permite
-crear un nuevo ente fácilmente, sin necesidad de asignar
-previamente el número de fichas a una constante.
-
-[then]  \ ......................................
-
-defer 'entities  \ Dirección de los entes; vector que después será redirigido a la palabra real
-0 value #entities  \ Contador de entes, que se actualizará según se vayan creando
-
-: #>entity  ( u -- a )  \ Devuelve la dirección de la ficha de un ente a partir de su número ordinal (0...#ENTITIES-1)
-	/entity * 'entities +
-	;
-: entity>#  ( a -- u )  \ Devuelve el número ordinal de un ente (0...#ENTITIES-1) a partir de la dirección de su ficha 
-	protagonist - /entity /
-	;
-: entity:  ( "name" -- ) \ Crea un nuevo identificador de entidad, que devolverá la dirección de su ficha
-	create
-		#entities ,  \ Guardar la cuenta en el cuerpo de la palabra recién creada
-		#entities 1+ to #entities  \ Actualizar el contador
-	does>  ( -- a )
-		@ #>entity  \ Cuando el identificador se ejecute, devolverá la dirección de su ficha
-	;
 
 \ }}}
 \ ------------------------------------------------
 subsection( Interfaz de campos)
 \ {{{
 
-0 [if]  \ ......................................
+0  [if]  \ ......................................
 	
 Las palabras siguientes facilitan la tarea de interactuar
 con los campos de las fichas, evitando repetir cálculos,
@@ -1217,6 +1198,19 @@ frecuentes con los entes.
 
 [then]  \ ......................................
 
+0 constant no_exit  \ Marcador para salidas sin salida
+0 constant limbo \ Marcador para usar como localización de entes inexistentes
+
+\ location_plot está aquí temporalmente!!!:
+defer location_plot  \ Vector que después se redirigirá a la palabra que gestiona la trama de los entes escenario
+
+: exit?  ( a -- f )  \ ¿Está abierta una dirección de salida de un ente escenario?
+	no_exit <>
+	;
+: no_exit?  ( a -- f )  \ ¿Está cerrada una dirección de salida de un ente escenario?
+	no_exit =
+	;
+
 : >living_being?@  ( a -- f )  \ ¿El ente es un ser vivo (aunque esté muerto)?
 	dup >vegetal? @
 	over >animal? @ or
@@ -1229,7 +1223,7 @@ frecuentes con los entes.
 : >open?@  ( a -- f )  \ ¿Está abierto un ente?
 	>open? @
 	;
-: >close?@  ( a -- f )  \ ¿Está cerrado un ente?
+: >closed?@  ( a -- f )  \ ¿Está cerrado un ente?
 	>open?@ 0=
 	;
 create 'articles  \ Tabla de artículos
@@ -1391,6 +1385,9 @@ create 'articles  \ Tabla de artículos
 : >full_name@  ( a -- a1 u1 )  \ Devuelve el nombre completo de un ente, con el artículo que le corresponda
 	dup >article@ name& 
 	;
+: >^full_name@  ( a -- a1 u1 )  \ Devuelve el nombre completo de un ente, con el artículo que le corresponda (con la primera letra en mayúscula)
+	>full_name@ >^uppercase
+	;
 : >defined_full_name@  ( a -- a1 u1 )  \ Devuelve el nombre completo de un ente, con un artículo definido
 	dup >defined_article@ name&
 	;
@@ -1523,20 +1520,29 @@ create 'articles  \ Tabla de artículos
 	\ No se usa!!!
 	dup is_hold?  if  vanish  else  drop  then
 	;
-: vanish_all  \ Pone todos los entes en el «limbo»
-	#entities 0  do
-		i #>entity vanish
-	loop
-	;
 
 \ }}}
-\ ------------------------------------------------
-subsection( Códigos de error)
+\ ##############################################################
+section( Operaciones elementales con entes)
 \ {{{
 
-0 [if]  \ ......................................
+0  [if]  \ ......................................
 
-Sobre los códigos de error
+Algunas operaciones sencillas relacionadas con la trama. Es
+necesario crearlas como vectores porque se usan en las
+descripciones de los entes o en las acciones, antes de
+definir la trama.
+
+[then]  \ ......................................
+
+defer lock_found  \ Encontrar el candado; la definición está en (LOCK_FOUND)
+
+\ }}}
+\ ##############################################################
+section( Códigos de error)
+\ {{{
+
+0  [if]  \ ......................................
 
 En el estándar ANS Forth los códigos de error de -1 a -255
 están reservados para el propio estándar; el resto de
@@ -1548,20 +1554,19 @@ En este programa usamos como códigos de error las
 direcciones de ejecución de las palabras que muestran los
 errores.  En Forth, la dirección de ejecución de una palabra
 se llama tradicionalmente «code field address» («cfa» en
-notación de la pila). Pero en el estándar ANS Forth de 1994,
-el más extendido en la actualidad, a utiliza el nombre
+notación de la pila). Pero el estándar ANS Forth de 1994, el
+más extendido en la actualidad, utiliza el término
 «execution token» («xt» en la notación de la pila), pues en
-algunos sistemas Forth no es una dirección real de la
-memoria sino un código interno.
-
-En este programa lo llamamos «dirección de ejecución» pero
-en la notación de pila lo representamos como «xt».
+algunos sistemas Forth no es una dirección de memoria sino
+un código interno. En este programa lo llamamos «dirección
+de ejecución» pero en la notación de pila lo representamos
+como «xt».
 
 En cualquier caso es lo mismo en cualquier sistema Forth: es
 el valor que devuelven las palabras ' y ['] y que sirve de
 parámetro a EXECUTE .
 
-Ejemplo 1:
+Ejemplo:
 
 	: palabrita  ." ¡Hola mundo!"  ;
 	variable palabrita_xt
@@ -1571,29 +1576,26 @@ Ejemplo 1:
 Como se ve, usar como códigos de error las direcciones de
 ejecución de las palabras de error tiene la ventaja de que
 no hace falta ningún mecanismo adicional para encontrar las
-palabras de error a partir de los códigos (como podría ser
-una estructura CASE o una tabla): basta poner el código de
-error en la pila y llamar a EXECUTE .
+palabras de error a partir de sus códigos de error
+correspondientes (como podría ser una estructura CASE o una
+tabla): basta poner el código de error en la pila y llamar a
+EXECUTE .
 
 Dado que algunos los códigos de error se necesitan antes de
-haber sido creados (por ejemplo durante la creación de los
-entes), los creamos aquí por adelantado como vectores y los
-actualizaremos posteriormente, cuando se definan las
-palabras de error, exactamente como se muestra en este
-ejemplo:
+haber sido creadas las palabras de error (por ejemplo
+durante la creación de los entes), los creamos aquí por
+adelantado como vectores y los actualizaremos
+posteriormente, cuando se definan las palabras de error,
+exactamente como se muestra en este ejemplo:
 
 	defer la_cagaste_error#
-
 	: la_cagaste  ." ¡La cagaste!"  ;
 	' la_cagaste constant (la_cagaste_error#)
 	' (la_cagaste_error#) is la_cagaste_error#
 
 [then]  \ ......................................
 
-
-false constant no_error#
-
-\ Los errores se crean como
+\ false constant no_error# \ No se usa!!!
 
 defer cannot_see_error#
 defer cannot_see_what_error#
@@ -1602,11 +1604,13 @@ defer impossible_error#
 defer is_normal_error#
 defer is_not_here_error#
 defer is_not_here_what_error#
-defer main_complement_error# 
 defer no_main_complement_error# 
 defer no_verb_error#
 defer nonsense_error#
-defer what_is_already_close_error#
+defer too_many_actions_error#
+defer too_many_complements_error#
+defer unexpected_main_complement_error# 
+defer what_is_already_closed_error#
 defer what_is_already_open_error#
 defer you_already_have_it_error#
 defer you_already_have_what_error#
@@ -1618,12 +1622,92 @@ defer you_need_what_error#
 
 \ }}}
 \ ------------------------------------------------
+subsection( Base de datos)
+\ {{{
+
+0  [if]  \ ......................................
+
+La «base de datos» del juego es tan solo una zona de memoria
+dividida en partes iguales, una para cada ficha. El
+identificador de ficha es una palabra que al ejecutarse deja
+en la pila la dirección de la ficha en la memoria.
+
+No se puede reservar el espacio necesario para las fichas
+hasta saber cuántas son (a menos que usáramos una estructura
+un poco más sofisticada con fichas separadas pero enlazadas
+entre sí, muy habitual también y fácil de crear).  Por ello
+la palabra 'ENTITIES (que devuelve la dirección de la base
+de datos) se crea como un vector, para asignarle
+posteriormente su dirección de ejecución.  Esto permite
+crear un nuevo ente fácilmente, sin necesidad de asignar
+previamente el número de fichas a una constante.
+
+[then]  \ ......................................
+
+[old_method]  [if]
+
+defer 'entities  \ Dirección de los entes; vector que después será redirigido a la palabra real
+0 value #entities  \ Contador de entes, que se actualizará según se vayan creando
+
+: #>entity  ( u -- a )  \ Devuelve la dirección de la ficha de un ente a partir de su número ordinal (0...#ENTITIES-1)
+	/entity * 'entities +
+	;
+: entity>#  ( a -- u )  \ Devuelve el número ordinal de un ente (0...#ENTITIES-1) a partir de la dirección de su ficha 
+	protagonist - /entity /
+	;
+: entity_id  ( "name" -- ) \ Crea un nuevo identificador de entidad, que devolverá la dirección de su ficha
+	create
+		#entities ,  \ Guardar la cuenta en el cuerpo de la palabra recién creada
+		#entities 1+ to #entities  \ Actualizar el contador
+	does>  ( -- a )
+		@ #>entity  \ Cuando el identificador se ejecute, devolverá la dirección de su ficha
+	;
+
+: vanish_all  \ Pone todos los entes en el «limbo»
+	\ No se usará!!!
+	#entities 0  do
+		i #>entity vanish
+	loop
+	;
+
+[then]
+
+[new_method]  [if]  \ Experimental!!! Inacabado!!!
+
+: entity_id  ( "name" -- ) \ Crea un nuevo identificador de entidad, que devolverá la dirección de su ficha
+	create
+		#entities ,  \ Guardar la cuenta en el cuerpo de la palabra recién creada
+		#entities 1+ to #entities  \ Actualizar el contador
+	does>  ( -- a )
+		@ #>entity  \ Cuando el identificador se ejecute, devolverá la dirección de su ficha
+	;
+: erase_entity  ( a -- )  \ Rellena con ceros la ficha de un ente
+	/entity erase
+	;
+: init_entity  ( a -- )  \ Restaura la ficha de un ente con sus datos originales
+	dup dup >init_xt @ >r  \ Toma la dirección de restauración del ente
+	erase_entity  r@ execute  \ Borra y restaura
+	>init_xt r> swap !  \ Guarda la dirección de restauración
+	;
+0 value this  \ Guardará el ente que está siendo definido
+: :attributes  ( a -- xt )  \ Inicia la definición de propiedades de un ente
+	to this  :noname 
+	;
+: ;attributes  ( xt -- )  \ Termina la definición de propiedades de un ente
+	dup this >init_xt ! execute
+	postpone ;
+	; immediate
+
+[then]
+
+\ }}}
+\ ------------------------------------------------
 subsection( Identificadores de entes)
 \ {{{
 
-0 [if]  \ ......................................
+0  [if]  \ ......................................
 
-Los identificadores de entes se crean con ENTITY: .  Cuando
+Los identificadores de entes se crean con entity_id .  Cuando
 se ejecutan devuelven la dirección en memoria de su ficha en
 la base de datos, que después puede ser modificada con un
 identificador de campo para convertirla en la dirección de
@@ -1644,41 +1728,41 @@ sufijo _e en sus nombres.
 \ es irrelevante salvo para los entes escenario, como se explica después.
 \ Si están agrupados por tipos y en orden alfabético es solo por claridad. 
 
-entity: ulfius_e
+entity_id ulfius_e
 ' ulfius_e is protagonist  \ Actualizar el vector que apunta al ente protagonista
 
 \ Entes que son personajes: 
-entity: ambrosio_e
-entity: leader_e
+entity_id ambrosio_e
+entity_id leader_e
 
 \ Entes que son objetos:
-entity: altar_e
-entity: arch_e
-entity: bed_e
-entity: bridge_e
-entity: candles_e
-entity: cloak_e
-entity: cuirasse_e
-entity: door_e
-entity: emerald_e
-entity: fallen_away_e
-entity: flags_e
-entity: flint_e
-entity: idol_e
-entity: key_e
-entity: lake_e
-entity: lock_e
-entity: log_e
-entity: piece_e
-entity: rags_e
-entity: rocks_e
-entity: snake_e
-entity: stone_e
-entity: sword_e
-entity: table_e
-entity: thread_e
-entity: torch_e
-entity: waterfall_e
+entity_id altar_e
+entity_id arch_e
+entity_id bed_e
+entity_id bridge_e
+entity_id candles_e
+entity_id cloak_e
+entity_id cuirasse_e
+entity_id door_e
+entity_id emerald_e
+entity_id fallen_away_e
+entity_id flags_e
+entity_id flint_e
+entity_id idol_e
+entity_id key_e
+entity_id lake_e
+entity_id lock_e
+entity_id log_e
+entity_id piece_e
+entity_id rags_e
+entity_id rocks_e
+entity_id snake_e
+entity_id stone_e
+entity_id sword_e
+entity_id table_e
+entity_id thread_e
+entity_id torch_e
+entity_id waterfall_e
 
 \ Entes escenario
 \ En lugar de usar su nombre en el identificador,
@@ -1686,82 +1770,82 @@ entity: waterfall_e
 \ original.
 \ Además, para que algunos cálculos tomados del código
 \ original en BASIC funcionen, es preciso que los 
-\ entes escenarios se creen aquí ordenados por ese número:
-entity: location_01_e
-entity: location_02_e
-entity: location_03_e
-entity: location_04_e
-entity: location_05_e
-entity: location_06_e
-entity: location_07_e
-entity: location_08_e
-entity: location_09_e
-entity: location_10_e
-entity: location_11_e
-entity: location_12_e
-entity: location_13_e
-entity: location_14_e
-entity: location_15_e
-entity: location_16_e
-entity: location_17_e
-entity: location_18_e
-entity: location_19_e
-entity: location_20_e
-entity: location_21_e
-entity: location_22_e
-entity: location_23_e
-entity: location_24_e
-entity: location_25_e
-entity: location_26_e
-entity: location_27_e
-entity: location_28_e
-entity: location_29_e
-entity: location_30_e
-entity: location_31_e
-entity: location_32_e
-entity: location_33_e
-entity: location_34_e
-entity: location_35_e
-entity: location_36_e
-entity: location_37_e
-entity: location_38_e
-entity: location_39_e
-entity: location_40_e
-entity: location_41_e
-entity: location_42_e
-entity: location_43_e
-entity: location_44_e
-entity: location_45_e
-entity: location_46_e
-entity: location_47_e
-entity: location_48_e
-entity: location_49_e
-entity: location_50_e
-entity: location_51_e
+\ entes escenario se creen aquí ordenados por ese número:
+entity_id location_01_e
+entity_id location_02_e
+entity_id location_03_e
+entity_id location_04_e
+entity_id location_05_e
+entity_id location_06_e
+entity_id location_07_e
+entity_id location_08_e
+entity_id location_09_e
+entity_id location_10_e
+entity_id location_11_e
+entity_id location_12_e
+entity_id location_13_e
+entity_id location_14_e
+entity_id location_15_e
+entity_id location_16_e
+entity_id location_17_e
+entity_id location_18_e
+entity_id location_19_e
+entity_id location_20_e
+entity_id location_21_e
+entity_id location_22_e
+entity_id location_23_e
+entity_id location_24_e
+entity_id location_25_e
+entity_id location_26_e
+entity_id location_27_e
+entity_id location_28_e
+entity_id location_29_e
+entity_id location_30_e
+entity_id location_31_e
+entity_id location_32_e
+entity_id location_33_e
+entity_id location_34_e
+entity_id location_35_e
+entity_id location_36_e
+entity_id location_37_e
+entity_id location_38_e
+entity_id location_39_e
+entity_id location_40_e
+entity_id location_41_e
+entity_id location_42_e
+entity_id location_43_e
+entity_id location_44_e
+entity_id location_45_e
+entity_id location_46_e
+entity_id location_47_e
+entity_id location_48_e
+entity_id location_49_e
+entity_id location_50_e
+entity_id location_51_e
 
 \ Entes globales:
-entity: sky_e
-entity: floor_e
-entity: ceiling_e
-entity: clouds_e
-entity: cave_e  \ Inacabado!!!
+entity_id sky_e
+entity_id floor_e
+entity_id ceiling_e
+entity_id clouds_e
+entity_id cave_e  \ Inacabado!!!
 
 \ Entes virtuales
 \ (necesarios para la ejecución de algunos comandos):
-entity: inventory_e
-entity: exit_e
-entity: north_e
-entity: south_e
-entity: east_e
-entity: west_e
-entity: up_e
-entity: down_e
-entity: out_e
-entity: in_e
+entity_id inventory_e
+entity_id exit_e
+entity_id north_e
+entity_id south_e
+entity_id east_e
+entity_id west_e
+entity_id up_e
+entity_id down_e
+entity_id out_e
+entity_id in_e
 
 \ Tras crear los identificadores de entes
 \ ya conocemos cuántos entes hay
-\ (pues la palabra ENTITY: actualiza el contador #ENTITIES )
+\ (pues la palabra ENTITY_ID actualiza el contador #ENTITIES )
 \ y por tanto podemos reservar espacio para la base de datos:
 
 #entities /entity * constant /entities  \ Espacio necesario para guardar todas las fichas, en octetos
@@ -1769,11 +1853,12 @@ create ('entities) /entities allot  \ Reservar el espacio en el diccionario
 ' ('entities) is 'entities  \ Actualizar el vector que apunta a dicho espacio
 
 \ }}}
+[old_method]  [if]
 \ ------------------------------------------------
 subsection( Nombres)
 \ {{{
 
-0 [if]  \ ......................................
+0  [if]  \ ......................................
 
 Los nombres que siguen son los que se usarán en los textos
 para nombrar los entes.  
@@ -1792,10 +1877,10 @@ para nombrar los entes.
 	ulfius_e >personal_name? on
 	ulfius_e >no_article? on
 
-	\ Entes personajes: 
+	\ Entes personaje: 
 	s" hombre" ambrosio_e >name!  \ El nombre cambiará a «Ambrosio» durante el juego
 
-	\ Entes objetos:
+	\ Entes objeto:
 	s" altar" altar_e >name!
 	s" arco" arch_e >name!
 	s" puente" bridge_e >name!
@@ -1825,7 +1910,7 @@ para nombrar los entes.
 	s" velas" candles_e >fnames!
 	s" mesa" table_e >fname!
 
-	\ Entes escenarios: 
+	\ Entes escenario: 
 	s" aldea sajona" location_01_e >fname!
 	s" cima de la colina" location_02_e >fname!
 	s" camino entre colinas" location_03_e >name!
@@ -1845,15 +1930,14 @@ para nombrar los entes.
 	s" estalactitas" location_17_e >fname!
 	s" puente de piedra" location_18_e >name!
 	s" recodo arenoso del canal" location_19_e >name!
-	s" tramo de cueva" 
-	2dup location_20_e >name!
-	2dup location_21_e >name!
-	2dup location_22_e >name!
-	2dup location_23_e >name!
-	2dup location_24_e >name!
-	2dup location_25_e >name!
-	2dup location_26_e >name!
-	location_27_e >name!
+	s" tramo de cueva" location_20_e >name!
+	s" tramo de cueva" location_21_e >name!
+	s" tramo de cueva" location_22_e >name!
+	s" tramo de cueva" location_23_e >name!
+	s" tramo de cueva" location_24_e >name!
+	s" tramo de cueva" location_25_e >name!
+	s" tramo de cueva" location_26_e >name!
+	s" tramo de cueva" location_27_e >name!
 	s" refugio" location_28_e >name!
 	s" espiral" location_29_e >fname!
 	s" inicio de la espiral" location_30_e >name!
@@ -1938,8 +2022,404 @@ para nombrar los entes.
 	waterfall_e >decoration? on
 	waterfall_e >take_error# nonsense_error# swap !
 
-
 	;
+
+[then]
+
+[new_method]  [if]  \ Experimental!!! Inacabado!!!
+
+\ Ente protagonista
+
+ulfius_e :attributes
+	s" Ulfius" this >name!
+	this >human? on
+	this >personal_name? on
+	this >no_article? on
+	location_01_e this be_there
+	;attributes
+
+\ Entes personaje
+
+ambrosio_e :attributes
+	s" hombre" this >name!  \ El nombre cambiará a «Ambrosio» durante el juego
+	this >character? on
+	this >human? on
+	location_19_e this be_there
+	;attributes
+leader_e :attributes
+	s" hombre" this >name!
+	this >character? on
+	this >human? on
+	location_28_e this be_there
+	;attributes
+
+\ Entes objeto
+
+altar_e :attributes
+	s" altar" this >name!
+	this >decoration? on
+	this >take_error# impossible_error# swap !
+	location_18_e this be_there
+	;attributes
+arch_e :attributes
+	s" arco" this >name!
+	this >decoration? on
+	location_18_e this be_there
+	;attributes
+bridge_e :attributes
+	s" puente" this >name!
+	this >decoration? on
+	location_13_e this be_there
+	;attributes
+cloak_e :attributes
+	s" capa" this >fname!
+	this >cloth? on
+	this >owned? on
+	this >worn? on
+	ulfius_e this be_there
+	;attributes
+cuirasse_e :attributes
+	s" coraza" this >fname!
+	this >cloth? on
+	this >owned? on
+	this >worn? on
+	ulfius_e this be_there
+	;attributes
+door_e :attributes
+	s" puerta" this >fname!
+	this >take_error# impossible_error# swap !
+	location_47_e this be_there
+	;attributes
+emerald_e :attributes
+	s" esmeralda" this >fname!
+	location_39_e this be_there
+	;attributes
+fallen_away_e :attributes
+	s" derrumbe" this >name!
+	this >decoration? on
+	this >take_error# nonsense_error# swap !
+	location_09_e this be_there
+	;attributes
+flags_e :attributes
+	s" banderas" this >fnames!
+	this >decoration? on
+	this >take_error# nonsense_error# swap !
+	location_28_e this be_there
+	;attributes
+flint_e :attributes
+	s" pedernal" this >name!
+	;attributes
+idol_e :attributes
+	s" ídolo" this >name!
+	this >decoration? on
+	this >take_error# impossible_error# swap !
+	location_41_e this be_there
+	;attributes
+key_e :attributes
+	s" llave" this >fname!
+	location_46_e this be_there
+	;attributes
+lake_e :attributes
+	s" lago" this >name!
+	this >decoration? on
+	this >take_error# nonsense_error# swap !
+	location_44_e this be_there
+	;attributes
+lock_e :attributes
+	s" candado" this >name!
+	this >decoration? on
+	this >take_error# impossible_error# swap !
+	;attributes
+log_e :attributes
+	s" tronco" this >name!
+	location_15_e this be_there
+	;attributes
+piece_e :attributes
+	s" trozo" this >name!
+	;attributes
+rags_e :attributes
+	s" harapo" this >name!
+	;attributes
+rocks_e :attributes
+	s" rocas" this >fnames!
+	this >decoration? on
+	location_31_e this be_there
+	;attributes
+snake_e :attributes
+	s" serpiente" this >fname!
+	this >animal? on
+	this >take_error# dangerous_error# swap !
+	location_43_e this be_there
+	;attributes
+stone_e :attributes
+	s" piedra" this >fname!
+	location_18_e this be_there
+	;attributes
+sword_e :attributes
+	s" espada" this >fname!
+	this >owned? on
+	ulfius_e this be_there
+	;attributes
+thread_e :attributes
+	s" hilo" this >name!
+	;attributes
+torch_e :attributes
+	s" antorcha" this >fname!
+	this >light? on
+	this >lit? off
+	;attributes
+waterfall_e :attributes
+	s" cascada" this >fname!
+	this >decoration? on
+	this >take_error# nonsense_error# swap !
+	location_38_e this be_there
+	;attributes
+bed_e :attributes
+	s" catre" this >name!
+	location_46_e this be_there
+	;attributes
+candles_e :attributes
+	s" velas" this >fnames!
+	location_46_e this be_there
+	;attributes
+table_e :attributes
+	s" mesa" this >fname!
+	location_46_e this be_there
+	;attributes
+
+\ Entes escenario
+
+location_01_e :attributes
+	s" aldea sajona" this >fname!
+	;attributes
+location_02_e :attributes
+	s" cima de la colina" this >fname!
+	;attributes
+location_03_e :attributes
+	s" camino entre colinas" this >name!
+	;attributes
+location_04_e :attributes
+	s" cruce de caminos" this >name!
+	;attributes
+location_05_e :attributes
+	s" linde del bosque" this >name!  \ nombre supuesto, confirmar!!!
+	;attributes
+location_06 :attributes
+	s" bosque" this >name!
+	;attributes
+location_07 :attributes
+	s" paso del Perro" this >name!
+	;attributes
+location_08 :attributes
+	s" entrada a la cueva" this >fname!
+	;attributes
+location_09 :attributes
+	s" derrumbe" this >name!
+	;attributes
+location_10 :attributes
+	s" gruta de entrada" this >fname!
+	;attributes
+location_11 :attributes
+	s" gran lago" this >name!
+	;attributes
+location_12 :attributes
+	s" salida del paso secreto" this >fname!
+	;attributes
+location_13 :attributes
+	s" puente semipodrido" this >name!
+	;attributes
+location_14 :attributes
+	s" recodo de la cueva" this >name!
+	;attributes
+location_15 :attributes
+	s" pasaje arenoso" this >name!
+	;attributes
+location_16 :attributes
+	s" pasaje del agua" this >name!
+	;attributes
+location_17 :attributes
+	s" estalactitas" this >fname!
+	;attributes
+location_18 :attributes
+	s" puente de piedra" this >name!
+	;attributes
+location_19 :attributes
+	s" recodo arenoso del canal" this >name!
+	;attributes
+location_20 :attributes
+	s" tramo de cueva" this >name!
+	;attributes
+location_21 :attributes
+	s" tramo de cueva" this >name!
+	;attributes
+location_22 :attributes
+	s" tramo de cueva" this >name!
+	;attributes
+location_23 :attributes
+	s" tramo de cueva" this >name!
+	;attributes
+location_24 :attributes
+	s" tramo de cueva" this >name!
+	;attributes
+location_25 :attributes
+	s" tramo de cueva" this >name!
+	;attributes
+location_26 :attributes
+	s" tramo de cueva" this >name!
+	;attributes
+location_27 :attributes
+	s" tramo de cueva" this >name!
+	;attributes
+location_28 :attributes
+	s" refugio" this >name!
+	;attributes
+location_29 :attributes
+	s" espiral" this >fname!
+	;attributes
+location_30 :attributes
+	s" inicio de la espiral" this >name!
+	;attributes
+location_31 :attributes
+	s" puerta norte" this >fname!
+	;attributes
+location_32 :attributes
+	s" precipicio" this >name!
+	;attributes
+location_33 :attributes
+	s" pasaje de salida" this >name!
+	;attributes
+location_34 :attributes
+	s" pasaje de gravilla" this >name!
+	;attributes
+location_35 :attributes
+	s" puente sobre el acueducto" this >name!
+	;attributes
+location_36 :attributes
+	s" remanso" this >name!
+	;attributes
+location_37 :attributes
+	s" canal de agua" this >name!
+	;attributes
+location_38 :attributes
+	s" gran cascada" this >fname!
+	;attributes
+location_39 :attributes
+	s" interior de la cascada" this >name!
+	;attributes
+location_40 :attributes
+	s" explanada" this >fname!
+	;attributes
+location_41 :attributes
+	s" ídolo" this >name!
+	;attributes
+location_42 :attributes
+	s" pasaje estrecho" this >name!
+	;attributes
+location_43 :attributes
+	s" pasaje de la serpiente" this >name!
+	;attributes
+location_44 :attributes
+	s" lago interior" this >name!
+	;attributes
+location_45 :attributes
+	s" cruce de pasajes" this >name!
+	;attributes
+location_46 :attributes
+	s" hogar de Ambrosio" this >name!
+	;attributes
+location_47 :attributes
+	s" salida de la cueva" this >fname!
+	;attributes
+location_48 :attributes
+	s" bosque a la entrada" this >name!
+	;attributes
+location_49 :attributes
+	s" sendero del bosque" this >name!
+	;attributes
+location_50 :attributes
+	s" camino norte" this >name!
+	;attributes
+location_51 :attributes
+	s" Westmorland" this >fname!
+	this >no_article? on
+	;attributes
+
+\ Entes globales
+
+ceiling_e :attributes
+	s" techo" this >name!
+	this >global_inside? on
+	;attributes
+floor_e :attributes
+	s" suelo" this >name!
+	this >global_inside? on
+	this >global_outside? on
+	;attributes
+sky_e :attributes
+	s" cielo" this >name!
+	this >global_outside? on
+	;attributes
+clouds_e :attributes
+	s" nubes" this >fnames!
+	this >global_outside? on
+	;attributes
+cave_e :attributes
+	s" cueva" this >fname!
+	this >global_inside? on
+	;attributes
+
+\ Entes dirección
+
+\ Los entes dirección guardan en su campo >DIRECTION
+\ el desplazamiento correspodiente al campo de 
+\ dirección que representan (tomando como base no el comienzo de la ficha
+\ sino el primer campo dirección). Esto sirve para
+\ reconocerlos como tales entes dirección 
+\ (pues todos los valores posibles son diferentes de cero)
+\ y para hacer los cálculos en las acciones de movimiento.
+
+north_e :attributes
+	s" Norte" this >name!
+	this >definite_article? on
+	north_exit this >direction !
+	;attributes
+south_e :attributes
+	s" Sur" this >name!
+	this >definite_article? on
+	south_exit this >direction !
+	;attributes
+east_e :attributes
+	s" Este" this >name!
+	this >definite_article? on
+	east_exit this >direction !
+	;attributes
+west_e :attributes
+	s" Oeste" this >name!
+	this >definite_article? on
+	west_exit this >direction !
+	;attributes
+up_e :attributes
+	s" arriba" this >name!
+	this >no_article? on
+	up_exit this >direction !
+	;attributes
+down_e :attributes
+	s" abajo" this >name!
+	this >no_article? on
+	down_exit this >direction !
+	;attributes
+out_e :attributes
+	s" afuera" this >name!
+	this >no_article? on
+	out_exit this >direction !
+	;attributes
+in_e :attributes
+	s" adentro" this >name!
+	this >no_article? on
+	in_exit this >direction !
+	;attributes
+	
+[then]
 
 \ }}}
 \ }}}
@@ -1968,11 +2448,13 @@ variable what  \ Ente que ha provocado un error y puede ser citado en el mensaje
 	else  unknown_entity_is_not_here$
 	then  period+ narrate
 	;
-' is_not_here constant is_not_here_error#
+' is_not_here constant (is_not_here_error#)
+' (is_not_here_error#) is is_not_here_error#
 : is_not_here_what  \  Informa de que el ente WHAT no está presente
 	what @ is_not_here
 	;
-' is_not_here_what constant is_not_here_what_error#
+' is_not_here_what constant (is_not_here_what_error#)
+' (is_not_here_what_error#) is is_not_here_what_error#
 : cannot_see$  ( -- a u )  \ Devuelve una forma de decir «no ves»
 	s" No"
 	s" ves"
@@ -1984,11 +2466,13 @@ variable what  \ Ente que ha provocado un error y puede ser citado en el mensaje
 	rot >subjective_negative_name_as_direct_object@ s&
 	period+ narrate
 	;
-' cannot_see constant cannot_see_error#
+' cannot_see constant (cannot_see_error#)
+' (cannot_see_error#) is cannot_see_error#
 : cannot_see_what   \ Informa de que el ente WHAT no puede ser mirado
 	what @ cannot_see
 	;
-' cannot_see_what constant cannot_see_what_error#
+' cannot_see_what constant (cannot_see_what_error#)
+' (cannot_see_what_error#) is cannot_see_what_error#
 : like_that$  ( -- a u )
 	\ No se usa!!!
 	s" así"
@@ -2035,10 +2519,11 @@ variable what  \ Ente que ha provocado un error y puede ser citado en el mensaje
 	2 choose execute  period+ narrate
 	;
 : impossible  \ Informa de que una acción no especificada es imposible
-	[debug] [if] s" En IMPOSSIBLE" debug [then]  \ Depuración!!!
+	[debug]  [if]  s" En IMPOSSIBLE" debug  [then]  \ Depuración!!!
 	something_like_that$ is_impossible
 	;
-' impossible constant impossible_error#
+' impossible constant (impossible_error#)
+' (impossible_error#) is impossible_error#
 : try$  ( -- a u )  \ Devuelve una variante de «intentar» (o vacía)
 	s" intentar" s" " 2dup 3 schoose 
 	;
@@ -2076,10 +2561,11 @@ variable what  \ Ente que ha provocado un error y puede ser citado en el mensaje
 	;
 : nonsense  \ Informa de que alguna acción no especificada no tiene sentido
 	\ Provisional!!!
-	[debug] [if] s" En NONSENSE" debug [then]  \ Depuración!!!
+	[debug]  [if]  s" En NONSENSE" debug  [then]  \ Depuración!!!
 	s" eso" is_nonsense 
 	;
-' nonsense constant nonsense_error#
+' nonsense constant (nonsense_error#)
+' (nonsense_error#) is nonsense_error#
 : dangerous$  ( -- a u )  \ Devuelve una variante de «es peligroso», que formará parte de mensajes personalizados por cada acción
 	\ Pendiente!!! Quitar las variantes que no sean adecuadas a todos los casos.
 	s" es algo descabellado"
@@ -2118,7 +2604,8 @@ variable what  \ Ente que ha provocado un error y puede ser citado en el mensaje
 : dangerous  \ Informa de que alguna acción no especificada no tiene sentido
 	something_like_that$ is_dangerous
 	;
-' dangerous constant dangerous_error#
+' dangerous constant (dangerous_error#)
+' (dangerous_error#) is dangerous_error#
 : ?full_name&  ( a1 u1 a2 -- )  \ Añade a una cadena el nombre de un posible ente
 	\ No se usa!!!
 	\ a1 u1 = Cadena
@@ -2214,7 +2701,7 @@ variable silent_well_done?  silent_well_done? off
 	now_$ s&  period+ narrate
 	;
 
-0 [if]  \ Error «no tiene nada especial», aún en desarrollo!!!
+0  [if]  \ Error «no tiene nada especial», aún en desarrollo!!!
 
 : rimarkable$  ( -- a u )  \ Devuelve una variante de «destacable»
 	s" de especial"
@@ -2243,7 +2730,8 @@ variable silent_well_done?  silent_well_done? off
 	['] it_is_normal_x$ 
 	2 choose execute  period+ narrate
 	;
-' is_normal constant is_normal_error#
+' is_normal constant (is_normal_error#)
+' (is_normal_error#) is is_normal_error#
 
 [then]
 
@@ -2260,7 +2748,7 @@ variable silent_well_done?  silent_well_done? off
 : you_do_not_have_it_(2)$  ( a -- )  \ Devuelve mensaje de que el protagonista no tiene un ente (variante 2, solo para entes no citados en el comando)
 	s" No" you_carry$ s& rot >full_name@ s& with_you$ s&
 	;
-: you_do_not_have_it_error  ( a -- )  \ Informa de que el protagonista no tiene un ente
+: you_do_not_have_it  ( a -- )  \ Informa de que el protagonista no tiene un ente
 	dup >known?@  if
 		['] you_do_not_have_it_(0)$
 		['] you_do_not_have_it_(1)$
@@ -2268,40 +2756,101 @@ variable silent_well_done?  silent_well_done? off
 	else  you_do_not_have_it_(0)$
 	then  period+ narrate
 	;
-' you_do_not_have_it_error constant you_do_not_have_it_error#
-: you_do_not_have_what_error  \ Informa de que el protagonista no tiene el ente WHAT
-	what @ you_do_not_have_it_error
+' you_do_not_have_it constant (you_do_not_have_it_error#)
+' (you_do_not_have_it_error#) is you_do_not_have_it_error#
+: you_do_not_have_what  \ Informa de que el protagonista no tiene el ente WHAT
+	what @ you_do_not_have_it
 	;
-' you_do_not_have_what_error constant you_do_not_have_what_error#
+' you_do_not_have_what constant (you_do_not_have_what_error#)
+' (you_do_not_have_what_error#) is you_do_not_have_what_error#
+
+: it_seems$  ( -- a u )
+	s" parece que" s" por lo que parece," s" "
+	3 schoose
+	;
+: it_is$  ( -- a u )
+	s" es" s" sería" s" será" 3 schoose
+	;
+: to_do_it$  ( -- a u )
+	s" hacerlo" s" " 2 schoose
+	;
+: possible_to_do$  ( -- a u )
+	it_is$ s" posible" s& to_do_it$ s&
+	;
+: impossible_to_do$  ( -- a u )
+	it_is$ s" imposible" s& to_do_it$ s&
+	;
+: can_be_done$  ( -- a u )
+	s" podrá" s" podría" s" puede" 3 schoose
+	s" hacerse" s&
+	;
+: can_not_be_done$  ( -- a u )
+	s" no" can_be_done$ s&
+	;
+: only_by_hand$  ( -- a u )
+	schoose{
+		s" con la sola ayuda de las manos"
+		s" con las manos como única herramienta"
+		s" con las manos desnudas"
+		s" con las manos"
+		s" simplemente con las manos"
+		s" sin alguna herramienta" 
+		s" sin herramientas" 
+		s" sin la herramienta adecuada"
+		s" sin una herramienta"
+		s" solamente con las manos"
+		s" solo con las manos"
+		s" tan solo con las manos"
+		s" únicamente con las manos"
+	}schoose
+	;
+: not_by_hand_0$  ( -- a u )  \ Devuelve la primera versión del mensaje de NOT_BY_HAND
+	it_seems$
+	schoose{
+		s" no" possible_to_do$ s&
+		impossible_to_do$
+		can_not_be_done$
+	}schoose s&
+	only_by_hand$ s& period+ >^uppercase
+	;
+: not_by_hand_1$  ( -- a u )  \ Devuelve la segunda versión del mensaje de NOT_BY_HAND
+	it_seems$
+	schoose{
+		s" hará" s" haría" s" hace" 3 schoose s" falta" s&
+		s" algo"
+		s" alguna herramienta"
+		s" la herramienta apropiada" 3 schoose s&
+		s" será menester una herramienta"
+		s" habrá que usar algo"
+		s" habrá que usar alguna herramienta"
+	}schoose s& period+ >^uppercase
+	;
 : not_by_hand$  ( -- a u )  \ Devuelve el mensaje de NOT_BY_HAND
-	s" En cualquier caso,"
-	s" En todo caso," 2 schoose
-	s" no con las manos desnudas."
-	s" no simplemente con las manos."
-	s" no con las manos."
-	s" hará falta algo."
-	s" habrá que usar algo." 5 schoose s&
+	['] not_by_hand_0$
+	['] not_by_hand_1$
+	2 choose execute >^uppercase
 	;
 : not_by_hand  \ Informa de que la acción no puede hacerse sin una herramienta
 	not_by_hand$ narrate
 	;
-: you_need_error  ( a -- )  \ Informa de que el protagonista no tiene un ente necesario
+: you_need  ( a -- )  \ Informa de que el protagonista no tiene un ente necesario
 	2 random
 	if  you_do_not_have_it_(2)$ period+ narrate
 	else  drop not_by_hand
 	then
 	;
-: you_need_what_error  \ Informa de que el protagonista no tiene el ente WHAT necesario
-	what @ you_need_error
+: you_need_what  \ Informa de que el protagonista no tiene el ente WHAT necesario
+	what @ you_need
 	;
-' you_need_what_error constant you_need_what_error#
+' you_need_what constant (you_need_what_error#)
+' (you_need_what_error#) is you_need_what_error#
 : you_already_have_it_(0)$  ( a -- )  \ Devuelve mensaje de que el protagonista ya tiene un ente (variante 0)
 	s" Ya" you_carry$ s& rot that$ s& with_you$ s&
 	;
 : you_already_have_it_(1)$  ( a -- )  \ Devuelve mensaje de que el protagonista ya tiene un ente (variante 1, solo para entes conocidos)
 	s" Ya" rot >direct_pronoun@ s& you_carry$ s& with_you$ s&
 	;
-: you_already_have_it_error  ( a -- )  \ Informa de que el protagonista ya tiene un ente
+: you_already_have_it  ( a -- )  \ Informa de que el protagonista ya tiene un ente
 	dup >familiar @ over >owned? or   if
 		['] you_already_have_it_(0)$
 		['] you_already_have_it_(1)$
@@ -2309,33 +2858,37 @@ variable silent_well_done?  silent_well_done? off
 	else  you_already_have_it_(0)$
 	then  period+ narrate
 	;
-' you_already_have_it_error constant you_already_have_it_error#
-: you_already_have_what_error  ( a -- )  \ Informa de que el protagonista ya tiene el ente WHAT
-	what @ you_already_have_it_error
+' you_already_have_it constant (you_already_have_it_error#)
+' (you_already_have_it_error#) is you_already_have_it_error#
+: you_already_have_what  ( a -- )  \ Informa de que el protagonista ya tiene el ente WHAT
+	what @ you_already_have_it
 	;
-' you_already_have_what_error constant you_already_have_what_error#
+' you_already_have_what constant (you_already_have_what_error#)
+' (you_already_have_what_error#) is you_already_have_what_error#
 : (you_do_not_wear_it)  ( a -- )  \ Informa de que el protagonista no lleva puesto un ente prenda
 	>r s" No llevas puest" r@ noun_ending+
 	r> >full_name@ s& period+ narrate
 	;
 : you_do_not_wear_it  ( a -- )  \ Informa de que el protagonista no lleva puesto un ente prenda, según lo lleve o no consigo
 	dup is_hold?
-	if  you_do_not_have_it_error
+	if  you_do_not_have_it
 	else  (you_do_not_wear_it) 
 	then
 	;
 : you_do_not_wear_what  \ Informa de que el protagonista no lleva puesto el ente WHAT , según lo lleve o no consigo
 	what @ you_do_not_wear_it
 	;
-' you_do_not_wear_what constant you_do_not_wear_what_error#
+' you_do_not_wear_what constant (you_do_not_wear_what_error#)
+' (you_do_not_wear_what_error#) is you_do_not_wear_what_error#
 : you_already_wear_it  ( a -- )  \ Informa de que el protagonista lleva puesto un ente prenda
 	>r s" Ya llevas puest" r@ noun_ending+
 	r> >full_name@ s& period+ narrate
 	;
-: you_already_wear_what_error  \ Informa de que el protagonista lleva puesto el ente WHAT
+: you_already_wear_what  \ Informa de que el protagonista lleva puesto el ente WHAT
 	what @ you_already_wear_it
 	;
-' you_already_wear_what_error constant you_already_wear_what_error#
+' you_already_wear_what constant (you_already_wear_what_error#)
+' (you_already_wear_what_error#) is you_already_wear_what_error#
 : not_with_that$  ( -- a u )  \ Devuelve el mensaje de NOT_WITH_THAT
 	s" Con eso no..." 
 	s" No con eso..." 
@@ -2347,83 +2900,25 @@ variable silent_well_done?  silent_well_done? off
 : it_is_already_open  ( a -- )  \ Informa de que un ente ya está abierto
 	s" Ya está abiert" r@ noun_ending+ period+ narrate
 	;
-: what_is_already_open_error  \ Informa de que el ente WHAT ya está abierto
+: what_is_already_open  \ Informa de que el ente WHAT ya está abierto
 	what @ it_is_already_open
 	;
-' what_is_already_open_error constant what_is_already_open_error#
-: it_is_already_close  ( a -- )  \ Informa de que un ente ya está cerrado
+' what_is_already_open constant (what_is_already_open_error#)
+' (what_is_already_open_error#) is what_is_already_open_error#
+: it_is_already_closed  ( a -- )  \ Informa de que un ente ya está cerrado
 	s" Ya está cerrad" r@ noun_ending+ period+ narrate
 	;
-: what_is_already_close_error  \ Informa de que el ente WHAT ya está cerrado
-	what @ it_is_already_close
+: what_is_already_closed  \ Informa de que el ente WHAT ya está cerrado
+	what @ it_is_already_closed
 	;
-' what_is_already_close_error constant what_is_already_close_error#
+' what_is_already_closed constant (what_is_already_closed_error#)
+' (what_is_already_closed_error#) is what_is_already_closed_error#
 
-\ ------------------------------------------------
-subsection( Atributos)
-\ {{{
-
-\ **********************
-\ Paso 3 de 6 para crear un nuevo ente:
-\ Definir sus atributos
-\ **********************
-
-\ 2011-11-27 Obsoleto!!!
-\ Juntado experimentalmente con la definición de nombres.
-\  : init_entity_attributes  \ Guarda en las fichas los atributos de los entes (salvo los lingüísticos)
-\  	\ Nota: No es necesario poner a cero ningún atributo
-\  	\ (salvo los que puedan haber cambiado durante
-\  	\ una partida y deban estar a cero)
-\  	\ pues todos quedan a cero tras borrar la base de datos,
-\  	\ operación que se hace al inicio del programa.
-\  	altar_e >decoration? on
-\  	altar_e >take_error# impossible_error# swap !
-\  	ambrosio_e >character? on
-\  	ambrosio_e >human? on
-\  	arch_e >decoration? on
-\  	bridge_e >decoration? on
-\  	cave_e >global_inside? on
-\  	ceiling_e >global_inside? on
-\  	cloak_e >cloth? on
-\  	cloak_e >owned? on
-\  	cloak_e >worn? on
-\  	clouds_e >global_outside? on
-\  	cuirasse_e >cloth? on
-\  	cuirasse_e >owned? on
-\  	cuirasse_e >worn? on
-\  	door_e >take_error# impossible_error# swap !
-\  	fallen_away_e >decoration? on
-\  	fallen_away_e >take_error# nonsense_error# swap !
-\  	flags_e >decoration? on
-\  	flags_e >take_error# nonsense_error# swap !
-\  	floor_e >global_inside? on
-\  	floor_e >global_outside? on
-\  	idol_e >decoration? on
-\  	idol_e >take_error# impossible_error# swap !
-\  	lake_e >decoration? on
-\  	lake_e >take_error# nonsense_error# swap !
-\  	leader_e >character? on
-\  	leader_e >human? on
-\  	lock_e >decoration? on
-\  	lock_e >take_error# impossible_error# swap !
-\  	rocks_e >decoration? on
-\  	sky_e >global_outside? on
-\  	snake_e >animal? on
-\  	snake_e >take_error# dangerous_error# swap !
-\  	sword_e >owned? on
-\  	torch_e >light? on
-\  	torch_e >lit? off
-\  	ulfius_e >human? on
-\  	waterfall_e >decoration? on
-\  	waterfall_e >take_error# nonsense_error# swap !
-\  	;
-
-\ }}}
 \ ------------------------------------------------
 subsection( Descripciones)
 \ {{{
 
-0 [if]  \ ......................................
+0  [if]  \ ......................................
 
 Para cada ente creamos una una palabra que imprimirá su
 descripción.  Esto es mucho más flexible que almacenar un
@@ -2455,7 +2950,7 @@ valor predeterminado en la siguiente partida.
 \ Crear la tabla para guardar las direcciones de ejecución de las descripciones:
 create descriptions_xt  \ Tabla
 #entities cells dup allot  \ Hacer el espacio necesario
-descriptions_xt swap 0 fill  \ Borrar la zona con ceros para reconocer después las descripciones vacantes y sustituirlas por la predeterminada
+descriptions_xt swap erase  \ Borrar la zona con ceros para reconocer después las descripciones vacantes y sustituirlas por la predeterminada
 
 : :description  ( a -- xt a ) \ Inicia la definición de una descripción de un ente; crea una palabra sin nombre que describirá un ente
 	:noname swap
@@ -2479,7 +2974,7 @@ descriptions_xt swap 0 fill  \ Borrar la zona con ceros para reconocer después 
 	location_description_color (describe)
 	;
 : describe_location  ( a -- )  \ Imprime el nombre y la descripción de un ente escenario, y llama a su trama
-	[debug] [if] s" En DESCRIBE_LOCATION" debug [then]  \ Depuración!!!
+	[debug]  [if]  s" En DESCRIBE_LOCATION" debug  [then]  \ Depuración!!!
 	clear_screen_for_location
 	dup .location_name  dup (describe_location)
 	location_plot 
@@ -2488,7 +2983,7 @@ descriptions_xt swap 0 fill  \ Borrar la zona con ceros para reconocer después 
 	description_color (describe)
 	;
 : describe  ( a -- )  \ Imprime la descripción de un ente
-	[debug] [if] s" En DESCRIBE" debug [then]  \ Depuración!!!
+	[debug]  [if]  s" En DESCRIBE" debug  [then]  \ Depuración!!!
 	dup >location? @
 	if  describe_location  else  describe_non-location  then
 	;
@@ -2528,7 +3023,7 @@ ulfius_e :description  \ Describe el ente ulfius_e
 	then  paragraph
 	;description
 
-\ Los entes personajes: 
+\ Los entes personaje: 
 
 ambrosio_e :description
 	ambrosio_e is_known?  if
@@ -2542,7 +3037,7 @@ leader_e :description
 	paragraph
 	;description
 
-\ Los entes objetos:
+\ Los entes objeto:
 
 altar_e :description
 	s" Está colocado justo en la mitad del puente."
@@ -2636,7 +3131,7 @@ door_e :description
 \	if  s" tiene un gran candado."
 \	else  s" tiene un gran candado."
 \	then  s&
-	door_e >location @ lock_e be_there
+	lock_found
 	paragraph
 	;description
 rocks_e :description
@@ -3013,6 +3508,7 @@ up_e :description
 	;
 
 \ }}}
+[old_method]  [if]
 \ ------------------------------------------------
 subsection( Entes de tipo dirección)
 \ {{{
@@ -3086,6 +3582,8 @@ subsection( Localización de los entes)
 
 	;
 
+[then]
+
 \ }}}
 \ ------------------------------------------------
 subsection( Preparación de la base de datos)
@@ -3106,10 +3604,10 @@ subsection( Preparación de la base de datos)
 section( Mapa)
 \ {{{
 
-0 [if]  \ ......................................
+0  [if]  \ ......................................
 
 Para crear el mapa hay que hacer dos operaciones con los
-entes escenarios: marcarlos como tales, para poder
+entes escenario: marcarlos como tales, para poder
 distinguirlos como escenarios; e indicar a qué otros entes
 escenarios conducen sus salidas.
 
@@ -3148,7 +3646,7 @@ escenario asignando en una sola operación todas sus salidas.
 subsection( Interfaz para crear conexiones entre los escenarios)
 \ {{{
 
-0 [if]  \ Inacabado!!!
+0  [if]  \ Inacabado!!!
 
 create opposite_exits
 south_exit ,
@@ -3178,7 +3676,7 @@ create exits_table  \ Tabla de traducción de salidas
 \ Rellenar cada elemento de la tabla con un ente de salida,
 \ usando como puntero el campo análogo de la ficha.
 \ Haciéndolo de esta manera no importa el orden en que se rellenen los elementos.
-0 [if]  \ Versión antigua!!!:
+0  [if]  \ Versión antigua!!!:
 north_e exits_table >north_exit first_exit - !
 south_e exits_table >south_exit first_exit - !
 east_e exits_table >east_exit first_exit - !
@@ -3203,7 +3701,7 @@ in_e exits_table in_exit + !
 	first_exit - exits_table + @ 
 	;
 
-0 [if]  \ Inacabado!!!
+0  [if]  \ Inacabado!!!
 : opposite_exit  ( a1 -- a2 )  \ Devuelve la dirección cardinal opuesta a la indicada
 	first_exit - opposite_exits + @
 	;
@@ -3452,7 +3950,7 @@ section( Trama)
 subsection( Herramientas para crear las tramas asociadas a lugares)
 \ {{{
 
-\ Crear la tabla para guardar las direcciones de ejecución de las tramas de los entes escenarios
+\ Crear la tabla para guardar las direcciones de ejecución de las tramas de los entes escenario
 create location_plots_xt  \ Tabla
 #entities cells dup allot  \ Hacer el espacio necesario
 location_plots_xt swap 0 fill  \ Borrar la zona con ceros 
@@ -3471,7 +3969,7 @@ location_plots_xt swap 0 fill  \ Borrar la zona con ceros
 	>location_plot_xt @ ?dup  if  execute  then
 	;
 ' (location_plot) is location_plot
-: init_location_plots  \ Restaura las tramas originales de los entes escenarios
+: init_location_plots  \ Restaura las tramas originales de los entes escenario
 	#entities 0  do
 		i cell * location_plots_xt + @  \ Tomar de la tabla la dirección de ejecución 
 		?dup if  i #>entity >location_plot_xt !  then  \ Si no es cero, guardarla en su ficha
@@ -3484,7 +3982,7 @@ subsection( Herramientas de las tramas asociadas a lugares)
 \ {{{
 
 : enter  ( a -- )  \ Entra en un lugar
-	[debug] [if] s" En ENTER" debug [then]  \ Depuración!!!
+	[debug]  [if]  s" En ENTER" debug  [then]  \ Depuración!!!
 	dup protagonist be_there
 	dup describe
 	more_familiar  .present
@@ -3569,6 +4067,11 @@ location_44_e :location_plot
 \ ------------------------------------------------
 subsection( Trama global)
 \ {{{
+
+: (lock_found)  \ Encontrar el candado (al mirar la puerta o al intentar abrirla)
+	door_e >location @ lock_e be_there
+	lock_e more_familiar
+	;  ' (lock_found) is lock_found
 
 \ Emboscada de los sajones
 
@@ -3921,7 +4424,7 @@ subsection( Comprobaciones de finalización)
 : success?  ( -- f )  \ ¿Ha completado con éxito su misión el protagonista?
 	my_location@ location_51_e =
 	;
-false [if]
+false  [if]
 : battle_phases  ( -- u )  \ Devuelve el número máximo de fases de la batalla
 	5 random 7 +  \ Número al azar, de 8 a 11
 	;
@@ -3933,7 +4436,7 @@ false [if]
 \ }}}
 \ }}}
 \ ##############################################################
-section( Errores del analizador)
+section( Errores del intérprete de comandos) 
 \ {{{
 
 : please$  ( -- a u )  \ Devuelve «por favor» o vacía
@@ -4013,14 +4516,15 @@ section( Errores del analizador)
 	s" reconoce" 3 schoose s& 
 	s" el" s" ningún" 2 schoose s&
 	;
-: 2-action_error  \ Informa de que se ha producido un error porque hay dos verbos en el comando
+: too_many_actions  \ Informa de que se ha producido un error porque hay dos verbos en el comando
 	there_are$ s" dos verbos"
 	there_is$ s" más de un verbo" s&
 	there_are$ s" al menos dos verbos"
 	3 schoose s&  language_error
 	;
-' 2-action_error constant 2-action_error#
-: 2-complement_error  \ Informa de que se ha producido un error porque hay dos complementos en el comando
+' too_many_actions constant (too_many_actions_error#)
+' (too_many_actions_error#) is too_many_actions_error#
+: too_many_complements  \ Informa de que se ha producido un error porque hay dos complementos en el comando
 	\ Provisional!!!
 	there_are$
 	s" dos complementos indirecto o preposicional" s&
@@ -4030,29 +4534,31 @@ section( Errores del analizador)
 	s" al menos dos complementos indirectos o preposicionales" s&
 	3 schoose s&  language_error
 	;
-' 2-complement_error constant 2-complement_error#
-: no_verb_error  \ Informa de que se ha producido un error por falta de verbo en el comando
+' too_many_complements constant (too_many_complements_error#)
+' (too_many_complements_error#) is too_many_complements_error#
+: no_verb  \ Informa de que se ha producido un error por falta de verbo en el comando
 	there_is_no$ s" verbo" s& language_error
 	;
-' no_verb_error constant no_verb_error#
-: no_main_complement_error  \ Informa de que se ha producido un error por falta de complemento directo en el comando
+' no_verb constant (no_verb_error#)
+' (no_verb_error#) is no_verb_error#
+: no_main_complement  \ Informa de que se ha producido un error por falta de complemento directo en el comando
 	there_is_no$ s" complemento directo" s& language_error
 	;
-' no_main_complement_error constant no_main_complement_error# 
-: main_complement_error  \ Informa de que se ha producido un error por presencia de complemento directo en el comando
+' no_main_complement constant (no_main_complement_error#)
+' (no_main_complement_error#) is no_main_complement_error# 
+: unexpected_main_complement  \ Informa de que se ha producido un error por presencia de complemento directo en el comando
 	there_is$ s" un complemento directo" s&
 	s" pero el verbo no puede llevarlo" s&
 	language_error
 	;
-' main_complement_error constant main_complement_error# 
-
-false constant no_error#
+' unexpected_main_complement constant (unexpected_main_complement_error#)
+' (unexpected_main_complement_error#) is unexpected_main_complement_error# 
 
 : ?misunderstood  ( xt | 0 -- )  \ Informa, si es preciso, de un error en el comando
 	\ xt = Dirección de ejecución de la palabra de error (que se usa también como código del error)
-	[debug_catch] [if] s" Al entrar en ?MISUNDERSTOOD" debug [then]  \ Depuración!!!
+	[debug_catch]  [if]  s" Al entrar en ?MISUNDERSTOOD" debug  [then]  \ Depuración!!!
 	?dup  if  execute  then
-	[debug_catch] [if] s" Al salir de ?MISUNDERSTOOD" debug [then]  \ Depuración!!!
+	[debug_catch]  [if]  s" Al salir de ?MISUNDERSTOOD" debug  [then]  \ Depuración!!!
 	;
 
 \ }}}
@@ -4086,7 +4592,7 @@ variable last_masculine_plural_complement
 subsection( Comprobación de los requisitos de las acciones)
 \ {{{
 
-0 [if]  \ ......................................
+0  [if]  \ ......................................
 
 En las siguientes palabras usamos las llaves en sus nombres
 como una notación, para hacer más legible y más fácil de
@@ -4104,7 +4610,7 @@ condicionales anidadas.
 
 : main_complement{forbidden} \ Provoca un error si hay complemento directo
 	main_complement @
-	0<> main_complement_error# and throw
+	0<> unexpected_main_complement_error# and throw
 	;
 : main_complement{required}  \ Provoca un error si no hay complemento directo
 	main_complement @
@@ -4145,9 +4651,9 @@ condicionales anidadas.
 	;
 : {open}  ( a -- )  \ Provoca un error si un ente no está abierto
 	dup what !
-	>close?@ what_is_already_close_error# and throw
+	>closed?@ what_is_already_closed_error# and throw
 	;
-: {close}  ( a -- )  \ Provoca un error si un ente no está cerrado
+: {closed}  ( a -- )  \ Provoca un error si un ente no está cerrado
 	dup what !
 	>open?@ what_is_already_open_error# and throw
 	;
@@ -4247,7 +4753,9 @@ subsection( Mirar, examinar y registrar)
 \ {{{
 
 : (do_look)  ( a -- )  \ Mira un ente
-	dup describe  >location? @  if  .present  then
+	dup describe
+	dup >location? @  if  .present  then
+	more_familiar 
 	;
 : do_look  \  Acción de mirar
 	main_complement @ ?dup 0=  if  my_location@  then
@@ -4313,20 +4821,20 @@ variable #free_exits  \ Contador de las salidas posibles
 	;
 : (do_exit)  ( u -- )  \ Lista una salida
 	\ u = Desplazamiento del campo de salida
-	[debug_do_exits] [if]  cr ." (do_exit)" cr .stack [then]  \ Depuración!!!
+	[debug_do_exits]  [if]  cr ." (do_exit)" cr .stack  [then]  \ Depuración!!!
 	exit_separator$ »+
 	dir>entity >full_name@ »+
 	#listed ++
-	[debug_do_exits] [if]  cr .stack [then]  \ Depuración!!!
+	[debug_do_exits]  [if]  cr .stack  [then]  \ Depuración!!!
 	;
 : free_exits  ( a -- u )  \ Devuelve el número de salidas posibles de un ente
-	[debug_do_exits] [if]  cr ." free_exits" cr .stack [then]  \ Depuración!!!
+	[debug_do_exits]  [if]  cr ." free_exits" cr .stack  [then]  \ Depuración!!!
 	0 swap
 	>first_exit /exits bounds  do
-		[debug_do_exits] [if]  i i cr . @ .  [then]  \ Depuración!!!
+		[debug_do_exits]  [if]  i i cr . @ .  [then]  \ Depuración!!!
 		i @ 0<> abs +
 	cell  +loop 
-	[debug_do_exits] [if] cr .stack [then]  \ Depuración!!!
+	[debug_do_exits]  [if]  cr .stack  [then]  \ Depuración!!!
 	;
 : do_exits  \ Lista las salidas posibles del lugar del protagonista
 	\ No funciona todavía!!!
@@ -4334,9 +4842,9 @@ variable #free_exits  \ Contador de las salidas posibles
 	#listed off
 	my_location@ dup free_exits #free_exits !
 	last_exit 1+ first_exit  do
-		[debug_do_exits] [if]  i cr .  [then]  \ Depuración!!!
+		[debug_do_exits]  [if]  i cr .  [then]  \ Depuración!!!
 		dup i + @
-		[debug_do_exits] [if]  dup .  [then]  \ Depuración!!!
+		[debug_do_exits]  [if]  dup .  [then]  \ Depuración!!!
 		if  i (do_exit)  then
 	cell  +loop  drop
 	.exits
@@ -4471,17 +4979,23 @@ subsection( Cerrar y abrir)
 : (do_open)  ( a -- )  \ Abrir un ente
 	>open? on
 	;
+: the_door_is_locked  \ Informa de que la puerta está cerrada por el candado
+	lock_e >^full_name@ s" bloquea la puerta." s&
+	narrate
+	lock_found
+	;
+: unlock_the_door  \ Abrir la puerta candada, si es posible
+	the_door_is_locked
+	key_e {needed}
+	lock_e (do_open)
+	;
 : open_the_door  \ Abrir la puerta, si es posible
-	door_e {close}
-	lock_e >close?@
-	if
-		s" El candado bloquea la puerta." narrate
-		key_e {needed}
-		door_e (do_open)
-	then
+	door_e {closed}
+	lock_e >closed?@  if  unlock_the_door  then
+	door_e (do_open)
 	;
 : open_the_lock  \ Abrir el candado, si es posible
-	lock_e {close}
+	lock_e {closed}
 	key_e {needed}
 	lock_e (do_open)
 	;
@@ -4654,25 +5168,25 @@ subsection( Movimiento)
 	;
 : do_go_if_possible  ( a -- )  \ Comprueba si el movimiento es posible y lo efectúa
 	\ a = Ente supuestamente de tipo dirección
-	[debug] [if] s" Al entrar en DO_GO_IF_POSSIBLE" debug [then]  \ Depuración!!!
+	[debug]  [if]  s" Al entrar en DO_GO_IF_POSSIBLE" debug  [then]  \ Depuración!!!
 	dup >direction @ ?dup  if  \ ¿El ente es una dirección?
 		my_location@ + @ ?dup
 		if  nip enter  else  impossible_move  then
 	else  drop nonsense
 	then
-	[debug] [if] s" Al salir de DO_GO_IF_POSSIBLE" debug [then]  \ Depuración!!!
+	[debug]  [if]  s" Al salir de DO_GO_IF_POSSIBLE" debug  [then]  \ Depuración!!!
 	;
 : simply_do_go  \ Ir sin dirección específica
 	\ Inacabado!!!
 	s" Ir sin rumbo...?" narrate
 	;
 : do_go  \ Acción de ir
-	[debug] [if] s" Al entrar en DO_GO" debug [then]  \ Depuración!!!
+	[debug]  [if]  s" Al entrar en DO_GO" debug  [then]  \ Depuración!!!
 	main_complement @ ?dup
 	if  do_go_if_possible
 	else  simply_do_go
 	then
-	[debug] [if] s" Al salir de DO_GO" debug [then]  \ Depuración!!!
+	[debug]  [if]  s" Al salir de DO_GO" debug  [then]  \ Depuración!!!
 	;
 ' do_go constant do_go_xt
 : do_go_north  \ Acción de ir al Norte
@@ -4681,10 +5195,10 @@ subsection( Movimiento)
 	;
 ' do_go_north constant do_go_north_xt
 : do_go_south  \ Acción de ir al Sur
-	[debug_catch] [if] s" Al entrar en DO_GO_SOUTH" debug [then]  \ Depuración!!!
+	[debug_catch]  [if]  s" Al entrar en DO_GO_SOUTH" debug  [then]  \ Depuración!!!
 	main_complement{forbidden}
 	south_e do_go_if_possible
-	[debug_catch] [if] s" Al salir de DO_GO_SOUTH" debug [then]  \ Depuración!!!
+	[debug_catch]  [if]  s" Al salir de DO_GO_SOUTH" debug  [then]  \ Depuración!!!
 	;
 ' do_go_south constant do_go_south_xt
 : do_go_east  \ Acción de ir al Este
@@ -4835,7 +5349,7 @@ subsection( Escalar)
 : do_climb  \ Acción de escalar
 	main_complement @ ?dup
 	if  do_climb_if_possible
-	else  no_main_complement_error  \ Inacabado!!! Comprobar si es el derrumbe u otra cosa.
+	else  no_main_complement  \ Inacabado!!! Comprobar si es el derrumbe u otra cosa.
 	then
 	;
 ' do_climb constant do_climb_xt
@@ -4995,7 +5509,7 @@ subsection( Hablar)
 	;
 : the_leader_checks_what_you_carry  \ El jefe controla lo que llevas
 
-	[false] [if] \ First old version:
+	[false]  [if]  \ First old version:
 	stone_e is_accessible?  if
 		the_leader_talks_about_the_stone
 	else
@@ -5095,20 +5609,20 @@ subsection( Hablar)
 		2  of  conversation_2_with_ambrosio  endof
 	endcase
 
-	[false] [if]
+	[false]  [if]
 	my_location@ case
 		location_19_e  of  conversation_0_with_ambrosio  endof
 		location_46_e  of  conversation_1_with_ambrosio  endof
 	endcase
 	[then]
-	[false] [if]
+	[false]  [if]
 	my_location@ case
 		location_45_e  of  conversation_2_with_ambrosio  endof
 		location_46_e  of  conversation_2_with_ambrosio  endof
 		location_47_e  of  conversation_2_with_ambrosio  endof
 	endcase
 	[then]
-	[false] [if]  \ Método alternativo poco legible, inacabado!!!
+	[false]  [if]  \ Método alternativo poco legible, inacabado!!!
 	location_45_e 1- location_47_e 1+ my_location@ within  if
 		conversation_2_with_ambrosio
 	then
@@ -5132,7 +5646,7 @@ subsection( Hablar)
 	s" hablar solo" is_nonsense
 	;
 : do_speak_if_possible  ( a -- )  \ Hablar con un ente si es posible
-	[debug] [if] s" En DO_SPEAK_IF_POSSIBLE" debug [then]  \ Depuración!!!
+	[debug]  [if]  s" En DO_SPEAK_IF_POSSIBLE" debug  [then]  \ Depuración!!!
 	main_complement @  case
 		0  of  talk_to_yourself  endof
 		leader_e  of  talk_to_the_leader  endof
@@ -5141,7 +5655,7 @@ subsection( Hablar)
 	endcase
 	;
 : do_speak  \ Acción de hablar
-	[debug] [if] s" En DO_SPEAK" debug [then]  \ Depuración!!!
+	[debug]  [if]  s" En DO_SPEAK" debug  [then]  \ Depuración!!!
 	main_complement @ ?dup
 	if  do_speak_if_possible
 	else  talk_to_yourself
@@ -5163,7 +5677,7 @@ defer do_finish  \ Acción de abandonar el juego
 section( Intérprete de comandos)
 \ {{{
 
-0 [if]  \ ......................................
+0  [if]  \ ......................................
 
 Gracias al uso del propio intérprete de Forth como
 intérprete de comandos del juego, más de la mitad del
@@ -5195,51 +5709,51 @@ vocabulary player_vocabulary  \ Vocabulario para guardar en él las palabras del
 \ 	\ antiguo!!! no se usa!!!
 \ 	\ u = Código de error, o cero si no se produjo un error
 \ 	\ f = Cero si se produjo un error; -1 si no se produjo un error
-\ 	[debug] [if] s" En UNDERSTOOD?" debug [then]  \ Depuración!!!
+\ 	[debug]  [if]  s" En UNDERSTOOD?" debug  [then]  \ Depuración!!!
 \ 	\ dup ?misunderstood 0= \ antiguo!!!
 \ 	dup 0= swap ?misunderstood
 \ 	;
 : (execute_action)  ( xt -- )  \ Ejecuta la acción del comando
-	[debug] [if] s" En (EXECUTE_ACTION)" debug [then]  \ Depuración!!!
-	[debug_catch] [if] s" En (EXECUTE_ACTION) antes de CATCH" debug [then]  \ Depuración!!!
+	[debug]  [if]  s" En (EXECUTE_ACTION)" debug  [then]  \ Depuración!!!
+	[debug_catch]  [if]  s" En (EXECUTE_ACTION) antes de CATCH" debug  [then]  \ Depuración!!!
 	catch  \ Ejecutar la acción a través de CATCH para poder regresar directamente con THROW en caso de error
-	[debug_catch] [if] s" En (EXECUTE_ACTION) después de CATCH" debug [then]  \ Depuración!!!
+	[debug_catch]  [if]  s" En (EXECUTE_ACTION) después de CATCH" debug  [then]  \ Depuración!!!
 	?misunderstood
-	[debug_catch] [if] s" En (EXECUTE_ACTION) después de ?MISUNDERSTOOD" debug [then]  \ Depuración!!!
-	[debug] [if] s" Al final de (EXECUTE_ACTION)" debug [then]  \ Depuración!!!
+	[debug_catch]  [if]  s" En (EXECUTE_ACTION) después de ?MISUNDERSTOOD" debug  [then]  \ Depuración!!!
+	[debug]  [if]  s" Al final de (EXECUTE_ACTION)" debug  [then]  \ Depuración!!!
 	;
 : execute_action  \ Ejecuta la acción del comando, si existe
-	[debug] [if] s" En EXECUTE_ACTION" debug [then]  \ Depuración!!!
-	[debug_catch] [if] s" En EXECUTE_ACTION" debug [then]  \ Depuración!!!
+	[debug]  [if]  s" En EXECUTE_ACTION" debug  [then]  \ Depuración!!!
+	[debug_catch]  [if]  s" En EXECUTE_ACTION" debug  [then]  \ Depuración!!!
 	action @ ?dup
-	[debug_catch] [if] s" En EXECUTE_ACTION tras ACTION @ ?DUP" debug [then]  \ Depuración!!!
+	[debug_catch]  [if]  s" En EXECUTE_ACTION tras ACTION @ ?DUP" debug  [then]  \ Depuración!!!
 	if  (execute_action)
 	else  no_verb_error# ?misunderstood
 	then
-	[debug_catch] [if] s" Al final de EXECUTE_ACTION" debug [then]  \ Depuración!!!
-	[debug] [if] s" Al final de EXECUTE_ACTION" debug [then]  \ Depuración!!!
+	[debug_catch]  [if]  s" Al final de EXECUTE_ACTION" debug  [then]  \ Depuración!!!
+	[debug]  [if]  s" Al final de EXECUTE_ACTION" debug  [then]  \ Depuración!!!
 	;
 : valid_parsing?  ( a u -- f )  \ Evalúa un comando con el vocabulario del juego
 	\ a u = Comando
 	\ f = ¿El comando se analizó sin error?
-	[debug] [if] s" Entrando en VALID_PARSING?" debug [then]  \ Depuración!!!
+	[debug]  [if]  s" Entrando en VALID_PARSING?" debug  [then]  \ Depuración!!!
 	only player_vocabulary  \ Dejar solo el diccionario PLAYER_VOCABULARY activo
-	[debug_catch] [if] s" En VALID_PARSING? antes de CATCH" debug [then]  \ Depuración!!!
+	[debug_catch]  [if]  s" En VALID_PARSING? antes de CATCH" debug  [then]  \ Depuración!!!
 	['] evaluate catch  \ Llamar a EVALUATE a través de CATCH para poder regresar directamente con THROW en caso de error
-	[debug_catch] [if] s" En VALID_PARSING? después de CATCH" debug [then]  \ Depuración!!!
+	[debug_catch]  [if]  s" En VALID_PARSING? después de CATCH" debug  [then]  \ Depuración!!!
 	dup 0= swap ?misunderstood
 	restore_vocabularies
-	[debug] [if] s" Saliendo de VALID_PARSING?" debug [then]  \ Depuración!!!
-	[debug_catch] [if] s" Saliendo de VALID_PARSING?" debug [then]  \ Depuración!!!
+	[debug]  [if]  s" Saliendo de VALID_PARSING?" debug  [then]  \ Depuración!!!
+	[debug_catch]  [if]  s" Saliendo de VALID_PARSING?" debug  [then]  \ Depuración!!!
 	;
 : obbey  ( a u -- )  \ Evalúa un comando con el vocabulario del juego
-	[debug] [if] s" Al entrar en OBBEY" debug [then]  \ Depuración!!!
+	[debug]  [if]  s" Al entrar en OBBEY" debug  [then]  \ Depuración!!!
 	dup  if
 		init_parsing valid_parsing?
 		if  execute_action  then
 	else  2drop
 	then
-	[debug] [if] s" Al final de OBBEY" debug [then]  \ Depuración!!!
+	[debug]  [if]  s" Al final de OBBEY" debug  [then]  \ Depuración!!!
 	; 
 : second?  ( a1 a2 -- a1 f )  \ ¿La acción o el complemento son los segundos que se encuentran?
 	\ a1 = Acción o complemento recién encontrado
@@ -5248,19 +5762,19 @@ vocabulary player_vocabulary  \ Vocabulario para guardar en él las palabras del
 	;
 : action!  ( a -- )  \ Comprueba y almacena la acción (la dirección de ejecución de su palabra) 
 	action @ second?  \ ¿Había ya una acción?
-	if  2-action_error# throw  \ Sí, error
+	if  too_many_actions_error# throw  \ Sí, error
 	else  action !  \ No, guardarla
 	then
 	;
 : (complement!)  ( a -- )  \
-	[debug] [if] s" En (COMPLEMENT!)" debug [then]  \ Depuración!!!
+	[debug]  [if]  s" En (COMPLEMENT!)" debug  [then]  \ Depuración!!!
 	other_complement @ second?  \ ¿Había ya un complemento secundario?
-	if  2-complement_error# throw  \ Sí, error
+	if  too_many_complements_error# throw  \ Sí, error
 	else  other_complement !  \ No, guardarlo
 	then
 	;
 : complement!  ( a -- )  \ Comprueba y almacena un complemento (la dirección de la ficha de su ente)
-	[debug] [if] s" En COMPLEMENT!" debug [then]  \ Depuración!!!
+	[debug]  [if]  s" En COMPLEMENT!" debug  [then]  \ Depuración!!!
 	main_complement @ second?  \ ¿Había ya un complemento directo?
 	if  (complement!)
 	else  main_complement !
@@ -5281,7 +5795,7 @@ vocabulary player_vocabulary  \ Vocabulario para guardar en él las palabras del
 section( Vocabulario)
 \ {{{
 
-0 [if]  \ ......................................
+0  [if]  \ ......................................
 
 El vocabulario del juego está implementado como un
 vocabulario de Forth, creado con el nombre de
@@ -5360,7 +5874,7 @@ subsection( Palabras para crear sinónimos)
 subsection( Resolución de ambigüedades)
 \ {{{
 
-0 [if]  \ ......................................
+0  [if]  \ ......................................
 
 Algunos nombres del vocabulario del jugador pueden referirse
 a varios entes. Por ejemplo, «hombre» puede referirse al
@@ -5594,7 +6108,7 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 : nubes  clouds_e complement!  ;
 ' nubes 5 synonyms: nube estratocúmulo estratocúmulos cirro cirros
 : suelo  floor_e complement!  ;
-' suelo 4 synonyms: suelos tierra firme tierra
+' suelo 3 synonyms: suelos tierra firme 
 : cielo  sky_e complement!  ;
 ' cielo 4 synonyms: cielos firmamento 
 : techo  ceiling_e complement!  ;
@@ -5610,7 +6124,7 @@ restore_vocabularies
 subsection( Vocabulario para entradas «sí» o «no»)
 \ {{{
 
-0 [if]  \ ......................................
+0  [if]  \ ......................................
 
 Para los casos en que el programa hace una pregunta que debe
 ser respondida con «sí» o «no», usamos un truco análogo al
@@ -5657,14 +6171,10 @@ restore_vocabularies
 \ }}}
 \ }}}
 \ ##############################################################
-section( Entrada) 
+section( Entrada de comandos)
 \ {{{
 
-\ ------------------------------------------------
-subsection( Entrada de comandos)
-\ {{{
-
-0 [if]  \ ......................................
+0  [if]  \ ......................................
 
 Para la entrada de comandos se usa la palabra de Forth
 ACCEPT , que permite limitar el número máximo de caracteres
@@ -5686,13 +6196,13 @@ create command /command chars allot  \ Zona de almacenamiento del comando
 	.command_prompt (wait_for_input)
 	;
 : listen  ( -- a u )  \ Espera y devuelve el comando introducido por el jugador, formateado
-	[status] [if] s" " debug [then]  \ Depuración!!!
+	[debug_info]  [if]  s" " debug  [then]  \ Depuración!!!
 	wait_for_input  -punctuation
 	; 
 
 \ }}}
-\ ------------------------------------------------
-subsection( Entrada de respuestas a preguntas de tipo «sí o no»)
+\ ##############################################################
+section( Entrada de respuestas de tipo «sí o no»)
 \ {{{
 
 : evaluate_answer  ( a u -- )  \ Evalúa una respuesta a una pregunta del tipo «sí o no»
@@ -5718,7 +6228,6 @@ subsection( Entrada de respuestas a preguntas de tipo «sí o no»)
 	;
 
 \ }}}
-\ }}}
 \ ##############################################################
 section( Preparativos)
 \ {{{
@@ -5726,19 +6235,21 @@ section( Preparativos)
 : init_entities/once  \ Preparación de la base de datos que se hace solo la primera vez
 	wipe_entities  \ Poner las fichas a cero
 	init_entity_strings  \ Cadenas dinámicas para los nombres
+	[old_method]  [if]
 	init_direction_entities  \ Entes de dirección
+	[then]
 	;
 : init_entities/game  \ Preparación de la base de datos que se hace antes de cada partida
 	\ Devolvemos a su estado original los datos
 	\ que pudieran haber cambiado durante una partida:
 	init_entity_names  \ Nombres
-	init_entity_attributes  \ Atributos
+	\ init_entity_attributes  \ !!! Atributos 
 	init_entity_descriptions  \ Descripciones
 	init_entity_locations  \ Localizaciones
 	;
 : init_plot  \ Preparativos de las tramas
 	init_plot_variables  \ Variables de las tramas
-	init_location_plots  \ Tramas de los entes escenarios
+	init_location_plots  \ Tramas de los entes escenario
 	;
 : init/once  \ Preparativos que hay que hacer solo una vez, antes de la primera partida
 	init_screen/once  \ Pantalla
@@ -6097,26 +6608,23 @@ section( Principal)
 	randomize
 
 	init_entity_names  \ Nombres
-	init_entity_attributes  \ Atributos
+	\ init_entity_attributes  \ Atributos
 	\ init_entity_descriptions  \ Descripciones
 	\ init_entity_locations  \ Localizaciones
 
 	;
 
-i0 cr  \ Para depuración!!!
+\ i0 cr  \ Para depuración!!!
 \ main
 
 \ }}}
 \eof  \ Final del programa; el resto del fichero es ignorado por SP-Forth
 
-0 [if]  \ ......................................
-[then]  \ ......................................
-
 \ #############################################################
 \ Notas
 \ {{{
 
-0 [if]  \ ......................................
+0  [if]  \ ......................................
 
 ------------------------------------------------
 Novedades significativas respecto a la versión en SuperBASIC y a las versiones originales
@@ -6173,7 +6681,7 @@ Dudas
 \ {{{
 
 ((
-0 [if]
+0  [if]
 
 ------------------------------------------------
 Programación 
@@ -6329,4 +6837,6 @@ Unificar la terminología: localización / lugar /escenario.
 ))
 \ }}}
 
+0  [if]  \ ......................................
+[then]  \ ......................................
 
