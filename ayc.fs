@@ -7,7 +7,7 @@ CR .( Asalto y castigo )
 \ A text adventure in Spanish, written in SP-Forth.
 \ Un juego conversacional en castellano, escrito en SP-Forth.
 
-: version$  S" A-2011280145"  ;  version$ TYPE CR
+: version$  S" A-01-2011280230"  ;  version$ TYPE CR
 
 \ Copyright (C) 2011 Marcos Cruz (programandala.net)
 
@@ -34,7 +34,7 @@ CR .( Asalto y castigo )
 \ http://caad.es
 \ Información sobre Forth:
 \ http://forth.org
-\ Desarrollo de SP-Forth:
+\ Información sobre SP-Forth:
 \ http://spf.sf.net
 
 \ #############################################################
@@ -129,26 +129,30 @@ require csb csb2.fs  \ Almacén circular de cadenas, con definición de cadenas 
 
 \ }}}
 \ ##############################################################
+\ Meta
+\ {{{
+
 \ Indicadores para depuración
 
-\ Cada indicador activado hace que se muestren mensajes de
-\ depuración durante la ejecución del programa:
-
 false value [debug] immediate  \ Indicador: ¿Modo de depuración global?
+false value [debug_init] immediate  \ Indicador: ¿Modo de depuración global?
 false value [debug_do_exits] immediate  \ Indicador: ¿Depurar la acción DO_EXITS ?
 false value [debug_catch] immediate  \ Indicador: ¿Depurar CATCH y THROW ?
-false value [debug_info] immediate  \ Indicador: ¿Mostrar info de depuración sobre el presto de comandos? 
-true value [debug_pause] immediate  \ Indicador: ¿Hacer una pausa en cada punto de depuración?
+true value [debug_info] immediate  \ Indicador: ¿Mostrar info de depuración sobre el presto de comandos? 
+false value [debug_pause] immediate  \ Indicador: ¿Hacer una pausa en cada punto de depuración?
 
-[debug]  [if]  startlog  [then]
+[debug]
+[debug_init] or
+[debug_do_exits] or
+[debug_catch] or
+[if]  startlog  [then]
 
-\ Indicadores para poder elegir alternativas que aún son experimentales:
+\ Indicadores para poder elegir alternativas que aún son experimentales
+
 true constant [old_method]  immediate
 [old_method] 0= constant [new_method]  immediate
 
-\ ##############################################################
-\ Meta
-\ {{{
+\ Constantes
 
 true constant [true] immediate  \ Para usar en compilación condicional 
 false constant [false] immediate  \ Para usar en compilación condicional 
@@ -156,6 +160,8 @@ false constant [0] immediate  \ Para usar en comentarios multilínea con [IF] de
 
 S" /COUNTED-STRING" environment?  [if]  [else]  256 chars  [then]
 constant /counted_string  \ Longitud máxima de una cadena contada (incluyendo la cuenta)
+
+\ Títulos de sección
 
 : .s?  \ Imprime el contenido de la pila si no está vacía
 	depth  if  cr ." Pila: " .s key drop  then
@@ -170,6 +176,9 @@ constant /counted_string  \ Longitud máxima de una cadena contada (incluyendo l
 	[char] * emit space postpone .(  \ El nombre de subsección terminará con: )
 	space .s?
 	;
+
+\ Grabación del sistema
+
 defer main
 : save_game  \ Crea un ejecutable con el programa
 	\ Aún no se usa!!!
@@ -304,8 +313,10 @@ section( Pantalla)
 subsection( Variables y constantes)
 \ {{{
 
-79 value max_x  \ Máximo número de columna (80 columnas)
-24 value max_y  \ Máximo número de fila (25 filas)
+79 constant default_max_x
+24 constant default_max_y
+default_max_x value max_x  \ Máximo número de columna (80 columnas)
+default_max_y value max_y  \ Máximo número de fila (25 filas)
 
 \ No se usa!!!
 variable cursor_x  \ Columna actual del cursor
@@ -525,7 +536,7 @@ subsection( Borrado de pantalla)
 : clear_screen_for_location  \ Restaura el color de tinta y borra la pantalla para cambiar de escenario
 	location_page? @  if  clear_screen  then
 	;
-: init_screen/once  \ Prepara la pantalla la primera vez
+: init_screen  \ Prepara la pantalla la primera vez
 	trm+reset init_cursor default_color home
 	;
 
@@ -743,7 +754,6 @@ section( Textos variables)
 : possible2$  ( -- a u )  \ Devuelve «posibles» o una cadena vacía
 	s" posibles" s" " 2 schoose
 	;
-
 : player_o/a  ( -- a 1 )  \ Devuelve la terminación «a» u «o» según el sexo del jugador
 	[false]  [if]
 		\ Método 1, «estilo BASIC»:
@@ -756,7 +766,6 @@ section( Textos variables)
 : player_o/a+  ( a1 u1 -- a2 u2 )  \ Añade a una cadena la terminación «a» u «o» según el sexo del jugador
 	player_o/a s+
 	;
-
 : all_your$  ( -- a u )  \ Devuelve una variante de «Todos tus».
 	s" Todos tus" s" Tus" 2 schoose
 	;
@@ -769,7 +778,6 @@ section( Textos variables)
 : ^your_soldiers$  ( -- a u )  \ Devuelve una variante de "Tus hombres"
 	s" Tus" soldiers$ s&
 	;
-
 : the_enemies$  ( -- a u )  \ Devuelve una variante de «los enemigos».
 	s" los sajones"
 	s" las tropas" s" las huestes" 2 schoose
@@ -803,7 +811,27 @@ section( Textos variables)
 	\ f = ¿El texto está en plural?
 	(the_enemy/enemies) >r  >^uppercase  r>
 	;
-
+: of_your_ex_cloak$  ( -- a u )  \ Devuelve un texto común a las descripciones de los restos de la capa
+	s" que queda" s" que quedó" s" " 3 schoose 
+	s" de" s&
+	s" lo que" s" la que" 2 schoose s&
+	s" antes" s" " 2 schoose s&
+	s" era" s" fue" s" fuera" 3 schoose s&
+	s" tu" s" la" 2 schoose s&
+	s" oscura" s" " 2 schoose s&
+	s" capa" s&
+	s" de lana" s" " 2 schoose s&
+	period+
+	;
+: though$  ( -- a u )
+	s" si bien" s" pero" s" aunque" 3 schoose
+	;
+: place$  ( -- a u )
+	s" sitio" s" lugar" 2 schoose
+	;
+: cave$  ( -- a u )
+	s" cueva" s" caverna" 2 schoose
+	;
 \ }}}
 \ ##############################################################
 section( Cadena dinámica multiusos)
@@ -1053,24 +1081,31 @@ s" »" sconstant rquote$  \ Comilla castellana de cierre
 \ }}}
 \ }}}
 \ ##############################################################
-section( Entes)
+section( Definición de la ficha de un ente)
 \ {{{
 
 0  [if]  \ ......................................
 
 Denominamos «ente» a cualquier componente del mundo virtual
-del juego que está descrito en la base de datos. Un «ente»
-puede ser un objeto, manipulable o no; un personaje no
-jugador, interactivo o no; un lugar; o el protagonista. 
+del juego que es manipulable por el programa.  «Entes» por
+tanto son los objeto, manipulables o no por el jugador; los
+personajes, interactivos o no; los lugares; y el propio
+personaje protagonista. 
 
-[then]  \ ......................................
+Cada ente tiene una ficha en la base de datos del juego.  La
+base de datos es una zona de memoria dividida en partes
+iguales, una para cada ficha. El identificador de cada ficha
+es una palabra que al ejecutarse deja en la pila la
+dirección de la ficha en la memoria.
 
-defer protagonist  \ Vector que después se redirigirá a la ficha del protagonista en la base de datos
-\ ------------------------------------------------
-subsection( Definición de la ficha de un ente)
-\ {{{
-
-0  [if]  \ ......................................
+Los campos de la base de datos, como es habitual en Forth en
+este tipo de estructuras, son palabras que suman el
+desplazamiento adecuado a la dirección base de la ficha, que
+reciben en la pila, apuntando así a la dirección de memoria
+que contiene el campo correspondiente. Para simplificar el
+código, todos las campos usan una celda (32 bitios).  El
+contenido puede ser un valor, un indicador o una dirección
+de memoria.
 
 La palabra provista por SP-Forth para crear campos de
 estructuras de datos es -- (dos guiones); para usar este
@@ -1095,27 +1130,27 @@ en memoria de la ficha.
 
 Aunque hay campos binarios que podrían almacenarse en un
 solo bitio, y otros que no precisarían más de un octeto,
-optamos por almacenar cada campo en una «celda» (concepto de
-ANS Forth, unidad en que se mide el tamaño de cada elemento
-de la pila y equivalente a 4 octetos en un sistema Forth de
-32 bitios).  El motivo es facilitar el desarrollo.  Cuando
-la memoria usada por los campos de datos varía, las
-operaciones para leer y modificar los campos varían también
-en cada caso.  Para evitar esto se podría escribir muy
-fácilmente un conjunto de palabras que actuara como capa
-superior para manipular los campos de datos, escondiendo las
-interioridades de cómo se guarda efectivamente cada dato en
-la ficha (en un bitio, en un octeto, en dos o en cuatro).
-No obstante, para simplificar aun más, y dado que no hay
-problema de escasez de memoria, hemos optado por usar el
-mismo tamaño en todos los campos.  De este modo la
-aplicación puede usar con todos los campos las palabras
-habituales para leer la memoria y modificarla.
+para simplificar el código optamos por almacenar cada campo
+en una «celda» (concepto de ANS Forth, unidad en que se mide
+el tamaño de cada elemento de la pila y equivalente a 4
+octetos en un sistema Forth de 32 bitios).  El motivo es
+facilitar el desarrollo.  Cuando la memoria usada por los
+campos de datos varía, las operaciones para leer y modificar
+los campos varían también en cada caso.  Para evitar esto se
+podría escribir fácilmente un conjunto de palabras que
+actuara como capa superior para manipular los campos de
+datos, escondiendo las interioridades de cómo se guarda
+efectivamente cada dato en la ficha (en un bitio, en un
+octeto, en dos o en cuatro).  No obstante, para simplificar
+aun más, y dado que no hay escasez de memoria, hemos optado
+por usar el mismo tamaño en todos los campos.  De este modo
+la aplicación puede usar con todos los campos las palabras
+habituales en Forth para leer y escribir direcciones de la
+memoria. 
 
 [then]  \ .......................................
 
 0 \ Valor inicial de desplazamiento para el primer campo
-cell field >desambiguation_xt  \ Dirección de ejecución de la palabra que desambigua e identifica el ente (aún no se usa!!!)
 cell field >name_str  \ Dirección de una cadena dinámica que contendrá el nombre del ente
 cell field >personal_name?  \ Indicador: ¿el nombre del ente es un nombre propio?
 cell field >feminine?  \ Indicador: ¿el género gramatical del nombre es femenino?
@@ -1139,12 +1174,10 @@ cell field >lit?  \ Indicador: ¿el ente, que es una fuente de luz que puede ser
 cell field >vegetal?  \ Indicador: ¿es vegetal?
 cell field >animal?  \ Indicador: ¿es animal? 
 cell field >human?  \ Indicador: ¿es humano? 
-\ cell field >container?  \ Indicador: ¿es un contenedor? 
 cell field >open?  \ Indicador: ¿está abierto? 
 cell field >location?  \ Indicador: ¿es un lugar? 
 cell field >location  \ Identificador del ente en que está localizado (sea lugar, contenedor, personaje o «limbo»)
 cell field >location_plot_xt  \ Dirección de ejecución de la palabra que se ocupa de la trama del lugar 
-\ cell field >stamina  \ Energía de los entes vivos
 cell field >familiar  \ Contador de familiaridad (cuánto le es conocido el ente al protagonista)
 cell field >north_exit  \ Ente de destino hacia el Norte
 cell field >south_exit  \ Ente de destino hacia el Sur
@@ -1155,25 +1188,11 @@ cell field >down_exit  \ Ente de destino hacia abajo
 cell field >out_exit  \ Ente de destino hacia fuera
 cell field >in_exit  \ Ente de destino hacia dentro
 cell field >direction  \ Desplazamiento del campo de dirección al que corresponde el ente (solo se usa en los entes que son direcciones)
+\ Campos omitidos porque aún no se usan!!!:
+\ cell field >desambiguation_xt  \ Dirección de ejecución de la palabra que desambigua e identifica el ente
+\ cell field >container?  \ Indicador: ¿es un contenedor?
+\ cell field >stamina  \ Energía de los entes vivos
 constant /entity  \ Tamaño de cada ficha
-
-' >north_exit alias >first_exit  \ Primera salida definida en la ficha
-' >in_exit alias >last_exit  \ Última salida definida en la ficha
-
-\ Guardar el desplazamiento de cada campo de dirección respecto al primero de ellos:
-0 >first_exit constant first_exit
-0 >last_exit constant last_exit
-0 >north_exit constant north_exit
-0 >south_exit constant south_exit
-0 >east_exit constant east_exit
-0 >west_exit constant west_exit
-0 >up_exit constant up_exit
-0 >down_exit constant down_exit
-0 >out_exit constant out_exit
-0 >in_exit constant in_exit
-
-last_exit cell+ first_exit - constant /exits  \ Espacio en octetos ocupado por los campos de salidas
-/exits cell / constant #exits  \ Número de salidas
 
 \ }}}
 \ ------------------------------------------------
@@ -1198,11 +1217,31 @@ frecuentes con los entes.
 
 [then]  \ ......................................
 
+defer protagonist  \ Vector que después se redirigirá a la ficha del protagonista en la base de datos
+
 0 constant no_exit  \ Marcador para salidas sin salida
 0 constant limbo \ Marcador para usar como localización de entes inexistentes
 
 \ location_plot está aquí temporalmente!!!:
 defer location_plot  \ Vector que después se redirigirá a la palabra que gestiona la trama de los entes escenario
+
+' >north_exit alias >first_exit  \ Primera salida definida en la ficha
+' >in_exit alias >last_exit  \ Última salida definida en la ficha
+
+\ Guardar el desplazamiento de cada campo de dirección respecto al primero de ellos:
+0 >first_exit constant first_exit
+0 >last_exit constant last_exit
+0 >north_exit constant north_exit
+0 >south_exit constant south_exit
+0 >east_exit constant east_exit
+0 >west_exit constant west_exit
+0 >up_exit constant up_exit
+0 >down_exit constant down_exit
+0 >out_exit constant out_exit
+0 >in_exit constant in_exit
+
+last_exit cell+ first_exit - constant /exits  \ Espacio en octetos ocupado por los campos de salidas
+/exits cell / constant #exits  \ Número de salidas
 
 : exit?  ( a -- f )  \ ¿Está abierta una dirección de salida de un ente escenario?
 	no_exit <>
@@ -1322,10 +1361,16 @@ create 'articles  \ Tabla de artículos
 	article$
 	;
 : >plural_ending@  ( a -- a u )  \ Devuelve la terminación adecuada del plural para el nombre de un ente
-	>plural? @  if  s" s"  else  s" "  then
+	\ Con el estilo de BASIC:
+\	>plural? @  if  s" s"  else  s" "  then
+	\ Con el estilo de Forth:
+	s" s" rot >plural? @ and
 	;
 : >gender_ending@  ( a -- a u )  \ Devuelve la terminación adecuada del género gramatical para el nombre de un ente
-	>feminine? @  if  s" a"  else  s" o"  then
+	\ Con el estilo de BASIC:
+\	>feminine? @  if  s" a"  else  s" o"  then
+	\ Con el estilo de Forth:
+	s" oa" drop swap >feminine? @ abs + 1
 	;
 : >noun_ending@  ( a -- a1 u1 )  \ Devuelve la terminación adecuada para el nombre de un ente
 	dup >gender_ending@ rot >plural_ending@ s+
@@ -1504,7 +1549,7 @@ create 'articles  \ Tabla de artículos
 : is_not_accessible?  ( a -- f )  \ ¿Un ente no es accesible para el protagonista?
 	is_accessible? 0=
 	;
-: can_be_looked_at?  ( a -- )  \ ¿El ente puede ser mirado?
+: can_be_looked_at?  ( a -- f )  \ ¿El ente puede ser mirado?
 	dup my_location@ =  \ ¿Es el lugar del protagonista?
 	swap is_accessible?  or  \ ¿O está accesible? 
 	;
@@ -1621,16 +1666,11 @@ defer you_do_not_wear_what_error#
 defer you_need_what_error#
 
 \ }}}
-\ ------------------------------------------------
-subsection( Base de datos)
+\ ##############################################################
+section( Herramientas para crear la base de datos)
 \ {{{
 
 0  [if]  \ ......................................
-
-La «base de datos» del juego es tan solo una zona de memoria
-dividida en partes iguales, una para cada ficha. El
-identificador de ficha es una palabra que al ejecutarse deja
-en la pila la dirección de la ficha en la memoria.
 
 No se puede reservar el espacio necesario para las fichas
 hasta saber cuántas son (a menos que usáramos una estructura
@@ -1643,8 +1683,6 @@ crear un nuevo ente fácilmente, sin necesidad de asignar
 previamente el número de fichas a una constante.
 
 [then]  \ ......................................
-
-[old_method]  [if]
 
 defer 'entities  \ Dirección de los entes; vector que después será redirigido a la palabra real
 0 value #entities  \ Contador de entes, que se actualizará según se vayan creando
@@ -1662,47 +1700,112 @@ defer 'entities  \ Dirección de los entes; vector que después será redirigido
 	does>  ( -- a )
 		@ #>entity  \ Cuando el identificador se ejecute, devolverá la dirección de su ficha
 	;
-
-: vanish_all  \ Pone todos los entes en el «limbo»
-	\ No se usará!!!
-	#entities 0  do
-		i #>entity vanish
-	loop
-	;
-
-[then]
-
-[new_method]  [if]  \ Experimental!!! Inacabado!!!
-
-: entity_id  ( "name" -- ) \ Crea un nuevo identificador de entidad, que devolverá la dirección de su ficha
-	create
-		#entities ,  \ Guardar la cuenta en el cuerpo de la palabra recién creada
-		#entities 1+ to #entities  \ Actualizar el contador
-	does>  ( -- a )
-		@ #>entity  \ Cuando el identificador se ejecute, devolverá la dirección de su ficha
-	;
 : erase_entity  ( a -- )  \ Rellena con ceros la ficha de un ente
 	/entity erase
 	;
-: init_entity  ( a -- )  \ Restaura la ficha de un ente con sus datos originales
-	dup dup >init_xt @ >r  \ Toma la dirección de restauración del ente
-	erase_entity  r@ execute  \ Borra y restaura
-	>init_xt r> swap !  \ Guarda la dirección de restauración
+variable name_str_backup
+variable init_xt_backup
+variable description_xt_backup
+variable location_plot_xt_backup
+: backup_entity  ( a -- )  \ Respalda los datos que se crearon durante la compilación del código y deben preservarse.
+	dup >name_str @ name_str_backup !
+	dup >init_xt @ init_xt_backup !
+	dup >location_plot_xt @ location_plot_xt_backup !
+	>description_xt @ description_xt_backup !
+	;
+: restore_entity  ( a -- )  \ Restaura los datos que se crearon durante la compilación del código y deben preservarse.
+	name_str_backup @ over >name_str !
+	init_xt_backup @ over >init_xt !
+	location_plot_xt_backup @ over >location_plot_xt !
+	description_xt_backup @ swap >description_xt !
+	;
+: setup_entity  ( a -- )  \ Prepara la ficha de un ente para ser completada con sus datos 
+	dup backup_entity  dup erase_entity  restore_entity
 	;
 0 value this  \ Guardará el ente que está siendo definido
-: :attributes  ( a -- xt )  \ Inicia la definición de propiedades de un ente
-	to this  :noname 
+: [:attributes]  ( a -- )  \ Inicia la definición de propiedades de un ente
+	\ Esta palabra se ejecuta cada vez que hay que restaurar los datos del ente,
+	\ y antes de la definición de atributos contenida en la palabra correspondiente al ente.
+	dup to this  \ Actualizar el puntero al ente, para aligerar la sintaxis
+	setup_entity
 	;
-: ;attributes  ( xt -- )  \ Termina la definición de propiedades de un ente
-	dup this >init_xt ! execute
-	postpone ;
-	; immediate
-
-[then]
+: :name_str  ( a -- )  \ Crea una cadena dinámica para guardar el nombre del ente.
+	str-new swap >name_str !
+	;
+: (:attributes)  ( a xt -- )  \ Operaciones preliminares para la definición de atributos de un ente
+	\ Esta palabra solo se ejecuta una vez para cada ente,
+	\ al inicio de la compilación del código de la palabra
+	\ que define sus atributos.
+	\ a = Ente para la definición de cuyos atributos se ha creado una palabra
+	\ xt = Dirección de ejecución de la palabra creada
+	over >init_xt !  \ Conservar la dirección en la ficha del ente
+	:name_str  \ Crear una cadena dinámica para el campo >NAME_STR
+	;
+: :attributes  ( a -- )  \ Inicia la creación de una palabra sin nombre que definirá las propiedades de un ente
+	:noname (:attributes)  \ Crear la palabra y hacer las operaciones preliminares
+	postpone [:attributes]  \ Compilar la palabra (:ATTRIBUTES) en la palabra creada, para que se ejecute cuando sea llamada
+	;
+' ; alias ;attributes immediate
 
 \ }}}
-\ ------------------------------------------------
-subsection( Identificadores de entes)
+\ ##############################################################
+section( Herramientas para crear las descripciones)
+\ {{{
+
+0  [if]  \ ......................................
+
+Para cada ente creamos una una palabra que imprimirá su
+descripción.  Esto es mucho más flexible que almacenar un
+texto invariable en la ficha del ente: La descripción podrá
+variar en función del desarrollo del juego y adaptarse a las
+circunstancias, e incluso sustituir en algunos casos al
+código que controla la trama del juego.
+
+Así pues, lo que almacenamos en la ficha del ente, en el
+campo apuntado por >DESCRIPTION_XT , es la dirección de
+ejecución de la palabra que imprime su descripción.
+
+Con este método no son necesarias estructuras de control
+para seleccionar la palabra de descripción en cada caso:
+Bastará tomar su dirección de ejecución de la ficha del ente
+y llamar a EXECUTE (véase más abajo la definición de la
+palabra (DESCRIBE) , que es la que hace la tarea).
+
+[then]  \ ......................................
+
+: :description  ( a -- ) \ Inicia la definición de una descripción de un ente; crea una palabra sin nombre que describirá un ente
+	:noname swap >description_xt !
+	;
+' ; alias ;description immediate
+: default_description  \ Descripción predeterminada de los entes para los que no se ha creado una palabra propia de descripción; no hace nada
+	;
+: (describe)  ( a -- )  \ Imprime la descripción de un ente
+	>description_xt @ execute
+	;
+: .location_name  ( a -- )  \ Imprime el nombre de un ente escenario, como cabecera de su descripción
+	>name@ >^uppercase location_name_color paragraph default_color
+	;
+: (describe_location)  ( a -- )  \ Imprime la descripción de un ente escenario
+	location_description_color (describe)
+	;
+: describe_location  ( a -- )  \ Imprime el nombre y la descripción de un ente escenario, y llama a su trama
+	[debug]  [if]  s" En DESCRIBE_LOCATION" debug  [then]  \ Depuración!!!
+	clear_screen_for_location
+	dup .location_name  dup (describe_location)
+	location_plot 
+	;
+: describe_non-location  ( a -- )  \ Imprime la descripción de un ente que no es un escenario
+	description_color (describe)
+	;
+: describe  ( a -- )  \ Imprime la descripción de un ente
+	[debug]  [if]  s" En DESCRIBE" debug  [then]  \ Depuración!!!
+	dup >location? @
+	if  describe_location  else  describe_non-location  then
+	;
+
+\ }}}
+\ ##############################################################
+section( Identificadores de entes)
 \ {{{
 
 0  [if]  \ ......................................
@@ -1716,17 +1819,21 @@ memoria de una campo concreto de la ficha.
 Para reconocer mejor los identificadores de entes se usa el
 sufijo _e en sus nombres.
 
+El primer identificador creado debe ser el del ente
+protagonista.
+
+Los entes escenario usan como nombre de identificador el
+número el número que tienen en la versión original del
+programa. Esto hace más fácil la adaptación del código
+original en BASIC.  Además, para que algunos cálculos
+tomados del código original funcionen, es preciso que los
+entes escenario se creen ordenados por ese número.
+
+El orden en que se definan los restantes identificadores es
+irrelevante.  Si están agrupados por tipos y en orden
+alfabético es solo por claridad. 
+
 [then]  \ ......................................
-
-\ **********************
-\ Paso 1 de 6 para crear un nuevo ente:
-\ Crear su identificador
-\ **********************
-
-\ El ente protagonista debe ser el primer ente cuya identificador sea creado. 
-\ El orden en que se definan los restantes identificadores
-\ es irrelevante salvo para los entes escenario, como se explica después.
-\ Si están agrupados por tipos y en orden alfabético es solo por claridad. 
 
 entity_id ulfius_e
 ' ulfius_e is protagonist  \ Actualizar el vector que apunta al ente protagonista
@@ -1765,12 +1872,6 @@ entity_id torch_e
 entity_id waterfall_e
 
 \ Entes escenario
-\ En lugar de usar su nombre en el identificador,
-\ se conserva el número que tienen en la versión
-\ original.
-\ Además, para que algunos cálculos tomados del código
-\ original en BASIC funcionen, es preciso que los 
-\ entes escenario se creen aquí ordenados por ese número:
 entity_id location_01_e
 entity_id location_02_e
 entity_id location_03_e
@@ -1853,180 +1954,196 @@ create ('entities) /entities allot  \ Reservar el espacio en el diccionario
 ' ('entities) is 'entities  \ Actualizar el vector que apunta a dicho espacio
 
 \ }}}
-[old_method]  [if]
-\ ------------------------------------------------
-subsection( Nombres)
+\ ##############################################################
+section( Herramientas para crear conexiones entre escenarios)
 \ {{{
+
+\ Nota!!!: Este código quedaría mejor con el resto
+\ de herramientas de la base de datos, para no separar
+\ la lista de entes de sus datos.
+\ Pero se necesita usar los identificadores
+\ de los entes dirección.
+\ Se podría solucionar con vectores, más adelante.
 
 0  [if]  \ ......................................
 
-Los nombres que siguen son los que se usarán en los textos
-para nombrar los entes.  
+Para crear el mapa hay que hacer dos operaciones con los
+entes escenario: marcarlos como tales, para poder
+distinguirlos como escenarios; e indicar a qué otros entes
+escenarios conducen sus salidas.
+
+La primera operación se hace guardando un valor buleano
+«cierto» en el campo >LOCATION? del ente.  Por ejemplo:
+
+	cave_e >location? on
+
+La segunda operación se hace guardando en los campos de
+salida del ente los identificadores de los entes a que cada
+salida conduzca.  No hace falta ocuparse de las salidas
+impracticables porque ya estarán a cero de forma
+predeterminada.  Por ejemplo:	
+
+	path_e cave_e >south_exit !  \ Hacer que la salida sur de CAVE_E conduzca a PATH_E
+	cave_e path_e >north_exit !  \ Hacer que la salida norte de PATH_E conduzca a CAVE_E
+
+No obstante, para hacer más fácil este segundo paso, hemos
+creado unas palabras que proporcionan la siguiente sintaxis
+(primero origen y después destino en la pila, como es
+convención en Forth):
+
+	cave_e path_e s-->  \ Hacer que la salida sur de CAVE_E conduzca a PATH_E (pero sin afectar al sentido contrario)
+	path_e cave_e n-->  \ Hacer que la salida norte de PATH_E conduzca a CAVE_E (pero sin afectar al sentido contrario)
+
+O en un solo paso:
+
+	cave_e path_e s<-->  \ Hacer que la salida sur de CAVE_E conduzca a PATH_E (y al contrario: la salida norte de PATH_E conducirá a CAVE_E)
+
+Además, la palabra INIT_LOCATION permite inicializar un
+escenario asignando en una sola operación todas sus salidas.
 
 [then]  \ ......................................
 
-\ **********************
-\ Paso 2 de 6 para crear un nuevo ente:
-\ Crear su nombre (el que se usará al citarlo)
-\ **********************
+0  [if]  \ Inacabado!!!
 
-: init_entity_names  \ Guarda en las fichas los nombres de los entes y sus atributos gramaticales
+create opposite_exits
+south_exit ,
+north_exit ,
+west_exit ,
+east_exit ,
+down_exit ,
+up_exit ,
+in_exit ,
+out_exit ,
 
-	\ Ente protagonista:
-	s" Ulfius" ulfius_e >name!
-	ulfius_e >personal_name? on
-	ulfius_e >no_article? on
-
-	\ Entes personaje: 
-	s" hombre" ambrosio_e >name!  \ El nombre cambiará a «Ambrosio» durante el juego
-
-	\ Entes objeto:
-	s" altar" altar_e >name!
-	s" arco" arch_e >name!
-	s" puente" bridge_e >name!
-	s" capa" cloak_e >fname!
-	s" coraza" cuirasse_e >fname!
-	s" puerta" door_e >fname!
-	s" esmeralda" emerald_e >fname!
-	s" derrumbe" fallen_away_e >name!
-	s" banderas" flags_e >fnames!
-	s" pedernal" flint_e >name!
-	s" ídolo" idol_e >name!
-	s" llave" key_e >fname!
-	s" lago" lake_e >name!
-	s" candado" lock_e >name!
-	s" tronco" log_e >name!
-	s" hombre" leader_e >name!
-	s" trozo" piece_e >name!
-	s" harapo" rags_e >name!
-	s" rocas" rocks_e >fnames!
-	s" serpiente" snake_e >fname!
-	s" piedra" stone_e >fname!
-	s" espada" sword_e >fname!
-	s" hilo" thread_e >name!
-	s" antorcha" torch_e >fname!
-	s" cascada" waterfall_e >fname!
-	s" catre" bed_e >name!
-	s" velas" candles_e >fnames!
-	s" mesa" table_e >fname!
-
-	\ Entes escenario: 
-	s" aldea sajona" location_01_e >fname!
-	s" cima de la colina" location_02_e >fname!
-	s" camino entre colinas" location_03_e >name!
-	s" cruce de caminos" location_04_e >name!
-	s" linde del bosque" location_05_e >name!  \ nombre supuesto, confirmar!!!
-	s" bosque" location_06_e >name!
-	s" paso del Perro" location_07_e >name!
-	s" entrada a la cueva" location_08_e >fname!
-	s" derrumbe" location_09_e >name!
-	s" gruta de entrada" location_10_e >fname!
-	s" gran lago" location_11_e >name!
-	s" salida del paso secreto" location_12_e >fname!
-	s" puente semipodrido" location_13_e >name!
-	s" recodo de la cueva" location_14_e >name!
-	s" pasaje arenoso" location_15_e >name!
-	s" pasaje del agua" location_16_e >name!
-	s" estalactitas" location_17_e >fname!
-	s" puente de piedra" location_18_e >name!
-	s" recodo arenoso del canal" location_19_e >name!
-	s" tramo de cueva" location_20_e >name!
-	s" tramo de cueva" location_21_e >name!
-	s" tramo de cueva" location_22_e >name!
-	s" tramo de cueva" location_23_e >name!
-	s" tramo de cueva" location_24_e >name!
-	s" tramo de cueva" location_25_e >name!
-	s" tramo de cueva" location_26_e >name!
-	s" tramo de cueva" location_27_e >name!
-	s" refugio" location_28_e >name!
-	s" espiral" location_29_e >fname!
-	s" inicio de la espiral" location_30_e >name!
-	s" puerta norte" location_31_e >fname!
-	s" precipicio" location_32_e >name!
-	s" pasaje de salida" location_33_e >name!
-	s" pasaje de gravilla" location_34_e >name!
-	s" puente sobre el acueducto" location_35_e >name!
-	s" remanso" location_36_e >name!
-	s" canal de agua" location_37_e >name!
-	s" gran cascada" location_38_e >fname!
-	s" interior de la cascada" location_39_e >name!
-	s" explanada" location_40_e >fname!
-	s" ídolo" location_41_e >name!
-	s" pasaje estrecho" location_42_e >name!
-	s" pasaje de la serpiente" location_43_e >name!
-	s" lago interior" location_44_e >name!
-	s" cruce de pasajes" location_45_e >name!
-	s" hogar de Ambrosio" location_46_e >name!
-	s" salida de la cueva" location_47_e >fname!
-	s" bosque a la entrada" location_48_e >name!
-	s" sendero del bosque" location_49_e >name!
-	s" camino norte" location_50_e >name!
-	s" Westmorland" location_51_e >fname! location_51_e >no_article? on
-
-	\ Entes globales:
-	s" techo" ceiling_e >name!
-	s" suelo" floor_e >name!
-	s" cielo" sky_e >name!
-	s" nubes" clouds_e >fnames!
-	s" cueva" cave_e >fname!
-
-	\ Entes virtuales:
-	s" Norte" north_e >name!  north_e >definite_article? on
-	s" Sur" south_e >name!  south_e >definite_article? on
-	s" Este" east_e >name!  east_e >definite_article? on
-	s" Oeste" west_e >name!  west_e >definite_article? on
-	s" arriba" up_e >name!  up_e >no_article? on
-	s" abajo" down_e >name!  down_e >no_article? on
-	s" afuera" out_e >name!  out_e >no_article? on
-	s" adentro" in_e >name!  in_e >no_article? on
-
-
-	altar_e >decoration? on
-	altar_e >take_error# impossible_error# swap !
-	ambrosio_e >character? on
-	ambrosio_e >human? on
-	arch_e >decoration? on
-	bridge_e >decoration? on
-	cave_e >global_inside? on
-	ceiling_e >global_inside? on
-	cloak_e >cloth? on
-	cloak_e >owned? on
-	cloak_e >worn? on
-	clouds_e >global_outside? on
-	cuirasse_e >cloth? on
-	cuirasse_e >owned? on
-	cuirasse_e >worn? on
-	door_e >take_error# impossible_error# swap !
-	fallen_away_e >decoration? on
-	fallen_away_e >take_error# nonsense_error# swap !
-	flags_e >decoration? on
-	flags_e >take_error# nonsense_error# swap !
-	floor_e >global_inside? on
-	floor_e >global_outside? on
-	idol_e >decoration? on
-	idol_e >take_error# impossible_error# swap !
-	lake_e >decoration? on
-	lake_e >take_error# nonsense_error# swap !
-	leader_e >character? on
-	leader_e >human? on
-	lock_e >decoration? on
-	lock_e >take_error# impossible_error# swap !
-	rocks_e >decoration? on
-	sky_e >global_outside? on
-	snake_e >animal? on
-	snake_e >take_error# dangerous_error# swap !
-	sword_e >owned? on
-	torch_e >light? on
-	torch_e >lit? off
-	ulfius_e >human? on
-	waterfall_e >decoration? on
-	waterfall_e >take_error# nonsense_error# swap !
-
-	;
+create opposite_direction_entities
+south_e ,
+north_e ,
+west_e ,
+east_e ,
+down_e ,
+up_e ,
+in_e ,
+out_e ,
 
 [then]
 
-[new_method]  [if]  \ Experimental!!! Inacabado!!!
+create exits_table  \ Tabla de traducción de salidas
+#exits cells allot  \ Reservar espacio para tantas celdas como salidas
+
+\ Rellenar cada elemento de la tabla con un ente de salida,
+\ usando como puntero el campo análogo de la ficha.
+\ Haciéndolo de esta manera no importa el orden en que se rellenen los elementos.
+north_e exits_table north_exit + !
+south_e exits_table south_exit + !
+east_e exits_table east_exit + !
+west_e exits_table west_exit + !
+up_e exits_table up_exit + !
+down_e exits_table down_exit + !
+out_e exits_table out_exit + !
+in_e exits_table in_exit + !
+
+: dir>entity  ( u -- a )  \ Devuelve un ente dirección a partir de un campo de dirección
+	\ u = Desplazamiento del campo de dirección
+	\ a = ente dirección correspondiente a la expresada por u
+	first_exit - exits_table + @ 
+	;
+
+0  [if]  \ Inacabado!!!
+: opposite_exit  ( a1 -- a2 )  \ Devuelve la dirección cardinal opuesta a la indicada
+	first_exit - opposite_exits + @
+	;
+: opposite_exit_e  ( a1 -- a2 )  \ Devuelve el ente dirección cuya direccién es opuesta a la indicada
+	\ a1 = entidad de dirección
+	\ a2 = entidad de dirección, opuesta a a1
+	first_exit - opposite_direction_entities + @
+	;
+[then]
+
+: -->  ( a1 a2 u -- )  \ Comunica el ente a1 con el ente a2 mediante la salida indicada por el desplazamiento u
+	\ a1 = Ente escenario origen
+	\ a2 = Ente escenario destino
+	\ u = Desplazamiento del campo de dirección a usar en a1
+	rot + !
+	;
+
+\ Conexiones unidireccionales
+
+: n-->  ( a1 a2 -- )  \ Comunica la salida norte del ente a1 con el ente a2
+	north_exit -->
+	;
+: s-->  ( a1 a2 -- )  \ Comunica la salida sur del ente a1 con el ente a2
+	south_exit -->
+	;
+: e-->  ( a1 a2 -- )  \ Comunica la salida este del ente a1 con el ente a2
+	east_exit -->
+	;
+: w-->  ( a1 a2 -- )  \ Comunica la salida oeste del ente a1 con el ente a2
+	west_exit -->
+	;
+: u-->  ( a1 a2 -- )  \ Comunica la salida hacia arriba del ente a1 con el ente a2
+	up_exit -->
+	;
+: d-->  ( a1 a2 -- )  \ Comunica la salida hacia abajo del ente a1 con el ente a2
+	down_exit -->
+	;
+: o-->  ( a1 a2 -- )  \ Comunica la salida hacia fuera del ente a1 con el ente a2
+	out_exit -->
+	;
+: i-->  ( a1 a2 -- )  \ Comunica la salida hacia dentro del ente a1 con el ente a2
+	in_exit -->
+	;
+
+\ Conexiones bidireccionales
+
+: n<-->  ( a1 a2 -- )  \ Comunica la salida norte del ente a1 con el ente a2 (y al contrario)
+	2dup n-->  swap s-->
+	;
+: s<-->  ( a1 a2 -- )  \ Comunica la salida sur del ente a1 con el ente a2 (y al contrario)
+	2dup s-->  swap n-->
+	;
+: e<-->  ( a1 a2 -- )  \ Comunica la salida este del ente a1 con el ente a2 (y al contrario)
+	2dup e-->  swap w-->
+	;
+: w<-->  ( a1 a2 -- )  \ Comunica la salida oeste del ente a1 con el ente a2 (y al contrario)
+	2dup w-->  swap e-->
+	;
+: u<-->  ( a1 a2 -- )  \ Comunica la salida hacia arriba del ente a1 con el ente a2 (y al contrario)
+	2dup u-->  swap d-->
+	;
+: d<-->  ( a1 a2 -- )  \ Comunica la salida hacia abajo del ente a1 con el ente a2 (y al contrario)
+	2dup d-->  swap u-->
+	;
+: o<-->  ( a1 a2 -- )  \ Comunica la salida hacia fuera del ente a1 con el ente a2 (y al contrario)
+	2dup o-->  swap i-->
+	;
+: i<-->  ( a1 a2 -- )  \ Comunica la salida hacia dentro del ente a1 con el ente a2 (y al contrario)
+	2dup i-->  swap o-->
+	;
+
+\ Múltiples conexiones a la vez
+
+: exits!  ( a1..a8 a0 -- )  \ Asigna todas las salidas de un ente escenario.
+	\ a1..a8 = Entes escenario de salida (o cero) en el orden habitual: norte, sur, este, oeste, arriba, abajo, dentro, fuera
+	\ a0 = Ente escenario cuyas salidas hay que modificar
+	dup >r >out_exit !
+	r@ >in_exit !
+	r@ >down_exit !
+	r@ >up_exit !
+	r@ >west_exit !
+	r@ >east_exit !
+	r@ >south_exit !
+	r> >north_exit !
+	;
+: init_location  ( a1..a8 a0 -- )  \ Marca un ente como escenario y le asigna todas las salidas. 
+	\ a1..a8 = Entes escenario de salida (o cero) en el orden habitual: norte, sur, este, oeste, arriba, abajo, dentro, fuera
+	\ a0 = Ente escenario cuyas salidas hay que modificar
+	dup >location? on  exits!
+	;
+
+\ }}}
+\ ##############################################################
+section( Atributos y descripciones de entes)
+\ {{{
 
 \ Ente protagonista
 
@@ -2037,40 +2154,95 @@ ulfius_e :attributes
 	this >no_article? on
 	location_01_e this be_there
 	;attributes
+ulfius_e :description
+	\ Provisional!!!
+	my_location@ is_outside?
+	if   s" De pie al sol,"
+	else  s" En las sombras,"
+	then
+	s" no pareces muy fuerte, a pesar de tener un metro sesenta y cinco de estatura." s&
+	my_location@ is_outside?  if
+		s" Después de un invierno benigno, la primavera ha traído tal calor que" s&
+		s" te hallas a gusto sin vestidos." s& 
+	then  paragraph
+	;description
 
 \ Entes personaje
 
 ambrosio_e :attributes
-	s" hombre" this >name!  \ El nombre cambiará a «Ambrosio» durante el juego
+	s" hombre ambrosio!!!" this >name!  \ El nombre cambiará a «Ambrosio» durante el juego
 	this >character? on
 	this >human? on
 	location_19_e this be_there
 	;attributes
+ambrosio_e :description
+	ambrosio_e is_known?  if
+		s" Ambrosio"
+		s" es un hombre de mediana edad, que te mira afable." s&
+	else  s" Es de mediana edad y mirada afable."
+	then  paragraph
+	;description
 leader_e :attributes
-	s" hombre" this >name!
+	s" hombre leader!!!" this >name!
 	this >character? on
 	this >human? on
 	location_28_e this be_there
 	;attributes
+leader_e :description
+	s" Es el jefe de los refugiados."
+	paragraph
+	;description
 
 \ Entes objeto
 
 altar_e :attributes
 	s" altar" this >name!
 	this >decoration? on
-	this >take_error# impossible_error# swap !
+	\ Error!!! imposible_error# es un vector sin inicializar:
+	impossible_error# this >take_error# !
 	location_18_e this be_there
 	;attributes
+altar_e :description
+	s" Está colocado justo en la mitad del puente."
+	idol_e is_known? 0=  if
+		s" Debe sostener algo importante." s&
+	then
+	paragraph
+	;description
 arch_e :attributes
 	s" arco" this >name!
 	this >decoration? on
 	location_18_e this be_there
 	;attributes
+arch_e :description
+	\ Provisional!!!
+	s" Un sólido arco de piedra, de una sola pieza."
+	paragraph
+	;description
+bed_e :attributes
+	s" catre" this >name!
+	location_46_e this be_there
+	;attributes
+bed_e :description
+	s" Parece poco confortable."
+	;description
 bridge_e :attributes
 	s" puente" this >name!
 	this >decoration? on
 	location_13_e this be_there
 	;attributes
+bridge_e :description
+	\ Provisional!!!
+	s" Está semipodrido."
+	paragraph
+	;description
+candles_e :attributes
+	s" velas" this >fnames!
+	location_46_e this be_there
+	;attributes
+candles_e :description
+	s" Están muy consumidas."
+	;description
 cloak_e :attributes
 	s" capa" this >fname!
 	this >cloth? on
@@ -2078,6 +2250,10 @@ cloak_e :attributes
 	this >worn? on
 	ulfius_e this be_there
 	;attributes
+cloak_e :description
+	s" Tu capa de general, de fina lana tintada de negro."
+	paragraph
+	;description
 cuirasse_e :attributes
 	s" coraza" this >fname!
 	this >cloth? on
@@ -2090,282 +2266,731 @@ door_e :attributes
 	this >take_error# impossible_error# swap !
 	location_47_e this be_there
 	;attributes
+door_e :description
+	s" Es muy recia y tiene un gran candado."
+\ Inacabado!!!
+\	s" Es muy recia y"
+\	door_e >open? @
+\	if  s" tiene un gran candado."
+\	else  s" tiene un gran candado."
+\	then  s&
+	lock_found
+	paragraph
+	;description
 emerald_e :attributes
 	s" esmeralda" this >fname!
 	location_39_e this be_there
 	;attributes
+emerald_e :description
+	s" Es preciosa."
+	paragraph
+	;description
 fallen_away_e :attributes
 	s" derrumbe" this >name!
 	this >decoration? on
 	this >take_error# nonsense_error# swap !
 	location_09_e this be_there
 	;attributes
+fallen_away_e :description
+	s" Muchas, inalcanzables rocas, apiladas una sobre otra."
+	paragraph
+	;description
 flags_e :attributes
 	s" banderas" this >fnames!
 	this >decoration? on
 	this >take_error# nonsense_error# swap !
 	location_28_e this be_there
 	;attributes
+flags_e :description
+	s" Son las banderas britana y sajona."
+	s" Dos dragones rampantes, rojo y blanco respectivamente, enfrentados." s&
+	paragraph
+	;description
 flint_e :attributes
 	s" pedernal" this >name!
 	;attributes
+flint_e :description
+	s" Es dura y afilada." 
+	paragraph
+	;description
 idol_e :attributes
 	s" ídolo" this >name!
 	this >decoration? on
 	this >take_error# impossible_error# swap !
 	location_41_e this be_there
 	;attributes
+idol_e :description
+	s" El ídolo tiene dos agujeros por ojos."
+	paragraph
+	;description
 key_e :attributes
 	s" llave" this >fname!
 	location_46_e this be_there
 	;attributes
+key_e :description
+	s" Grande, de hierro herrumboso."
+	paragraph
+	;description
 lake_e :attributes
 	s" lago" this >name!
 	this >decoration? on
 	this >take_error# nonsense_error# swap !
 	location_44_e this be_there
 	;attributes
+lake_e :description
+	s" La" s" Un rayo de" 2 schoose
+	s" luz entra por un resquicio, y caprichosos reflejos te maravillan." s&
+	paragraph
+	;description
 lock_e :attributes
 	s" candado" this >name!
 	this >decoration? on
 	this >take_error# impossible_error# swap !
 	;attributes
+lock_e :description
+	lock_e >open? @
+	if  s" Está abierto."
+	else  s" Está cerrado."
+	then  s" Es grande y parece resistente." s&
+	paragraph
+	;description
+piece_e :description
+	s" Es un pedazo" of_your_ex_cloak$ s&
+	paragraph
+	;description
 log_e :attributes
 	s" tronco" this >name!
 	location_15_e this be_there
 	;attributes
+log_e :description
+	s" Es un tronco"
+	s" recio," s" resistente," s" fuerte," 3 schoose s&
+	s" pero" s&
+	s" de liviano peso." s" ligero." 2 schoose s&
+	paragraph
+	;description
 piece_e :attributes
 	s" trozo" this >name!
 	;attributes
 rags_e :attributes
 	s" harapo" this >name!
 	;attributes
+rags_e :description
+	s" Un trozo un poco grande" of_your_ex_cloak$ s&
+	paragraph
+	;description
 rocks_e :attributes
 	s" rocas" this >fnames!
 	this >decoration? on
 	location_31_e this be_there
 	;attributes
+rocks_e :description
+	s" Son muchas, aunque parecen ligeras y con huecos entre ellas."
+	paragraph
+	;description
 snake_e :attributes
 	s" serpiente" this >fname!
 	this >animal? on
 	this >take_error# dangerous_error# swap !
 	location_43_e this be_there
 	;attributes
+snake_e :description
+	\ Provisional!!! Distinguir si está muerta.
+	\ Nota!!! en el programa original no hace falta.
+	s" Una serpiente muy maja."
+	paragraph
+	;description
 stone_e :attributes
 	s" piedra" this >fname!
 	location_18_e this be_there
 	;attributes
+stone_e :description
+	s" Recia y pesada, pero no muy grande, de forma piramidal."
+	paragraph
+	;description
 sword_e :attributes
 	s" espada" this >fname!
 	this >owned? on
 	ulfius_e this be_there
 	;attributes
+sword_e :description
+	s" Legado " s" Herencia" 2 schoose
+	s" de tu padre," s&
+	s" fiel herramienta" s" arma fiel" 2 schoose s&
+	s" en" 
+	s" mil" s" incontables" s" innumerables" 3 schoose s& s&
+	s" batallas." s&
+	paragraph
+	;description
+table_e :attributes
+	s" mesa" this >fname!
+	location_46_e this be_there
+	;attributes
+table_e :description
+	s" Pequeña y de basta madera."
+	;description
 thread_e :attributes
 	s" hilo" this >name!
 	;attributes
+thread_e :description
+	\ Mover esto al evento de cortar la capa!!!
+	\ s" Un hilo se ha desprendido al cortar la capa con la espada."
+	s" Un hilo" of_your_ex_cloak$ s&
+	paragraph
+	;description
 torch_e :attributes
 	s" antorcha" this >fname!
 	this >light? on
 	this >lit? off
 	;attributes
+torch_e :description
+	\ Inacabado!!! 
+	s" Está apagada."
+	paragraph
+	;description
 waterfall_e :attributes
 	s" cascada" this >fname!
 	this >decoration? on
 	this >take_error# nonsense_error# swap !
 	location_38_e this be_there
 	;attributes
-bed_e :attributes
-	s" catre" this >name!
-	location_46_e this be_there
-	;attributes
-candles_e :attributes
-	s" velas" this >fnames!
-	location_46_e this be_there
-	;attributes
-table_e :attributes
-	s" mesa" this >fname!
-	location_46_e this be_there
-	;attributes
+waterfall_e :description
+	s" No ves nada por la cortina de agua."
+	s" El lago es muy poco profundo." s&
+	paragraph
+	;description
 
 \ Entes escenario
 
 location_01_e :attributes
 	s" aldea sajona" this >fname!
+	0 location_02_e 0 0 0 0 0 0 location_01_e init_location
 	;attributes
+location_01_e :description
+	s" No ha quedado nada en pie, ni piedra sobre piedra."
+	s" El entorno es desolador." s&
+	s" Solo resta volver al Sur, a casa." s&
+	paragraph
+	;description
 location_02_e :attributes
 	s" cima de la colina" this >fname!
+	location_01_e 0 0 location_03_e 0 0 0 0 location_02_e init_location
 	;attributes
+location_02_e :description
+	s" Sobre la colina, casi sobre la niebla de la aldea sajona arrasada al Norte, a tus pies."
+	s" El camino desciende hacia el Oeste." s&
+	paragraph
+	;description
 location_03_e :attributes
 	s" camino entre colinas" this >name!
+	0 0 location_02_e location_04_e 0 0 0 0 location_03_e init_location
 	;attributes
+location_03_e :description
+	s" El camino avanza por el valle, desde la parte alta, al Este, a una zona harto boscosa, al Oeste."
+	paragraph
+	;description
 location_04_e :attributes
 	s" cruce de caminos" this >name!
+	location_05_e 0 location_03_e location_09_e 0 0 0 0 location_04_e init_location
 	;attributes
+location_04_e :description
+	\ Versión actual!!!:
+	s" Una senda parte al Oeste, a la sierra por el paso del Perro, y otra hacia el Norte, por un frondoso bosque que la rodea."
+	paragraph
+	exit \ tmp!!!
+	\ Versión nueva!!! en preparación: 
+	case
+	location_04_e  of
+		s" Una senda parte al Oeste, a la sierra por el paso del Perro, y otra hacia el Norte, por un frondoso bosque que la rodea."
+		endof
+	west_e  of
+		s" Una senda parte al Oeste, a la sierra por el paso del Perro."
+		endof
+	north_e  of
+		s" Una senda parte hacia el Norte, por un frondoso bosque que rodea la sierra."
+		endof
+	floor_e  of  endof
+	down_e  of  endof
+	sky_e  of  endof
+	up_e  of  endof
+	endcase
+	paragraph
+	;description
 location_05_e :attributes
 	s" linde del bosque" this >name!  \ nombre supuesto, confirmar!!!
+	0 location_04_e 0 location_06_e 0 0 0 0 location_05_e init_location
 	;attributes
-location_06 :attributes
+location_05_e :description
+	s" Desde la linde, al Sur, hacia el Oeste se extiende frondoso el bosque que rodea la sierra. La salida se abre hacia el Sur."
+	paragraph
+	;description
+location_06_e :attributes
 	s" bosque" this >name!
+	0 0 location_05_e location_07_e 0 0 0 0 location_06_e init_location
 	;attributes
-location_07 :attributes
+location_06_e :description
+	s" Jirones de niebla se enzarcen en frondosas ramas y arbustos."
+	s" La senda serpentea entre raíces, de un luminoso Este al Oeste." s&
+	paragraph
+	;description
+location_07_e :attributes
 	s" paso del Perro" this >name!
+	0 location_08_e location_06_e 0 0 0 0 0 location_07_e init_location
 	;attributes
-location_08 :attributes
+location_07_e :description
+	s" Abruptamente, del bosque se pasa a un estrecho camino entre altas rocas.
+	s" El inquietante desfiladero tuerce de Este a Sur." s&
+	paragraph
+	;description
+location_08_e :attributes
 	s" entrada a la cueva" this >fname!
+	location_07_e location_10_e 0 0 0 0 0 0 location_08_e init_location
 	;attributes
-location_09 :attributes
+location_08_e :description
+	s" El paso entre el desfiladero sigue de Norte a Este."
+	s" La entrada a una cueva se abre al Sur en la pared de roca." s&
+	paragraph
+	;description
+location_09_e :attributes
 	s" derrumbe" this >name!
+	0 0 location_04_e 0 0 0 0 0 location_09_e init_location
 	;attributes
-location_10 :attributes
+location_09_e :description
+	s" El camino desciende hacia la agreste sierra, al Oeste, desde los verdes valles al Este."
+	s" Pero un gran derrumbe bloquea el paso hacia la sierra." s&
+	paragraph
+	;description
+location_10_e :attributes
 	s" gruta de entrada" this >fname!
+	location_08_e 0 0 location_11_e 0 0 0 0 location_10_e init_location
 	;attributes
-location_11 :attributes
+location_10_e :description
+	s" El estrecho paso se adentra hacia el Oeste, desde la boca, al Norte. "
+	paragraph
+	;description
+location_11_e :attributes
 	s" gran lago" this >name!
+	0 0 location_10_e 0 0 0 0 0 location_11_e init_location
 	;attributes
-location_12 :attributes
+location_11_e :description
+	s" Una gran estancia alberga un lago"
+	s" de profundas e iridiscentes aguas," s&
+	s" debido a la luz exterior." s&
+	s" No hay otra salida que el Este." s&
+	paragraph
+	;description
+location_12_e :attributes
 	s" salida del paso secreto" this >fname!
+	0 0 0 location_13_e 0 0 0 0 location_12_e init_location
 	;attributes
-location_13 :attributes
+location_12_e :description
+	s" Una gran estancia se abre hacia el Oeste, y se estrecha hasta morir, al Este, en una parte de agua."
+	paragraph
+	;description
+location_13_e :attributes
 	s" puente semipodrido" this >name!
+	0 0 location_12_e location_14_e 0 0 0 0 location_13_e init_location
 	;attributes
-location_14 :attributes
+location_13_e :description
+	s" La sala se abre en semioscuridad a un puente cubierto de podredumbre sobre el lecho de un canal, de Este a Oeste."
+	paragraph
+	;description
+location_14_e :attributes
 	s" recodo de la cueva" this >name!
 	;attributes
-location_15 :attributes
+location_14_e :description
+	s" La iridiscente cueva gira de Este a Sur."
+	paragraph
+	0 location_15_e location_13_e 0 0 0 0 0 location_14_e init_location
+	;description
+location_15_e :attributes
 	s" pasaje arenoso" this >name!
+	location_14_e location_17_e location_16_e 0 0 0 0 0 location_15_e init_location
 	;attributes
-location_16 :attributes
+location_15_e :description
+	s" La gruta desciende de Norte a Sur sobre un lecho arenoso. Al Este, un agujero del que llega claridad."
+	paragraph
+	;description
+location_16_e :description
+	s" Como un acueducto, el agua baja con gran fuerza de Norte a Este, aunque la salida practicable es la del Oeste."
+	paragraph
+	;description
+location_16_e :attributes
 	s" pasaje del agua" this >name!
+	0 0 0 location_15_e 0 0 0 0 location_16_e init_location
 	;attributes
-location_17 :attributes
+location_17_e :attributes
 	s" estalactitas" this >fname!
+	location_15_e location_20_e location_18_e 0 0 0 0 0 location_17_e init_location
 	;attributes
-location_18 :attributes
+location_17_e :description
+	s" Muchas estalactitas se agrupan encima de tu cabeza, y se abren cual arco de entrada hacia el Este y Sur."
+	paragraph
+	;description
+location_18_e :attributes
 	s" puente de piedra" this >name!
+	0 0 location_19_e location_17_e 0 0 0 0 location_18_e init_location
 	;attributes
-location_19 :attributes
+location_18_e :description
+	s" Un arco de piedra se eleva, cual puente sobre la oscuridad, de Este a Oeste."
+	s" En su mitad, un altar." s&
+	paragraph
+	;description
+location_19_e :attributes
 	s" recodo arenoso del canal" this >name!
+	0 0 0 location_18_e 0 0 0 0 location_19_e init_location
 	;attributes
-location_20 :attributes
+location_19_e :description
+	s" La furiosa corriente, de Norte a Este, impide el paso, excepto al Oeste."
+	s" Al fondo, se oye un gran estruendo." s&
+	paragraph
+	;description
+location_20_e :attributes
 	s" tramo de cueva" this >name!
+	location_17_e location_22_e location_25_e 0 0 0 0 0 location_20_e init_location
 	;attributes
-location_21 :attributes
+location_20_e :description
+	s" Un tramo de cueva estrecho"
+	s" te permite avanzar hacia el Norte y el Sur;" s&
+	s" un pasaje surge al Este." s&
+	paragraph
+	;description
+location_21_e :attributes
 	s" tramo de cueva" this >name!
+	0 location_27_e location_23_e location_20_e 0 0 0 0 location_21_e init_location
 	;attributes
-location_22 :attributes
+location_21_e :description
+	s" Un tramo de cueva estrecho te permite avanzar de Este a Oeste; un pasaje surge al Sur."
+	paragraph
+	;description
+location_22_e :attributes
 	s" tramo de cueva" this >name!
+	0 location_24_e location_27_e location_22_e 0 0 0 0 location_22_e init_location
 	;attributes
-location_23 :attributes
+location_22_e :description
+	s" Un tramo de cueva estrecho te permite avanzar de Este a Oeste; un pasaje surge al Sur."
+	paragraph
+	;description
+location_23_e :attributes
 	s" tramo de cueva" this >name!
+	0 location_25_e 0 location_21_e 0 0 0 0 location_23_e init_location
 	;attributes
-location_24 :attributes
+location_23_e :description
+	s" Un tramo de cueva estrecho te permite avanzar de Oeste a Sur."
+	paragraph
+	;description
+location_24_e :attributes
 	s" tramo de cueva" this >name!
+	location_22_e 0 location_26_e 0 0 0 0 0 location_24_e init_location
 	;attributes
-location_25 :attributes
+location_24_e :description
+	s" Un tramo de cueva estrecho te permite avanzar de Este a Norte."
+	paragraph
+	;description
+location_25_e :attributes
 	s" tramo de cueva" this >name!
+	location_22_e location_28_e location_23_e location_21_e 0 0 0 0 location_25_e init_location
 	;attributes
-location_26 :attributes
+location_25_e :description
+	s" Un tramo de cueva estrecho te permite avanzar de Este a Oeste."
+	s" Al Norte y al Sur surgen pasajes." s&
+	paragraph
+	;description
+location_26_e :attributes
 	s" tramo de cueva" this >name!
+	location_26_e 0 location_20_e location_27_e 0 0 0 0 location_26_e init_location
 	;attributes
-location_27 :attributes
+location_26_e :description
+	s" Un tramo de cueva estrecho te permite avanzar de Este a Oeste."
+	s" Al Norte surge un pasaje." s&
+	paragraph
+	;description
+location_27_e :attributes
 	s" tramo de cueva" this >name!
+	location_27_e 0 0 location_25_e 0 0 0 0 location_27_e init_location
 	;attributes
-location_28 :attributes
+location_27_e :description
+	s" Un tramo de cueva estrecho te permite avanzar al Oeste."
+	s" Al Norte surge un pasaje." s&
+	paragraph
+	;description
+location_28_e :attributes
 	s" refugio" this >name!
+	location_26_e 0 0 0 0 0 0 0 location_28_e init_location
 	;attributes
-location_29 :attributes
+location_28_e :description
+	s" Una amplia estancia de Norte a Este, hace de albergue a refugiados:"
+	s" hay banderas de ambos bandos." s&
+	s" Un hombre anciano te contempla." s&
+	s" Los refugiados te rodean." s&
+	paragraph
+	;description
+location_29_e :attributes
 	s" espiral" this >fname!
+	0 0 0 location_28_e 0 location_30_e 0 0 location_29_e init_location
 	;attributes
-location_30 :attributes
+location_29_e :description
+	s" Cual escalera de caracol gigante, desciende a las profundidades,"
+	s" dejando a los refugiados al Oeste." s&
+	paragraph
+	;description
+location_30_e :attributes
 	s" inicio de la espiral" this >name!
+	0 0 location_31_e 0 location_29_e 0 0 0 location_30_e init_location
 	;attributes
-location_31 :attributes
+location_30_e :description
+	s" Se eleva en la penumbra."
+	s" La caverna se estrecha ahora como para una sola persona, hacia el este." s&
+	paragraph
+	;description
+location_31_e :attributes
 	s" puerta norte" this >fname!
+	0 0 0 location_30_e 0 0 0 0 location_31_e init_location
 	;attributes
-location_32 :attributes
+location_31_e :description
+	s" En este pasaje grandes rocas se encuentran entre las columnas de un arco de medio punto."
+	paragraph
+	;description
+location_32_e :attributes
 	s" precipicio" this >name!
+	0 location_33_e 0 location_31_e 0 0 0 0 location_32_e init_location
 	;attributes
-location_33 :attributes
+location_32_e :description
+	s" El camino ahora no excede de dos palmos de cornisa sobre un abismo insondable."
+	s" El soporte de roca gira en forma de «U» de Oeste a Sur." s&
+	paragraph
+	;description
+location_33_e :attributes
 	s" pasaje de salida" this >name!
+	location_32_e 0 location_34_e 0 0 0 0 0 location_33_e init_location
 	;attributes
-location_34 :attributes
+location_33_e :description
+	s" El paso se va haciendo menos estrecho a medida que se avanza hacia el Sur, para entonces comenzar hacia el este."
+	paragraph
+	;description
+location_34_e :attributes
 	s" pasaje de gravilla" this >name!
+	location_35_e 0 0 location_33_e 0 0 0 0 location_34_e init_location
 	;attributes
-location_35 :attributes
+location_34_e :description
+	\ anchea?!!!
+	s" El paso se anchea de Oeste a Norte,"
+	s" y guijarros mojados y mohosos tachonan el suelo de roca." s&
+	paragraph
+	;description
+location_35_e :attributes
 	s" puente sobre el acueducto" this >name!
+	location_40_e location_34_e 0 location_36_e 0 location_36_e 0 0 location_35_e init_location
 	;attributes
-location_36 :attributes
+location_35_e :description
+	s" Un puente se tiende de Norte a Sur sobre el curso del agua."
+	s" Resbaladizas escaleras descienden hacia el Oeste." s&
+	paragraph
+	;description
+location_36_e :attributes
 	s" remanso" this >name!
+	0 0 location_35_e location_37_e location_35_e 0 0 0 location_36_e init_location
 	;attributes
-location_37 :attributes
+location_36_e :description
+	s" Una estruendosa corriente baja con el pasaje elevado desde el Oeste, y forma un meandro arenoso."
+	s" Unas escaleras suben al Este."
+	paragraph
+	;description
+location_37_e :attributes
 	s" canal de agua" this >name!
+	0 0 location_36_e location_38_e 0 0 0 0 location_37_e init_location
 	;attributes
-location_38 :attributes
+location_37_e :description
+	s" El agua baja del Oeste con renovadas fuerzas,"
+	s" dejando un estrecho paso elevado lateral para avanzar a Este o a Oeste." s&
+	paragraph
+	;description
+location_38_e :attributes
 	s" gran cascada" this >fname!
+	0 0 location_37_e location_39_e 0 0 0 0 location_38_e init_location
 	;attributes
-location_39 :attributes
+location_38_e :description
+	s" Cae el agua hacia el Este, descendiendo con gran fuerza hacia el canal,"
+	s" no sin antes embalsarse en un lago poco profundo." s&
+	paragraph
+	;description
+location_39_e :attributes
 	s" interior de la cascada" this >name!
+	0 0 location_38_e 0 0 0 0 0 location_39_e init_location
 	;attributes
-location_40 :attributes
+location_39_e :description
+	s" Musgoso y rocoso, con la cortina de agua tras de ti,"
+	s" el nivel del agua ha crecido un poco en este curioso hueco." s&
+	paragraph
+	;description
+location_40_e :attributes
 	s" explanada" this >fname!
+	0 location_35_e location_41_e 0 0 0 0 0 location_40_e init_location
 	;attributes
-location_41 :attributes
+location_40_e :description
+	s" Una gran explanada enlosetada contempla un bello panorama de estalactitas."
+	s" Unos casi imperceptibles escalones conducen al Este." s&
+	paragraph
+	;description
+location_41_e :attributes
 	s" ídolo" this >name!
+	0 0 0 location_40_e 0 0 0 0 location_41_e init_location
 	;attributes
-location_42 :attributes
+location_41_e :description
+	s" El ídolo parece un centinela siniestro de una gran roca que se encuentra al Sur."
+	s" Se puede volver a la explanada al Oeste."
+	paragraph
+	;description
+location_42_e :attributes
 	s" pasaje estrecho" this >name!
+	location_41_e location_43_e 0 0 0 0 0 0 location_42_e init_location
 	;attributes
-location_43 :attributes
+location_42_e :description
+	s" Como un pasillo que corteja el canal de agua, a su lado, baja de Norte a Sur."
+	s" Se aprecia un aumento de luz hacia el Sur."
+	paragraph
+	;description
+location_43_e :attributes
 	s" pasaje de la serpiente" this >name!
+	location_42_e 0 0 0 0 0 0 0 location_43_e init_location
 	;attributes
-location_44 :attributes
+location_43_e :description
+	s" El pasaje sigue de Norte a Sur."
+	paragraph
+	;description
+location_44_e :attributes
 	s" lago interior" this >name!
+	location_43_e 0 0 location_45_e 0 0 0 0 location_44_e init_location
 	;attributes
-location_45 :attributes
+location_44_e :description
+	s" Unas escaleras dan paso a un hermoso lago interior, y siguen hacia el Oeste."
+	s" Al Norte, un oscuro y estrecho pasaje sube."
+	paragraph
+	;description
+location_45_e :attributes
 	s" cruce de pasajes" this >name!
+	0 location_47_e location_44_e location_46_e 0 0 0 0 location_45_e init_location
 	;attributes
-location_46 :attributes
+location_45_e :description
+	s" Estrechos pasos permiten ir al Oeste, al Este (menos oscuro), y al Sur, un lugar de gran luminosidad."
+	paragraph
+	;description
+location_46_e :attributes
 	s" hogar de Ambrosio" this >name!
+	0 0 location_45_e 0 0 0 0 0 location_46_e init_location
 	;attributes
-location_47 :attributes
+location_46_e :description
+	\ Crear estos objetos!!!
+	s" Un catre, algunas velas y una mesa es todo lo que tiene Ambrosio."
+	paragraph
+	;description
+location_47_e :attributes
 	s" salida de la cueva" this >fname!
+	location_45_e 0 0 0 0 0 0 0 location_47_e init_location
 	;attributes
-location_48 :attributes
+location_47_e :description
+	s" Por el Oeste, una puerta impide, cuando cerrada, la salida de la cueva."
+	s" Se adivina la luz diurna al otro lado." s&
+	paragraph
+	;description
+location_48_e :attributes
 	s" bosque a la entrada" this >name!
+	0 0 location_47_e location_49_e 0 0 0 0 location_48_e init_location
 	;attributes
-location_49 :attributes
+location_48_e :description
+	s" Apenas se puede reconocer la entrada de la cueva, al Este."
+	s" El sendero sale del bosque hacia el Oeste." s&
+	paragraph
+	;description
+location_49_e :attributes
 	s" sendero del bosque" this >name!
+	0 0 location_48_e location_50_e 0 0 0 0 location_49_e init_location
 	;attributes
-location_50 :attributes
+location_49_e :description
+	s" El sendero recorre esta parte del bosque de Este a Oeste."
+	paragraph
+	;description
+location_50_e :attributes
 	s" camino norte" this >name!
+	0 location_51_e location_49_e 0 0 0 0 0 location_50_e init_location
 	;attributes
-location_51 :attributes
+location_50_e :description
+	s" El camino norte de Westmorland se interna hacia el bosque,"
+	s" al Norte (en tu estado no puedes ir), y a Westmorland, al Sur." s&
+	paragraph
+	;description
+location_51_e :attributes
 	s" Westmorland" this >fname!
 	this >no_article? on
+	location_50_e 0 0 0 0 0 0 0 location_51_e init_location
 	;attributes
+location_51_e :description
+	s" La villa bulle de actividad con el mercado en el centro de la plaza,"
+	s" donde se encuentra el castillo." s&
+	paragraph
+	;description
 
 \ Entes globales
 
+cave_e :attributes
+	s" cueva" this >fname!
+	this >global_inside? on
+	;attributes
+cave_e :description
+	\ Provisional!!!
+	s" La cueva es chachi."
+	paragraph
+	;description
 ceiling_e :attributes
 	s" techo" this >name!
 	this >global_inside? on
 	;attributes
+ceiling_e :description
+	\ Provisional!!!
+	s" El techo es muy bonito."
+	paragraph
+	;description
+clouds_e :attributes
+	s" nubes" this >fnames!
+	this >global_outside? on
+	;attributes
+clouds_e :description
+	\ Provisional!!!
+	s" Los estratocúmulos que traen la nieve y que cuelgan sobre la Tierra"
+	s" en la estación del frío se han alejado por el momento. " s&
+	2 random  if  paragraph  else  sky_e describe  then  \ check!!!
+	;description
 floor_e :attributes
 	s" suelo" this >name!
 	this >global_inside? on
 	this >global_outside? on
 	;attributes
+floor_e :description
+	\ Provisional!!!
+	am_i_outside?  if
+		s" El suelo fuera es muy bonito."
+	paragraph
+	else
+		s" El suelo dentro es muy bonito."
+	paragraph
+	then
+	;description
 sky_e :attributes
 	s" cielo" this >name!
 	this >global_outside? on
 	;attributes
-clouds_e :attributes
-	s" nubes" this >fnames!
-	this >global_outside? on
+sky_e :description
+	\ Provisional!!!
+	s" El cielo es un cuenco de color azul, listado en lo alto por nubes"
+	s" del tipo cirros, ligeras y trasparentes." s&
+	paragraph
+	;description
+
+\ Entes virtuales
+
+exit_e :attributes
 	;attributes
-cave_e :attributes
-	s" cueva" this >fname!
-	this >global_inside? on
+inventory_e :attributes
 	;attributes
 
 \ Entes dirección
@@ -2403,11 +3028,26 @@ up_e :attributes
 	this >no_article? on
 	up_exit this >direction !
 	;attributes
+up_e :description
+	am_i_outside?
+	if  sky_e describe
+	else  ceiling_e describe
+	then
+	;description
 down_e :attributes
 	s" abajo" this >name!
 	this >no_article? on
 	down_exit this >direction !
 	;attributes
+down_e :description
+	\ Provisional!!!
+	am_i_outside?  if  
+		s" El suelo exterior es muy bonito." paragraph
+	else
+		s" El suelo interior es muy bonito." paragraph
+	then
+	;description
+
 out_e :attributes
 	s" afuera" this >name!
 	this >no_article? on
@@ -2419,9 +3059,6 @@ in_e :attributes
 	in_exit this >direction !
 	;attributes
 	
-[then]
-
-\ }}}
 \ }}}
 \ ##############################################################
 section( Errores de las acciones)
@@ -2914,945 +3551,6 @@ variable silent_well_done?  silent_well_done? off
 ' what_is_already_closed constant (what_is_already_closed_error#)
 ' (what_is_already_closed_error#) is what_is_already_closed_error#
 
-\ ------------------------------------------------
-subsection( Descripciones)
-\ {{{
-
-0  [if]  \ ......................................
-
-Para cada ente creamos una una palabra que imprimirá su
-descripción.  Esto es mucho más flexible que almacenar un
-texto invariable en la ficha del ente: La descripción podrá
-variar en función del desarrollo del juego y adaptarse a las
-circunstancias, e incluso sustituir en algunos casos al
-código que controla la trama del juego.
-
-Así pues, lo que almacenamos en la ficha del ente, en el
-campo apuntado por >DESCRIPTION_XT , es la dirección de
-ejecución de la palabra que imprime su descripción.
-
-Con este método no son necesarias estructuras de control
-para seleccionar la palabra de descripción en cada caso:
-Bastará tomar su dirección de ejecución de la ficha del ente
-y llamar a EXECUTE (véase más abajo la definición de la
-palabra (DESCRIBE) , que es la que hace la tarea).
-
-Las direcciones de ejecución de las palabras que imprimen
-las descripciones se guardan también en una tabla. El motivo
-es conservarlas para restaurar con ellas las de las fichas
-al inicio de cada partida, tras haber puesto a cero la base
-de datos.  Esto deja abierta también la posibilidad de
-cambiarlas libremente durante el juego, pues recuperarán su
-valor predeterminado en la siguiente partida.
-
-[then]  \ ......................................
-
-\ Crear la tabla para guardar las direcciones de ejecución de las descripciones:
-create descriptions_xt  \ Tabla
-#entities cells dup allot  \ Hacer el espacio necesario
-descriptions_xt swap erase  \ Borrar la zona con ceros para reconocer después las descripciones vacantes y sustituirlas por la predeterminada
-
-: :description  ( a -- xt a ) \ Inicia la definición de una descripción de un ente; crea una palabra sin nombre que describirá un ente
-	:noname swap
-	;
-: ;description  ( xt a -- )  \ Termina la definición de una palabra que describe un ente
-	\ a = Ente cuya palabra de descripción se ha creado
-	\ xt = Dirección de ejecución de la palabra de descripción
-	2dup  entity># cell *  descriptions_xt + !  \ Guardar xt en la posición de la tabla DESCRIPTIONS_XT correspondiente al ente
-	>description_xt !  \ Guardar xt en la ficha del ente
-	postpone ;  \ Terminar la definición de la palabra 
-	; immediate
-: default_description  \ Descripción predeterminada de los entes para los que no se ha creado una palabra propia de descripción; no hace nada
-	;
-: (describe)  ( a -- )  \ Imprime la descripción de un ente
-	>description_xt @ execute
-	;
-: .location_name  ( a -- )  \ Imprime el nombre de un ente escenario, como cabecera de su descripción
-	>name@ >^uppercase location_name_color paragraph default_color
-	;
-: (describe_location)  ( a -- )  \ Imprime la descripción de un ente escenario
-	location_description_color (describe)
-	;
-: describe_location  ( a -- )  \ Imprime el nombre y la descripción de un ente escenario, y llama a su trama
-	[debug]  [if]  s" En DESCRIBE_LOCATION" debug  [then]  \ Depuración!!!
-	clear_screen_for_location
-	dup .location_name  dup (describe_location)
-	location_plot 
-	;
-: describe_non-location  ( a -- )  \ Imprime la descripción de un ente que no es un escenario
-	description_color (describe)
-	;
-: describe  ( a -- )  \ Imprime la descripción de un ente
-	[debug]  [if]  s" En DESCRIBE" debug  [then]  \ Depuración!!!
-	dup >location? @
-	if  describe_location  else  describe_non-location  then
-	;
-
-\ **********************
-\ Paso 4 de 6 para crear un nuevo ente:
-\ Crear una palabra de descripción, con la sintaxis específica
-\ **********************
-
-\ Textos comunes a varias descripciones
-
-: of_your_ex_cloak$  ( -- a u )  \ Devuelve un texto común a las descripciones de los restos de la capa
-	s" que queda" s" que quedó" s" " 3 schoose 
-	s" de" s&
-	s" lo que" s" la que" 2 schoose s&
-	s" antes" s" " 2 schoose s&
-	s" era" s" fue" s" fuera" 3 schoose s&
-	s" tu" s" la" 2 schoose s&
-	s" oscura" s" " 2 schoose s&
-	s" capa" s&
-	s" de lana" s" " 2 schoose s&
-	period+
-	;
-
-\ El ente protagonista:
-
-ulfius_e :description  \ Describe el ente ulfius_e
-	\ Provisional!!!
-	my_location@ is_outside?
-	if   s" De pie al sol,"
-	else  s" En las sombras,"
-	then  
-	s" no pareces muy fuerte, a pesar de tener un metro sesenta y cinco de estatura." s&
-	my_location@ is_outside?  if
-		s" Después de un invierno benigno, la primavera ha traído tal calor que" s&
-		s" te hallas a gusto sin vestidos." s& 
-	then  paragraph
-	;description
-
-\ Los entes personaje: 
-
-ambrosio_e :description
-	ambrosio_e is_known?  if
-		s" Ambrosio"
-		s" es un hombre de mediana edad, que te mira afable." s&
-	else  s" Es de mediana edad y mirada afable."
-	then  paragraph
-	;description
-leader_e :description
-	s" Es el jefe de los refugiados."
-	paragraph
-	;description
-
-\ Los entes objeto:
-
-altar_e :description
-	s" Está colocado justo en la mitad del puente."
-	idol_e is_known? 0=  if
-		s" Debe sostener algo importante." s&
-	then
-	paragraph
-	;description
-arch_e :description
-	\ Provisional!!!
-	s" Un sólido arco de piedra, de una sola pieza."
-	paragraph
-	;description
-bridge_e :description
-	\ Provisional!!!
-	s" Está semipodrido."
-	paragraph
-	;description
-torch_e :description
-	\ Inacabado!!! 
-	s" Está apagada."
-	paragraph
-	;description
-flags_e :description
-	s" Son las banderas britana y sajona."
-	s" Dos dragones rampantes, rojo y blanco respectivamente, enfrentados." s&
-	paragraph
-	;description
-cloak_e :description
-	s" Tu capa de general, de fina lana tintada de negro."
-	paragraph
-	;description
-waterfall_e :description
-	s" No ves nada por la cortina de agua."
-	s" El lago es muy poco profundo." s&
-	paragraph
-	;description
-fallen_away_e :description
-	s" Muchas, inalcanzables rocas, apiladas una sobre otra."
-	paragraph
-	;description
-emerald_e :description
-	s" Es preciosa."
-	paragraph
-	;description
-sword_e :description
-	s" Legado " s" Herencia" 2 schoose
-	s" de tu padre," s&
-	s" fiel herramienta" s" arma fiel" 2 schoose s&
-	s" en" 
-	s" mil" s" incontables" s" innumerables" 3 schoose s& s&
-	s" batallas." s&
-	paragraph
-	;description
-rags_e :description
-	s" Un trozo un poco grande" of_your_ex_cloak$ s&
-	paragraph
-	;description
-thread_e :description
-	\ Mover esto al evento de cortar la capa!!!
-	\ s" Un hilo se ha desprendido al cortar la capa con la espada."
-	s" Un hilo" of_your_ex_cloak$ s&
-	paragraph
-	;description
-idol_e :description
-	s" El ídolo tiene dos agujeros por ojos."
-	paragraph
-	;description
-lake_e :description
-	s" La" s" Un rayo de" 2 schoose
-	s" luz entra por un resquicio, y caprichosos reflejos te maravillan." s&
-	paragraph
-	;description
-key_e :description
-	s" Grande, de hierro herrumboso."
-	paragraph
-	;description
-flint_e :description
-	s" Es dura y afilada." 
-	paragraph
-	;description
-stone_e :description
-	s" Recia y pesada, pero no muy grande, de forma piramidal."
-	paragraph
-	;description
-door_e :description
-	s" Es muy recia y tiene un gran candado."
-\ Inacabado!!!
-\	s" Es muy recia y"
-\	door_e >open? @
-\	if  s" tiene un gran candado."
-\	else  s" tiene un gran candado."
-\	then  s&
-	lock_found
-	paragraph
-	;description
-rocks_e :description
-	s" Son muchas, aunque parecen ligeras y con huecos entre ellas."
-	paragraph
-	;description
-snake_e :description
-	\ Provisional!!! Distinguir si está muerta.
-	\ Nota!!! en el programa original no hace falta.
-	s" Una serpiente muy maja."
-	paragraph
-	;description
-log_e :description
-	s" Es un tronco"
-	s" recio," s" resistente," s" fuerte," 3 schoose s&
-	s" pero" s&
-	s" de liviano peso." s" ligero." 2 schoose s&
-	paragraph
-	;description
-piece_e :description
-	s" Es un pedazo" of_your_ex_cloak$ s&
-	paragraph
-	;description
-lock_e :description
-	lock_e >open? @
-	if  s" Está abierto."
-	else  s" Está cerrado."
-	then  s" Es grande y parece resistente." s&
-	paragraph
-	;description
-bed_e :description
-	s" Parece poco confortable."
-	;description
-candles_e :description
-	s" Están muy consumidas."
-	;description
-table_e :description
-	s" Pequeña y de basta madera."
-	;description
-
-\ Los entes lugares:
-
-location_01_e :description
-	s" No ha quedado nada en pie, ni piedra sobre piedra."
-	s" El entorno es desolador." s&
-	s" Solo resta volver al Sur, a casa." s&
-	paragraph
-	;description
-location_02_e :description
-	s" Sobre la colina, casi sobre la niebla de la aldea sajona arrasada al Norte, a tus pies."
-	s" El camino desciende hacia el Oeste." s&
-	paragraph
-	;description
-location_03_e :description
-	s" El camino avanza por el valle, desde la parte alta, al Este, a una zona harto boscosa, al Oeste."
-	paragraph
-	;description
-location_04_e :description
-	\ Versión actual!!!:
-	s" Una senda parte al Oeste, a la sierra por el paso del Perro, y otra hacia el Norte, por un frondoso bosque que la rodea."
-	paragraph
-	exit \ tmp!!!
-	\ Versión nueva!!! en preparación: 
-	case
-	location_04_e  of
-		s" Una senda parte al Oeste, a la sierra por el paso del Perro, y otra hacia el Norte, por un frondoso bosque que la rodea."
-		endof
-	west_e  of
-		s" Una senda parte al Oeste, a la sierra por el paso del Perro."
-		endof
-	north_e  of
-		s" Una senda parte hacia el Norte, por un frondoso bosque que rodea la sierra."
-		endof
-	floor_e  of  endof
-	down_e  of  endof
-	sky_e  of  endof
-	up_e  of  endof
-	endcase
-	paragraph
-	;description
-location_05_e :description
-	s" Desde la linde, al Sur, hacia el Oeste se extiende frondoso el bosque que rodea la sierra. La salida se abre hacia el Sur."
-	paragraph
-	;description
-location_06_e :description
-	s" Jirones de niebla se enzarcen en frondosas ramas y arbustos."
-	s" La senda serpentea entre raíces, de un luminoso Este al Oeste." s&
-	paragraph
-	;description
-location_07_e :description
-	s" Abruptamente, del bosque se pasa a un estrecho camino entre altas rocas.
-	s" El inquietante desfiladero tuerce de Este a Sur." s&
-	paragraph
-	;description
-location_08_e :description
-	s" El paso entre el desfiladero sigue de Norte a Este."
-	s" La entrada a una cueva se abre al Sur en la pared de roca." s&
-	paragraph
-	;description
-location_09_e :description
-	s" El camino desciende hacia la agreste sierra, al Oeste, desde los verdes valles al Este."
-	s" Pero un gran derrumbe bloquea el paso hacia la sierra." s&
-	paragraph
-	;description
-location_10_e :description
-	s" El estrecho paso se adentra hacia el Oeste, desde la boca, al Norte. "
-	paragraph
-	;description
-location_11_e :description
-	s" Una gran estancia alberga un lago"
-	s" de profundas e iridiscentes aguas," s&
-	s" debido a la luz exterior." s&
-	s" No hay otra salida que el Este." s&
-	paragraph
-	;description
-location_12_e :description
-	s" Una gran estancia se abre hacia el Oeste, y se estrecha hasta morir, al Este, en una parte de agua."
-	paragraph
-	;description
-location_13_e :description
-	s" La sala se abre en semioscuridad a un puente cubierto de podredumbre sobre el lecho de un canal, de Este a Oeste."
-	paragraph
-	;description
-location_14_e :description
-	s" La iridiscente cueva gira de Este a Sur."
-	paragraph
-	;description
-location_15_e :description
-	s" La gruta desciende de Norte a Sur sobre un lecho arenoso. Al Este, un agujero del que llega claridad."
-	paragraph
-	;description
-location_16_e :description
-	s" Como un acueducto, el agua baja con gran fuerza de Norte a Este, aunque la salida practicable es la del Oeste."
-	paragraph
-	;description
-location_17_e :description
-	s" Muchas estalactitas se agrupan encima de tu cabeza, y se abren cual arco de entrada hacia el Este y Sur."
-	paragraph
-	;description
-location_18_e :description
-	s" Un arco de piedra se eleva, cual puente sobre la oscuridad, de Este a Oeste."
-	s" En su mitad, un altar." s&
-	paragraph
-	;description
-location_19_e :description
-	s" La furiosa corriente, de Norte a Este, impide el paso, excepto al Oeste."
-	s" Al fondo, se oye un gran estruendo." s&
-	paragraph
-	;description
-location_20_e :description
-	s" Un tramo de cueva estrecho"
-	s" te permite avanzar hacia el Norte y el Sur;" s&
-	s" un pasaje surge al Este." s&
-	paragraph
-	;description
-location_21_e :description
-	s" Un tramo de cueva estrecho te permite avanzar de Este a Oeste; un pasaje surge al Sur."
-	paragraph
-	;description
-location_22_e :description
-	s" Un tramo de cueva estrecho te permite avanzar de Este a Oeste; un pasaje surge al Sur."
-	paragraph
-	;description
-location_23_e :description
-	s" Un tramo de cueva estrecho te permite avanzar de Oeste a Sur."
-	paragraph
-	;description
-location_24_e :description
-	s" Un tramo de cueva estrecho te permite avanzar de Este a Norte."
-	paragraph
-	;description
-location_25_e :description
-	s" Un tramo de cueva estrecho te permite avanzar de Este a Oeste."
-	s" Al Norte y al Sur surgen pasajes." s&
-	paragraph
-	;description
-location_26_e :description
-	s" Un tramo de cueva estrecho te permite avanzar de Este a Oeste."
-	s" Al Norte surge un pasaje." s&
-	paragraph
-	;description
-location_27_e :description
-	s" Un tramo de cueva estrecho te permite avanzar al Oeste."
-	s" Al Norte surge un pasaje." s&
-	paragraph
-	;description
-location_28_e :description
-	s" Una amplia estancia de Norte a Este, hace de albergue a refugiados:"
-	s" hay banderas de ambos bandos." s&
-	s" Un hombre anciano te contempla." s&
-	s" Los refugiados te rodean." s&
-	paragraph
-	;description
-location_29_e :description
-	s" Cual escalera de caracol gigante, desciende a las profundidades,"
-	s" dejando a los refugiados al Oeste." s&
-	paragraph
-	;description
-location_30_e :description
-	s" Se eleva en la penumbra."
-	s" La caverna se estrecha ahora como para una sola persona, hacia el este." s&
-	paragraph
-	;description
-location_31_e :description
-	s" En este pasaje grandes rocas se encuentran entre las columnas de un arco de medio punto."
-	paragraph
-	;description
-location_32_e :description
-	s" El camino ahora no excede de dos palmos de cornisa sobre un abismo insondable."
-	s" El soporte de roca gira en forma de «U» de Oeste a Sur." s&
-	paragraph
-	;description
-location_33_e :description
-	s" El paso se va haciendo menos estrecho a medida que se avanza hacia el Sur, para entonces comenzar hacia el este."
-	paragraph
-	;description
-location_34_e :description
-	\ anchea?!!!
-	s" El paso se anchea de Oeste a Norte,"
-	s" y guijarros mojados y mohosos tachonan el suelo de roca." s&
-	paragraph
-	;description
-location_35_e :description
-	s" Un puente se tiende de Norte a Sur sobre el curso del agua."
-	s" Resbaladizas escaleras descienden hacia el Oeste." s&
-	paragraph
-	;description
-location_36_e :description
-	s" Una estruendosa corriente baja con el pasaje elevado desde el Oeste, y forma un meandro arenoso."
-	s" Unas escaleras suben al Este."
-	paragraph
-	;description
-location_37_e :description
-	s" El agua baja del Oeste con renovadas fuerzas,"
-	s" dejando un estrecho paso elevado lateral para avanzar a Este o a Oeste." s&
-	paragraph
-	;description
-location_38_e :description
-	s" Cae el agua hacia el este, descendiendo con gran fuerza hacia el canal,"
-	s" no sin antes embalsarse en un lago poco profundo." s&
-	paragraph
-	;description
-location_39_e :description
-	s" Musgoso y rocoso, con la cortina de agua tras de ti,"
-	s" el nivel del agua ha crecido un poco en este curioso hueco." s&
-	paragraph
-	;description
-location_40_e :description
-	s" Una gran explanada enlosetada contempla un bello panorama de estalactitas."
-	s" Unos casi imperceptibles escalones conducen al Este." s&
-	paragraph
-	;description
-location_41_e :description
-	s" El ídolo parece un centinela siniestro de una gran roca que se encuentra al Sur."
-	s" Se puede volver a la explanada al Oeste."
-	paragraph
-	;description
-location_42_e :description
-	s" Como un pasillo que corteja el canal de agua, a su lado, baja de Norte a Sur."
-	s" Se aprecia un aumento de luz hacia el Sur."
-	paragraph
-	;description
-location_43_e :description
-	s" El pasaje sigue de Norte a Sur."
-	paragraph
-	;description
-location_44_e :description
-	s" Unas escaleras dan paso a un hermoso lago interior, y siguen hacia el Oeste."
-	s" Al Norte, un oscuro y estrecho pasaje sube."
-	paragraph
-	;description
-location_45_e :description
-	s" Estrechos pasos permiten ir al Oeste, al Este (menos oscuro), y al Sur, un lugar de gran luminosidad."
-	paragraph
-	;description
-location_46_e :description
-	\ Crear estos objetos!!!
-	s" Un catre, algunas velas y una mesa es todo lo que tiene Ambrosio."
-	paragraph
-	;description
-location_47_e :description
-	s" Por el Oeste, una puerta impide, cuando cerrada, la salida de la cueva."
-	s" Se adivina la luz diurna al otro lado." s&
-	paragraph
-	;description
-location_48_e :description
-	s" Apenas se puede reconocer la entrada de la cueva, al Este."
-	s" El sendero sale del bosque hacia el Oeste." s&
-	paragraph
-	;description
-location_49_e :description
-	s" El sendero recorre esta parte del bosque de Este a Oeste."
-	paragraph
-	;description
-location_50_e :description
-	s" El camino norte de Westmorland se interna hacia el bosque,"
-	s" al Norte (en tu estado no puedes ir), y a Westmorland, al Sur." s&
-	paragraph
-	;description
-location_51_e :description
-	s" La villa bulle de actividad con el mercado en el centro de la plaza,"
-	s" donde se encuentra el castillo." s&
-	paragraph
-	;description
-
-\ Los entes globales:
-
-clouds_e :description
-	\ Provisional!!!
-	s" Los estratocúmulos que traen la nieve y que cuelgan sobre la Tierra"
-	s" en la estación del frío se han alejado por el momento. " s&
-	2 random  if  paragraph  else  sky_e describe  then  \ check!!!
-	;description
-
-sky_e :description
-	\ Provisional!!!
-	s" El cielo es un cuenco de color azul, listado en lo alto por nubes"
-	s" del tipo cirros, ligeras y trasparentes." s&
-	paragraph
-	;description
-
-floor_e :description
-	\ Provisional!!!
-	am_i_outside?  if
-		s" El suelo fuera es muy bonito."
-	paragraph
-	else
-		s" El suelo dentro es muy bonito."
-	paragraph
-	then
-	;description
-
-ceiling_e :description
-	\ Provisional!!!
-	s" El techo es muy bonito."
-	paragraph
-	;description
-
-cave_e :description
-	\ Provisional!!!
-	s" La cueva es chachi."
-	paragraph
-	;description
-
-\ Los entes virtuales:
-
-down_e :description
-	\ Provisional!!!
-	am_i_outside?  if  
-		s" El suelo exterior es muy bonito." paragraph
-	else
-		s" El suelo interior es muy bonito." paragraph
-	then
-	;description
-
-up_e :description
-	am_i_outside?
-	if  sky_e describe
-	else  ceiling_e describe
-	then
-	;description
-
-\ Restauración de las descripciones originales
-
-: init_entity_descriptions  \ Restaura las descripciones originales de los entes
-	\ Guardamos en el campo >DESCRIPTION_XT de la ficha
-	\ de cada ente la dirección de ejecución de la palabra
-	\ que se ocupa de su descripción:
-	#entities 0  do
-		i cell * descriptions_xt + @  \ Tomar la dirección de ejecución de la descripción
-		?dup 0=  if  ['] default_description  then  \ Si es cero, sustituirla por la predeterminada
-		i #>entity >description_xt !  \ Guardarla en la ficha
-	loop
-	;
-
-\ }}}
-[old_method]  [if]
-\ ------------------------------------------------
-subsection( Entes de tipo dirección)
-\ {{{
-
-\ Constantes con el desplazamiento correspondiente a cada campo de dirección:
-0 >north_exit constant north_exit
-0 >south_exit constant south_exit
-0 >east_exit constant east_exit
-0 >west_exit constant west_exit
-0 >up_exit constant up_exit
-0 >down_exit constant down_exit
-0 >out_exit constant out_exit
-0 >in_exit constant in_exit
-
-: init_direction_entities  \ Prepara los entes de dirección
-	\ Los entes de dirección guardan en el campo >DIRECTION
-	\ el desplazamiento correspodiente al campo de 
-	\ dirección que representan. Esto sirve para
-	\ reconocerlos como tales entes de dirección 
-	\ (pues todos los valores posibles son diferentes de cero)
-	\ y para hacer los cálculos en las acciones de movimiento.
-	north_exit north_e >direction !
-	south_exit south_e >direction !
-	east_exit east_e >direction !
-	west_exit west_e >direction !
-	up_exit up_e >direction !
-	down_exit down_e >direction !
-	out_exit out_e >direction !
-	in_exit in_e >direction !
-	;
-
-\ }}}
-\ ------------------------------------------------
-subsection( Localización de los entes)
-\ {{{
-
-\ **********************
-\ Paso 5 de 6 para crear un nuevo ente:
-\ Fijar su localización inicial
-\ **********************
-
-: init_entity_locations  \ Asigna a los entes sus localizaciones
-
-	vanish_all  \ Todos al limbo por defecto
-
-	location_01_e ulfius_e be_there
-	location_09_e fallen_away_e be_there
-	location_15_e log_e be_there
-	location_18_e altar_e be_there
-	location_18_e arch_e be_there
-	location_13_e bridge_e be_there
-	location_18_e stone_e be_there
-	location_19_e ambrosio_e be_there
-	location_28_e flags_e be_there
-	location_28_e leader_e be_there
-	location_31_e rocks_e be_there
-	location_38_e waterfall_e be_there
-	location_39_e emerald_e be_there
-	location_41_e idol_e be_there
-	location_43_e snake_e be_there
-	location_44_e lake_e be_there
-	location_46_e bed_e be_there
-	location_46_e candles_e be_there
-	location_46_e key_e be_there
-	location_46_e table_e be_there
-	location_47_e door_e be_there
-	\ location_47_e lock_e be_there
-	ulfius_e cloak_e be_there
-	ulfius_e cuirasse_e be_there
-	ulfius_e sword_e be_there
-
-	;
-
-[then]
-
-\ }}}
-\ ------------------------------------------------
-subsection( Preparación de la base de datos)
-\ {{{
-
-: wipe_entities  \ Borra con ceros todas las fichas de los entes
-	'entities /entities 0 fill
-	;
-: init_entity_strings  \ Crea una cadena dinámica para guardar el nombre de cada ente y guarda la dirección de la cadena en la ficha del ente
-	#entities 0  do
-		str-new i #>entity >name_str !  
-	loop
-	;
-
-\ }}}
-\ }}}
-\ ##############################################################
-section( Mapa)
-\ {{{
-
-0  [if]  \ ......................................
-
-Para crear el mapa hay que hacer dos operaciones con los
-entes escenario: marcarlos como tales, para poder
-distinguirlos como escenarios; e indicar a qué otros entes
-escenarios conducen sus salidas.
-
-La primera operación se hace guardando un valor buleano
-«cierto» en el campo >LOCATION? del ente.  Por ejemplo:
-
-	cave_e >location? on
-
-La segunda operación se hace guardando en los campos de
-salida del ente los identificadores de los entes a que cada
-salida conduzca.  No hace falta ocuparse de las salidas
-impracticables porque ya estarán a cero de forma
-predeterminada.  Por ejemplo:	
-
-	path_e cave_e >south_exit !  \ Hacer que la salida sur de CAVE_E conduzca a PATH_E
-	cave_e path_e >north_exit !  \ Hacer que la salida norte de PATH_E conduzca a CAVE_E
-
-No obstante, para hacer más fácil este segundo paso, hemos
-creado unas palabras que proporcionan la siguiente sintaxis
-(primero origen y después destino en la pila, como es
-convención en Forth):
-
-	cave_e path_e s-->  \ Hacer que la salida sur de CAVE_E conduzca a PATH_E (pero sin afectar al sentido contrario)
-	path_e cave_e n-->  \ Hacer que la salida norte de PATH_E conduzca a CAVE_E (pero sin afectar al sentido contrario)
-
-O en un solo paso:
-
-	cave_e path_e s<-->  \ Hacer que la salida sur de CAVE_E conduzca a PATH_E (y al contrario: la salida norte de PATH_E conducirá a CAVE_E)
-
-Además, la palabra INIT_LOCATION permite inicializar un
-escenario asignando en una sola operación todas sus salidas.
-
-[then]  \ ......................................
-
-\ ------------------------------------------------
-subsection( Interfaz para crear conexiones entre los escenarios)
-\ {{{
-
-0  [if]  \ Inacabado!!!
-
-create opposite_exits
-south_exit ,
-north_exit ,
-west_exit ,
-east_exit ,
-down_exit ,
-up_exit ,
-in_exit ,
-out_exit ,
-
-create opposite_direction_entities
-south_e ,
-north_e ,
-west_e ,
-east_e ,
-down_e ,
-up_e ,
-in_e ,
-out_e ,
-
-[then]
-
-create exits_table  \ Tabla de traducción de salidas
-#exits cells allot  \ Reservar espacio para tantas celdas como salidas
-
-\ Rellenar cada elemento de la tabla con un ente de salida,
-\ usando como puntero el campo análogo de la ficha.
-\ Haciéndolo de esta manera no importa el orden en que se rellenen los elementos.
-0  [if]  \ Versión antigua!!!:
-north_e exits_table >north_exit first_exit - !
-south_e exits_table >south_exit first_exit - !
-east_e exits_table >east_exit first_exit - !
-west_e exits_table >west_exit first_exit - !
-up_e exits_table >up_exit first_exit - !
-down_e exits_table >down_exit first_exit - !
-out_e exits_table >out_exit first_exit - !
-in_e exits_table >in_exit first_exit - !
-[then]  \ Versión nueva!!!:
-north_e exits_table north_exit + !
-south_e exits_table south_exit + !
-east_e exits_table east_exit + !
-west_e exits_table west_exit + !
-up_e exits_table up_exit + !
-down_e exits_table down_exit + !
-out_e exits_table out_exit + !
-in_e exits_table in_exit + !
-
-: dir>entity  ( u -- a )  \ Devuelve un ente de dirección a partir de un campo de dirección
-	\ u = Desplazamiento del campo de dirección
-	\ a = Ente de dirección correspondiente a la expresada por u
-	first_exit - exits_table + @ 
-	;
-
-0  [if]  \ Inacabado!!!
-: opposite_exit  ( a1 -- a2 )  \ Devuelve la dirección cardinal opuesta a la indicada
-	first_exit - opposite_exits + @
-	;
-: opposite_exit_e  ( a1 -- a2 )  \ Devuelve el ente de dirección cuya direccién es opuesta a la indicada
-	\ a1 = entidad de dirección
-	\ a2 = entidad de dirección, opuesta a a1
-	first_exit - opposite_direction_entities + @
-	;
-[then]
-
-: -->  ( a1 a2 u -- )  \ Comunica el ente a1 con el ente a2 mediante la salida indicada por el desplazamiento u
-	\ a1 = Ente escenario origen
-	\ a2 = Ente escenario destino
-	\ u = Desplazamiento del campo de dirección a usar en a1
-	rot + !
-	;
-
-\ Conexiones unidireccionales
-
-: n-->  ( a1 a2 -- )  \ Comunica la salida norte del ente a1 con el ente a2
-	north_exit -->
-	;
-: s-->  ( a1 a2 -- )  \ Comunica la salida sur del ente a1 con el ente a2
-	south_exit -->
-	;
-: e-->  ( a1 a2 -- )  \ Comunica la salida este del ente a1 con el ente a2
-	east_exit -->
-	;
-: w-->  ( a1 a2 -- )  \ Comunica la salida oeste del ente a1 con el ente a2
-	west_exit -->
-	;
-: u-->  ( a1 a2 -- )  \ Comunica la salida hacia arriba del ente a1 con el ente a2
-	up_exit -->
-	;
-: d-->  ( a1 a2 -- )  \ Comunica la salida hacia abajo del ente a1 con el ente a2
-	down_exit -->
-	;
-: o-->  ( a1 a2 -- )  \ Comunica la salida hacia fuera del ente a1 con el ente a2
-	out_exit -->
-	;
-: i-->  ( a1 a2 -- )  \ Comunica la salida hacia dentro del ente a1 con el ente a2
-	in_exit -->
-	;
-
-\ Conexiones bidireccionales
-
-: n<-->  ( a1 a2 -- )  \ Comunica la salida norte del ente a1 con el ente a2 (y al contrario)
-	2dup n-->  swap s-->
-	;
-: s<-->  ( a1 a2 -- )  \ Comunica la salida sur del ente a1 con el ente a2 (y al contrario)
-	2dup s-->  swap n-->
-	;
-: e<-->  ( a1 a2 -- )  \ Comunica la salida este del ente a1 con el ente a2 (y al contrario)
-	2dup e-->  swap w-->
-	;
-: w<-->  ( a1 a2 -- )  \ Comunica la salida oeste del ente a1 con el ente a2 (y al contrario)
-	2dup w-->  swap e-->
-	;
-: u<-->  ( a1 a2 -- )  \ Comunica la salida hacia arriba del ente a1 con el ente a2 (y al contrario)
-	2dup u-->  swap d-->
-	;
-: d<-->  ( a1 a2 -- )  \ Comunica la salida hacia abajo del ente a1 con el ente a2 (y al contrario)
-	2dup d-->  swap u-->
-	;
-: o<-->  ( a1 a2 -- )  \ Comunica la salida hacia fuera del ente a1 con el ente a2 (y al contrario)
-	2dup o-->  swap i-->
-	;
-: i<-->  ( a1 a2 -- )  \ Comunica la salida hacia dentro del ente a1 con el ente a2 (y al contrario)
-	2dup i-->  swap o-->
-	;
-
-\ Múltiples conexiones a la vez
-
-: exits!  ( a1..a8 a0 -- )  \ Asigna todas las salidas de un ente escenario.
-	\ a1..a8 = Entes escenario de salida (o cero) en el orden habitual: norte, sur, este, oeste, arriba, abajo, dentro, fuera
-	\ a0 = Ente escenario cuyas salidas hay que modificar
-	dup >r >out_exit !
-	r@ >in_exit !
-	r@ >down_exit !
-	r@ >up_exit !
-	r@ >west_exit !
-	r@ >east_exit !
-	r@ >south_exit !
-	r> >north_exit !
-	;
-: init_location  ( a1..a8 a0 -- )  \ Marca un ente como escenario y le asigna todas las salidas. 
-	\ a1..a8 = Entes escenario de salida (o cero) en el orden habitual: norte, sur, este, oeste, arriba, abajo, dentro, fuera
-	\ a0 = Ente escenario cuyas salidas hay que modificar
-	dup >location? on  exits!
-	;
-
-\ }}}
-\ ------------------------------------------------
-subsection( Datos)
-\ {{{
-
-: init_map  \ Prepara el mapa
-	0 location_02_e 0 0 0 0 0 0 location_01_e init_location
-	location_01_e 0 0 location_03_e 0 0 0 0 location_02_e init_location
-	0 0 location_02_e location_04_e 0 0 0 0 location_03_e init_location
-	location_05_e 0 location_03_e location_09_e 0 0 0 0 location_04_e init_location
-	0 location_04_e 0 location_06_e 0 0 0 0 location_05_e init_location
-	0 0 location_05_e location_07_e 0 0 0 0 location_06_e init_location
-	0 location_08_e location_06_e 0 0 0 0 0 location_07_e init_location
-	location_07_e location_10_e 0 0 0 0 0 0 location_08_e init_location
-	0 0 location_04_e 0 0 0 0 0 location_09_e init_location
-	location_08_e 0 0 location_11_e 0 0 0 0 location_10_e init_location
-	0 0 location_10_e 0 0 0 0 0 location_11_e init_location
-	0 0 0 location_13_e 0 0 0 0 location_12_e init_location
-	0 0 location_12_e location_14_e 0 0 0 0 location_13_e init_location
-	0 location_15_e location_13_e 0 0 0 0 0 location_14_e init_location
-	location_14_e location_17_e location_16_e 0 0 0 0 0 location_15_e init_location
-	0 0 0 location_15_e 0 0 0 0 location_16_e init_location
-	location_15_e location_20_e location_18_e 0 0 0 0 0 location_17_e init_location
-	0 0 location_19_e location_17_e 0 0 0 0 location_18_e init_location
-	0 0 0 location_18_e 0 0 0 0 location_19_e init_location
-	location_17_e location_22_e location_25_e 0 0 0 0 0 location_20_e init_location
-	0 location_27_e location_23_e location_20_e 0 0 0 0 location_21_e init_location
-	0 location_24_e location_27_e location_22_e 0 0 0 0 location_22_e init_location
-	0 location_25_e 0 location_21_e 0 0 0 0 location_23_e init_location
-	location_22_e 0 location_26_e 0 0 0 0 0 location_24_e init_location
-	location_22_e location_28_e location_23_e location_21_e 0 0 0 0 location_25_e init_location
-	location_26_e 0 location_20_e location_27_e 0 0 0 0 location_26_e init_location
-	location_27_e 0 0 location_25_e 0 0 0 0 location_27_e init_location
-	location_26_e 0 0 0 0 0 0 0 location_28_e init_location
-	0 0 0 location_28_e 0 location_30_e 0 0 location_29_e init_location
-	0 0 location_31_e 0 location_29_e 0 0 0 location_30_e init_location
-	0 0 0 location_30_e 0 0 0 0 location_31_e init_location
-	0 location_33_e 0 location_31_e 0 0 0 0 location_32_e init_location
-	location_32_e 0 location_34_e 0 0 0 0 0 location_33_e init_location
-	location_35_e 0 0 location_33_e 0 0 0 0 location_34_e init_location
-	location_40_e location_34_e 0 location_36_e 0 location_36_e 0 0 location_35_e init_location
-	0 0 location_35_e location_37_e location_35_e 0 0 0 location_36_e init_location
-	0 0 location_36_e location_38_e 0 0 0 0 location_37_e init_location
-	0 0 location_37_e location_39_e 0 0 0 0 location_38_e init_location
-	0 0 location_38_e 0 0 0 0 0 location_39_e init_location
-	0 location_35_e location_41_e 0 0 0 0 0 location_40_e init_location
-	0 0 0 location_40_e 0 0 0 0 location_41_e init_location
-	location_41_e location_43_e 0 0 0 0 0 0 location_42_e init_location
-	location_42_e 0 0 0 0 0 0 0 location_43_e init_location
-	location_43_e 0 0 location_45_e 0 0 0 0 location_44_e init_location
-	0 location_47_e location_44_e location_46_e 0 0 0 0 location_45_e init_location
-	0 0 location_45_e 0 0 0 0 0 location_46_e init_location
-	location_45_e 0 0 0 0 0 0 0 location_47_e init_location
-	0 0 location_47_e location_49_e 0 0 0 0 location_48_e init_location
-	0 0 location_48_e location_50_e 0 0 0 0 location_49_e init_location
-	0 location_51_e location_49_e 0 0 0 0 0 location_50_e init_location
-	location_50_e 0 0 0 0 0 0 0 location_51_e init_location
-	;
-
-\ }}}
 \ }}}
 \ ##############################################################
 section( Listas)
@@ -3862,7 +3560,6 @@ variable #listed  \ Contador de elementos listados, usado en varias acciones
 variable #elements  \ Total de los elementos de una lista
 
 : list_separator$  ( u1 u2 -- a u )  \ Devuelve el separador adecuado a un elemento de una lista
-	\ Versión abandonada!!!
 	\ u1 = Elementos que tiene la lista
 	\ u2 = Elementos listados hasta el momento
 	\ a u = Cadena devuelta, que podrá ser « y » o «, » o «» (vacía)
@@ -3943,43 +3640,17 @@ variable #elements  \ Total de los elementos de una lista
 
 \ }}}
 \ ##############################################################
-section( Trama) 
+section( Herramientas para las tramas asociadas a lugares)
 \ {{{
-
-\ ------------------------------------------------
-subsection( Herramientas para crear las tramas asociadas a lugares)
-\ {{{
-
-\ Crear la tabla para guardar las direcciones de ejecución de las tramas de los entes escenario
-create location_plots_xt  \ Tabla
-#entities cells dup allot  \ Hacer el espacio necesario
-location_plots_xt swap 0 fill  \ Borrar la zona con ceros 
 
 : :location_plot  ( a -- xt a ) \ Crea una palabra sin nombre que manejará la trama de un ente escenario
-	:noname swap
+	:noname swap >location_plot_xt !  \ Crear la palabra y guardar su xt en la ficha del ente
 	;
-: ;location_plot  ( xt a -- )  \ Termina la definición de una palabra que manejará la trama de un ente escenario
-	\ a = Ente escenario cuya palabra de trama se ha creado
-	\ xt = Dirección de ejecución de la palabra de trama
-	2dup  entity># cell *  location_plots_xt + !  \ Guardar xt en la posición de la tabla LOCATION_PLOTS_XT correspondiente al ente
-	>location_plot_xt !  \ Guardar xt en la ficha del ente
-	postpone ;  \ Terminar la definición de la palabra 
-	; immediate
+' ; alias ;location_plot immediate
 : (location_plot)  ( a -- )  \ Ejecuta la palabra de trama de un ente escenario
 	>location_plot_xt @ ?dup  if  execute  then
 	;
 ' (location_plot) is location_plot
-: init_location_plots  \ Restaura las tramas originales de los entes escenario
-	#entities 0  do
-		i cell * location_plots_xt + @  \ Tomar de la tabla la dirección de ejecución 
-		?dup if  i #>entity >location_plot_xt !  then  \ Si no es cero, guardarla en su ficha
-	loop
-	;
-
-\ }}}
-\ ------------------------------------------------
-subsection( Herramientas de las tramas asociadas a lugares)
-\ {{{
 
 : enter  ( a -- )  \ Entra en un lugar
 	[debug]  [if]  s" En ENTER" debug  [then]  \ Depuración!!!
@@ -3988,21 +3659,20 @@ subsection( Herramientas de las tramas asociadas a lugares)
 	more_familiar  .present
 	;
 
+\ }}}
+\ ##############################################################
+section( Tramas asociadas a lugares)
+\ {{{
+
 : is_the_pass_open?  ( -- f )  \ ¿El paso del desfiladero está abierto por el Norte?
 	location_08_e >north_exit @ exit?
 	;
-
 : going_home  \ De vuelta a casa
 	s" Tus" s" Todos tus" 2 schoose
 	soldiers$ s&
 	s" siguen tus pasos." s" te siguen." 2 schoose s&
 	narrate
 	;
-
-\ }}}
-\ ------------------------------------------------
-subsection( Tramas asociadas a lugares)
-\ {{{
 
 location_01_e :location_plot
 	is_the_pass_open?  if  going_home  then
@@ -4064,8 +3734,8 @@ location_44_e :location_plot
 	;location_plot
 
 \ }}}
-\ ------------------------------------------------
-subsection( Trama global)
+\ ##############################################################
+section( Trama global)
 \ {{{
 
 : (lock_found)  \ Encontrar el candado (al mirar la puerta o al intentar abrirla)
@@ -4416,24 +4086,6 @@ here swap - cell / constant battle_phases  \ Fases de la batalla
 	dark_cave?  if  dark_cave  then
 	;
 
-\ }}}
-\ ------------------------------------------------
-subsection( Comprobaciones de finalización)
-\ {{{
-
-: success?  ( -- f )  \ ¿Ha completado con éxito su misión el protagonista?
-	my_location@ location_51_e =
-	;
-false  [if]
-: battle_phases  ( -- u )  \ Devuelve el número máximo de fases de la batalla
-	5 random 7 +  \ Número al azar, de 8 a 11
-	;
-[then]
-: failure?  ( -- f )  \ ¿Ha fracasado el protagonista?
-	battle# @ battle_phases >
-	;
-
-\ }}}
 \ }}}
 \ ##############################################################
 section( Errores del intérprete de comandos) 
@@ -5144,7 +4796,7 @@ subsection( Movimiento)
 \ {{{
 
 : that_way_0$  ( a -- a2 u2 )  \ Devuelve «al/hacia la dirección indicada»
-	\ a = Ente de dirección
+	\ a = Ente dirección
 	\ >r  2 random  r@ >no_article? @  or  \ old!!!
 	>r  r@ >no_article? @
 	if  \ no debe llevar artículo
@@ -5158,7 +4810,7 @@ subsection( Movimiento)
 	s" en esa dirección" s" por ahí" 2 schoose
 	;
 : impossible_move  ( a -- )  \ El movimiento es imposible
-	\ a = Ente de dirección
+	\ a = Ente dirección
 	\ Inacabado!!! Añadir una tercera variante «ir en esa dirección»; y otras específicas como «no es posible subir».
 	^is_impossible$ s" ir" s&  rot
 	3 random 
@@ -5247,6 +4899,19 @@ subsection( Movimiento)
 subsection( Nadar)
 \ {{{
 
+: in_a_different_place$  ( -- a u )  \ Devuelve una variante de «en un lugar diferente»
+	s" en un" s& place$
+	s" desconocido" s" nuevo" s" diferente" 3 schoose s&
+	s" en otra parte"
+	s" en otro lugar"
+	3 schoose
+	;
+: you_emerge$  ( -- a u )  \ Devuelve el mensaje sobre la salida a la superficie
+	s" Consigues" s" Logras" 2 schoose
+	s" emerger," s" salir a la superficie," 2 schoose s&
+	though$ s& in_different_place$ s&
+	s" de la" s& cave$ s& s" ..." s&
+	;
 : swiming$  ( -- a u )  \ Devuelve el mensaje sobre el buceo
 	s" Buceas"
 	s" pensando en"
@@ -5328,6 +4993,7 @@ subsection( Nadar)
 	my_location@ location_11_e =  if
 		clear_screen_for_location
 		you_swim$ narrate short_pause
+		you_emerge$ narrate short_pause
 		location_12_e enter  the_battle_ends
 	else
 		s" nadar" now|here$ s& is_nonsense
@@ -5683,9 +5349,12 @@ Gracias al uso del propio intérprete de Forth como
 intérprete de comandos del juego, más de la mitad del
 trabajo ya está hecha por anticipado.
 
-Sin embargo hay una consideración importante: El intérprete
-de Forth ejecutará las palabras en el orden en que estén
-escritas en la frase del jugador. Esto quiere decir que no
+Sin embargo hay una consideración importante: Al pasarle
+directamente al intérprete de Forth el texto del comando
+escrito por el jugador, el sistema ejecutará las palabras
+que reconozca y en el orden en que estén escritas en la
+frase. Esto quiere decir que, al contrario de lo que ocurre
+con otros sistemas de intérpretes más convencionales, no
 podemos tener una visión global del comando del jugador: ni
 de cuántas palabras consta ni, en principio, qué viene a
 continuación de la palabra que está siendo interpretada en
@@ -5695,24 +5364,12 @@ Forth.
 
 [then]  \ ......................................
 
-\ ------------------------------------------------
-subsection( Analizador)
-\ {{{
-
 vocabulary player_vocabulary  \ Vocabulario para guardar en él las palabras del juego
 
 : init_parsing  \ Preparativos previos al análisis
 	action off
 	main_complement off
 	;
-\ : understood?  ( u -- f )  \ Comprueba si se ha producido un error en el comando; devuelve 0 si hubo
-\ 	\ antiguo!!! no se usa!!!
-\ 	\ u = Código de error, o cero si no se produjo un error
-\ 	\ f = Cero si se produjo un error; -1 si no se produjo un error
-\ 	[debug]  [if]  s" En UNDERSTOOD?" debug  [then]  \ Depuración!!!
-\ 	\ dup ?misunderstood 0= \ antiguo!!!
-\ 	dup 0= swap ?misunderstood
-\ 	;
 : (execute_action)  ( xt -- )  \ Ejecuta la acción del comando
 	[debug]  [if]  s" En (EXECUTE_ACTION)" debug  [then]  \ Depuración!!!
 	[debug_catch]  [if]  s" En (EXECUTE_ACTION) antes de CATCH" debug  [then]  \ Depuración!!!
@@ -5790,9 +5447,8 @@ vocabulary player_vocabulary  \ Vocabulario para guardar en él las palabras del
 	;
 
 \ }}}
-\ }}}
 \ ##############################################################
-section( Vocabulario)
+section( Herramientas para el vocabulario del juego)
 \ {{{
 
 0  [if]  \ ......................................
@@ -5855,10 +5511,6 @@ por qué saber que hay una palabra llamada NOTFOUND .
 
 [then]  \ ......................................
 
-\ ------------------------------------------------
-subsection( Palabras para crear sinónimos)
-\ {{{
-
 : synonym:  ( xt "name" -- )  \ Crea un sinónimo de una palabra
 	\ xt = Dirección de ejecución de la palabra a clonar
 	nextword sheader  last-cfa @ !
@@ -5869,10 +5521,7 @@ subsection( Palabras para crear sinónimos)
 	0  do  dup synonym:  loop  drop
 	;
 
-\ }}}
-\ ------------------------------------------------
-subsection( Resolución de ambigüedades)
-\ {{{
+\ Resolución de ambigüedades
 
 0  [if]  \ ......................................
 
@@ -5921,16 +5570,13 @@ adecuado.
 	;
 
 \ }}}
-\ ------------------------------------------------
-subsection( Vocabulario del juego)
+\ ##############################################################
+section( Vocabulario del juego)
 \ {{{
 
 also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY para crear en él las nuevas palabras
 
-\ **********************
-\ Paso 6 de 6 para crear un nuevo ente:
-\ Crear las palabras relacionadas con él en el vocabulario del jugador, y sus sinónimos
-\ **********************
+\ Pendiente!!! Añadir formas verbales en primera persona
 
 : ir do_go_xt action!  ;
 ' ir 8 synonyms: ve vete irse irte dirigirse dirígete muévete moverse
@@ -5967,7 +5613,7 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 : registrar  do_search_xt action!  ;
 ' registrar synonym: registra
 
-: forth  (do_finish)  ;  \ Depuración!!!
+\ : forth  (do_finish)  ;  \ Depuración!!!
 : bye  bye  ;  \ Depuración!!!
 : quit quit  ;  \ Depuración!!!
 
@@ -6120,8 +5766,8 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 restore_vocabularies
 
 \ }}}
-\ ------------------------------------------------
-subsection( Vocabulario para entradas «sí» o «no»)
+\ ##############################################################
+section( Vocabulario para entradas «sí» o «no»)
 \ {{{
 
 0  [if]  \ ......................................
@@ -6168,7 +5814,6 @@ also yes/no_vocabulary definitions  \ Las palabras que siguen se crearán en dic
 
 restore_vocabularies
 
-\ }}}
 \ }}}
 \ ##############################################################
 section( Entrada de comandos)
@@ -6232,33 +5877,31 @@ section( Entrada de respuestas de tipo «sí o no»)
 section( Preparativos)
 \ {{{
 
-: init_entities/once  \ Preparación de la base de datos que se hace solo la primera vez
-	wipe_entities  \ Poner las fichas a cero
-	init_entity_strings  \ Cadenas dinámicas para los nombres
-	[old_method]  [if]
-	init_direction_entities  \ Entes de dirección
-	[then]
+
+: init_entity  ( a -- )  \ Restaura la ficha de un ente a su estado original
+	[debug_init]  [if]  s" Inicio de INIT_ENTITY" debug  [then]
+	dup >init_xt
+	[debug_init]  [if]  s" Tras >INIT_XI" debug  [then]
+	@
+	[debug_init]  [if]  s" Tras @" debug dup .  [then]
+	execute
+	[debug_init]  [if]  s" Final de INIT_ENTITY" debug  [then]
 	;
-: init_entities/game  \ Preparación de la base de datos que se hace antes de cada partida
-	\ Devolvemos a su estado original los datos
-	\ que pudieran haber cambiado durante una partida:
-	init_entity_names  \ Nombres
-	\ init_entity_attributes  \ !!! Atributos 
-	init_entity_descriptions  \ Descripciones
-	init_entity_locations  \ Localizaciones
+: init_entities  \ Restaura las fichas de entes a su estado original
+	#entities 0  do
+		i .  \ Depuración!!!
+		i #>entity init_entity
+	loop
 	;
 : init_plot  \ Preparativos de las tramas
 	init_plot_variables  \ Variables de las tramas
-	init_location_plots  \ Tramas de los entes escenario
 	;
 : init/once  \ Preparativos que hay que hacer solo una vez, antes de la primera partida
-	init_screen/once  \ Pantalla
-	init_entities/once  \ Entes
+	init_screen  \ Pantalla
 	;
 : init/game  \ Preparativos que hay que hacer antes de cada partida
 	randomize
-	init_entities/game  \ Entes
-	init_map  \ Mapa
+	init_entities  \ Entes
 	init_plot  \ Trama
 	;
 
@@ -6267,6 +5910,17 @@ section( Preparativos)
 section( Fin)
 \ {{{
 
+: success?  ( -- f )  \ ¿Ha completado con éxito su misión el protagonista?
+	my_location@ location_51_e =
+	;
+false  [if]
+: battle_phases  ( -- u )  \ Devuelve el número máximo de fases de la batalla
+	5 random 7 +  \ Número al azar, de 8 a 11
+	;
+[then]
+: failure?  ( -- f )  \ ¿Ha fracasado el protagonista?
+	battle# @ battle_phases >
+	;
 : .bye  \ Mensaje final cuando el jugador no quiere jugar otra partida
 	\ Provisional!!!
 	s" ¡Adiós!" narrate
@@ -6544,7 +6198,7 @@ also config_vocabulary  definitions
 
 restore_vocabularies
 
-: init_config  \ Inicializa las variables de configuración
+: init_config  \ Inicializa las variables de configuración con sus valores predeterminados
 	woman_player? off
 	castilian_quotes? on
 	location_page? off
@@ -6552,6 +6206,8 @@ restore_vocabularies
 	ignore_unknown_words? off
 	4 /indentation !
 	scene_page? off
+	default_max_x to max_x  \ Máximo número de columna (80 columnas)
+	default_max_y to max_y  \ Máximo número de fila (25 filas)
 	;
 
 : read_config  \ Lee el fichero de configuración
@@ -6600,18 +6256,6 @@ section( Principal)
 : i0  \ Hace toda la inicialización; para depuración!!!
 	init/once game_preparation
 	." Datos preparados."
-	;
-
-: i1  \ Inicialización de prueba; para depuración!!!
-	init/once
-
-	randomize
-
-	init_entity_names  \ Nombres
-	\ init_entity_attributes  \ Atributos
-	\ init_entity_descriptions  \ Descripciones
-	\ init_entity_locations  \ Localizaciones
-
 	;
 
 \ i0 cr  \ Para depuración!!!
@@ -6694,6 +6338,11 @@ Idea sacada de Transilvania Corruption:
 
 >ve fregadero
 No es algo donde pueda ir.
+
+...........................
+
+Crear tramas de lugar separadas: entrar de él, estar en él y
+salir de él.
 
 ...........................
 
