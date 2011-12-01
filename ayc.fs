@@ -6,7 +6,7 @@ CR .( Asalto y castigo ) \ {{{
 \ A text adventure in Spanish, written in SP-Forth.
 \ Un juego conversacional en castellano, escrito en SP-Forth.
 
-: version$  S" A-01-2011292230"  ;  version$ TYPE CR
+: version$  S" A-01-2011120102"  ;  version$ TYPE CR
 
 \ Copyright (C) 2011 Marcos Cruz (programandala.net)
 
@@ -138,6 +138,7 @@ false value [debug_pause] immediate  \ Indicador: ¿Hacer una pausa en cada punt
 [debug_init] or
 [debug_do_exits] or
 [debug_catch] or
+true or  \ !!!
 [if]  startlog  [then]
 
 \ Indicadores para poder elegir alternativas que aún son experimentales
@@ -703,6 +704,9 @@ section( Textos variables)  \ {{{
 : to_the$  ( -- a u )
 	s" hacia el" s" al" 2 schoose
 	;
+: ^to_the$  ( -- a u )
+	to_the$ ^uppercase
+	;
 : possible1$  ( -- a u )  \ Devuelve «posible» o una cadena vacía
 	s" posible" s" " 2 schoose
 	;
@@ -786,6 +790,10 @@ section( Textos variables)  \ {{{
 : cave$  ( -- a u )
 	s" cueva" s" caverna" 2 schoose
 	;
+: home$  ( -- a u )
+	s" hogar" s" casa" 2 schoose
+	;
+
 \ }}}###########################################################
 section( Cadena dinámica multiusos) \ {{{
 
@@ -1164,9 +1172,6 @@ frecuentes con los entes.
 
 defer protagonist  \ Vector que después se redirigirá a la ficha del protagonista en la base de datos
 
-\ location_plot está aquí temporalmente!!!:
-defer location_plot  \ Vector que después se redirigirá a la palabra que gestiona la trama de los entes escenario
-
 ' ~north_exit alias ~first_exit  \ Primera salida definida en la ficha
 ' ~in_exit alias ~last_exit  \ Última salida definida en la ficha
 
@@ -1431,7 +1436,6 @@ create 'articles  \ Tabla de artículos
 	protagonist where
 	;
 : my_location!  ( a -- )  \ Mueve el protagonista al ente indicado
-	\ No se usa!!!
 	protagonist be_there
 	;
 : am_i_there?  ( a -- f )  \ ¿Está el protagonista en el lugar indicado?
@@ -1484,6 +1488,7 @@ create 'articles  \ Tabla de artículos
 	;
 : can_be_looked_at?  ( a -- f )  \ ¿El ente puede ser mirado?
 	dup my_location =  \ ¿Es el lugar del protagonista?
+	over is_direction? or  \ ¿O es un ente dirección?
 	swap is_accessible?  or  \ ¿O está accesible? 
 	;
 : more_familiar  ( a -- )  \ Aumenta el grado de familiaridad de un ente con el protagonista
@@ -1621,7 +1626,7 @@ defer 'entities  \ Dirección de los entes; vector que después será redirigido
 : entity>#  ( a -- u )  \ Devuelve el número ordinal de un ente (el primero es el cero) a partir de la dirección de su ficha 
 	'entities - /entity /
 	;
-: entity  ( "name" -- ) \ Crea un nuevo identificador de ente, que devolverá la dirección de su ficha
+: entity:  ( "name" -- ) \ Crea un nuevo identificador de ente, que devolverá la dirección de su ficha
 	create
 		#entities ,  \ Guardar la cuenta en el cuerpo de la palabra recién creada
 		#entities 1+ to #entities  \ Actualizar el contador
@@ -1708,7 +1713,8 @@ EXECUTE (véase más abajo la definición de la palabra
 
 [then]  \ ......................................
 
-: [:description]  ( a -- )  \ Inicia la definición de la descripción de un ente
+false value sight  \ Guarda el ente dirección al que se mira en un escenario (o el propio ente escenario); se usa en las palabras de descripción de escenarios
+: [:description]  ( a -- )  \ Operacionas previas a la ejecución de la descripción de un ente
 	\ Esta palabra se ejecutará al comienzo de la palabra de descripción.
 	\ El identificador del ente está en la pila porque se compiló con LITERAL cuando se creó la palabra de descripción.
 	to _%  \ Actualizar el puntero al ente, para aligerar la sintaxis
@@ -1724,11 +1730,18 @@ EXECUTE (véase más abajo la definición de la palabra
 	\ s" en (:DESCRIPTION)" debug  \ Depuración!!!
 	postpone literal  \ Compilar el identificador de ente en la palabra de descripción recién creada, para que [:DESCRIPTION] lo guarde en _% en tiempo de ejecución
 	;
-: :description  ( a -- )  \ Crea una palabra sin nombre que describirá un ente
+: :description  ( a -- )  \ Inicia la definición de una palabra de descripción para un ente
 	:noname (:description)  \ Crear la palabra y hacer las operaciones preliminares
 	postpone [:description]  \ Compilar la palabra [:DESCRIPTION] en la palabra creada, para que se ejecute cuando sea llamada
 	;
-' ; alias ;description immediate
+: [;description]  \ Operaciones finales tras la ejecución de la descripción de un ente
+	\ Esta palabra se ejecutará al final de la palabra de descripción.
+	false to sight  \ Poner a cero el selector de vista, para evitar posibles errores
+	;
+: ;description  \ Termina la definición de una palabra de descripción de un ente
+	postpone [;description]  \ Compilar la palabra [;DESCRIPTION] en la palabra creada, para que se ejecute cuando sea llamada
+	postpone ;
+	; immediate
 ' noop alias default_description  \ Descripción predeterminada de los entes para los que no se ha creado una palabra propia de descripción; no hace nada; no se usa!!!
 : (describe)  ( a -- )  \ Imprime la descripción de un ente
 	~description_xt @ execute
@@ -1737,21 +1750,32 @@ EXECUTE (véase más abajo la definición de la palabra
 	name ^uppercase location_name_color paragraph default_color
 	;
 : (describe_location)  ( a -- )  \ Imprime la descripción de un ente escenario
+	dup to sight
 	location_description_color (describe)
 	;
 : describe_location  ( a -- )  \ Imprime el nombre y la descripción de un ente escenario, y llama a su trama
 	[debug]  [if]  s" En DESCRIBE_LOCATION" debug  [then]  \ Depuración!!!
 	clear_screen_for_location
-	dup .location_name  dup (describe_location)
-	location_plot 
+	dup .location_name  (describe_location)
 	;
-: describe_non-location  ( a -- )  \ Imprime la descripción de un ente que no es un escenario
+: describe_other  ( a -- )  \ Imprime la descripción de un ente
 	description_color (describe)
+	;
+: describe_direction  ( a -- )  \ Imprime la descripción de un ente dirección
+	to sight  \ Poner el ente dirección en SIGHT
+	my_location describe_other  \ Y describir el escenario actual como un ente normal; ahí se hace la distinción
 	;
 : describe  ( a -- )  \ Imprime la descripción de un ente
 	[debug]  [if]  s" En DESCRIBE" debug  [then]  \ Depuración!!!
-	dup ~location? @
-	if  describe_location  else  describe_non-location  then
+	dup ~location? @ abs
+	over is_direction? abs 2 * +
+	[debug]  [if]  s" En DESCRIBE antes de CASE" debug  [then]  \ Depuración!!!
+	case
+		0 of  describe_other  endof
+		1 of  describe_location  endof
+		2 of  describe_direction  endof
+		true abort" Error fatal en DESCRIBE" \ depuración!!!
+	endcase
 	;
 
 \ }}}###########################################################
@@ -1759,7 +1783,7 @@ section( Identificadores de entes) \ {{{
 
 0  [if]  \ ......................................
 
-Los identificadores de entes se crean con ENTITY .  Cuando
+Los identificadores de entes se crean con ENTITY: .  Cuando
 se ejecutan devuelven la dirección en memoria de su ficha en
 la base de datos, que después puede ser modificada con un
 identificador de campo para convertirla en la dirección de
@@ -1784,118 +1808,118 @@ alfabético es solo por claridad.
 
 [then]  \ ......................................
 
-entity ulfius%
+entity: ulfius%
 ' ulfius% is protagonist  \ Actualizar el vector que apunta al ente protagonista
 
 \ Entes que son personajes: 
-entity ambrosio%
-entity leader%
+entity: ambrosio%
+entity: leader%
 
 \ Entes que son objetos:
-entity altar%
-entity arch%
-entity bed%
-entity bridge%
-entity candles%
-entity cloak%
-entity cuirasse%
-entity door%
-entity emerald%
-entity fallen_away%
-entity flags%
-entity flint%
-entity idol%
-entity key%
-entity lake%
-entity lock%
-entity log%
-entity piece%
-entity rags%
-entity rocks%
-entity snake%
-entity stone%
-entity sword%
-entity table%
-entity thread%
-entity torch%
-entity waterfall%
+entity: altar%
+entity: arch%
+entity: bed%
+entity: bridge%
+entity: candles%
+entity: cloak%
+entity: cuirasse%
+entity: door%
+entity: emerald%
+entity: fallen_away%
+entity: flags%
+entity: flint%
+entity: idol%
+entity: key%
+entity: lake%
+entity: lock%
+entity: log%
+entity: piece%
+entity: rags%
+entity: rocks%
+entity: snake%
+entity: stone%
+entity: sword%
+entity: table%
+entity: thread%
+entity: torch%
+entity: waterfall%
 
 \ Entes escenario
-entity location_01%
-entity location_02%
-entity location_03%
-entity location_04%
-entity location_05%
-entity location_06%
-entity location_07%
-entity location_08%
-entity location_09%
-entity location_10%
-entity location_11%
-entity location_12%
-entity location_13%
-entity location_14%
-entity location_15%
-entity location_16%
-entity location_17%
-entity location_18%
-entity location_19%
-entity location_20%
-entity location_21%
-entity location_22%
-entity location_23%
-entity location_24%
-entity location_25%
-entity location_26%
-entity location_27%
-entity location_28%
-entity location_29%
-entity location_30%
-entity location_31%
-entity location_32%
-entity location_33%
-entity location_34%
-entity location_35%
-entity location_36%
-entity location_37%
-entity location_38%
-entity location_39%
-entity location_40%
-entity location_41%
-entity location_42%
-entity location_43%
-entity location_44%
-entity location_45%
-entity location_46%
-entity location_47%
-entity location_48%
-entity location_49%
-entity location_50%
-entity location_51%
+entity: location_01%
+entity: location_02%
+entity: location_03%
+entity: location_04%
+entity: location_05%
+entity: location_06%
+entity: location_07%
+entity: location_08%
+entity: location_09%
+entity: location_10%
+entity: location_11%
+entity: location_12%
+entity: location_13%
+entity: location_14%
+entity: location_15%
+entity: location_16%
+entity: location_17%
+entity: location_18%
+entity: location_19%
+entity: location_20%
+entity: location_21%
+entity: location_22%
+entity: location_23%
+entity: location_24%
+entity: location_25%
+entity: location_26%
+entity: location_27%
+entity: location_28%
+entity: location_29%
+entity: location_30%
+entity: location_31%
+entity: location_32%
+entity: location_33%
+entity: location_34%
+entity: location_35%
+entity: location_36%
+entity: location_37%
+entity: location_38%
+entity: location_39%
+entity: location_40%
+entity: location_41%
+entity: location_42%
+entity: location_43%
+entity: location_44%
+entity: location_45%
+entity: location_46%
+entity: location_47%
+entity: location_48%
+entity: location_49%
+entity: location_50%
+entity: location_51%
 
 \ Entes globales:
-entity sky%
-entity floor%
-entity ceiling%
-entity clouds%
-entity cave%  \ Inacabado!!!
+entity: sky%
+entity: floor%
+entity: ceiling%
+entity: clouds%
+entity: cave%  \ Inacabado!!!
 
 \ Entes virtuales
 \ (necesarios para la ejecución de algunos comandos):
-entity inventory%
-entity exit%
-entity north%
-entity south%
-entity east%
-entity west%
-entity up%
-entity down%
-entity out%
-entity in%
+entity: inventory%
+entity: exit%
+entity: north%
+entity: south%
+entity: east%
+entity: west%
+entity: up%
+entity: down%
+entity: out%
+entity: in%
 
 \ Tras crear los identificadores de entes
 \ ya conocemos cuántos entes hay
-\ (pues la palabra ENTITY actualiza el contador #ENTITIES )
+\ (pues la palabra ENTITY: actualiza el contador #ENTITIES )
 \ y por tanto podemos reservar espacio para la base de datos:
 
 #entities /entity * constant /entities  \ Espacio necesario para guardar todas las fichas, en octetos
@@ -2409,22 +2433,43 @@ waterfall% :description
 
 \ Entes escenario
 
+0  [if]  \ ......................................
+
+Las palabras que describen entes escenario reciben en SIGHT
+(variable que está creada con VALUE y por tanto devuelve su
+valor como si fuera una constante) un identificador de ente.
+Puede ser el mismo ente escenario o un ente de dirección.
+Esto permite describir lo que hay más allá de cada escenario
+en cualquier dirección.
+
+2011-11-30 Inacabado!!!  Este sistema está siendo
+implementado poco a poco. Las estructuras CASE ya están
+puestas.
+
+[then]  \ ......................................
+
 location_01% :attributes
 	s" aldea sajona" _% fname!
 	0 location_02% 0 0 0 0 0 0 _% init_location
 	;attributes
 location_01% :description
-	s" No ha quedado nada en pie, ni piedra sobre piedra."
-	s" El entorno es desolador." s&
-	s" Solo resta volver al Sur, a casa." s&
-	paragraph
-	exit \ tmp!!!
-	case
-	location_04%  of
+	\ Crear colina!!! en los tres escenarios
+	sight case
+	_%  of
+		s" No ha quedado nada en pie, ni piedra sobre piedra."
+		s" El entorno es desolador." s&
+		s" Solo resta volver al Sur, a casa." s&
+		paragraph
 		endof
 	north%  of
 		endof
 	south%  of
+		^to_the$ s" Sur" s&
+		s" está" s" puedo ver" s" se puede ver" 3 schoose s&
+		s" la colina." s&  \ Descripción principal
+		s" Y mucho más allá está tu" home$ s& period+  \ Coletilla...
+		2 random * s&  \ ...que aparecerá con un 50% de probabilidad
+		paragraph
 		endof
 	west%  of
 		endof
@@ -2441,37 +2486,72 @@ location_02% :attributes
 	location_01% 0 0 location_03% 0 0 0 0 _% init_location
 	;attributes
 location_02% :description
-	s" Sobre la colina, casi sobre la niebla de la aldea sajona arrasada al Norte, a tus pies."
-	s" El camino desciende hacia el Oeste." s&
-	paragraph
+	sight case
+	_%  of
+		s" Sobre la colina, casi sobre la niebla de la aldea sajona arrasada al Norte, a tus pies."
+		s" El camino desciende hacia el Oeste." s&
+		paragraph
+		endof
+	north%  of
+		s" La aldea sajona agoniza bajo la niebla."
+		paragraph
+		endof
+	south%  of
+		endof
+	west%  of
+		s" El camino desciende por la colina."
+		endof
+	east%  of
+		endof
+	down%  of
+		endof
+	up%  of
+		endof
+	endcase
 	;description
 location_03% :attributes
 	s" camino entre colinas" _% name!
 	0 0 location_02% location_04% 0 0 0 0 _% init_location
 	;attributes
 location_03% :description
-	s" El camino avanza por el valle, desde la parte alta, al Este, a una zona harto boscosa, al Oeste."
-	paragraph
+	sight case
+	_%  of
+		s" El camino avanza por el valle, desde la parte alta, al Este, a una zona harto boscosa, al Oeste."
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_04% :attributes
 	s" cruce de caminos" _% name!
 	location_05% 0 location_03% location_09% 0 0 0 0 _% init_location
 	;attributes
 location_04% :description
-	\ Versión actual!!!:
-	s" Una senda parte al Oeste, a la sierra por el paso del Perro, y otra hacia el Norte, por un frondoso bosque que la rodea."
-	paragraph
-	exit \ tmp!!!
-	\ Versión nueva!!! en preparación: 
-	case
+	sight case
 	location_04%  of
 		s" Una senda parte al Oeste, a la sierra por el paso del Perro, y otra hacia el Norte, por un frondoso bosque que la rodea."
-		endof
-	west%  of
-		s" Una senda parte al Oeste, a la sierra por el paso del Perro."
+	paragraph
 		endof
 	north%  of
 		s" Una senda parte hacia el Norte, por un frondoso bosque que rodea la sierra."
+		endof
+	south%  of
+		endof
+	east%  of
+		endof
+	west%  of
+		s" Una senda parte al Oeste, a la sierra por el paso del Perro."
 		endof
 	down%  of  endof
 	up%  of  endof
@@ -2479,103 +2559,294 @@ location_04% :description
 	paragraph
 	;description
 location_05% :attributes
-	s" linde del bosque" _% name!  \ nombre supuesto, confirmar!!!
 	0 location_04% 0 location_06% 0 0 0 0 _% init_location
 	;attributes
 location_05% :description
-	s" Desde la linde, al Sur, hacia el Oeste se extiende frondoso el bosque que rodea la sierra. La salida se abre hacia el Sur."
-	paragraph
+	sight case
+	_%  of
+		s" Desde la linde, al Sur, hacia el Oeste se extiende frondoso el bosque que rodea la sierra. La salida se abre hacia el Sur."
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_06% :attributes
 	s" bosque" _% name!
 	0 0 location_05% location_07% 0 0 0 0 _% init_location
 	;attributes
 location_06% :description
-	s" Jirones de niebla se enzarcen en frondosas ramas y arbustos."
-	s" La senda serpentea entre raíces, de un luminoso Este al Oeste." s&
-	paragraph
+	sight case
+	_%  of
+		s" Jirones de niebla se enzarcen en frondosas ramas y arbustos."
+		s" La senda serpentea entre raíces, de un luminoso Este al Oeste." s&
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_07% :attributes
 	s" paso del Perro" _% name!
 	0 location_08% location_06% 0 0 0 0 0 _% init_location
 	;attributes
 location_07% :description
-	s" Abruptamente, del bosque se pasa a un estrecho camino entre altas rocas.
-	s" El inquietante desfiladero tuerce de Este a Sur." s&
-	paragraph
+	sight case
+	_%  of
+		s" Abruptamente, del bosque se pasa a un estrecho camino entre altas rocas.
+		s" El inquietante desfiladero tuerce de Este a Sur." s&
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_08% :attributes
 	s" entrada a la cueva" _% fname!
 	location_07% location_10% 0 0 0 0 0 0 _% init_location
 	;attributes
 location_08% :description
-	s" El paso entre el desfiladero sigue de Norte a Este."
-	s" La entrada a una cueva se abre al Sur en la pared de roca." s&
-	paragraph
+	sight case
+	_%  of
+		s" El paso entre el desfiladero sigue de Norte a Este."
+		s" La entrada a una cueva se abre al Sur en la pared de roca." s&
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_09% :attributes
 	s" derrumbe" _% name!
 	0 0 location_04% 0 0 0 0 0 _% init_location
 	;attributes
 location_09% :description
-	s" El camino desciende hacia la agreste sierra, al Oeste, desde los verdes valles al Este."
-	s" Pero un gran derrumbe bloquea el paso hacia la sierra." s&
-	paragraph
+	sight case
+	_%  of
+		s" El camino desciende hacia la agreste sierra, al Oeste, desde los verdes valles al Este."
+		s" Pero un gran derrumbe bloquea el paso hacia la sierra." s&
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_10% :attributes
 	s" gruta de entrada" _% fname!
 	location_08% 0 0 location_11% 0 0 0 0 _% init_location
 	;attributes
 location_10% :description
-	s" El estrecho paso se adentra hacia el Oeste, desde la boca, al Norte. "
-	paragraph
+	sight case
+	_%  of
+		s" El estrecho paso se adentra hacia el Oeste, desde la boca, al Norte. "
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_11% :attributes
 	s" gran lago" _% name!
 	0 0 location_10% 0 0 0 0 0 _% init_location
 	;attributes
 location_11% :description
-	s" Una gran estancia alberga un lago"
-	s" de profundas e iridiscentes aguas," s&
-	s" debido a la luz exterior." s&
-	s" No hay otra salida que el Este." s&
-	paragraph
+	sight case
+	_%  of
+		s" Una gran estancia alberga un lago"
+		s" de profundas e iridiscentes aguas," s&
+		s" debido a la luz exterior." s&
+		s" No hay otra salida que el Este." s&
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_12% :attributes
 	s" salida del paso secreto" _% fname!
 	0 0 0 location_13% 0 0 0 0 _% init_location
 	;attributes
 location_12% :description
-	s" Una gran estancia se abre hacia el Oeste, y se estrecha hasta morir, al Este, en una parte de agua."
-	paragraph
+	sight case
+	_%  of
+		s" Una gran estancia se abre hacia el Oeste, y se estrecha hasta morir, al Este, en una parte de agua."
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_13% :attributes
 	s" puente semipodrido" _% name!
 	0 0 location_12% location_14% 0 0 0 0 _% init_location
 	;attributes
 location_13% :description
-	s" La sala se abre en semioscuridad a un puente cubierto de podredumbre sobre el lecho de un canal, de Este a Oeste."
-	paragraph
+	sight case
+	_%  of
+		s" La sala se abre en semioscuridad a un puente cubierto de podredumbre sobre el lecho de un canal, de Este a Oeste."
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_14% :attributes
 	s" recodo de la cueva" _% name!
 	;attributes
 location_14% :description
-	s" La iridiscente cueva gira de Este a Sur."
-	paragraph
-	0 location_15% location_13% 0 0 0 0 0 _% init_location
+	sight case
+	_%  of
+		s" La iridiscente cueva gira de Este a Sur."
+		paragraph
+		0 location_15% location_13% 0 0 0 0 0 _% init_location
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_15% :attributes
 	s" pasaje arenoso" _% name!
 	location_14% location_17% location_16% 0 0 0 0 0 _% init_location
 	;attributes
 location_15% :description
-	s" La gruta desciende de Norte a Sur sobre un lecho arenoso. Al Este, un agujero del que llega claridad."
-	paragraph
+	sight case
+	_%  of
+		s" La gruta desciende de Norte a Sur sobre un lecho arenoso. Al Este, un agujero del que llega claridad."
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_16% :description
-	s" Como un acueducto, el agua baja con gran fuerza de Norte a Este, aunque la salida practicable es la del Oeste."
-	paragraph
+	sight case
+	_%  of
+		s" Como un acueducto, el agua baja con gran fuerza de Norte a Este, aunque la salida practicable es la del Oeste."
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_16% :attributes
 	s" pasaje del agua" _% name!
@@ -2586,150 +2857,422 @@ location_17% :attributes
 	location_15% location_20% location_18% 0 0 0 0 0 _% init_location
 	;attributes
 location_17% :description
-	s" Muchas estalactitas se agrupan encima de tu cabeza, y se abren cual arco de entrada hacia el Este y Sur."
-	paragraph
+	sight case
+	_%  of
+		s" Muchas estalactitas se agrupan encima de tu cabeza, y se abren cual arco de entrada hacia el Este y Sur."
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_18% :attributes
 	s" puente de piedra" _% name!
 	0 0 location_19% location_17% 0 0 0 0 _% init_location
 	;attributes
 location_18% :description
-	s" Un arco de piedra se eleva, cual puente sobre la oscuridad, de Este a Oeste."
-	s" En su mitad, un altar." s&
-	paragraph
+	sight case
+	_%  of
+		s" Un arco de piedra se eleva, cual puente sobre la oscuridad, de Este a Oeste."
+		s" En su mitad, un altar." s&
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_19% :attributes
 	s" recodo arenoso del canal" _% name!
 	0 0 0 location_18% 0 0 0 0 _% init_location
 	;attributes
 location_19% :description
-	s" La furiosa corriente, de Norte a Este, impide el paso, excepto al Oeste."
-	s" Al fondo, se oye un gran estruendo." s&
-	paragraph
+	sight case
+	_%  of
+		s" La furiosa corriente, de Norte a Este, impide el paso, excepto al Oeste."
+		s" Al fondo, se oye un gran estruendo." s&
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_20% :attributes
 	s" tramo de cueva" _% name!
 	location_17% location_22% location_25% 0 0 0 0 0 _% init_location
 	;attributes
 location_20% :description
-	s" Un tramo de cueva estrecho"
-	s" te permite avanzar hacia el Norte y el Sur;" s&
-	s" un pasaje surge al Este." s&
-	paragraph
+	sight case
+	_%  of
+		s" Un tramo de cueva estrecho"
+		s" te permite avanzar hacia el Norte y el Sur;" s&
+		s" un pasaje surge al Este." s&
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_21% :attributes
 	s" tramo de cueva" _% name!
 	0 location_27% location_23% location_20% 0 0 0 0 _% init_location
 	;attributes
 location_21% :description
-	s" Un tramo de cueva estrecho te permite avanzar de Este a Oeste; un pasaje surge al Sur."
-	paragraph
+	sight case
+	_%  of
+		s" Un tramo de cueva estrecho te permite avanzar de Este a Oeste; un pasaje surge al Sur."
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_22% :attributes
 	s" tramo de cueva" _% name!
 	0 location_24% location_27% location_22% 0 0 0 0 _% init_location
 	;attributes
 location_22% :description
-	s" Un tramo de cueva estrecho te permite avanzar de Este a Oeste; un pasaje surge al Sur."
-	paragraph
+	sight case
+	_%  of
+		s" Un tramo de cueva estrecho te permite avanzar de Este a Oeste; un pasaje surge al Sur."
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_23% :attributes
 	s" tramo de cueva" _% name!
 	0 location_25% 0 location_21% 0 0 0 0 _% init_location
 	;attributes
 location_23% :description
-	s" Un tramo de cueva estrecho te permite avanzar de Oeste a Sur."
-	paragraph
+	sight case
+	_%  of
+		s" Un tramo de cueva estrecho te permite avanzar de Oeste a Sur."
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_24% :attributes
 	s" tramo de cueva" _% name!
 	location_22% 0 location_26% 0 0 0 0 0 _% init_location
 	;attributes
 location_24% :description
-	s" Un tramo de cueva estrecho te permite avanzar de Este a Norte."
-	paragraph
+	sight case
+	_%  of
+		s" Un tramo de cueva estrecho te permite avanzar de Este a Norte."
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_25% :attributes
 	s" tramo de cueva" _% name!
 	location_22% location_28% location_23% location_21% 0 0 0 0 _% init_location
 	;attributes
 location_25% :description
-	s" Un tramo de cueva estrecho te permite avanzar de Este a Oeste."
-	s" Al Norte y al Sur surgen pasajes." s&
-	paragraph
+	sight case
+	_%  of
+		s" Un tramo de cueva estrecho te permite avanzar de Este a Oeste."
+		s" Al Norte y al Sur surgen pasajes." s&
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_26% :attributes
 	s" tramo de cueva" _% name!
 	location_26% 0 location_20% location_27% 0 0 0 0 _% init_location
 	;attributes
 location_26% :description
-	s" Un tramo de cueva estrecho te permite avanzar de Este a Oeste."
-	s" Al Norte surge un pasaje." s&
-	paragraph
+	sight case
+	_%  of
+		s" Un tramo de cueva estrecho te permite avanzar de Este a Oeste."
+		s" Al Norte surge un pasaje." s&
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_27% :attributes
 	s" tramo de cueva" _% name!
 	location_27% 0 0 location_25% 0 0 0 0 _% init_location
 	;attributes
 location_27% :description
-	s" Un tramo de cueva estrecho te permite avanzar al Oeste."
-	s" Al Norte surge un pasaje." s&
-	paragraph
+	sight case
+	_%  of
+		s" Un tramo de cueva estrecho te permite avanzar al Oeste."
+		s" Al Norte surge un pasaje." s&
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_28% :attributes
 	s" refugio" _% name!
 	location_26% 0 0 0 0 0 0 0 _% init_location
 	;attributes
 location_28% :description
-	\ Crear refugiados!!!
-	s" Una amplia estancia de Norte a Este, hace de albergue a refugiados:"
-	s" hay banderas de ambos bandos." s&
-	s" Un hombre anciano te contempla." s&
-	s" Los refugiados te rodean." s&
-	paragraph
+	sight case
+	_%  of
+		\ Crear refugiados!!!
+		s" Una amplia estancia de Norte a Este, hace de albergue a refugiados:"
+		s" hay banderas de ambos bandos." s&
+		s" Un hombre anciano te contempla." s&
+		s" Los refugiados te rodean." s&
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_29% :attributes
 	s" espiral" _% fname!
 	0 0 0 location_28% 0 location_30% 0 0 _% init_location
 	;attributes
 location_29% :description
-	s" Cual escalera de caracol gigante, desciende a las profundidades,"
-	s" dejando a los refugiados al Oeste." s&
-	paragraph
+	sight case
+	_%  of
+		s" Cual escalera de caracol gigante, desciende a las profundidades,"
+		s" dejando a los refugiados al Oeste." s&
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_30% :attributes
 	s" inicio de la espiral" _% name!
 	0 0 location_31% 0 location_29% 0 0 0 _% init_location
 	;attributes
 location_30% :description
-	s" Se eleva en la penumbra."
-	s" La caverna se estrecha ahora como para una sola persona, hacia el este." s&
-	paragraph
+	sight case
+	_%  of
+		s" Se eleva en la penumbra."
+		s" La caverna se estrecha ahora como para una sola persona, hacia el este." s&
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_31% :attributes
 	s" puerta norte" _% fname!
 	0 0 0 location_30% 0 0 0 0 _% init_location
 	;attributes
 location_31% :description
-	s" En este pasaje grandes rocas se encuentran entre las columnas de un arco de medio punto."
-	paragraph
+	sight case
+	_%  of
+		s" En este pasaje grandes rocas se encuentran entre las columnas de un arco de medio punto."
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_32% :attributes
 	s" precipicio" _% name!
 	0 location_33% 0 location_31% 0 0 0 0 _% init_location
 	;attributes
 location_32% :description
-	s" El camino ahora no excede de dos palmos de cornisa sobre un abismo insondable."
-	s" El soporte de roca gira en forma de «U» de Oeste a Sur." s&
-	paragraph
+	sight case
+	_%  of
+		s" El camino ahora no excede de dos palmos de cornisa sobre un abismo insondable."
+		s" El soporte de roca gira en forma de «U» de Oeste a Sur." s&
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_33% :attributes
 	s" pasaje de salida" _% name!
 	location_32% 0 location_34% 0 0 0 0 0 _% init_location
 	;attributes
 location_33% :description
-	s" El paso se va haciendo menos estrecho a medida que se avanza hacia el Sur, para entonces comenzar hacia el este."
-	paragraph
+	sight case
+	_%  of
+		s" El paso se va haciendo menos estrecho a medida que se avanza hacia el Sur, para entonces comenzar hacia el este."
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_34% :attributes
 	\ crear gravilla
@@ -2737,153 +3280,425 @@ location_34% :attributes
 	location_35% 0 0 location_33% 0 0 0 0 _% init_location
 	;attributes
 location_34% :description
-	\ anchea?!!!
-	\ crear guijarros, moho,
-	s" El paso se anchea de Oeste a Norte,"
-	s" y guijarros mojados y mohosos tachonan el suelo de roca." s&
-	paragraph
+	sight case
+	_%  of
+		\ anchea?!!!
+		\ crear guijarros, moho,
+		s" El paso se anchea de Oeste a Norte,"
+		s" y guijarros mojados y mohosos tachonan el suelo de roca." s&
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_35% :attributes
 	s" puente sobre el acueducto" _% name!
 	location_40% location_34% 0 location_36% 0 location_36% 0 0 _% init_location
 	;attributes
 location_35% :description
-	s" Un puente se tiende de Norte a Sur sobre el curso del agua."
-	s" Resbaladizas escaleras descienden hacia el Oeste." s&
-	paragraph
+	sight case
+	_%  of
+		s" Un puente se tiende de Norte a Sur sobre el curso del agua."
+		s" Resbaladizas escaleras descienden hacia el Oeste." s&
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_36% :attributes
 	s" remanso" _% name!
 	0 0 location_35% location_37% location_35% 0 0 0 _% init_location
 	;attributes
 location_36% :description
-	s" Una estruendosa corriente baja con el pasaje elevado desde el Oeste, y forma un meandro arenoso."
-	s" Unas escaleras suben al Este."
-	paragraph
+	sight case
+	_%  of
+		s" Una estruendosa corriente baja con el pasaje elevado desde el Oeste, y forma un meandro arenoso."
+		s" Unas escaleras suben al Este."
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_37% :attributes
 	s" canal de agua" _% name!
 	0 0 location_36% location_38% 0 0 0 0 _% init_location
 	;attributes
 location_37% :description
-	s" El agua baja del Oeste con renovadas fuerzas,"
-	s" dejando un estrecho paso elevado lateral para avanzar a Este o a Oeste." s&
-	paragraph
+	sight case
+	_%  of
+		s" El agua baja del Oeste con renovadas fuerzas,"
+		s" dejando un estrecho paso elevado lateral para avanzar a Este o a Oeste." s&
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_38% :attributes
 	s" gran cascada" _% fname!
 	0 0 location_37% location_39% 0 0 0 0 _% init_location
 	;attributes
 location_38% :description
-	s" Cae el agua hacia el Este, descendiendo con gran fuerza hacia el canal,"
-	s" no sin antes embalsarse en un lago poco profundo." s&
-	paragraph
+	sight case
+	_%  of
+		s" Cae el agua hacia el Este, descendiendo con gran fuerza hacia el canal,"
+		s" no sin antes embalsarse en un lago poco profundo." s&
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_39% :attributes
 	s" interior de la cascada" _% name!
 	0 0 location_38% 0 0 0 0 0 _% init_location
 	;attributes
 location_39% :description
-	\ Crear musgo, cortina, agua, hueco!!!
-	s" Musgoso y rocoso, con la cortina de agua tras de ti,"
-	s" el nivel del agua ha crecido un poco en este curioso hueco." s&
-	paragraph
+	sight case
+	_%  of
+		\ Crear musgo, cortina, agua, hueco!!!
+		s" Musgoso y rocoso, con la cortina de agua tras de ti,"
+		s" el nivel del agua ha crecido un poco en este curioso hueco." s&
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_40% :attributes
 	s" explanada" _% fname!
 	0 location_35% location_41% 0 0 0 0 0 _% init_location
 	;attributes
 location_40% :description
-	\ Crear losas y losetas, estalactitas, panorama, escalones!!! 
-	s" Una gran explanada enlosetada contempla un bello panorama de estalactitas."
-	s" Unos casi imperceptibles escalones conducen al Este." s&
-	paragraph
+	sight case
+	_%  of
+		\ Crear losas y losetas, estalactitas, panorama, escalones!!! 
+		s" Una gran explanada enlosetada contempla un bello panorama de estalactitas."
+		s" Unos casi imperceptibles escalones conducen al Este." s&
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_41% :attributes
 	s" ídolo" _% name!
 	0 0 0 location_40% 0 0 0 0 _% init_location
 	;attributes
 location_41% :description
-	s" El ídolo parece un centinela siniestro de una gran roca que se encuentra al Sur."
-	s" Se puede volver a la explanada al Oeste."
-	paragraph
+	sight case
+	_%  of
+		s" El ídolo parece un centinela siniestro de una gran roca que se encuentra al Sur."
+		s" Se puede volver a la explanada al Oeste."
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_42% :attributes
 	s" pasaje estrecho" _% name!
 	location_41% location_43% 0 0 0 0 0 0 _% init_location
 	;attributes
 location_42% :description
-	s" Como un pasillo que corteja el canal de agua, a su lado, baja de Norte a Sur."
-	s" Se aprecia un aumento de luz hacia el Sur."
-	paragraph
+	sight case
+	_%  of
+		s" Como un pasillo que corteja el canal de agua, a su lado, baja de Norte a Sur."
+		s" Se aprecia un aumento de luz hacia el Sur."
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_43% :attributes
 	s" pasaje de la serpiente" _% name!
 	location_42% 0 0 0 0 0 0 0 _% init_location
 	;attributes
 location_43% :description
-	s" El pasaje sigue de Norte a Sur."
-	paragraph
+	sight case
+	_%  of
+		s" El pasaje sigue de Norte a Sur."
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_44% :attributes
 	s" lago interior" _% name!
 	location_43% 0 0 location_45% 0 0 0 0 _% init_location
 	;attributes
 location_44% :description
-	s" Unas escaleras dan paso a un hermoso lago interior, y siguen hacia el Oeste."
-	s" Al Norte, un oscuro y estrecho pasaje sube."
-	paragraph
+	sight case
+	_%  of
+		s" Unas escaleras dan paso a un hermoso lago interior, y siguen hacia el Oeste."
+		s" Al Norte, un oscuro y estrecho pasaje sube."
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_45% :attributes
 	s" cruce de pasajes" _% name!
 	0 location_47% location_44% location_46% 0 0 0 0 _% init_location
 	;attributes
 location_45% :description
-	s" Estrechos pasos permiten ir al Oeste, al Este (menos oscuro), y al Sur, un lugar de gran luminosidad."
-	paragraph
+	sight case
+	_%  of
+		s" Estrechos pasos permiten ir al Oeste, al Este (menos oscuro), y al Sur, un lugar de gran luminosidad."
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_46% :attributes
 	s" hogar de Ambrosio" _% name!
 	0 0 location_45% 0 0 0 0 0 _% init_location
 	;attributes
 location_46% :description
-	s" Un catre, algunas velas y una mesa es todo lo que tiene Ambrosio."
-	paragraph
+	sight case
+	_%  of
+		s" Un catre, algunas velas y una mesa es todo lo que tiene Ambrosio."
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_47% :attributes
 	s" salida de la cueva" _% fname!
 	location_45% 0 0 0 0 0 0 0 _% init_location
 	;attributes
 location_47% :description
-	s" Por el Oeste, una puerta impide, cuando cerrada, la salida de la cueva."
-	s" Se adivina la luz diurna al otro lado." s&
-	paragraph
+	sight case
+	_%  of
+		s" Por el Oeste, una puerta impide, cuando cerrada, la salida de la cueva."
+		s" Se adivina la luz diurna al otro lado." s&
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_48% :attributes
 	s" bosque a la entrada" _% name!
 	0 0 location_47% location_49% 0 0 0 0 _% init_location
 	;attributes
 location_48% :description
-	s" Apenas se puede reconocer la entrada de la cueva, al Este."
-	s" El sendero sale del bosque hacia el Oeste." s&
-	paragraph
+	sight case
+	_%  of
+		s" Apenas se puede reconocer la entrada de la cueva, al Este."
+		s" El sendero sale del bosque hacia el Oeste." s&
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_49% :attributes
 	s" sendero del bosque" _% name!
 	0 0 location_48% location_50% 0 0 0 0 _% init_location
 	;attributes
 location_49% :description
-	s" El sendero recorre esta parte del bosque de Este a Oeste."
-	paragraph
+	sight case
+	_%  of
+		s" El sendero recorre esta parte del bosque de Este a Oeste."
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_50% :attributes
 	s" camino norte" _% name!
 	0 location_51% location_49% 0 0 0 0 0 _% init_location
 	;attributes
 location_50% :description
-	s" El camino norte de Westmorland se interna hacia el bosque,"
-	s" al Norte (en tu estado no puedes ir), y a Westmorland, al Sur." s&
-	paragraph
+	sight case
+	_%  of
+		s" El camino norte de Westmorland se interna hacia el bosque,"
+		s" al Norte (en tu estado no puedes ir), y a Westmorland, al Sur." s&
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 location_51% :attributes
 	s" Westmorland" _% fname!
@@ -2891,9 +3706,25 @@ location_51% :attributes
 	location_50% 0 0 0 0 0 0 0 _% init_location
 	;attributes
 location_51% :description
-	s" La villa bulle de actividad con el mercado en el centro de la plaza,"
-	s" donde se encuentra el castillo." s&
-	paragraph
+	sight case
+	_%  of
+		s" La villa bulle de actividad con el mercado en el centro de la plaza,"
+		s" donde se encuentra el castillo." s&
+		paragraph
+		endof
+	north%  of
+		endof
+	south%  of
+		endof
+	west%  of
+		endof
+	east%  of
+		endof
+	up%  of
+		endof
+	down%  of
+		endof
+	endcase
 	;description
 
 \ Entes globales
@@ -3034,11 +3865,11 @@ variable tool_complement  \ Código del complemento instrumental del comando  \ 
 variable other_complement  \ Código del complemento indirecto o preposicional del comando \ No utilizado!!!
 variable what  \ Ente que ha provocado un error y puede ser citado en el mensaje de error correspondiente
 
-: known_entity_is_not_here$  ( a -- a1 u1 )  \  Devuelve el mensaje de que un ente conocido no está presente
+: known_entity_is_not_here$  ( a -- a1 u1 )  \  Devuelve mensaje de que un ente conocido no está presente
 	full_name s" no está" s&
 	s" aquí" s" por aquí" 2 schoose s& 
 	;
-: unknown_entity_is_not_here$  ( a -- a1 u1 ) \  Devuelve el mensaje de que un ente desconocido no está presente
+: unknown_entity_is_not_here$  ( a -- a1 u1 ) \  Devuelve mensaje de que un ente desconocido no está presente
 	s" Aquí" s" Por aquí" 2 schoose
 	s" no hay" s&
 	rot subjective_negative_name s&
@@ -3426,7 +4257,7 @@ variable silent_well_done?  silent_well_done? off
 		s" habrá que usar alguna herramienta"
 	}schoose s& period+ ^uppercase
 	;
-: not_by_hand$  ( -- a u )  \ Devuelve el mensaje de NOT_BY_HAND
+: not_by_hand$  ( -- a u )  \ Devuelve mensaje de NOT_BY_HAND
 	['] not_by_hand_0$
 	['] not_by_hand_1$
 	2 choose execute ^uppercase
@@ -3490,7 +4321,7 @@ variable silent_well_done?  silent_well_done? off
 	;
 ' you_already_wear_what constant (you_already_wear_what_error#)
 ' (you_already_wear_what_error#) is you_already_wear_what_error#
-: not_with_that$  ( -- a u )  \ Devuelve el mensaje de NOT_WITH_THAT
+: not_with_that$  ( -- a u )  \ Devuelve mensaje de NOT_WITH_THAT
 	s" Con eso no..." 
 	s" No con eso..." 
 	2 schoose
@@ -3607,15 +4438,14 @@ section( Herramientas para las tramas asociadas a lugares) \ {{{
 	:noname swap ~location_plot_xt !  \ Crear la palabra y guardar su xt en la ficha del ente
 	;
 ' ; alias ;location_plot immediate
-: (location_plot)  ( a -- )  \ Ejecuta la palabra de trama de un ente escenario
+: location_plot  ( a -- )  \ Ejecuta la palabra de trama de un ente escenario
 	~location_plot_xt @ ?dup  if  execute  then
 	;
-' (location_plot) is location_plot
-
 : enter  ( a -- )  \ Entra en un lugar
 	[debug]  [if]  s" En ENTER" debug  [then]  \ Depuración!!!
-	dup protagonist be_there
+	dup my_location!
 	dup describe
+	dup location_plot 
 	more_familiar  .present
 	;
 
@@ -4095,11 +4925,11 @@ section( Errores del intérprete de comandos)  \ {{{
 	\ Elegir un final:
 	2 schoose s&
 	;
-: error_comment$  ( -- a u )  \ Devuelve un mensaje de acompañamiento para los errores lingüísticos
+: error_comment$  ( -- a u )  \ Devuelve mensaje de acompañamiento para los errores lingüísticos
 	error_comment_0$ error_comment_1$ error_comment_2$
 	3 schoose please&
 	;
-: ^error_comment$  ( -- a u )  \ Devuelve un mensaje de acompañamiento para los errores lingüísticos, con la primera letra mayúscula
+: ^error_comment$  ( -- a u )  \ Devuelve mensaje de acompañamiento para los errores lingüísticos, con la primera letra mayúscula
 	error_comment$ ^uppercase
 	;
 : language_error  ( a u -- )  \ Combina un mensaje de error con un comentario común e informa de él
@@ -4137,7 +4967,7 @@ section( Errores del intérprete de comandos)  \ {{{
 : too_many_complements  \ Informa de que se ha producido un error porque hay dos complementos en el comando
 	\ Provisional!!!
 	there_are$
-	s" dos complementos indirecto o preposicional" s&
+	s" dos complementos indirectos o preposicionales" s&
 	there_is$
 	s" más de un complemento indirecto o preposicional" s&
 	there_are$
@@ -4172,7 +5002,7 @@ section( Errores del intérprete de comandos)  \ {{{
 	;
 
 \ }}}###########################################################
-section( Acciones) \ {{{
+section( Herramientas para crear las cciones) \ {{{
 
 \ ------------------------------------------------
 subsection( Pronombres) \ {{{
@@ -4193,6 +5023,33 @@ variable last_masculine_plural_complement
 	\ last_feminine_plural_complement off
 	\ last_masculine_plural_complement off
 	;
+
+\ }}}---------------------------------------------
+subsection( Herramientas para la creación de acciones) \ {{{
+
+0  [if]  \ ......................................
+
+Los nombres de las acciones empiezan por el prefijo «do_»
+(algunas palabras secundarias de las acciones 
+también usan el mismo prefijo).
+
+Pendiente!!! explicación sobre la sintaxis
+
+[then]  \ ......................................
+
+: action:  ( "name" -- )  \ Crear un identificador de acción
+	\ "name" = nombre del identificador de la acción, en el flujo de entrada
+	create  \ Crea una palabra con el nombre indicado...
+		['] noop ,  \ ...y guarda en su campo de datos la dirección de ejecución de NOOP
+	does>  ( a -- )  \ Cuando la palabra sea llamada...
+		@ execute  \ ...ejecutará la dirección de ejecución que tenga guardada
+	;
+: :action  ( "name" -- )  \ Inicia la definición de una palabra que ejecutará una acción
+	\ "name" = nombre del identificador de la acción, en el flujo de entrada
+	:noname  ( xt )  \ Crea una palabra para la acción
+	' >body !  \ Guarda su dirección de ejecución en el campo de datos del identificador de la acción
+	;
+' ; alias ;action immediate
 
 \ }}}---------------------------------------------
 subsection( Comprobación de los requisitos de las acciones) \ {{{
@@ -4352,7 +5209,59 @@ condicionales anidadas.
 	main_complement @ ?{needed}
 	;
 
+
+\ }}}
+\ }}}###########################################################
+section( Acciones) \ {{{
+
 \ }}}---------------------------------------------
+subsection( Identificadores) \ {{{
+
+0  [if]  \ ......................................
+
+Es necesario crear previamente identificadores para las
+acciones porque algunas deben llamar a otras y no siempre es
+posible ordenarlas en el orden necesario.
+
+[then]  \ ......................................
+
+action: (do_finish)  \ Esta acción se define en la sección de finales; útil solo durante el desarrollo
+action: do_attack
+action: do_break
+action: do_climb
+action: do_close
+action: do_do
+action: do_drop
+action: do_examine
+action: do_exits
+action: do_finish  \ Esta acción se define en la sección de finales
+action: do_go
+action: do_go_ahead
+action: do_go_back
+action: do_go_down
+action: do_go_east
+action: do_go_in
+action: do_go_north
+action: do_go_or_do_break
+action: do_go_out
+action: do_go_south
+action: do_go_up
+action: do_go_west
+action: do_hit
+action: do_inventory
+action: do_kill
+action: do_look
+action: do_make
+action: do_open
+action: do_put_on
+action: do_search
+action: do_sharpen
+action: do_speak
+action: do_swim
+action: do_take
+action: do_take_off
+
+\ ------------------------------------------------
 subsection( Mirar, examinar y registrar) \ {{{
 
 : (do_look)  ( a -- )  \ Mira un ente
@@ -4360,21 +5269,18 @@ subsection( Mirar, examinar y registrar) \ {{{
 	dup ~location? @  if  .present  then
 	more_familiar 
 	;
-: do_look  \  Acción de mirar
+:action do_look  \  Acción de mirar
 	main_complement @ ?dup 0=  if  my_location  then
 	dup {looked}  (do_look)
-	;
-' do_look constant do_look_xt
-: do_examine  \ Acción de examinar
+	;action
+:action do_examine  \ Acción de examinar
 	\ Provisional!!!
 	do_look
-	;
-' do_examine constant do_examine_xt
-: do_search  \ Acción de registrar
+	;action
+:action do_search  \ Acción de registrar
 	\ Provisional!!!
 	do_look
-	;
-' do_search constant do_search_xt
+	;action
 
 \ }}}---------------------------------------------
 subsection( Salidas) \ {{{
@@ -4386,10 +5292,8 @@ create do_exits_table_index  \ Tabla para desordenar el listado de salidas
 
 variable #free_exits  \ Contador de las salidas posibles
 : no_exit$  ( -- a u )  \ Devuelve mensaje usado cuando no hay salidas que listar
-	s" No hay salidas"
-	s" No hay salida"
-	s" No hay ninguna salida"
-	3 schoose
+	s" No hay"
+	s" salidas" s" salida" s" ninguna salida" 3 schoose s&
 	;
 : go_out$  ( -- a u )
 	s" salir" s" seguir" 2 schoose
@@ -4437,7 +5341,7 @@ variable #free_exits  \ Contador de las salidas posibles
 	cell  +loop 
 	[debug_do_exits]  [if]  cr .stack  [then]  \ Depuración!!!
 	;
-: do_exits  \ Lista las salidas posibles del lugar del protagonista
+:action do_exits  \ Lista las salidas posibles del lugar del protagonista
 	\ No funciona todavía!!!
 	«»-clear  \ Borrar la cadena dinámica de impresión, que servirá para guardar la lista de salidas.
 	#listed off
@@ -4449,8 +5353,7 @@ variable #free_exits  \ Contador de las salidas posibles
 		if  i (do_exit)  then
 	cell  +loop  drop
 	.exits
-	;
-' do_exits constant do_exits_xt
+	;action
 
 \ }}}---------------------------------------------
 subsection( Ponerse y quitarse prendas) \ {{{
@@ -4458,24 +5361,22 @@ subsection( Ponerse y quitarse prendas) \ {{{
 : (do_put_on)  ( a -- )  \ Ponerse una prenda
 	~worn? on  well_done
 	;
-: do_put_on  \ Acción de ponerse una prenda
+:action do_put_on  \ Acción de ponerse una prenda
 	\ Pendiente!!! Hacer que tome la prenda si no la tiene.
 	main_complement{required}
 	main_complement{cloth}
 	main_complement{not_worn}
 	main_complement{hold}
 	main_complement @ (do_put_on)
-	;
-' do_put_on constant do_put_on_xt
+	;action
 : (do_take_off)  ( a -- )  \ Quitarse una prenda
 	~worn? off  well_done
 	;
-: do_take_off  \ Acción de quitarse una prenda
+:action do_take_off  \ Acción de quitarse una prenda
 	main_complement{required}
 	main_complement{worn}
 	main_complement @ (do_take_off)
-	;
-' do_take_off constant do_take_off_xt
+	;action
 
 \ }}}---------------------------------------------
 subsection( Tomar y dejar) \ {{{
@@ -4520,23 +5421,21 @@ subsection( Tomar y dejar) \ {{{
 : (do_take)  ( a -- )  \ Toma un ente
 	dup be_hold more_familiar well_done
 	;
-: do_take  \ Acción de tomar
+:action do_take  \ Acción de tomar
 	main_complement{required}
 	main_complement{not_hold}
 	main_complement{here}
 	main_complement{taken}
 	main_complement @ (do_take)
-	;
-' do_take constant do_take_xt
+	;action
 : (do_drop)  ( a -- )  \ Deja un ente 
 	dup ~worn? off  be_here  well_done
 	;
-: do_drop  \ Acción de dejar
+:action do_drop  \ Acción de dejar
 	main_complement{required}
 	main_complement{hold}
 	main_complement @ (do_drop)
-	;
-' do_drop constant do_drop_xt
+	;action
 
 \ }}}---------------------------------------------
 subsection( Cerrar y abrir) \ {{{
@@ -4565,12 +5464,11 @@ subsection( Cerrar y abrir) \ {{{
 		nonsense
 	endcase
 	;
-: do_close  \ Acción de cerrar
+:action do_close  \ Acción de cerrar
 	main_complement{required}
 	main_complement{accessible}
 	main_complement @ close_it
-	;
-' do_close constant do_close_xt
+	;action
 : (do_open)  ( a -- )  \ Abrir un ente
 	~open? on
 	;
@@ -4601,20 +5499,18 @@ subsection( Cerrar y abrir) \ {{{
 		nonsense
 	endcase
 	;
-: do_open  \ Acción de abrir
+:action do_open  \ Acción de abrir
 	main_complement{required}
 	main_complement{accessible}
 	main_complement @ open_it
-	;
-' do_open constant do_open_xt
+	;action
 
 \ }}}---------------------------------------------
 subsection( Agredir) \ {{{
 
-: do_attack  \ Acción de atacar
+:action do_attack  \ Acción de atacar
 	s" atacar" main_complement+is_nonsense
-	;
-' do_attack constant do_attack_xt
+	;action
 : kill_the_snake  \ Matar la serpiente
 	\ Pendiente!!! Herramienta
 	s" Ante los amenazadores tajos, la serpiente huye."
@@ -4635,14 +5531,13 @@ subsection( Agredir) \ {{{
 		do_not_worry
 	endcase
 	;
-: do_kill  \ Acción de matar
+:action do_kill  \ Acción de matar
 	main_complement{required}
 	main_complement{accessible}
 	main_complement{living}
 	tool_complement{hold}
 	main_complement @ (do_kill)
-	;
-' do_kill constant do_kill_xt
+	;action
 : break_the_cloak  \ Romper la capa
 	;
 : (do_break)  ( a -- )  \ Romper un ente
@@ -4652,18 +5547,16 @@ subsection( Agredir) \ {{{
 		do_not_worry
 	endcase
 	;
-: do_break  \ Acción de romper
+:action do_break  \ Acción de romper
 	main_complement{required}
 	main_complement{accessible}
 	main_complement{broken}
 	tool_complement{hold}
 	main_complement @ (do_break)
-	;
-' do_break constant do_break_xt
-: do_hit  \ Acción de golpear
+	;action
+:action do_hit  \ Acción de golpear
 	s" golpear"  main_complement+is_nonsense
-	;
-' do_hit constant do_hit_xt
+	;action
 : can_be_sharpened?  ( a -- f )  \ ¿Puede un ente ser afilado?
 	\ Pendiente!!! Mover esta palabra junto con los demás seudo-campos.
 	dup log% =  swap sword% =  or  \ ¿Es el tronco o la espada?
@@ -4692,11 +5585,11 @@ subsection( Agredir) \ {{{
 : ^no_need_to_do_it_again$  ( -- a u )  \ Devuelve una variante de «No hace falta hacerlo otra vez»
 	no_need_to_do_it_again$ ^uppercase
 	;
-: log_already_sharpened_0$  ( -- a u )  \ Devuelve un mensaje de que el tronco ya estaba afilado (variante 0)
+: log_already_sharpened_0$  ( -- a u )  \ Devuelve mensaje de que el tronco ya estaba afilado (variante 0)
 	log_already_sharpened$ ^uppercase period+
 	^no_need_to_do_it_again$ period+ s&
 	;
-: log_already_sharpened_1$  ( -- a u )  \ Devuelve un mensaje de que el tronco ya estaba afilado (variante 1)
+: log_already_sharpened_1$  ( -- a u )  \ Devuelve mensaje de que el tronco ya estaba afilado (variante 1)
 	^no_need_to_do_it_again$ period+ s&
 	log_already_sharpened$ ^uppercase period+ s&
 	;
@@ -4721,15 +5614,14 @@ subsection( Agredir) \ {{{
 		log%  of  sharpen_the_log  endof
 	endcase
 	;
-: do_sharpen  \ Acción de afilar
+:action do_sharpen  \ Acción de afilar
 	main_complement{required}
 	main_complement{accessible}
 	main_complement @ can_be_sharpened?
 	if  main_complement @ (do_sharpen)
 	else  nonsense
 	then
-	;
-' do_sharpen constant do_sharpen_xt
+	;action
 
 \ }}}---------------------------------------------
 subsection( Movimiento) \ {{{
@@ -4771,71 +5663,60 @@ subsection( Movimiento) \ {{{
 	\ Inacabado!!!
 	s" Ir sin rumbo...?" narrate
 	;
-: do_go  \ Acción de ir
+:action do_go  \ Acción de ir
 	[debug]  [if]  s" Al entrar en DO_GO" debug  [then]  \ Depuración!!!
 	main_complement @ ?dup
 	if  do_go_if_possible
 	else  simply_do_go
 	then
 	[debug]  [if]  s" Al salir de DO_GO" debug  [then]  \ Depuración!!!
-	;
-' do_go constant do_go_xt
-: do_go_north  \ Acción de ir al Norte
+	;action
+:action do_go_north  \ Acción de ir al Norte
 	main_complement{forbidden}
 	north% do_go_if_possible
-	;
-' do_go_north constant do_go_north_xt
-: do_go_south  \ Acción de ir al Sur
+	;action
+:action do_go_south  \ Acción de ir al Sur
 	[debug_catch]  [if]  s" Al entrar en DO_GO_SOUTH" debug  [then]  \ Depuración!!!
 	main_complement{forbidden}
 	south% do_go_if_possible
 	[debug_catch]  [if]  s" Al salir de DO_GO_SOUTH" debug  [then]  \ Depuración!!!
-	;
-' do_go_south constant do_go_south_xt
-: do_go_east  \ Acción de ir al Este
+	;action
+:action do_go_east  \ Acción de ir al Este
 	main_complement{forbidden}
 	east% do_go_if_possible
-	;
-' do_go_east constant do_go_east_xt
-: do_go_west  \ Acción de ir al Oeste
+	;action
+:action do_go_west  \ Acción de ir al Oeste
 	main_complement{forbidden}
 	west% do_go_if_possible
-	;
-' do_go_west constant do_go_west_xt
-: do_go_up  \ Acción de ir hacia arriba
+	;action
+:action do_go_up  \ Acción de ir hacia arriba
 	main_complement{forbidden}
 	up% do_go_if_possible
-	;
-' do_go_up constant do_go_up_xt
-: do_go_down  \ Acción de ir hacia abajo
+	;action
+:action do_go_down  \ Acción de ir hacia abajo
 	main_complement{forbidden}
 	down% do_go_if_possible
-	;
-' do_go_down constant do_go_down_xt
-: do_go_out  \ Acción de ir hacia fuera
+	;action
+:action do_go_out  \ Acción de ir hacia fuera
 	main_complement{forbidden}
 	s" voy fuera" narrate \ tmp!!!
-	;
-' do_go_out constant do_go_out_xt
-: do_go_in  \ Acción de ir hacia dentro
+	;action
+:action do_go_in  \ Acción de ir hacia dentro
 	main_complement{forbidden}
 	s" voy dentro" narrate \ tmp!!!
-	;
-' do_go_in constant do_go_in_xt
-: do_go_back  \ Acción de ir hacia atrás
+	;action
+:action do_go_back  \ Acción de ir hacia atrás
 	main_complement{forbidden}
 	s" voy atrás" narrate \ tmp!!!
-	;
-' do_go_back constant do_go_back_xt
-: do_go_ahead  \ Acción de ir hacia delante
+	;action
+:action do_go_ahead  \ Acción de ir hacia delante
 	main_complement{forbidden}
 	s" voy alante" narrate \ tmp!!!
-	;
-' do_go_ahead constant do_go_ahead_xt
+	;action
 
 \ }}}---------------------------------------------
 subsection( Partir [desambiguación]) \ {{{
-: do_go_or_do_break  \ Acción de partir (desambiguar: romper o marchar)
+:action do_go_or_do_break  \ Acción de partir (desambiguar: romper o marchar)
 	main_complement @ 0=
 	if
 		tool_complement @
@@ -4846,8 +5727,7 @@ subsection( Partir [desambiguación]) \ {{{
 		main_complement @ is_direction?
 		if  do_go  else  do_break  then 
 	then
-	;
-' do_go_or_do_break constant do_go_or_do_break_xt
+	;action
 \ }}}---------------------------------------------
 subsection( Nadar) \ {{{
 
@@ -4858,13 +5738,13 @@ subsection( Nadar) \ {{{
 	s" en otro lugar"
 	3 schoose
 	;
-: you_emerge$  ( -- a u )  \ Devuelve el mensaje sobre la salida a la superficie
+: you_emerge$  ( -- a u )  \ Devuelve mensaje sobre la salida a la superficie
 	s" Consigues" s" Logras" 2 schoose
 	s" emerger," s" salir a la superficie," 2 schoose s&
 	though$ s& in_a_different_place$ s&
 	s" de la" s& cave$ s& s" ..." s&
 	;
-: swiming$  ( -- a u )  \ Devuelve el mensaje sobre el buceo
+: swiming$  ( -- a u )  \ Devuelve mensaje sobre el buceo
 	s" Buceas"
 	s" pensando en"
 	s" deseando"
@@ -4878,7 +5758,7 @@ subsection( Nadar) \ {{{
 	s" perdido."
 	s" desorientado." 2 schoose s&
 	;
-: drop_the_cuirasse$  ( f -- a u )  \ Devuelve el mensaje sobre deshacerse de la coraza dentro del agua
+: drop_the_cuirasse$  ( f -- a u )  \ Devuelve mensaje sobre deshacerse de la coraza dentro del agua
 	\ f = ¿Inicio de frase?
 	s" te desprendes de ella"
 	s" te deshaces de ella"
@@ -4893,7 +5773,7 @@ subsection( Nadar) \ {{{
 		3 schoose  2swap s&
 	then  period+
 	;
-: you_leave_the_cuirasse$  ( -- a u )  \ Devuelve el mensaje sobre quitarse y soltar la coraza dentro del agua
+: you_leave_the_cuirasse$  ( -- a u )  \ Devuelve mensaje sobre quitarse y soltar la coraza dentro del agua
 	cuirasse% is_worn?  \ ¿La llevamos puesta?
 	if
 		s" Como puedes,"
@@ -4926,22 +5806,22 @@ subsection( Nadar) \ {{{
 	s" hacia las profundidaes" 
 	s" hacia abajo" 3 schoose s&
 	;
-: you_sink$ ( -- a u )  \ Devuelve el mensaje sobre hundirse con la coraza
+: you_sink$ ( -- a u )  \ Devuelve mensaje sobre hundirse con la coraza
 	2 random
 	if  (you_sink_1)$
 	else  (you_sink_2)$
 	then  period+
 	;
-: you_swim_with_cuirasse$  ( -- a u )  \  Devuelve el mensaje inicial sobre nadar con coraza
+: you_swim_with_cuirasse$  ( -- a u )  \  Devuelve mensaje inicial sobre nadar con coraza
 	you_sink$ you_leave_the_cuirasse$ s&
 	;
-: you_swim$  ( -- a u )  \  Devuelve el mensaje sobre nadar
+: you_swim$  ( -- a u )  \  Devuelve mensaje sobre nadar
 	cuirasse% is_hold?  \ ¿Llevamos la coraza?
 	if  you_swim_with_cuirasse$  cuirasse% vanish
 	else  s" "
 	then  swiming$ s&
 	;
-: do_swim  \ Acción de nadar
+:action do_swim  \ Acción de nadar
 	my_location location_11% =  if
 		clear_screen_for_location
 		you_swim$ narrate short_pause
@@ -4950,8 +5830,7 @@ subsection( Nadar) \ {{{
 	else
 		s" nadar" now|here$ s& is_nonsense
 	then
-	;
-' do_swim constant do_swim_xt
+	;action
 
 \ }}}---------------------------------------------
 subsection( Escalar) \ {{{
@@ -4962,13 +5841,12 @@ subsection( Escalar) \ {{{
 	else  drop s" [no está aquí]" narrate
 	then
 	;
-: do_climb  \ Acción de escalar
+:action do_climb  \ Acción de escalar
 	main_complement @ ?dup
 	if  do_climb_if_possible
 	else  no_main_complement  \ Inacabado!!! Comprobar si es el derrumbe u otra cosa.
 	then
-	;
-' do_climb constant do_climb_xt
+	;action
  
 \ }}}---------------------------------------------
 subsection( Inventario) \ {{{
@@ -4979,30 +5857,46 @@ subsection( Inventario) \ {{{
 	else drop
 	then
 	;
-: you_are_carrying_nothing$  ( -- a u )  \ Devuelve un mensaje para sustituir a un inventario vacío
+: you_are_carrying_nothing$  ( -- a u )  \ Devuelve mensaje para sustituir a un inventario vacío
 	s" No" you_carry$ anything_with_you$ period+ s& s& 
 	;
-: ^you_are_carrying$  ( -- a u )  \ Devuelve un mensaje para encabezar la lista de inventario
+: ^you_are_carrying$  ( -- a u )  \ Devuelve mensaje para encabezar la lista de inventario
 	^you_carry$ with_you$ s& 
 	;
-: you_are_carrying$  ( -- a u )  \ Devuelve un mensaje para encabezar la lista de inventario
+: you_are_carrying$  ( -- a u )  \ Devuelve mensaje para encabezar la lista de inventario
 	you_carry$ with_you$ s& 
 	;
-: you_are_carrying_only$  ( -- a u )  \ Devuelve un mensaje para encabezar una lista de inventario de un solo elemento
+: you_are_carrying_only$  ( -- a u )  \ Devuelve mensaje para encabezar una lista de inventario de un solo elemento
 	2 random
 	if  ^you_are_carrying$ only$ s& 
 	else  ^only$ you_are_carrying$ s& 
 	then
 	;
-: do_inventory  \ Acción de hacer inventario
+:action do_inventory  \ Acción de hacer inventario
 	protagonist content_list  \ Hace la lista en la cadena dinámica PRINT_STR
 	#listed @ case
 		0 of  you_are_carrying_nothing$ 2swap s& endof
 		1 of  you_are_carrying_only$ 2swap s& endof
 		>r ^you_are_carrying$ 2swap s& r>
 	endcase  narrate 
-	;
-' do_inventory constant do_inventory_xt
+	;action
+
+\ }}}---------------------------------------------
+subsection( Hacer) \ {{{
+
+:action do_make  \ Acción de hacer (fabricar)
+	main_complement @
+	if  nonsense
+	else  do_not_worry
+	then
+	;action
+
+:action do_do  \ Acción de hacer (genérica)
+	main_complement @ inventory% =
+	if  do_inventory
+	else do_make
+	then
+	;action
 
 \ }}}---------------------------------------------
 subsection( Hablar) \ {{{
@@ -5263,20 +6157,13 @@ subsection( Hablar) \ {{{
 		dup talk_to_something
 	endcase
 	;
-: do_speak  \ Acción de hablar
+:action do_speak  \ Acción de hablar
 	[debug]  [if]  s" En DO_SPEAK" debug  [then]  \ Depuración!!!
 	main_complement @ ?dup
 	if  do_speak_if_possible
 	else  talk_to_yourself
 	then
-	;
-' do_speak constant do_speak_xt
-
-\ }}}---------------------------------------------
-subsection( Terminar de jugar) \ {{{
-
-defer (do_finish)  \ Abandonar el juego
-defer do_finish  \ Acción de abandonar el juego
+	;action
 
 \ }}}
 \ }}}###########################################################
@@ -5386,7 +6273,7 @@ vocabulary player_vocabulary  \ Vocabulario para guardar en él las palabras del
 	;
 
 \ }}}###########################################################
-section( Herramientas para el vocabulario del juego) \ {{{
+section( Herramientas para crear el vocabulario del juego) \ {{{
 
 0  [if]  \ ......................................
 
@@ -5510,7 +6397,7 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 \ Pendiente!!! Desambiguar formas verbales que son también nombres.
 \ Pendiente!!! Añadir verbos en tercera persona (póngase, vaya, suba)
 
-: ir do_go_xt action!  ;
+: ir ['] do_go action!  ;
 ' ir synonyms{
 	dirigirme diríjame diríjome
 	dirigirse diríjase
@@ -5524,13 +6411,13 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 	ve voy vaya
 	}synonyms
 
-: abrir do_open_xt action!  ;
+: abrir  ['] do_open action!  ;
 ' abrir synonyms{  abre abro abra  }synonyms
 
-: cerrar  do_close_xt action!  ;
+: cerrar  ['] do_close action!  ;
 ' cerrar synonyms{  cierra cierro }synonyms
 
-: coger  do_take_xt action!  ;
+: coger  ['] do_take action!  ;
 ' coger synonyms{
 	agarrar agarra agarro agarre
 	coge cojo coja
@@ -5538,47 +6425,47 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 	tomar toma tomo tome
 	}synonyms
 
-: dejar  do_drop_xt action!  ;
+: dejar  ['] do_drop action!  ;
 ' dejar synonyms{
 	deja dejo deje
 	soltar suelta suelto suelte
 	tirar tira tiro tire
 	}synonyms
 
-: mirar  do_look_xt action!  ;
+: mirar  ['] do_look action!  ;
 ' mirar synonyms{  m mira miro mire  }synonyms
 
-: mirarse do_look_xt action! protagonist complement!  ;
+: mirarse  ['] do_look action! protagonist complement!  ;
 ' mirarse synonyms{
 	mírese
 	mirarte mírate mírote mírete
 	mirarme mírame mírome míreme
 	}synonyms
 
-: x  do_exits_xt action!  ;
-: salida do_exits_xt exit% action|complement!  ;
+: x  ['] do_exits action!  ;
+: salida  ['] do_exits exit% action|complement!  ;
 ' salida synonyms{  salidas  }synonyms
 
-: examinar  do_examine_xt action!  ;
+: examinar  ['] do_examine action!  ;
 ' examinar synonyms{  ex examina examino examine  }synonyms
 
-: examinarse  do_examine_xt action! protagonist complement!  ;
+: examinarse  ['] do_examine action! protagonist complement!  ;
 ' examinarse synonyms{
 	examínese
 	examinarte examínate examínete
 	examinarme examíname examínome examíneme
 	}synonyms
 
-: registrar  do_search_xt action!  ;
+: registrar  ['] do_search action!  ;
 ' registrar synonyms{  registra registro registre  }synonyms
 
-\ : forth  (do_finish)  }synonyms  \ Depuración!!!
+: forth  (do_finish)  ;  \ Depuración!!!
 : bye  bye  ;  \ Depuración!!!
 : quit quit  ;  \ Depuración!!!
 
-: i  do_inventory_xt inventory% action|complement!  ;
+: i  ['] do_inventory inventory% action|complement!  ;
 ' i synonyms{  inventario  }synonyms
-: inventariar  do_inventory_xt action!  ;
+: inventariar  ['] do_inventory action!  ;
 ' inventariar synonyms{
 	inventaría inventarío inventaríe
 	registrarse regístrase regístrese
@@ -5586,7 +6473,16 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 	registrarte regístrate regístrote regístrete
 	}synonyms
 
-: nadar  do_swim_xt action!  ;
+: hacer  ['] do_do action!  ;
+' hacer synonyms{  haz hago haga  }synonyms
+
+: fabricar  ['] do_make action!  ;
+' fabricar synonyms{
+	fabrica fabrico fabrique
+	construir construye construyo construya
+	}synonyms
+
+: nadar  ['] do_swim action!  ;
 ' nadar synonyms{
 	nada nado nade
 	bucear bucea buceo bucee
@@ -5601,13 +6497,13 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 	bañarte báñate báñote báñete
 	}synonyms
 
-: quitarse  do_take_off_xt action!  ;
+: quitarse  ['] do_take_off action!  ;
 ' quitarse synonyms{
 	quítase quítese
 	quitarte quítate quítote quítete
 	quitarme quítame quítome quíteme
 	}synonyms
-: ponerse  do_put_on_xt action!  ;
+: ponerse  ['] do_put_on action!  ;
 ' ponerse synonyms{
 	póngase
 	ponerme ponme póngome póngame
@@ -5618,23 +6514,23 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 	}synonyms
 \ Crear vestir, parte como sinónimo y parte independiente!!!
 
-: matar  do_kill_xt action!  ;
+: matar  ['] do_kill action!  ;
 ' matar synonyms{
 	mata mato mate
 	asesinar asesina asesino asesine
 	aniquilar aniquila aniquilo aniquile
 	}synonyms
-: golpear  do_hit_xt action!  ;
+: golpear  ['] do_hit action!  ;
 ' golpear synonyms{
 	golpea golpeo golpee
 	sacudir sacude sacudo sacuda
 	}synonyms
-: atacar  do_attack_xt action!  ;
+: atacar  ['] do_attack action!  ;
 ' atacar synonyms{  
 	ataca ataco ataque
 	agredir agrede agredo agreda
 	}synonyms
-: romper  do_break_xt action!  ;
+: romper  ['] do_break action!  ;
 ' romper synonyms{
 	rompe rompo rompa
 	despedazar despedaza despedazo despedace
@@ -5644,9 +6540,9 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 	}synonyms
 \ quebrar \ Pendiente!!!
 \ desgarrar \ Pendiente!!!
-: afilar  do_sharpen_xt action!  ;
+: afilar  ['] do_sharpen action!  ;
 ' afilar synonyms{  afila afilo afile  }synonyms
-: partir  do_go_or_do_break_xt action!  ;
+: partir  ['] do_go_or_do_break action!  ;
 ' partir synonyms{  parto parta  }synonyms
 \ «parte» está en la sección final de ambigüedades
 
@@ -5706,54 +6602,54 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 ' mesa synonyms{  mesita pupitre  }synonyms
 : puente  bridge% complement!  ;
 
-: n  do_go_north_xt north% action|complement!  ;
+: n  ['] do_go_north north% action|complement!  ;
 ' n synonyms{  norte septentrión  }synonyms
 
-: s  do_go_south_xt south% action|complement!  ;
+: s  ['] do_go_south south% action|complement!  ;
 ' s synonyms{  sur meridión  }synonyms
 
-: e  do_go_east_xt east% action|complement!  ;
+: e  ['] do_go_east east% action|complement!  ;
 ' e synonyms{  este oriente levante  }synonyms
 
-: o  do_go_west_xt west% action|complement!  ;
+: o  ['] do_go_west west% action|complement!  ;
 ' o synonyms{  oeste occidente poniente  }synonyms
 
-: a  do_go_up_xt up% action|complement!  ;
+: a  ['] do_go_up up% action|complement!  ;
 ' a synonyms{  arriba  }synonyms
-: subir  do_go_up_xt action!  ;
+: subir  ['] do_go_up action!  ;
 ' subir synonyms{  sube subo suba  }synonyms
 ' subir synonyms{  ascender asciende asciendo ascienda  }synonyms
 ' subir synonyms{  subirse súbese súbase  }synonyms
 ' subir synonyms{  subirte súbete súbote súbate  }synonyms
 
-: b  do_go_up_xt up% action|complement!  ;
+: b  ['] do_go_up up% action|complement!  ;
 ' b synonyms{  abajo  }synonyms
-: bajar  do_go_up_xt action!  ;
+: bajar  ['] do_go_up action!  ;
 ' bajar synonyms{  baja bajo baje  }synonyms
 ' bajar synonyms{  bajarse bájase bájese  }synonyms
 ' bajar synonyms{  bajarte bájate bájote bájete  }synonyms
 ' bajar synonyms{  descender desciende desciendo descienda  }synonyms
 
-: salir  do_go_out_xt action!  ;
+: salir  ['] do_go_out action!  ;
 ' salir synonyms{  sal salgo salga  }synonyms
 ' salir synonyms{  salirse }synonyms
 ' salir synonyms{  salirme sálgome  }synonyms
 ' salir synonyms{  salirte }synonyms
 \ ambigüedad!!! salte
-: fuera  do_go_out_xt out% action|complement!  ;
+: fuera  ['] do_go_out out% action|complement!  ;
 ' fuera synonyms{  afuera  }synonyms
-: entrar do_go_in_xt action!  ;
+: entrar ['] do_go_in action!  ;
 ' entrar synonyms{  entra entro entre  }synonyms
 ' entrar synonyms{  entrarse éntrese éntrase  }synonyms
 ' entrar synonyms{  entrarte éntrete éntrate  }synonyms
-: dentro  do_go_in_xt in% action|complement!  ;
+: dentro  ['] do_go_in in% action|complement!  ;
 ' dentro synonyms{  adentro  }synonyms
 
-: escalar  do_climb_xt action!  ;
+: escalar  ['] do_climb action!  ;
 ' escalar synonyms{  escala escalo escale  }synonyms
 ' escalar synonyms{  trepar trepa trepo trepe  }synonyms
 
-: hablar  do_speak_xt action!  ;
+: hablar  ['] do_speak action!  ;
 \ Pendiente!!! Crear nuevas palabras según la preposición que necesiten.
 \ Pendiente!!! Separar «presentarse» y otras.
 ' hablar synonyms{
@@ -5786,13 +6682,13 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 : cierre
 	action @
 	if  lock% complement!  \ candado
-	else  do_close_xt action!  \ cerrar
+	else  ['] do_close action!  \ cerrar
 	then
 	;
 : parte 
 	action @
 	if  piece% complement!  \ pedazo
-	else  do_go_or_do_break_xt action!  \ partir
+	else  ['] do_go_or_do_break action!  \ partir (que a su vez será desambiguada)
 	then
 	;
 
@@ -5931,7 +6827,7 @@ false  [if]
 	\ Provisional!!!
 	s" ¡Adiós!" narrate
 	;
-: do_bye  \ Abandona el programa
+: bye_bye  \ Abandona el programa
 	clear_screen .bye bye
 	;
 : play_again?$  ( -- a u )  \ Devuelve la pregunta que se hace al jugador tras haber completado con éxito el juego
@@ -6027,17 +6923,15 @@ false  [if]
 	success?  if  the_happy_end  else  the_sad_end  then
     end_of_scene 
 	;
-: (_do_finish)  \ Abandonar el juego
+:action (do_finish)  \ Abandonar el juego
 	restore_vocabularies default_color cr (title) quit
-	;
-' (_do_finish) is (do_finish)
-: _do_finish  \ Acción de abandonar el juego
+	;action
+:action do_finish  \ Acción de abandonar el juego
 	surrender?  if
-		\ retry?$  cr+ no?  if  (_do_finish)  then
-		(_do_finish)
+		\ retry?$  cr+ no?  if  (do_finish)  then
+		(do_finish)
 	then
-	;
-' _do_finish is do_finish
+	;action
 
 \ }}}###########################################################
 section( Acerca del programa) \ {{{
@@ -6055,7 +6949,7 @@ section( Acerca del programa) \ {{{
 	s" la Licencia Pública General de GNU, tal como está publicada" s&
 	s" por la Free Software Foundation (Fundación para los Programas Libres)," s&
 	s" bien en su versión 2 o, a tu elección, cualquier versión posterior" s&
-	s" (http://gnu.org/licences/)." s& \ Confirmar!!!
+	s" (http://gnu.org/licenses/)." s& \ Confirmar!!!
 	paragraph
 	;
 : program  \ Muestra el nombre y versión del programa
@@ -6138,7 +7032,19 @@ section( Introducción) \ {{{
 	;
 
 \ }}}###########################################################
-section( Configuración) \ {{{
+section( Herramientas para interpretar el fichero de configuración) \ {{{
+
+0  [if]  \ ......................................
+
+El juego tiene un fichero de configuración en que el
+jugador puede indicar sus preferencias. Este fichero
+es código en Forth y se interpreta directamente,
+pero solo serán reconocidas las palabras creadas
+para la configuración, así como las palabras
+habituales para hacer comentarios de bloques o líneas
+en Forth. Cualquier otra palabra dará error.
+
+[then]  \ ......................................
 
 s" ayc.ini" sconstant config_file$  \ Nombre del fichero de configuración
 
@@ -6235,7 +7141,8 @@ section( Principal) \ {{{
 
 	\ Provisional para depuración!!!:
 	\ location_08% enter  \ Emboscada 
-	location_47% enter
+	\ location_47% enter
+	location_01% enter
 	snake% be_here
 	ambrosio% be_here
 	;
@@ -6244,7 +7151,7 @@ section( Principal) \ {{{
 	begin
 		game_preparation game the_end
 	enough? until
-	do_bye
+	bye_bye
 	;
 ' (main) is main
 ' main alias ayc
@@ -6330,6 +7237,13 @@ No es algo donde pueda ir.
 
 Crear tramas de lugar separadas: entrar de él, estar en él y
 salir de él.
+
+Hay que distinguir tramas de descripción de escenario
+(como actual, que se activa en la descripción)
+de tramas de entrada, salida o permanencia en escenario...
+
+Haría falta un selector similar a SIGHT para seleccionar
+el caso adecuado en la palabra LOCATION_PLOT
 
 ...........................
 
