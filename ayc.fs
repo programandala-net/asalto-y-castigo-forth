@@ -6,7 +6,7 @@ CR .( Asalto y castigo ) \ {{{
 \ A text adventure in Spanish, written in SP-Forth.
 \ Un juego conversacional en castellano, escrito en SP-Forth.
 
-: version$  S" A-01-2011120102"  ;  version$ TYPE CR
+: version$  S" A-01-2011120219"  ;  version$ TYPE CR
 
 \ Copyright (C) 2011 Marcos Cruz (programandala.net)
 
@@ -53,6 +53,13 @@ CR .( Requisitos) \ {{{
 : gnu/linux?  ( -- f )  \ ¿Está el programa corriendo en GNU/Linux?
 	windows? 0=
 	;
+s" gforth" environment? dup
+[if]  rot rot 2drop  [then]  dup
+constant gforth?
+constant [gforth?] immediate
+gforth? 0= dup
+constant spforth?
+constant [spforth?] immediate
 
 \ ------------------------------------------------
 \ De la librería de SP-Forth 
@@ -61,19 +68,23 @@ CR .( Requisitos) \ {{{
 \ tanto de sus propios desarrolladores como
 \ contribuciones de usuarios.
 
+spforth? [if]
+
 REQUIRE CASE-INS lib/ext/caseins.f  \ Para que el sistema no distinga mayúsculas de minúsculas en las palabras de Forth
 CASE-INS ON  \ Activarlo
 require ansi-file lib/include/ansi-file.f  \ Para que el sistema sea lo más compatible posible con el estándar ANS Forth de 1994
 \ require random lib/ext/rnd.f  \ Generador de números aleatorios
+
 windows?
 [if]  require key-termios lib/posix/key.f  \ Palabra KEY 
 [else]  require key-termios key.f  \ Palabra KEY (copia modificada del fichero original debido a un problema con la ruta de una librería)
 [then]
 
+[then]
+
 \ ------------------------------------------------
 \ De la librería de contribuciones de SP-Forth 
 
-require enum ~nn/lib/enum.f  \ Palabra ENUM para crear cómodamente constantes enumeradas
 
 \ ------------------------------------------------
 \ De la librería «Forth Foundation Library»
@@ -90,6 +101,8 @@ require enum ~nn/lib/enum.f  \ Palabra ENUM para crear cómodamente constantes e
 \ proporcionadas por el módulo «str» empiezan por «str»,
 \ como STR-CREATE o STR+COLUMNS o STR.VERSION .
 
+spforth? [if]
+
 require str.version ffl/str.fs \ Cadenas de texto dinámicas
 require trm.version ffl/trm.fs \ Manejador de secuencias de escape de la consola (para cambiar sus características, colores, posición del cursor...)
 require chr.version ffl/chr.fs \ Herramientas para caracteres
@@ -97,11 +110,47 @@ require chr.version ffl/chr.fs \ Herramientas para caracteres
 require dtm.version ffl/dtm.fs \ Tipo de datos para fecha (gregoriana) y hora
 require dti.version ffl/dti.fs \ Palabras adicionales para manipular el tipo de datos provisto por el módulo dtm
 
+[else]
+
+s" ffl/str.fs" included \ Cadenas de texto dinámicas
+s" ffl/trm.fs" included \ Manejador de secuencias de escape de la consola (para cambiar sus características, colores, posición del cursor...)
+s" ffl/chr.fs" included \ Herramientas para caracteres
+\ s" ffl/est.fs" included \ Cadenas de texto con secuencias de escape
+s" ffl/dtm.fs" included \ Tipo de datos para fecha (gregoriana) y hora
+s" ffl/dti.fs" included \ Palabras adicionales para manipular el tipo de datos provisto por el módulo dtm
+
+[then]
+
 \ ------------------------------------------------
 \ De programandala.net
 
-require csb csb2.fs  \ Almacén circular de cadenas, con definición de cadenas y operadores de concatenación
+s" csb2.fs" included  \ Almacén circular de cadenas, con definición de cadenas y operadores de concatenación
 \ Véase: http://programandala.net/es.programa.csb2
+
+0  [if]  \ ......................................
+
+La palabra SAVE de SP-Forth, que crea un ejecutable
+del sistema, no funciona bien cuando se ha cargado csb2.
+
+Parece que la causa tiene alguna relación con que las
+palabras básicas creadas por csb2 para manipular cadenas
+usan el almacén circular, que ha sido creado en memoria con
+ALLOCATE . Para evitar esto, se crea un nuevo almacén en el
+espacio del diccionario de Forth.
+
+Para más detalles, veáse el código fuente del programa csb2.
+
+[then]  \ ......................................
+
+1 [if]
+
+\ No funciona. Se produce otro error similar en SAVE .
+
+free_csb  \ Borrar el almacén predeterminado
+1024 here  \ Longitud y dirección del nuevo almacén
+over chars allot  \ Hacer espacio en el diccionario para el almacén
+csb_set  \ Inicializar el almacén
+[then]
 
 \ }}}##########################################################
 \ {{{ Herramientas
@@ -171,18 +220,6 @@ constant /counted_string  \ Longitud máxima de una cadena contada (incluyendo l
 	space .s?
 	;
 
-\ Grabación del sistema
-
-defer main
-: save_game  \ Crea un ejecutable con el programa
-	\ Aún no se usa!!!
-	\ Inacabado!!! Hacer el nombre de fichero semiautemático con la fecha y la hora 
-	0 to spf-init?  \ Desactivar la inicialización del sistema
-	\ 1 to console?  \ Activar el modo de consola
-	['] main to <main>  \ Actualizar la palabra que se ejecutará al arrancar
-	s" ayc"  windows?  if  s" .exe" s+  then  \ Nombre del fichero ejecutable
-	save  \ Grabar el sistema en el fichero
-	;
 
 \ }}}###########################################################
 section( Vocabulario principal) \ {{{
@@ -196,14 +233,18 @@ restore_vocabularies
 \ }}}###########################################################
 section( Palabras genéricas) \ {{{
 
+: enum  ( "name" ; n -- n+1 ) \ Crear una constante como parte de una lista
+	\ Palabra tomada de la librería de contribuciones de SP-Forth (~nn/lib/enum.f)
+    dup constant 1+
+	;
 : drops  ( x1..xn n -- )  \ Elimina n celdas de la pila
 	0  do  drop  loop
 	;
-: sconstant  ( a1 u "name" -- )  \ Crea una constante de cadena
+: sconstant  ( "name" ; a1 u  -- )  \ Crea una constante de cadena
 	create  /counted_string min dup c, s, align
 	does>  ( -- a2 u )  count
 	;
-: svariable  ( "name" -- )  \ Crea una variable de cadena
+: svariable  ( "name" ;  -- )  \ Crea una variable de cadena
 	create  /counted_string chars allot align
 	;
 : place  ( a1 u1 a2 -- )  \ Guarda una cadena en una variable de cadena
@@ -214,7 +255,7 @@ section( Palabras genéricas) \ {{{
 	\ a u = Nombre del alias
 	sheader last-cfa @ !
 	;
-: alias ( xt "name" -- )  \ Crea un alias de una palabra
+: alias ( "name" ; xt  -- )  \ Crea un alias de una palabra
 	\ xt = Dirección de ejecución de la palabra de la que hay que crear el alias
 	\ "name" = Nombre del alias, en el flujo de entrada
 	\ Versión modificada (para hacer su sintaxis más estándar)
@@ -305,8 +346,8 @@ subsection( Variables y constantes) \ {{{
 
 79 constant default_max_x
 24 constant default_max_y
-default_max_x value max_x  \ Máximo número de columna (80 columnas)
-default_max_y value max_y  \ Máximo número de fila (25 filas)
+default_max_x value max_x  \ Número máximo de columna (80 columnas)
+default_max_y value max_y  \ Número máximo de fila (25 filas)
 
 \ No se usa!!!
 variable cursor_x  \ Columna actual del cursor
@@ -563,7 +604,6 @@ section( Depuración) \ {{{
 	debug_color .debug_message .system_status debug_pause
 	;
 
-
 \ }}}###########################################################
 section( Manipulación de textos) \ {{{
 
@@ -713,7 +753,7 @@ section( Textos variables)  \ {{{
 : possible2$  ( -- a u )  \ Devuelve «posibles» o una cadena vacía
 	s" posibles" s" " 2 schoose
 	;
-: player_o/a  ( -- a 1 )  \ Devuelve la terminación «a» u «o» según el sexo del jugador
+: player_o/a  ( -- a u )  \ Devuelve la terminación «a» u «o» según el sexo del jugador
 	[false]  [if]
 		\ Método 1, «estilo BASIC»:
 		woman_player? @  if  s" a"  else  s" o"  then
@@ -795,7 +835,7 @@ section( Textos variables)  \ {{{
 	;
 
 \ }}}###########################################################
-section( Cadena dinámica multiusos) \ {{{
+section( Cadena dinámica para impresión) \ {{{
 
 str-create print_str  \ Cadena dinámica para almacenar el texto antes de imprimirlo justificado
 
@@ -814,15 +854,21 @@ str-create print_str  \ Cadena dinámica para almacenar el texto antes de imprim
 : »+  ( a u -- )  \ Añade una cadena al final de la cadena dinámica PRINT_STR
 	print_str str-append-string
 	;
-: space+?  ( -- f )  \ ¿Se debe añadir un espacio al concatenar una cadena a la cadena dinámico PRINT_STR ?
-	\ Inacabada!!!
-	print_str str-length@ 0<>
+: «c+  ( c -- )  \ Añade un carácter al principio de la cadena dinámica PRINT_STR
+	print_str str-prepend-char
+	;
+: »c+  ( c -- )  \ Añade un carácter al final de la cadena dinámica PRINT_STR
+	print_str str-append-char
+	;
+: «»bl+?  ( u -- f )  \ ¿Se debe añadir un espacio al concatenar una cadena a la cadena dinámica PRINT_STR ?
+	\ u = Longitud de la cadena que se pretende unir a la cadena dinámica PRINT_STR
+	0<> print_str str-length@ 0<> and
 	;
 : »&  ( a u -- )  \ Añade una cadena al final de la cadena dinámica TXT, con un espacio de separación
-	space+?  if  bl print_str str-append-char  then  »+
+	dup «»bl+?  if  bl »c+  then  »+
 	;
 : «&  ( a u -- )  \ Añade una cadena al principio de la cadena dinámica TXT, con un espacio de separación
-	space+?  if  bl print_str str-prepend-char  then  «+ 
+	dup «»bl+?  if  bl «c+  then  «+ 
 	;
 
 \ }}}###########################################################
@@ -919,7 +965,9 @@ variable /indentation  \ Longitud de la indentación de cada párrafo
 	\ Versión circular para pasar del máximo a cero:
 	\  cursor_y dup @ 1+ dup max_y < abs * swap !
 	\ Versión circular, con puesta a cero de la columna:
-	cursor_y @ 1+ dup max_y < abs *  0 swap at-xy
+	\ cursor_y @ 1+ dup max_y < abs *  0 swap at-xy
+	\ 2011-12-01 Cambio!!!:
+	cursor_y @ 1+ dup max_y < and  0 swap at-xy
 	;
 : cr+  \ Hace un salto de línea y actualiza el cursor
 	cr cursor_y ++ cursor_x off
@@ -1143,6 +1191,7 @@ cell field ~out_exit  \ Ente de destino hacia fuera
 cell field ~in_exit  \ Ente de destino hacia dentro
 cell field ~direction  \ Desplazamiento del campo de dirección al que corresponde el ente (solo se usa en los entes que son direcciones)
 \ Campos omitidos porque aún no se usan!!!:
+\ cell field ~lock?  \ Indicador: ¿está cerrado con cerrojo? 
 \ cell field ~desambiguation_xt  \ Dirección de ejecución de la palabra que desambigua e identifica el ente
 \ cell field ~container?  \ Indicador: ¿es un contenedor?
 \ cell field ~stamina  \ Energía de los entes vivos
@@ -1237,10 +1286,14 @@ create 'articles  \ Tabla de artículos
 4 /article * constant /article_type_set  \ Separación entre cada grupo según el tipo (definidos, indefinidos, posesivos y negativos)
 
 : article_number>  ( a -- u )  \ Devuelve un desplazamiento parcial en la tabla de artículos según el número gramatical del ente
-	~plural? @ abs /article_number_set *
+\ antiguo!!!:
+\	~plural? @ abs /article_number_set *
+	~plural? @ /article_number_set and
 	;
 : article_gender>  ( a -- u )  \ Devuelve un desplazamiento parcial en la tabla de artículos según el género gramatical del ente
-	~feminine? @ abs /article_gender_set *
+\ antiguo!!!:
+\	~feminine? @ abs /article_gender_set *
+	~feminine? @ /article_gender_set and
 	;
 : article_gender+number>  ( a -- u )  \ Devuelve un desplazamiento parcial en la tabla de artículos según el género gramatical y el número del ente
 	dup article_gender> 
@@ -1251,7 +1304,9 @@ create 'articles  \ Tabla de artículos
 	swap known? or abs  \ O bien si el ente es ya conocido por el protagonista
 	;
 : possesive_article>  ( a -- 0 | 2 )  \ Devuelve el desplazamiento (en número de grupos) para apuntar a los artículos posesivos de la tabla, si el ente indicado necesita uno
-	~owned? @ abs 2 *
+\ antiguo!!!:
+\	~owned? @ abs 2 *
+	~owned? @ 2 and
 	;
 : negative_articles>  ( -- u )  \ Devuelve el desplazamiento (en número de caracteres) para apuntar a los «artículos negativos» de la tabla
 	/article_type_set 3 *
@@ -1315,7 +1370,9 @@ create 'articles  \ Tabla de artículos
 		~feminine? @  if  s" a"  else  s" o"  then
 	[else]
 		\ Método 2, sin estructuras condicionales, «estilo Forth»:
-		s" oa" drop swap ~feminine? @ abs + 1
+\		s" oa" drop swap ~feminine? @ abs + 1
+		\ Método 3, más directo:
+		~feminine? @ c" oa" swap abs + 1+ 1
 	[then]
 	;
 : noun_ending  ( a -- a1 u1 )  \ Devuelve la terminación adecuada para el nombre de un ente
@@ -1505,6 +1562,11 @@ create 'articles  \ Tabla de artículos
 	dup is_hold?  if  vanish  else  drop  then
 	;
 
+: >open|closed$  ( a -- a1 u1 )  \ Devuelve «abierto/a/s» a «cerrado/a/s» según corresponda a un ente
+	dup open?  if  s" abiert"  else  s" cerrad"  then
+	rot noun_ending s+
+	;
+
 \ }}}###########################################################
 section( Operaciones elementales con entes) \ {{{
 
@@ -1626,7 +1688,7 @@ defer 'entities  \ Dirección de los entes; vector que después será redirigido
 : entity>#  ( a -- u )  \ Devuelve el número ordinal de un ente (el primero es el cero) a partir de la dirección de su ficha 
 	'entities - /entity /
 	;
-: entity:  ( "name" -- ) \ Crea un nuevo identificador de ente, que devolverá la dirección de su ficha
+: entity:  ( "name" ;  -- ) \ Crea un nuevo identificador de ente, que devolverá la dirección de su ficha
 	create
 		#entities ,  \ Guardar la cuenta en el cuerpo de la palabra recién creada
 		#entities 1+ to #entities  \ Actualizar el contador
@@ -1696,20 +1758,20 @@ section( Herramientas para crear las descripciones) \ {{{
 
 No almacenamos las descripciones en la base de datos junto
 con el resto de atributos de los entes, sino que para cada
-ente creamos una palabra que imprimirá su descripción, lo
-que es mucho más flexible: La descripción podrá variar en
+ente creamos una palabra que imprime su descripción, lo que
+es mucho más flexible: La descripción podrá variar en
 función del desarrollo del juego y adaptarse a las
 circunstancias, e incluso sustituir en algunos casos al
 código que controla la trama del juego.
 
 Así pues, lo que almacenamos en la ficha del ente, en el
-campo apuntado por ~DESCRIPTION_XT , es la dirección de
-ejecución de la palabra que imprime su descripción.
+campo ~DESCRIPTION_XT , es la dirección de ejecución de la
+palabra que imprime su descripción.
 
-Para describir un ente basta tomar de su ficha la dirección
-de ejecución de la palabra correspondiente y ejecutarla con
-EXECUTE (véase más abajo la definición de la palabra
-(DESCRIBE) , que es la que hace la tarea).
+Por tanto, para describir un ente basta tomar de su ficha el
+contenido de ~DESCRIPTION_XT , y llamar a EXECUTE (véase más
+abajo la definición de la palabra (DESCRIBE) , que es la que
+hace la tarea).
 
 [then]  \ ......................................
 
@@ -1743,38 +1805,39 @@ false value sight  \ Guarda el ente dirección al que se mira en un escenario (o
 	postpone ;
 	; immediate
 ' noop alias default_description  \ Descripción predeterminada de los entes para los que no se ha creado una palabra propia de descripción; no hace nada; no se usa!!!
-: (describe)  ( a -- )  \ Imprime la descripción de un ente
+: (describe)  ( a -- )  \ Ejecuta la palabra de descripción de un ente
 	~description_xt @ execute
 	;
 : .location_name  ( a -- )  \ Imprime el nombre de un ente escenario, como cabecera de su descripción
 	name ^uppercase location_name_color paragraph default_color
 	;
-: (describe_location)  ( a -- )  \ Imprime la descripción de un ente escenario
+: (describe_location)  ( a -- )  \ Describe un ente escenario
 	dup to sight
 	location_description_color (describe)
 	;
-: describe_location  ( a -- )  \ Imprime el nombre y la descripción de un ente escenario, y llama a su trama
+: describe_location  ( a -- )  \ Describe un ente escenario, con borrado de pantalla y título
 	[debug]  [if]  s" En DESCRIBE_LOCATION" debug  [then]  \ Depuración!!!
 	clear_screen_for_location
 	dup .location_name  (describe_location)
 	;
-: describe_other  ( a -- )  \ Imprime la descripción de un ente
+: describe_other  ( a -- )  \ Describe un ente de otro tipo
 	description_color (describe)
 	;
-: describe_direction  ( a -- )  \ Imprime la descripción de un ente dirección
+: describe_direction  ( a -- )  \ Describe un ente dirección
 	to sight  \ Poner el ente dirección en SIGHT
 	my_location describe_other  \ Y describir el escenario actual como un ente normal; ahí se hace la distinción
 	;
-: describe  ( a -- )  \ Imprime la descripción de un ente
+: describe  ( a -- )  \ Describe un ente, según su tipo
 	[debug]  [if]  s" En DESCRIBE" debug  [then]  \ Depuración!!!
 	dup ~location? @ abs
-	over is_direction? abs 2 * +
+	over is_direction? 2 and +
 	[debug]  [if]  s" En DESCRIBE antes de CASE" debug  [then]  \ Depuración!!!
 	case
 		0 of  describe_other  endof
 		1 of  describe_location  endof
 		2 of  describe_direction  endof
-		true abort" Error fatal en DESCRIBE" \ depuración!!!
+		\ Un 3 significaría que un ente es a la vez dirección y escenario!!!
+		true abort" Error fatal en DESCRIBE: datos incorrectos" \ depuración!!!
 	endcase
 	;
 
@@ -1916,6 +1979,7 @@ entity: up%
 entity: down%
 entity: out%
 entity: in%
+entity: enemy%
 
 \ Tras crear los identificadores de entes
 \ ya conocemos cuántos entes hay
@@ -2319,7 +2383,7 @@ lock% :attributes
 	_% ~take_error# impossible_error# swap !
 	;attributes
 lock% :description
-	lock% ~open? @
+	s" Está" lock% >open|closed$ s&
 	if  s" Está abierto."
 	else  s" Está cerrado."
 	then  s" Es grande y parece resistente." s&
@@ -2471,9 +2535,9 @@ location_01% :description
 		2 random * s&  \ ...que aparecerá con un 50% de probabilidad
 		paragraph
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	down%  of
 		endof
@@ -2498,10 +2562,10 @@ location_02% :description
 		endof
 	south%  of
 		endof
+	east%  of
+		endof
 	west%  of
 		s" El camino desciende por la colina."
-		endof
-	east%  of
 		endof
 	down%  of
 		endof
@@ -2523,9 +2587,9 @@ location_03% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -2571,9 +2635,9 @@ location_05% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -2596,9 +2660,9 @@ location_06% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -2621,9 +2685,9 @@ location_07% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -2646,9 +2710,9 @@ location_08% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -2671,9 +2735,9 @@ location_09% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -2695,9 +2759,9 @@ location_10% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+	endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -2722,9 +2786,9 @@ location_11% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+	endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -2746,9 +2810,9 @@ location_12% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+	endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -2770,9 +2834,9 @@ location_13% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+	endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -2794,9 +2858,9 @@ location_14% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -2818,9 +2882,9 @@ location_15% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -2838,9 +2902,9 @@ location_16% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -2866,9 +2930,9 @@ location_17% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -2891,9 +2955,9 @@ location_18% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -2916,9 +2980,9 @@ location_19% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -2942,9 +3006,9 @@ location_20% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -2966,9 +3030,9 @@ location_21% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -2990,9 +3054,9 @@ location_22% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -3014,9 +3078,9 @@ location_23% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -3038,9 +3102,9 @@ location_24% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -3063,9 +3127,9 @@ location_25% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -3088,9 +3152,9 @@ location_26% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -3113,9 +3177,9 @@ location_27% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -3131,7 +3195,7 @@ location_28% :description
 	sight case
 	_%  of
 		\ Crear refugiados!!!
-		s" Una amplia estancia de Norte a Este, hace de albergue a refugiados:"
+		s" Una amplia estancia de Norte a Este hace de albergue a refugiados:"
 		s" hay banderas de ambos bandos." s&
 		s" Un hombre anciano te contempla." s&
 		s" Los refugiados te rodean." s&
@@ -3141,9 +3205,9 @@ location_28% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -3166,9 +3230,9 @@ location_29% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -3191,9 +3255,9 @@ location_30% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -3215,9 +3279,9 @@ location_31% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -3240,9 +3304,9 @@ location_32% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -3264,9 +3328,9 @@ location_33% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -3292,9 +3356,9 @@ location_34% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -3317,9 +3381,9 @@ location_35% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -3342,9 +3406,9 @@ location_36% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -3367,9 +3431,9 @@ location_37% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -3392,9 +3456,9 @@ location_38% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -3418,9 +3482,9 @@ location_39% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -3444,9 +3508,9 @@ location_40% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -3462,14 +3526,18 @@ location_41% :description
 	sight case
 	_%  of
 		s" El ídolo parece un centinela siniestro de una gran roca que se encuentra al Sur."
-		s" Se puede volver a la explanada al Oeste."
+		s" Se puede volver a la explanada al Oeste." s&
 		paragraph
 		endof
 	north%  of
 		endof
 	south%  of
+		s" Hay roca enorme en esa dirección."
+		paragraph
 		endof
 	west%  of
+		s" Se puede volver a la explanada al Oeste."
+		paragraph
 		endof
 	east%  of
 		endof
@@ -3487,16 +3555,21 @@ location_42% :description
 	sight case
 	_%  of
 		s" Como un pasillo que corteja el canal de agua, a su lado, baja de Norte a Sur."
-		s" Se aprecia un aumento de luz hacia el Sur."
+		\ s" Se aprecia un aumento de luz hacia el Sur." s&
 		paragraph
 		endof
 	north%  of
+		s" El pasaje asciende en esa dirección, de donde procede el agua."
+		paragraph
 		endof
 	south%  of
-		endof
-	west%  of
+		s" El pasaje desciende hacia el Sur, siguiendo el canal de agua."
+		s" Se aprecia un aumento de luz en esa dirección."
+		paragraph
 		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -3515,12 +3588,16 @@ location_43% :description
 		paragraph
 		endof
 	north%  of
+		s" El pasaje continúa por el Norte."
+		narrate
 		endof
 	south%  of
-		endof
-	west%  of
+		s" El pasaje continúa por el Sur."
+		narrate
 		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -3540,10 +3617,14 @@ location_44% :description
 		paragraph
 		endof
 	north%  of
+		s" Un pasaje oscuro y estrecho sube en esa dirección."
+		paragraph
 		endof
 	south%  of
 		endof
 	west%  of
+		s" Las escaleras conducen en esa dirección, hacia el lago."
+		paragraph
 		endof
 	east%  of
 		endof
@@ -3560,16 +3641,22 @@ location_45% :attributes
 location_45% :description
 	sight case
 	_%  of
-		s" Estrechos pasos permiten ir al Oeste, al Este (menos oscuro), y al Sur, un lugar de gran luminosidad."
+		s" Estrechos pasos permiten ir al Oeste, al Este y al Sur." 
 		paragraph
 		endof
 	north%  of
 		endof
 	south%  of
+		s" Un estrecho paso permite ir hacia el Sur, de donde proviene una gran luminosidad."
+		paragraph
 		endof
 	west%  of
+		s" Un estrecho paso conduce hacia el Oeste."
+		paragraph
 		endof
 	east%  of
+		s" Un estrecho paso permite ir hacia el Este, de donde proviene algo de claridad."
+		paragraph
 		endof
 	up%  of
 		endof
@@ -3591,9 +3678,11 @@ location_46% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		s" Hacia el Este está la salida de la casa de Ambrosio."
+		paragraph
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -3608,8 +3697,30 @@ location_47% :attributes
 location_47% :description
 	sight case
 	_%  of
-		s" Por el Oeste, una puerta impide, cuando cerrada, la salida de la cueva."
-		s" Se adivina la luz diurna al otro lado." s&
+		\ Descripción inconclusa!!!
+		s" Por el Oeste,"
+		door% full_name s& door% >open|closed$ s&
+		door% open?  if
+			comma+
+			s" por la cual entra la luz que ilumina la estancia," s&
+			s" permite salir de la cueva."
+		else
+			door% is_known?
+			if
+				comma+
+				s" al otro lado de la cual se adivina la luz diurna," s&
+				s" impide la salida de la cueva." s&
+			else
+				comma+
+				s" al otro lado de la cual se adivina la luz diurna," s&
+				s" parece ser la salida de la cueva." s&
+			then
+		then
+		door% open?  if
+			s" adivina la luz diurna al otro lado." s&
+		else
+			s" Se adivina la luz diurna al otro lado." s&
+		then
 		paragraph
 		endof
 	north%  of
@@ -3617,6 +3728,11 @@ location_47% :description
 	south%  of
 		endof
 	west%  of
+		door% open?  if
+			s" La luz diurna que entra por la puerta."
+		else	
+			s" Se adivina la luz diurna al otro lado de la puerta."
+		then
 		endof
 	east%  of
 		endof
@@ -3641,9 +3757,10 @@ location_48% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
+		s" El sendero sale del bosque hacia el Oeste." s&
 		endof
 	up%  of
 		endof
@@ -3665,9 +3782,9 @@ location_49% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -3690,9 +3807,9 @@ location_50% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -3716,9 +3833,9 @@ location_51% :description
 		endof
 	south%  of
 		endof
-	west%  of
-		endof
 	east%  of
+		endof
+	west%  of
 		endof
 	up%  of
 		endof
@@ -3789,6 +3906,16 @@ exit% :attributes
 	;attributes
 inventory% :attributes
 	;attributes
+enemy% :attributes
+	s" enemigo" _% names!
+	_% ~human? on
+	;attributes
+enemy% :description
+	battle# @ if
+	s" Enemigo en batalla!!!"  \ tmp!!!
+	else  s" Enemigo en paz!!!"  \ tmp!!!
+	then  paragraph
+	;description
 
 \ Entes dirección
 
@@ -4468,6 +4595,7 @@ section( Tramas asociadas a lugares) \ {{{
 
 location_01% :location_plot
 	is_the_pass_open?  if  going_home  then
+	enemy% be_here
 	;location_plot
 location_02% :location_plot
 	is_the_pass_open?  if  going_home  then
@@ -4612,17 +4740,19 @@ section( Trama global) \ {{{
 : the_enemy_is_stronger  \ El enemigo es superior
     s" En el"
 	s" estrecho" s" angosto" 2 schoose s&  s" paso" s&
-	s" es posible" s" no es imposible" 2 schoose s&
+	s" es posible" s&
 	s" resistir," s" defenderse," 2 schoose s&
 	s" pero" s&
 	s" por desgracia" s" desgraciadamente" 2 schoose s&
 	\ s" sus efectivos son muy superiores a los tuyos."  \ Anulado porque «efectivo» en ese sentido es acepción moderna.
+	schoose{
 	s" los sajones son muy superiores en número"
 	s" sus soldados son más numerosos que los tuyos"
 	s" sus tropas son más numerosas que las tuyas"
 	s" sus hombres son más numerosos que los tuyos"
 	s" ellos son muy superiores en número"
-	s" ellos son mucho más numerosos" 6 schoose period+ s&
+	s" ellos son mucho más numerosos"
+	}schoose period+ s&
 	narrate end_of_scene
 	;
 : ambush  \ Emboscada
@@ -4635,6 +4765,7 @@ section( Trama global) \ {{{
 \ Textos usados para la ambientación de la batalla y la persecución
 
 : pursued  \ Perseguido por los sajones
+	schoose{
     s" El tiempo apremia"
     s" Hay que apresurarse"
     s" No hay tiempo que perder"
@@ -4646,7 +4777,7 @@ section( Trama global) \ {{{
     s" Sabes que no puedes perder tiempo"
     s" Te queda poco tiempo"
     s" Tienes que apresurarte"
-	11 schoose s" ..." s+  narrate
+	}schoose s" ..." s+  narrate
 	;
 : all_your_men  ( -- a u f )  \ Devuelve una variante de «Todes tus hombres», y un indicador de número
 	\ a u = Cadena
@@ -4682,12 +4813,14 @@ section( Trama global) \ {{{
 	s" héroes" s" valientes" s" jabatos"  3 schoose s&
 	;
 : (bravery)$  ( -- a u )  \ Devuelve una variante de «con denuedo».
+	schoose{
 	s" con denuedo"
 	s" con bravura"
 	s" con coraje"
 	s" heroicamente" 
 	s" esforzadamente"
-	s" valientemente"  6 schoose
+	s" valientemente"
+	}schoose
 	;
 : bravery$  ( f -- a u )  \ Devuelve una variante de «con denuedo», en singular o plural.
 	\ f = ¿El resultado debe estar en plural?
@@ -4709,33 +4842,38 @@ section( Trama global) \ {{{
 \ Fases del combate
 
 : battle_phase_00  \ Combate (fase 00)
+	schoose{
 	s" A pesar de"
 	s" haber sido atacados por sorpresa,"
 	s" haber sido sorprendidos,"
 	s" la sorpresa inicial,"
 	s" la sorpresa,"
 	s" lo sorpresivo del ataque,"
-	s" lo imprevisto del ataque," 6 schoose s&
-	your_soldiers$ s&
-	s" responden"
-	s" reaccionan" 2 schoose s&
+	s" lo imprevisto del ataque,"
+	}schoose s& your_soldiers$ s&
+	s" responden" s" reaccionan" 2 schoose s&
+	schoose{
 	s" con prontitud"
 	s" sin perder un instante"
 	s" rápidamente"
-	s" como si fueran uno solo" 4 schoose s&
-	s" y adoptan una formación defensiva."
-	s" y organizan la defensa."
-	s" y se preparan para defenderse." 3 schoose s&
-	narrate
+	s" como si fueran uno solo"
+	}schoose s& s" y" s&
+	schoose{
+	s" adoptan una formación defensiva."
+	s" organizan la defensa."
+	s" se preparan para defenderse."
+	}schoose s&  narrate
 	;
 : battle_phase_01  \ Combate (fase 01)
 	all_your_men  dup resist/s$  rot bravery$  s& s&
+	schoose{
 	s" el ataque inicial"
     s" el empuje inicial"
 	s" la acometida inicial"
 	s" el primer ataque"
 	s" el primer empuje" 
-	s" la primera acometida" 6 schoose s&
+	s" la primera acometida"
+	}schoose s&
 	of_the_enemy/enemies$ s&  period+ narrate
 	;
 : battle_phase_02  \ Combate (fase 02)
@@ -4748,17 +4886,14 @@ section( Trama global) \ {{{
 	^your_soldiers$
 	s" empiezan a acusar" s&
 	s" visiblemente" s" notoriamente" s" " 3 schoose s&
-	s" el" s&
-	s" titánico"
-	s" enorme" 2 schoose s&
+	s" el" s& s" titánico" s" enorme" 2 schoose s&
 	s" esfuerzo." s&
 	narrate
 	;
 : battle_phase_04  \ Combate (fase 04)
 	^the_enemy/enemies
 	s" parece que empieza* a" rot *>verb_ending s&
-	s" dominar" 
-	s" controlar" 2 schoose s&
+	s" dominar" s" controlar" 2 schoose s&
 	s" el campo"
 	s" el combate" 
 	s" la situación" 3 schoose s&  period+
@@ -4785,31 +4920,30 @@ section( Trama global) \ {{{
 	;
 : battle_phase_07  \ Combate (fase 07)
 	^your_soldiers$
-	s" caen"
-	s" van cayendo," 2 schoose s&
+	s" caen" s" van cayendo," 2 schoose s&
 	s" " s" uno tras otro," 2 schoose s&
-	s" vendiendo cara su vida"
-	s" defendiéndose" 2 schoose s&
+	s" vendiendo cara su vida" s" defendiéndose" 2 schoose s&
 	like_heroes$ s& period+
 	narrate
 	;
 : battle_phase_08  \ Combate (fase 08)
 	^the_enemy/enemies
-	s" aplasta* a"
-	s" acaba* con" 2 schoose rot *>verb_ending s&
-	s" los últimos de"
-	s" entre" s" " 2 schoose s& s&
+	s" aplasta* a" s" acaba* con" 2 schoose
+	rot *>verb_ending s&
+	s" los últimos de" s" entre" s" " 2 schoose s& s&
 	your_soldiers$ s& s" que," s&
+	schoose{
 	s" heridos y agotados,"
 	s" apurando sus últimas fuerzas,"
-	s" haciendo un último esfuerzo," 3 schoose s&
-	still$ s&
+	s" haciendo un último esfuerzo,"
+	}schoose s& still$ s&
+	schoose{
 	s" se mantienen en pie"
 	s" pueden mantenerse en pie"
 	s" combaten"
 	s" ofrecen resistencia" 
-	s" pueden ofrecer resistencia" 5 schoose s& period+
-	narrate
+	s" pueden ofrecer resistencia"
+	}schoose s& period+  narrate
 	;
 create 'battle_phases  \ Tabla para las fases del combate
 here \ Dirección libre actual, para calcular después las fases
@@ -4859,9 +4993,8 @@ here swap - cell / constant battle_phases  \ Fases de la batalla
 	s" e intimidante"
 	s" e impenetrable" 
 	s" y sobrecogedora" 3 schoose s&
-	s" oscuridad," s&
-	s" retrocedes"
-	s" " s" unos pasos" s" sobre tus pasos" 3 schoose s& s&
+	s" oscuridad," s& s" retrocedes" s&
+	s" " s" unos pasos" s" sobre tus pasos" 3 schoose s&
 	s" hasta donde puedes ver." s&
     narrate  end_of_scene
     location_17% enter
@@ -5037,14 +5170,14 @@ Pendiente!!! explicación sobre la sintaxis
 
 [then]  \ ......................................
 
-: action:  ( "name" -- )  \ Crear un identificador de acción
+: action:  ( "name" ;  -- )  \ Crear un identificador de acción
 	\ "name" = nombre del identificador de la acción, en el flujo de entrada
 	create  \ Crea una palabra con el nombre indicado...
 		['] noop ,  \ ...y guarda en su campo de datos la dirección de ejecución de NOOP
 	does>  ( a -- )  \ Cuando la palabra sea llamada...
 		@ execute  \ ...ejecutará la dirección de ejecución que tenga guardada
 	;
-: :action  ( "name" -- )  \ Inicia la definición de una palabra que ejecutará una acción
+: :action  ( "name" ;  -- )  \ Inicia la definición de una palabra que ejecutará una acción
 	\ "name" = nombre del identificador de la acción, en el flujo de entrada
 	:noname  ( xt )  \ Crea una palabra para la acción
 	' >body !  \ Guarda su dirección de ejecución en el campo de datos del identificador de la acción
@@ -5208,22 +5341,47 @@ condicionales anidadas.
 : main_complement{needed}  \ Provoca un error si el complemento directo existe y no está en inventario, pues lo necesitamos
 	main_complement @ ?{needed}
 	;
+: {direction}  ( a -- )  \ Provoca un error si un ente no es una dirección
+	dup what !
+	is_direction? 0= nonsense_error# and throw
+	;
+: ?{direction}  ( a | 0 -- )  \ Provoca un error si un supuesto ente lo es y no es una dirección
+	?dup  if  {direction}  then
+	;
+: main_complement{direction}  \ Provoca un error si el complemento directo existe y no es una dirección
+	main_complement @ ?{direction}
+	;
 
 
 \ }}}
 \ }}}###########################################################
 section( Acciones) \ {{{
 
-\ }}}---------------------------------------------
-subsection( Identificadores) \ {{{
 
 0  [if]  \ ......................................
 
-Es necesario crear previamente identificadores para las
-acciones porque algunas deben llamar a otras y no siempre es
-posible ordenarlas en el orden necesario.
+Para crear una acción, primero es necesario crear su
+identificador con la palabra ACTION: , que funciona de forma
+parecida a DEFER . Después hay que definir la palabra de la
+acción con las palabras previstas para ello, que se ocupan
+de darle al identificador el valor de ejecución
+correspondiente. Ejemplo de la sintaxis:
+
+ACTION: identificador
+
+:ACTION identificador
+	( definición de la acción )
+	;ACTION
+
+Todos los identificadores deben ser creados antes de las
+definiciones, pues su objetivo es posibilitar que las
+acciones se llamen unas a otras sin importar el orden en que
+estén definidas en el código fuente.
 
 [then]  \ ......................................
+
+\ }}}---------------------------------------------
+subsection( Identificadores) \ {{{
 
 action: (do_finish)  \ Esta acción se define en la sección de finales; útil solo durante el desarrollo
 action: do_attack
@@ -5251,9 +5409,11 @@ action: do_hit
 action: do_inventory
 action: do_kill
 action: do_look
+action: do_look_to_direction
 action: do_make
 action: do_open
 action: do_put_on
+action: do_save_the_game
 action: do_search
 action: do_sharpen
 action: do_speak
@@ -5272,6 +5432,12 @@ subsection( Mirar, examinar y registrar) \ {{{
 :action do_look  \  Acción de mirar
 	main_complement @ ?dup 0=  if  my_location  then
 	dup {looked}  (do_look)
+	;action
+\ Pendiente!!! traducir «otear»
+:action do_look_to_direction  \  Acción de otear
+	main_complement{required}
+	main_complement{direction}
+	main_complement @ (do_look)
 	;action
 :action do_examine  \ Acción de examinar
 	\ Provisional!!!
@@ -5504,17 +5670,66 @@ subsection( Cerrar y abrir) \ {{{
 	main_complement{accessible}
 	main_complement @ open_it
 	;action
+: open_it  ( a -- )  \ Abrir un ente, si es posible
+	case
+		door%  of  open_the_door  endof
+		lock%  of  open_the_lock  endof
+		nonsense
+	endcase
+	;
+0 [if]  \ Pendiente!!!
+:action do_lock  \ Acción de candar
+	main_complement{required}
+	main_complement{accessible}
+	main_complement{unlocked}
+	main_complement @ lock_it
+	;
+[then]
 
 \ }}}---------------------------------------------
 subsection( Agredir) \ {{{
 
+: the_snake_runs_away  \ La serpiente huye
+	s" Sorprendida por"	s" Ante" 2 schoose
+	s" los amenazadores tajos," s&
+	s" la serpiente" s&
+	schoose{
+	s" huye" s" se aleja" s" se esconde"
+	s" se da a la fuga" s" se quita de enmedio"
+	s" se aparta"
+	}schoose s&
+	s" aterrorizada" s" atemorizada" 2 schoose s&
+	narrate
+	;
+: attack_the_snake  \ Atacar la serpiente
+	sword% {needed}
+	the_snake_runs_away
+	snake% vanish
+	;
+: attack_ambrosio  \ Atacar a ambrosio
+	no_reason
+	;
+: attack_leader  \ Atacar al jefe
+	no_reason
+	;
+: (do_attack)  ( a -- )  \ Matar un ser vivo
+	case
+		snake%  of  attack_the_snake  endof
+		ambrosio%  of  attack_ambrosio  endof
+		leader%  of  attack_leader  endof
+		do_not_worry
+	endcase
+	;
 :action do_attack  \ Acción de atacar
-	s" atacar" main_complement+is_nonsense
+	main_complement{required}
+	main_complement{accessible}
+	main_complement{living} \ Pendiente!!! También es posible atacar otras cosas, como la ciudad u otros lugares, o el enemigo!!!
+	tool_complement{hold}
+	main_complement @ (do_attack)
 	;action
 : kill_the_snake  \ Matar la serpiente
-	\ Pendiente!!! Herramienta
-	s" Ante los amenazadores tajos, la serpiente huye."
-	narrate
+	sword% {needed}
+	the_snake_runs_away
 	snake% vanish
 	;
 : kill_ambrosio  \ Matar a ambrosio
@@ -5534,7 +5749,7 @@ subsection( Agredir) \ {{{
 :action do_kill  \ Acción de matar
 	main_complement{required}
 	main_complement{accessible}
-	main_complement{living}
+	main_complement{living}  \ Pendiente!!! También es posible matar otras cosas, como el enemigo!!!
 	tool_complement{hold}
 	main_complement @ (do_kill)
 	;action
@@ -6090,10 +6305,9 @@ subsection( Hablar) \ {{{
 : (conversation_2_with_ambrosio)  \ Tercera conversación con Ambrosio
 	s" Por favor," s" Te lo ruego," 2 schoose
 	s" Ulfius," s&
-	s" cumple tu" s" promesa." s" palabra." 2 schoose
+	s" cumple tu" s" promesa." s" palabra." 2 schoose s&
 	s" Toma la llave" s&
-	s" en tu mano" s" en tus manos" s" "
-	3 schoose s&
+	s" en tu mano" s" en tus manos" s" contigo" s" " 4 schoose s&
 	s" y abre la puerta de la cueva." s&  speak
 	key% be_hold
 	\ aquí en SuperBASIC: do_takeable the_key \ pendiente!!!
@@ -6163,6 +6377,38 @@ subsection( Hablar) \ {{{
 	if  do_speak_if_possible
 	else  talk_to_yourself
 	then
+	;action
+
+\ }}}---------------------------------------------
+subsection( Guardar el juego) \ {{{
+
+: n>s  ( u -- a1 u1 )  \ Convierte un número en una cadena (con dos dígitos como mínimo)
+	s>d <# # #s #> >csb
+	;
+: n>s+  ( u a1 u1 -- a2 u2 )  \ Añade a una cadena un número tras convertirlo en cadena
+	rot n>s s+
+	;
+: yyyymmddhhmmss$  ( -- a u )  \ Devuelve la fecha y hora actuales como una cadena en formato «aaaammddhhmmss»
+	time&date n>s n>s+ n>s+ n>s+ n>s+ n>s+
+	;
+: file_name$  ( -- a u )  \ Devuelve el nombre con que se grabará el juego
+	s" ayc_" yyyymmddhhmmss$ s+
+	s" .exe" windows? and s+  \ Añadir sufijo si estamos en Windows
+	;
+defer reenter
+svariable filename
+: (do_save_the_game)  \ Graba el juego
+	\ 2011-12-01 No funciona bien. Muestra mensajes de gcc con parámetros sacados de textos del programa!
+\	false to spf-init?  \ Desactivar la inicialización del sistema
+\	true to console?  \ Activar el modo de consola (no está claro en el manual)
+\	false to gui?  \ Desactivar el modo gráfico (no está claro en el manual)
+	['] reenter to <main>  \ Actualizar la palabra que se ejecutará al arrancar
+\	file_name$ save  clear_screen
+	file_name$ filename place filename count save  
+	;
+:action do_save_the_game  \ Acción de salvar el juego
+	main_complement{forbidden}
+	(do_save_the_game)
 	;action
 
 \ }}}
@@ -6375,12 +6621,16 @@ adecuado.
 		leader%  
 	else
 		\ Si Ulfius no ha hablado con Ambrosio (y por tanto aún no sabe su nombre), la palabra se refiere a Ambrosio:
-		ambrosio% ~conversations @ 0= abs ambrosio% *
+\ antiguo!!!
+\		ambrosio% ~conversations @ 0= abs ambrosio% *
+		ambrosio% dup ~conversations @ 0= and
 	then
 	;
 : (ambrosio) ( -- a | false )  \ Devuelve el ente adecuado a la palabra «ambrosio» (o FALSE si la ambigüedad no puede ser resuelta)
 	\ La palabra «Ambrosio» es válida solo si el protagonista ha hablado con Ambrosio:
-	ambrosio% ~conversations @ 0> abs ambrosio% *
+\ antiguo!!!
+\	ambrosio% ~conversations @ 0> abs ambrosio% *
+	ambrosio% dup ~conversations @ 0> and
 	;
 
 : (cave) ( -- a | false )  \ Devuelve el ente adecuado a la palabra «cueva» (o FALSE si la ambigüedad no puede ser resuelta)
@@ -6441,6 +6691,9 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 	mirarte mírate mírote mírete
 	mirarme mírame mírome míreme
 	}synonyms
+
+: otear  ['] do_look_to_direction action!  ;
+' otear synonyms{ oteo otea otee }synonyms
 
 : x  ['] do_exits action!  ;
 : salida  ['] do_exits exit% action|complement!  ;
@@ -6667,6 +6920,8 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 	contarle cuéntale cuéntole cuéntele
 	}synonyms
 
+\ Términos asociados a entes globales o virtuales
+
 : nubes  clouds% complement!  ;
 ' nubes synonyms{  nube estratocúmulo estratocúmulos cirro cirros  }synonyms
 : suelo  floor% complement!  ;
@@ -6676,6 +6931,12 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 : techo  ceiling% complement!  ;
 : cueva  (cave) complement!  ;
 ' cueva synonyms{  caverna gruta  }synonyms
+: enemigo  enemy% complement!  ;
+' enemigo synonyms{ enemigos sajones }synonyms
+
+\ Meta
+
+: save  ['] do_save_the_game action!  ;
 
 \ Términos ambiguos
 
@@ -7112,8 +7373,8 @@ restore_vocabularies
 	ignore_unknown_words? off
 	4 /indentation !
 	scene_page? off
-	default_max_x to max_x  \ Máximo número de columna (80 columnas)
-	default_max_y to max_y  \ Máximo número de fila (25 filas)
+	default_max_x to max_x  \ Número máximo de columna 
+	default_max_y to max_y  \ Número máximo de fila 
 	;
 
 : read_config  \ Lee el fichero de configuración
@@ -7125,7 +7386,7 @@ restore_vocabularies
 \ }}}###########################################################
 section( Principal) \ {{{
 
-: game  \ Bucle del juego
+: game  \ Bucle de la partida
 	begin
 		plot  listen obbey
 	game_over? until
@@ -7146,17 +7407,21 @@ section( Principal) \ {{{
 	snake% be_here
 	ambrosio% be_here
 	;
-: (main)  \ Palabra principal que arranca el juego
-	init/once
+: (main)  \ Bucle principal del juego
 	begin
 		game_preparation game the_end
 	enough? until
 	bye_bye
 	;
-' (main) is main
+: (reenter)  \ Punto de entrada tras cargar una partida salvada
+	my_location describe  game the_end  (main)
+	;
+' (reenter) is reenter
+: main  \ Punto de entrada para la primera sesión de juego
+	init/once (main)
+	;
 ' main alias ayc
 ' main alias go
-' main alias run
 
 : i0  \ Hace toda la inicialización; para depuración!!!
 	init/once game_preparation
