@@ -6,7 +6,7 @@ CR .( Asalto y castigo ) \ {{{
 \ A text adventure in Spanish, written in SP-Forth.
 \ Un juego conversacional en castellano, escrito en SP-Forth.
 
-: version$  S" A-01-2011120401"  ;  version$ TYPE CR
+: version$  S" A-01-2011120418"  ;  version$ TYPE CR
 
 \ Copyright (C) 2011 Marcos Cruz (programandala.net)
 
@@ -394,8 +394,14 @@ variable dstack>  \ Puntero al elemento superior de la pila (o cero si está vac
 : s?  ( a u -- a u | a 0 )  \ Reduce una cadena a cero de forma aleatoria
 	2 random *
 	;
-: s?&  ( a1 u1 a2 u3 -- a3 u3 )  \ Devuelve una cadena concatenada o no (al azar) a otra
+: s?&  ( a1 u1 a2 u3 -- a3 u3 )  \ Devuelve una cadena concatenada o no (al azar) a otra, con separación
 	s? s&
+	;
+: s?+  ( a1 u1 a2 u3 -- a3 u3 )  \ Devuelve una cadena concatenada o no (al azar) a otra
+	s? s+
+	;
+: sswap  ( a1 u1 a2 u2 -- a1 u1 a2 u2 | a2 u2 a1 u1 )  \ Intercambia al azar la posición de dos textos
+	2 random  if  2swap  then
 	;
 
 \ }}}###########################################################
@@ -825,13 +831,16 @@ section( Textos variables)  \ {{{
 	s{ s" aun" s" incluso" }s
 	;
 : toward$  ( -- a u )
-	s" hacia" s?
+	s{ s" a" s" hacia" }s
 	;
-: to_the$  ( -- a u )
-	s{ s" hacia el" s" al" }s
+: toward_the(feminine)$  ( -- a u )
+	toward$ s" la" s&
 	;
-: ^to_the$  ( -- a u )
-	to_the$ ^uppercase
+: toward_the(masculine)$  ( -- a u )
+	s{ s" al" s" hacia el" }s
+	;
+: ^toward_the(masculine)$  ( -- a u )
+	toward_the(masculine)$ ^uppercase
 	;
 : possible1$  ( -- a u )  \ Devuelve «posible» o una cadena vacía
 	s" posible" s?
@@ -926,7 +935,7 @@ section( Textos variables)  \ {{{
 	very$ s?
 	;
 : the_path$  ( -- a u )
-	s{ s" el camino" s" la senda" }s
+	s{ s" el camino" s" la senda" s" el sendero" }s
 	;
 : ^the_path$  ( -- a u )
 	the_path$ ^uppercase
@@ -937,9 +946,9 @@ section( Textos variables)  \ {{{
 : ^a_path$  ( -- a u )
 	a_path$ ^uppercase
 	;
-: goes_around$  ( -- a u )
+: surrounds$  ( -- a u )
 	\ Comprobar traducción!!!
-	s{ s" rodea" s" circunvala" s" da un rodeo a" }s
+	s{ s" rodea" s" circunvala" s" cerca" s" circuye" s" da un rodeo a" }s
 	;
 : leads$  ( -- a u )
 	s{ s" lleva" s" conduce" }s
@@ -951,21 +960,79 @@ section( Textos variables)  \ {{{
 	can_see$ ^uppercase
 	;
 : cannot_see$  ( -- a u )  \ Devuelve una forma de decir «no ves»
-	s" No" can_see$ s&
+	s" no" can_see$ s&
 	;
-: can_vislumbrate$  ( -- a u )
-	\ Confirmar traducción!!!
-	s{ s" vislumbras" s" se vislumbra" s" puedes vislumbrar" }s
+: ^cannot_see$  ( -- a u )  \ Devuelve una forma de decir «No ves»
+	cannot_see$ ^uppercase
 	;
-: ^can_vislumbrate$  ( -- a u )
-	can_vislumbrate$ ^uppercase
+: can_glimpse$  ( -- a u )
+	s{ s" vislumbras" s" se vislumbra" s" puedes vislumbrar"
+	s" entrevés" s" se entrevé" s" puedes entrever"
+	s" columbras" s" se columbra" s" puedes columbrar" }s
 	;
-: in_dark_you_vislumbrate$  ( -- a u )  \ Devuelve un texto usado en varias descripciones de las cuevas
-	s" En la semioscuridad," s? dup
-	if  can_vislumbrate$  else  ^can_vislumbrate$  then  s&
+: ^can_glimpse$  ( -- a u )
+	can_glimpse$ ^uppercase
 	;
-: you_vislumbrate_the_cave$  ( -- a u)  \ Devuelve un texto usado en varias descripciones de las cuevas
-	in_dark_you_vislumbrate$ s" la continuación de la cueva." s&
+: in_half-darkness_you_glimpse$  ( -- a u )  \ Devuelve un texto usado en varias descripciones de las cuevas
+	s" En la" s{ s" semioscuridad," s" penumbra," }s& s? dup
+	if  can_glimpse$  else  ^can_glimpse$  then  s&
+	;
+: you_glimpse_the_cave$  ( -- a u)  \ Devuelve un texto usado en varias descripciones de las cuevas
+	\ Pendiente!!! Distinguir la antorcha encendida.
+	in_half-darkness_you_glimpse$ s" la continuación de la cueva." s&
+	;
+: rimarkable$  ( -- a u )  \ Devuelve una variante de «destacable»
+	s{ s" de especial" s" de particular"
+	s" de peculiar" s" destacable" 
+	s" especial" s" peculiar"
+	s" que llame la atención" s" que destacar" }s
+	;
+: has_nothing$  ( -- a u )
+	s" no tiene nada"
+	;
+: is_normal$  ( -- a u )  \ Devuelve una variante de «no tiene nada especial»
+	has_nothing$ rimarkable$ s&
+	;
+: ^is_normal$  ( -- a u )  \ Devuelve una variante de «No tiene nada especial» (con la primera letra en mayúscula)
+	is_normal$ ^uppercase
+	;
+: in_that_direction$  ( -- a u )  \ Devuelve una variante de «en esa dirección»
+	s{ 
+		s" en esa dirección"
+		s{ s" por" s" hacia" }s s{ s" allí" s" allá" }s&
+	}s
+	;
+: ^in_that_direction$  ( -- a u )  \ Devuelve una variante de «En esa dirección»
+	in_that_direction$ ^uppercase
+	;
+: (that_direction_is_normal_0)$  ( -- a u )  \ Devuelve primera variante de «En esa dirección no hay nada especial»
+	s{ s" Esa dirección" is_normal$ s&
+	^in_that_direction$ s" no hay nada" s& rimarkable$ s&
+	^in_that_direction$ cannot_see$ s& s" nada" s& rimarkable$ s&
+	}s period+
+	;
+: (that_direction_is_normal_1)$  ( -- a u )  \ Devuelve segunda variante de «En esa dirección no hay nada especial»
+	s{ 
+	^is_normal$ s" esa dirección" s&
+	^cannot_see$ s" nada" s& rimarkable$ s& in_that_direction$ s&
+	s" No hay nada" rimarkable$ s& in_that_direction$ s&
+	}s period+
+	;
+: that_direction_is_normal$  ( -- a u )  \ Devuelve una variante de «En esa dirección no hay nada especial»
+	['] (that_direction_is_normal_0)$  
+	['] (that_direction_is_normal_1)$  
+	2 choose execute
+	;
+s" de Westmorland" sconstant of_westmorland$
+: the_village$  ( -- a u )
+	s{ s" la villa" of_westmorland$ s?&
+	s" Westmorland" }s
+	;
+: ^the_village$  ( -- a u )
+	the_village$ ^uppercase
+	;
+: of_the_village$  ( -- a u )
+	s" de" the_village$ s&
 	;
 \ }}}###########################################################
 section( Cadena dinámica para impresión) \ {{{
@@ -1982,6 +2049,9 @@ false value sight  \ Guarda el ente dirección al que se mira en un escenario (o
 		true abort" Error fatal en DESCRIBE: datos incorrectos" \ depuración!!!
 	endcase
 	;
+: that_direction_is_normal  ( -- )  \ Muestra la descripción de la direcciones que no tienen nada especial
+	that_direction_is_normal$ paragraph
+	;
 
 \ }}}###########################################################
 section( Identificadores de entes) \ {{{
@@ -2675,10 +2745,11 @@ location_01% :description
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
 		2 random  if \ Versión 0:
-			^to_the$ s" Sur" s&
+			^toward_the(masculine)$ s" Sur" s&
 			s{ s" está" s" puedo ver" s" se puede ver" }s&
 			s" la colina." s&  \ Descripción principal
 			s" Y mucho más allá está tu" home$ s& period+  \ Coletilla...
@@ -2689,12 +2760,16 @@ location_01% :description
 		then  paragraph
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -2703,6 +2778,7 @@ location_02% :attributes
 	location_01% 0 0 location_03% 0 0 0 0 _% init_location
 	;attributes
 location_02% :description
+	\ Crear aldea!!!
 	sight case
 	_%  of
 		s" Sobre la colina, casi sobre la niebla de la aldea sajona arrasada al Norte, a tus pies."
@@ -2710,19 +2786,25 @@ location_02% :description
 		paragraph
 		endof
 	north%  of
-		s" La aldea sajona agoniza bajo la niebla."
+		s" La aldea sajona agoniza bajo la niebla." \ tmp!!!
 		paragraph
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
 		s" El camino desciende por la colina."
+		paragraph
 		endof
 	down%  of
+		s" La aldea sajona agoniza bajo la niebla." \ tmp!!!
+		paragraph
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -2733,17 +2815,19 @@ location_03% :attributes
 location_03% :description
 	sight case
 	_%  of
-		the_path$ s" avanza por el valle," s&
+		^the_path$ s" avanza por el valle," s&
 		s" desde la parte alta, al Este," s&
-		s" a una zona" very_$ s& s" boscosa, al Oeste." s&
+		s" a una zona" s& very_$ s& s" boscosa, al Oeste." s&
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
-		^the_path$ s" se pierde en la parte alta del valle."
+		^the_path$ s" se pierde en la parte alta del valle." s&
 		paragraph
 		endof
 	west%  of
@@ -2751,8 +2835,10 @@ location_03% :description
 		paragraph
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -2762,27 +2848,28 @@ location_04% :attributes
 	;attributes
 location_04% :description
 	sight case
-	location_04%  of
+	_%  of
 		s" Una senda parte al Oeste, a la sierra por el paso del Perro,"
 		s" y otra hacia el Norte, por un frondoso bosque que la rodea." s&
 		paragraph
 		endof
 	north%  of
-		^a_path$ goes_around$ s& s" la sierra a través de un frondoso bosque." s&
+		^a_path$ surrounds$ s& s" la sierra a través de un frondoso bosque." s&
 		paragraph
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
-		^a_path$ leads$ s& s" a la sierra por el paso del Perro." s&
+		^a_path$ leads$ s& toward_the(feminine)$ s& s" sierra por el paso del Perro." s&
 		paragraph
 		endof
 	down%  of  endof
 	up%  of  endof
 	endcase
-	paragraph
 	;description
 location_05% :attributes
 	s" linde del bosque" _% name!
@@ -2797,20 +2884,26 @@ location_05% :description
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
 		s" Se ve la salida del bosque."
 		paragraph
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
-		s" El bosque se extiende exhuberante alrededor de la sierra." s&
+		s" El bosque se extiende"
+		s{ s" exhuberante" s" frondoso" }s&
+		s" alrededor de la sierra." s&
 		paragraph
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -2822,12 +2915,14 @@ location_06% :description
 	sight case
 	_%  of
 		s" Jirones de niebla se enzarcen en frondosas ramas y arbustos."
-		^the_path$ s" serpentea entre raíces, de un luminoso Este al Oeste." s&
+		^the_path$ s& s" serpentea entre raíces, de un luminoso Este al Oeste." s&
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
 		s" De la linde del bosque procede una cierta claridad entre el follaje."
@@ -2838,8 +2933,10 @@ location_06% :description
 		paragraph
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -2855,21 +2952,25 @@ location_07% :description
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
 		^the_path$ s" gira en esa dirección." s&
 		paragraph
 		endof
 	east%  of
-		s" La estrecha senda es" s{ s" engullida" s" tragada" }s
+		s" La estrecha senda es" s{ s" engullida" s" tragada" }s&
 		s" por las fauces frondosas del bosque." s&
 		paragraph
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -2882,7 +2983,7 @@ location_08% :description
 	sight case
 	_%  of
 		s" El paso entre el desfiladero sigue de Norte a Este"
-		s" junto a una rocosa pared."
+		s" junto a una rocosa pared." s&
 		paragraph
 		endof
 	north%  of
@@ -2890,17 +2991,21 @@ location_08% :description
 		paragraph
 		endof
 	south%  of
-		s" La entrada a una cueva se abre en la pared de roca." s&
+		s" La entrada a una cueva se abre en la pared de roca."
 		\ Pendiente!!! activar entrada y cueva
 		paragraph
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -2916,8 +3021,10 @@ location_09% :description
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
 		s" Se ve la salida del bosque."
@@ -2928,8 +3035,10 @@ location_09% :description
 		paragraph
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -2945,16 +3054,21 @@ location_10% :description
 		endof
 	north%  of
 		s" La boca de la gruta conduce al exterior."
+		paragraph
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
 	endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -2973,18 +3087,23 @@ location_11% :description
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
 		s" De la entrada de la gruta procede la luz que hace brillar el agua del lago."
 		paragraph
 	endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -2997,12 +3116,14 @@ location_12% :description
 	sight case
 	_%  of
 		s" Una gran estancia se abre hacia el Oeste,"
-		s" y se estrecha hasta morir, al Este, en una parte de agua."
+		s" y se estrecha hasta morir, al Este, en una parte de agua." s&
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
 		s" La estancia se estrecha hasta morir en una parte de agua."
@@ -3013,8 +3134,10 @@ location_12% :description
 		paragraph
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3032,8 +3155,10 @@ location_13% :description
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
 		s" Se vislumbra el inicio de la cueva."
@@ -3044,8 +3169,10 @@ location_13% :description
 		paragraph
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3060,18 +3187,22 @@ location_14% :description
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
-		you_vislumbrate_the_cave$ paragraph
+		you_glimpse_the_cave$ paragraph
 		endof
 	east%  of
-		you_vislumbrate_the_cave$ paragraph
+		you_glimpse_the_cave$ paragraph
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3084,16 +3215,16 @@ location_15% :description
 	_%  of
 		s" La gruta desciende de Norte a Sur"
 		s" sobre un lecho arenoso." s&
-		s" Al Este, un agujero del que llega claridad."
+		s" Al Este, un agujero del que llega claridad." s&
 		paragraph
 		endof
 	north%  of
-		you_vislumbrate_the_cave$
+		you_glimpse_the_cave$
 		s" La cueva asciende en esa dirección." s&
 		paragraph
 		endof
 	south%  of
-		you_vislumbrate_the_cave$
+		you_glimpse_the_cave$
 		s" La cueva desciende en esa dirección." s&
 		paragraph
 		endof
@@ -3102,10 +3233,13 @@ location_15% :description
 		paragraph
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3125,6 +3259,7 @@ location_16% :description
 		paragraph
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
 		s" El agua baja con gran fuerza hacia el Este."
@@ -3135,8 +3270,10 @@ location_16% :description
 		paragraph
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3145,6 +3282,7 @@ location_17% :attributes
 	location_15% location_20% location_18% 0 0 0 0 0 _% init_location
 	;attributes
 location_17% :description
+\ Descripción inacabada!!!
 	\ Crear estalactitas!!!
 	sight case
 	_%  of
@@ -3153,18 +3291,23 @@ location_17% :description
 		paragraph
 		endof
 	north%  of
-		you_vislumbrate_the_cave$
+		you_glimpse_the_cave$
 		paragraph
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3173,6 +3316,7 @@ location_18% :attributes
 	0 0 location_19% location_17% 0 0 0 0 _% init_location
 	;attributes
 location_18% :description
+\ Descripción inacabada!!!
 	sight case
 	_%  of
 		s" Un arco de piedra se eleva, cual puente sobre la oscuridad, de Este a Oeste."
@@ -3180,16 +3324,22 @@ location_18% :description
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3198,6 +3348,7 @@ location_19% :attributes
 	0 0 0 location_18% 0 0 0 0 _% init_location
 	;attributes
 location_19% :description
+\ Descripción inacabada!!!
 	sight case
 	_%  of
 		s" La furiosa corriente, de Norte a Este, impide el paso, excepto al Oeste."
@@ -3205,16 +3356,22 @@ location_19% :description
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3223,6 +3380,7 @@ location_20% :attributes
 	location_17% location_22% location_25% 0 0 0 0 0 _% init_location
 	;attributes
 location_20% :description
+\ Descripción inacabada!!!
 	sight case
 	_%  of
 		s" Un tramo de cueva estrecho"
@@ -3231,16 +3389,22 @@ location_20% :description
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3249,22 +3413,29 @@ location_21% :attributes
 	0 location_27% location_23% location_20% 0 0 0 0 _% init_location
 	;attributes
 location_21% :description
+\ Descripción inacabada!!!
 	sight case
 	_%  of
 		s" Un tramo de cueva estrecho te permite avanzar de Este a Oeste; un pasaje surge al Sur."
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3273,22 +3444,29 @@ location_22% :attributes
 	0 location_24% location_27% location_22% 0 0 0 0 _% init_location
 	;attributes
 location_22% :description
+\ Descripción inacabada!!!
 	sight case
 	_%  of
 		s" Un tramo de cueva estrecho te permite avanzar de Este a Oeste; un pasaje surge al Sur."
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3297,22 +3475,29 @@ location_23% :attributes
 	0 location_25% 0 location_21% 0 0 0 0 _% init_location
 	;attributes
 location_23% :description
+\ Descripción inacabada!!!
 	sight case
 	_%  of
 		s" Un tramo de cueva estrecho te permite avanzar de Oeste a Sur."
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3321,22 +3506,29 @@ location_24% :attributes
 	location_22% 0 location_26% 0 0 0 0 0 _% init_location
 	;attributes
 location_24% :description
+\ Descripción inacabada!!!
 	sight case
 	_%  of
 		s" Un tramo de cueva estrecho te permite avanzar de Este a Norte."
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3345,6 +3537,7 @@ location_25% :attributes
 	location_22% location_28% location_23% location_21% 0 0 0 0 _% init_location
 	;attributes
 location_25% :description
+\ Descripción inacabada!!!
 	sight case
 	_%  of
 		s" Un tramo de cueva estrecho te permite avanzar de Este a Oeste."
@@ -3352,16 +3545,22 @@ location_25% :description
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3370,6 +3569,7 @@ location_26% :attributes
 	location_26% 0 location_20% location_27% 0 0 0 0 _% init_location
 	;attributes
 location_26% :description
+\ Descripción inacabada!!!
 	sight case
 	_%  of
 		s" Un tramo de cueva estrecho te permite avanzar de Este a Oeste."
@@ -3377,16 +3577,22 @@ location_26% :description
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3395,6 +3601,7 @@ location_27% :attributes
 	location_27% 0 0 location_25% 0 0 0 0 _% init_location
 	;attributes
 location_27% :description
+\ Descripción inacabada!!!
 	sight case
 	_%  of
 		s" Un tramo de cueva estrecho te permite avanzar al Oeste."
@@ -3402,16 +3609,22 @@ location_27% :description
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3420,6 +3633,7 @@ location_28% :attributes
 	location_26% 0 0 0 0 0 0 0 _% init_location
 	;attributes
 location_28% :description
+\ Descripción inacabada!!!
 	sight case
 	_%  of
 		\ Crear refugiados!!!
@@ -3430,16 +3644,22 @@ location_28% :description
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3448,6 +3668,7 @@ location_29% :attributes
 	0 0 0 location_28% 0 location_30% 0 0 _% init_location
 	;attributes
 location_29% :description
+\ Descripción inacabada!!!
 	sight case
 	_%  of
 		s" Cual escalera de caracol gigante, desciende a las profundidades,"
@@ -3455,16 +3676,22 @@ location_29% :description
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3473,6 +3700,7 @@ location_30% :attributes
 	0 0 location_31% 0 location_29% 0 0 0 _% init_location
 	;attributes
 location_30% :description
+\ Descripción inacabada!!!
 	sight case
 	_%  of
 		s" Se eleva en la penumbra."
@@ -3480,16 +3708,22 @@ location_30% :description
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3498,22 +3732,29 @@ location_31% :attributes
 	0 0 0 location_30% 0 0 0 0 _% init_location
 	;attributes
 location_31% :description
+\ Descripción inacabada!!!
 	sight case
 	_%  of
 		s" En este pasaje grandes rocas se encuentran entre las columnas de un arco de medio punto."
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3522,6 +3763,7 @@ location_32% :attributes
 	0 location_33% 0 location_31% 0 0 0 0 _% init_location
 	;attributes
 location_32% :description
+\ Descripción inacabada!!!
 	sight case
 	_%  of
 		s" El camino ahora no excede de dos palmos de cornisa sobre un abismo insondable."
@@ -3529,16 +3771,22 @@ location_32% :description
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3547,22 +3795,29 @@ location_33% :attributes
 	location_32% 0 location_34% 0 0 0 0 0 _% init_location
 	;attributes
 location_33% :description
+\ Descripción inacabada!!!
 	sight case
 	_%  of
 		s" El paso se va haciendo menos estrecho a medida que se avanza hacia el Sur, para entonces comenzar hacia el este."
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3572,6 +3827,7 @@ location_34% :attributes
 	location_35% 0 0 location_33% 0 0 0 0 _% init_location
 	;attributes
 location_34% :description
+\ Descripción inacabada!!!
 	sight case
 	_%  of
 		\ anchea?!!!
@@ -3581,16 +3837,22 @@ location_34% :description
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3599,6 +3861,7 @@ location_35% :attributes
 	location_40% location_34% 0 location_36% 0 location_36% 0 0 _% init_location
 	;attributes
 location_35% :description
+\ Descripción inacabada!!!
 	sight case
 	_%  of
 		s" Un puente se tiende de Norte a Sur sobre el curso del agua."
@@ -3606,16 +3869,22 @@ location_35% :description
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3624,23 +3893,30 @@ location_36% :attributes
 	0 0 location_35% location_37% location_35% 0 0 0 _% init_location
 	;attributes
 location_36% :description
+\ Descripción inacabada!!!
 	sight case
 	_%  of
 		s" Una estruendosa corriente baja con el pasaje elevado desde el Oeste, y forma un meandro arenoso."
-		s" Unas escaleras suben al Este."
+		s" Unas escaleras suben al Este." s&
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3649,6 +3925,7 @@ location_37% :attributes
 	0 0 location_36% location_38% 0 0 0 0 _% init_location
 	;attributes
 location_37% :description
+\ Descripción inacabada!!!
 	sight case
 	_%  of
 		s" El agua baja del Oeste con renovadas fuerzas,"
@@ -3656,16 +3933,22 @@ location_37% :description
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3674,6 +3957,7 @@ location_38% :attributes
 	0 0 location_37% location_39% 0 0 0 0 _% init_location
 	;attributes
 location_38% :description
+\ Descripción inacabada!!!
 	sight case
 	_%  of
 		s" Cae el agua hacia el Este, descendiendo con gran fuerza hacia el canal,"
@@ -3681,16 +3965,22 @@ location_38% :description
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3699,6 +3989,7 @@ location_39% :attributes
 	0 0 location_38% 0 0 0 0 0 _% init_location
 	;attributes
 location_39% :description
+\ Descripción inacabada!!!
 	sight case
 	_%  of
 		\ Crear musgo, cortina, agua, hueco!!!
@@ -3707,16 +3998,22 @@ location_39% :description
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3725,6 +4022,7 @@ location_40% :attributes
 	0 location_35% location_41% 0 0 0 0 0 _% init_location
 	;attributes
 location_40% :description
+\ Descripción inacabada!!!
 	sight case
 	_%  of
 		\ Crear losas y losetas, estalactitas, panorama, escalones!!! 
@@ -3733,16 +4031,22 @@ location_40% :description
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3751,6 +4055,7 @@ location_41% :attributes
 	0 0 0 location_40% 0 0 0 0 _% init_location
 	;attributes
 location_41% :description
+\ Descripción inacabada!!!
 	sight case
 	_%  of
 		s" El ídolo parece un centinela siniestro de una gran roca que se encuentra al Sur."
@@ -3758,6 +4063,7 @@ location_41% :description
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
 		s" Hay roca enorme en esa dirección."
@@ -3768,10 +4074,13 @@ location_41% :description
 		paragraph
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3780,6 +4089,7 @@ location_42% :attributes
 	location_41% location_43% 0 0 0 0 0 0 _% init_location
 	;attributes
 location_42% :description
+\ Descripción inacabada!!!
 	sight case
 	_%  of
 		s" Como un pasillo que corteja el canal de agua, a su lado, baja de Norte a Sur."
@@ -3792,16 +4102,20 @@ location_42% :description
 		endof
 	south%  of
 		s" El pasaje desciende hacia el Sur, siguiendo el canal de agua."
-		s" Se aprecia un aumento de luz en esa dirección."
+		s" Se aprecia un aumento de luz en esa dirección." s&
 		paragraph
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3810,6 +4124,7 @@ location_43% :attributes
 	location_42% 0 0 0 0 0 0 0 _% init_location
 	;attributes
 location_43% :description
+\ Descripción inacabada!!!
 	sight case
 	_%  of
 		s" El pasaje sigue de Norte a Sur."
@@ -3824,12 +4139,16 @@ location_43% :description
 		narrate
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3838,10 +4157,11 @@ location_44% :attributes
 	location_43% 0 0 location_45% 0 0 0 0 _% init_location
 	;attributes
 location_44% :description
+\ Descripción inacabada!!!
 	sight case
 	_%  of
 		s" Unas escaleras dan paso a un hermoso lago interior, y siguen hacia el Oeste."
-		s" Al Norte, un oscuro y estrecho pasaje sube."
+		s" Al Norte, un oscuro y estrecho pasaje sube." s&
 		paragraph
 		endof
 	north%  of
@@ -3849,16 +4169,20 @@ location_44% :description
 		paragraph
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	west%  of
 		s" Las escaleras conducen en esa dirección, hacia el lago."
 		paragraph
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3867,12 +4191,14 @@ location_45% :attributes
 	0 location_47% location_44% location_46% 0 0 0 0 _% init_location
 	;attributes
 location_45% :description
+\ Descripción inacabada!!!
 	sight case
 	_%  of
 		s" Estrechos pasos permiten ir al Oeste, al Este y al Sur." 
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
 		s" Un estrecho paso permite ir hacia el Sur, de donde proviene una gran luminosidad."
@@ -3887,8 +4213,10 @@ location_45% :description
 		paragraph
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3897,24 +4225,30 @@ location_46% :attributes
 	0 0 location_45% 0 0 0 0 0 _% init_location
 	;attributes
 location_46% :description
+\ Descripción inacabada!!!
 	sight case
 	_%  of
 		s" Un catre, algunas velas y una mesa es todo lo que tiene Ambrosio."
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
 		s" Hacia el Este está la salida de la casa de Ambrosio."
 		paragraph
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3923,9 +4257,9 @@ location_47% :attributes
 	location_45% 0 0 0 0 0 0 0 _% init_location
 	;attributes
 location_47% :description
+\ Descripción inacabada!!! 
 	sight case
 	_%  of
-		\ Descripción inconclusa!!!
 		s" Por el Oeste,"
 		door% full_name s& door% >open|closed$ s&
 		door% open?  if
@@ -3952,8 +4286,10 @@ location_47% :description
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	west%  of
 		door% open?  if
@@ -3964,10 +4300,13 @@ location_47% :description
 		paragraph
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -3976,6 +4315,7 @@ location_48% :attributes
 	0 0 location_47% location_49% 0 0 0 0 _% init_location
 	;attributes
 location_48% :description
+	\ Crear cueva!!!
 	sight case
 	_%  of
 		s" Apenas se puede reconocer la entrada de la cueva, al Este."
@@ -3983,17 +4323,26 @@ location_48% :description
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
+		s" La entrada de la cueva" s{
+		s" está" s" bien" s?& s{ s" camuflada" s" escondida" }s&
+		s" casi no se ve" s" pasa casi desapercibida"
+		}s& period+ paragraph
 		endof
 	west%  of
-		s" El sendero sale del bosque hacia el Oeste." s&
+		^the_path$ s" sale del bosque" s& in_that_direction$ s&
+		paragraph
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -4008,16 +4357,25 @@ location_49% :description
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
+		^the_path$ leads$ s&
+		s" al bosque a la entrada de la cueva." s&
+		paragraph
 		endof
 	west%  of
+		^the_path$ s" continúa" s& in_that_direction$ s& period+
+		paragraph
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -4028,21 +4386,29 @@ location_50% :attributes
 location_50% :description
 	sight case
 	_%  of
-		s" El camino norte de Westmorland se interna hacia el bosque,"
-		s" al Norte (en tu estado no puedes ir), y a Westmorland, al Sur." s&
+		s" El camino norte que sale de Westmorland se interna en el bosque,"
+		s" aunque en tu estado no puedes ir." s&
 		paragraph
 		endof
 	north%  of
+		that_direction_is_normal
 		endof
 	south%  of
+		s{ s" ¡Westmorland!" s" Westmorland..." }s
+		paragraph
 		endof
 	east%  of
+		^can_see$ s" el sendero del bosque." s&
+		paragraph
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -4052,23 +4418,31 @@ location_51% :attributes
 	location_50% 0 0 0 0 0 0 0 _% init_location
 	;attributes
 location_51% :description
+	\ Crear mercado, plaza, villa, pueblo, castillo!!!
 	sight case
 	_%  of
-		s" La villa bulle de actividad con el mercado en el centro de la plaza,"
+		^the_village$ s" bulle de actividad con el mercado en el centro de la plaza," s&
 		s" donde se encuentra el castillo." s&
 		paragraph
 		endof
 	north%  of
+		s" El camino norte" of_the_village$ s& leads$ s& s" hasta el bosque." s&
+		paragraph
 		endof
 	south%  of
+		that_direction_is_normal
 		endof
 	east%  of
+		that_direction_is_normal
 		endof
 	west%  of
+		that_direction_is_normal
 		endof
 	up%  of
+		that_direction_is_normal
 		endof
 	down%  of
+		that_direction_is_normal
 		endof
 	endcase
 	;description
@@ -4247,7 +4621,7 @@ variable what  \ Ente que ha provocado un error y puede ser citado en el mensaje
 ' is_not_here_what constant (is_not_here_what_error#)
 ' (is_not_here_what_error#) is is_not_here_what_error#
 : cannot_see  ( a -- )  \ Informa de que un ente no puede ser mirado
-	cannot_see$
+	^cannot_see$
 	rot subjective_negative_name_as_direct_object s&
 	period+ narrate
 	;
@@ -4485,26 +4859,6 @@ variable silent_well_done?  silent_well_done? off
 
 0  [if]  \ Error «no tiene nada especial», aún en desarrollo!!!
 
-: rimarkable$  ( -- a u )  \ Devuelve una variante de «destacable»
-	s{
-	s" de especial"
-	s" de particular"
-	s" de peculiar"
-	s" destacable" 
-	s" especial"
-	s" peculiar"
-	s" que llame la atención" 
-	s" que destacar"
-	}s
-	;
-: has_nothing$  ( -- a u )
-	s" no tiene nada"
-	;
-: is_normal$  ( -- a u )  \ Devuelve una variante de «no tiene nada especial»
-	has_nothing$ rimarkable$ s&
-	;
-: ^is_normal$  ( -- a u )  \ Devuelve una variante de «No tiene nada especial» (con la primera letra en mayúscula)
-	;
 : it_is_normal_x$  ( a1 u1 -- a2 u2 )  \ Devuelve una variante de «no tiene nada especial x»
 	^normal$ try$ s& 2swap s& 
 	;
@@ -4910,7 +5264,7 @@ section( Trama global) \ {{{
 	s" Una partida sajona aparece por el Este."
 	s" Para cuando" s&
 	s{ s" te vuelves" s" intentas volver" }s&
-	to_the$ s& s" Norte," s&
+	toward_the(masculine)$ s& s" Norte," s&
 	s" ya no" s{ s" te queda" s" tienes" }s&
 	s{ s" duda alguna:" s" ninguna duda:" }s&
 	s{
@@ -5622,6 +5976,7 @@ action: do_do
 action: do_drop
 action: do_examine
 action: do_exits
+action: do_fear  \ Confirmar traducción!!!
 action: do_finish  \ Esta acción se define en la sección de finales
 action: do_go
 action: do_go_ahead
@@ -5725,7 +6080,7 @@ variable #free_exits  \ Contador de las salidas posibles
 	;
 : one_exit_only$  ( -- a u )  \ Devuelve mensaje usado cuando solo hay una salidas que listar
 	s{
-	s" La única salida" possible1$ s& s" es" s& toward$ s&
+	s" La única salida" possible1$ s& s" es" s& s" hacia" s?&
 	^only$ s" hay salida" s& possible1$ s& s" hacia" s&
 	^only$ s" es posible" s& go_out_to&
 	^only$ s" se puede" s& go_out_to&
@@ -5986,6 +6341,14 @@ subsection( Agredir) \ {{{
 	tool_complement{hold}
 	main_complement @ (do_attack)
 	;action
+:action do_fear  \ Acción de asustar
+	\ Pendiente!!! Distinguir de las demás en grado o requisitos.
+	main_complement{required}
+	main_complement{accessible}
+	main_complement{living}
+	tool_complement{hold}
+	main_complement @ (do_attack)
+	;action
 : kill_the_snake  \ Matar la serpiente
 	sword% {needed}
 	the_snake_runs_away
@@ -6118,7 +6481,7 @@ subsection( Movimiento) \ {{{
 	if  \ no debe llevar artículo
 		s" hacia" r> full_name 
 	else  \ debe llevar artículo
-		to_the$ r> ^name
+		toward_the(masculine)$ r> ^name
 	then  s&
 	;
 : that_way_1$  ( -- a u )  \ Devuelve una variante de «en esa dirección»
@@ -6415,7 +6778,7 @@ subsection( Hablar) \ {{{
 	s{ s" su" s" el" }s&
 	s" brazo" s&
 	s{ s" indicando" s" en dirección" s" señalando" }s&
-	to_the$ s& s" Norte." s&
+	toward_the(masculine)$ s& s" Norte." s&
 	narrate
 	s{ s" Nadie" s" Ningún hombre" }s
 	s{ s" con" 
@@ -6446,7 +6809,7 @@ subsection( Hablar) \ {{{
 	s" dejan libre el camino"
 	s" dejan libre el paso"
 	s" dejan el paso libre" }s&
-	to_the$ s& s" Este." s&
+	toward_the(masculine)$ s& s" Este." s&
 	narrate
 	;
 : talked_to_the_leader  \ Aumentar el contador de conversaciones con el jefe de los refugiados
@@ -6595,32 +6958,37 @@ subsection( Hablar) \ {{{
 	else  full_name s" hablar con" 2swap s& is_nonsense 
 	then
 	;
+: talk_to_yourself$  ( -- a u )  \ Devuelve una variante de «hablar solo»
+	s{ s" hablar" s{ s" solo" s" con uno mismo" }s&
+	s" hablarse" s{ s" a sí" s" a uno" }s& s" mismo" s?&
+	}s 
+	;
 : talk_to_yourself  \ Hablar solo
-	s" hablar solo" is_nonsense
+	talk_to_yourself$ is_nonsense
 	;
 : do_speak_if_possible  ( a -- )  \ Hablar con un ente si es posible
 	[debug]  [if]  s" En DO_SPEAK_IF_POSSIBLE" debug  [then]  \ Depuración!!!
 	case
-		0  of  talk_to_yourself  endof
 		leader%  of  talk_to_the_leader  endof
 		ambrosio%  of  talk_to_ambrosio  endof
 		dup talk_to_something
 	endcase
 	;
+: (do_speak)  ( a | 0 -- )  \ Hablar con alguien o solo
+	if  do_speak_if_possible
+	else  talk_to_yourself
+	then
+	;
 :action do_speak  \ Acción de hablar
 	[debug]  [if]  s" En DO_SPEAK" debug  [then]  \ Depuración!!!
-	\ Pendiente!!! Si no hay objeto, buscar el más probable
-	main_complement @ ?dup 0=  if  whom  then
-	if  do_speak_if_possible
-	else  talk_to_yourself
-	then
+	main_complement @ ?dup 0=  \ Si no hay complemento...
+	if  whom  \ ...buscar el más probable
+	then  (do_speak)
 	;action
-:action do_introduce_yourself  \ Acción de hablar
-	\ Pendiente!!!
-	main_complement @ ?dup 0=  if  unknown_whom  then
-	if  do_speak_if_possible
-	else  talk_to_yourself
-	then
+:action do_introduce_yourself  \ Acción de presentarse a alguien
+	main_complement @ ?dup 0=  \ Si no hay complemento...
+	if  unknown_whom  \ ...buscar el (desconocido) más probable
+	then  (do_speak)
 	;action
 
 \ }}}---------------------------------------------
@@ -6628,16 +6996,15 @@ subsection( Guardar el juego) \ {{{
 
 0  [if]  \ ......................................
 
-Parece improbable que funcione bien la creación de un
-ejecutable con el estado del juego. (Los detalles del
-problema están en el historial de desarrollo y en la
-definición de la palabra que crea el ejecutable principal,
-en la sección Meta).
+Parece que SP-Forth tiene problemas para crear un ejecutable
+con el estado del juego. (Los detalles del problema están en
+el historial de desarrollo y en la definición de la palabra
+que crea el ejecutable principal, en la sección Meta).
 
-Para guardar el estado de la partida usaremos ficheros de
-texto que reproduzcan el código Forth necesario para
-restaurarlas. Esto ocupará menos y es más transportable
-entre plataformas.
+Para guardar el estado de la partida usaremos una solución
+alternativa: ficheros de texto que reproduzcan el código
+Forth necesario para restaurarlas. Esto ocupará menos y es
+más transportable entre plataformas.
 
 [then]  \ ......................................
 
@@ -7054,6 +7421,13 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 	}synonyms
 \ quebrar \ Pendiente!!!
 \ desgarrar \ Pendiente!!!
+: asustar  ['] do_fear action!  ;
+' asustar synonyms{
+	asusto asusta asuste
+	amedrentar amedrento amedrenta amedrente
+	acojonar acojono acojona acojone
+	atemorizar atemoriza atemorizo atemorice
+	}synonyms
 : afilar  ['] do_sharpen action!  ;
 ' afilar synonyms{  afila afilo afile  }synonyms
 : partir  ['] do_go_or_do_break action!  ;
@@ -7183,7 +7557,7 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 
 : presentarse  ['] do_introduce_yourself action!  ;
 ' presentarse synonyms{
-	presentarse preséntase preséntese
+	preséntase preséntese
 	presentarte preséntate preséntete
 	}synonyms
 
@@ -7494,34 +7868,40 @@ section( Introducción) \ {{{
 	;
 : intro_1  \ Muestra la introducción al juego (parte 1)
 	s" Piensas en"
-	s{ s" el encargo realizado" s" la misión encomendada" }s
-	s" por" s{ s" Uther Pendragon." s" tu rey." }s& \ tmp!!!
-	s{ s" Atacar" s" Arrasar" }s s" una" s&
-	s{ s" aldea tranquila," s" pacífica aldea" }s&
-	s" aunque" s& s{ s" sea una" s" esté" }s&
-	s{ s" llena de" s" habitada por" s" repleta de" }s&
-	s" sajones," s& s{ s" no te llena" s" no te colma" }s&
-	s" de orgullo." s&
+	s{ s" el encargo de"
+	s" la" s{ s" tarea" s" misión" }s& s" encomendada por" s&
+	s" la orden dada por" s" las órdenes de" }s&
+	s{ s" Uther Pendragon" s" , tu rey" s?+ s" tu rey" }s& \ tmp!!!
+	s" ..." s+
 	narrate  short_pause
 	;
 : intro_2  \ Muestra la introducción al juego (parte 2)
+	s{ s" Atacar" s" Arrasar" }s s" una" s&
+	s" aldea" s{ s" tranquila" s" pacífica" }s sswap s& s&
+	s" , aunque" s+ s{ s" sea una" s" esté" }s&
+	s{ s" llena de" s" habitada por" s" repleta de" }s&
+	s" sajones, no te" s& s{ s" llena" s" colma" }s&
+	s" de orgullo." s&
+	narrate  short_pause
+	;
+: intro_3  \ Muestra la introducción al juego (parte 3)
 	s" Los hombres se" s{ s" ciernen" s" lanzan" }s&
 	s" sobre la aldea, y la destruyen." s&
 	s" No hubo tropas enemigas, ni honor en" s&
-	s{ s" la batalla." s" el combate" }s&
+	s{ s" la batalla." s" el combate." }s&
 	narrate  end_of_scene
 	;
-: intro_3  \ Muestra la introducción al juego (parte 3)
+: intro_4  \ Muestra la introducción al juego (parte 4)
 	sire,$ s{
 	s" el asalto" s" el combate" s" la batalla"
-	s" la lucha" s" todo"
+	s" la lucha" s" todo" s" la misión"
 	}s& s{ s" ha terminado." s" ha concluido." }s&
 	speak
 	;
 : needed_orders$  ( -- a u )  \ Devuelve una variante de «órdenes necesarias»
 	s" órdenes" s{ 0$ s" necesarias" s" pertinentes" }s&
 	;
-: intro_4  \ Muestra la introducción al juego (parte 4)
+: intro_5  \ Muestra la introducción al juego (parte 5)
 	s" Lentamente," s{
 	s" ordenas"
 	s" das la orden de"
@@ -7529,20 +7909,19 @@ section( Introducción) \ {{{
 	}s& s{ s" volver" s" regresar" }s& s" a casa." s&
 	narrate short_pause
 	;
-: intro_5  \ Muestra la introducción al juego (parte 5)
+: intro_6  \ Muestra la introducción al juego (parte 6)
 	s{ s" Los" s" Tus" }s s" oficiales" s&
+	s{
 	s" intentan detener"
 	s" detienen como pueden"
-	s" hacen "
-	s{ s" todo" s? s" lo que pueden" s& s" lo imposible" }s
-	s{ s" para detener" s" por detener" }s&
-	3 schoose s&
-	s{ s" el saqueo" 2dup s" el pillaje" }s& period+
+	s" hacen" s{ s" todo" s? s" lo que pueden" s& s" lo imposible" }s&
+		s{ s" para" s" por" }s& s" detener" s&
+	}s& s{ s" el saqueo" 2dup s" el pillaje" }s& period+
 	narrate  end_of_scene
 	;
 : intro  \ Muestra la introducción al juego 
 	clear_screen
-	intro_0 intro_1 intro_2 intro_3 intro_4 intro_5
+	intro_0 intro_1 intro_2 intro_3 intro_4 intro_5 intro_6
 	;
 
 \ }}}###########################################################
@@ -7655,16 +8034,16 @@ section( Principal) \ {{{
 	init/game
 	init_config read_config
 
-	\ Anulado para depuración!!!:
+	\ Anular esto para depuración!!!:
 	\ about cr intro  
-	\ location_01% enter
+	location_01% enter
 
-	\ Provisional para depuración!!!:
+	\ Activar esto selectivamente para depuración!!!:
 	\ location_08% enter  \ Emboscada 
-	location_47% enter
+	\ location_47% enter
 	\ location_01% enter
-	snake% be_here
-	ambrosio% be_here
+	\ snake% be_here
+	\ ambrosio% be_here
 	;
 : (main)  \ Bucle principal del juego
 	begin
@@ -7692,6 +8071,98 @@ section( Principal) \ {{{
 
 \ i0 cr  \ Para depuración!!!
 \ main
+
+\ }}}###########################################################
+section( Pruebas) \ {{{
+
+0  [if]  \ ......................................
+
+Esta sección contiene código para probar el programa
+sin interactuar con el juego, para detectar mejor posibles
+errores.
+
+[then]  \ ......................................
+
+: check_stack  \ Provoca un error -3 («stack overflow») si la pila no está vacía
+	depth 0<> -3 and throw
+	;
+: test_location_description  ( a -- )  \ Comprueba todas las descripciones de un ente escenario
+	cr ." = Descripción principal ===================="
+	dup my_location!
+	describe_location check_stack
+	cr ." == Mirar al Norte:" cr
+	north% describe_direction check_stack
+	cr ." == Mirar al Sur:" cr
+	south% describe_direction check_stack
+	cr ." == Mirar al Este:" cr
+	east% describe_direction check_stack
+	cr ." == Mirar al Oeste:" cr
+	west% describe_direction check_stack
+	cr ." == Mirar hacia arriba:" cr
+	up% describe_direction check_stack
+	cr ." == Mirar hacia abajo:" cr
+	down% describe_direction check_stack
+\ Aún no implementado:
+\	cr ." == Mirar hacia fuera:" cr
+\	out% describe_direction check_stack
+\	cr ." == Mirar hacia dentro:" cr
+\	in% describe_direction check_stack
+	;
+: test_location_descriptions  ( -- )  \ Comprueba todas las descripciones de todos los entes escenario
+	location_01% test_location_description
+	location_02% test_location_description
+	location_03% test_location_description
+	location_04% test_location_description
+	location_05% test_location_description
+	location_06% test_location_description
+	location_07% test_location_description
+	location_08% test_location_description
+	location_09% test_location_description
+	location_10% test_location_description
+	location_11% test_location_description
+	location_12% test_location_description
+	location_13% test_location_description
+	location_14% test_location_description
+	location_15% test_location_description
+	location_16% test_location_description
+	location_17% test_location_description
+	location_18% test_location_description
+	location_19% test_location_description
+	location_20% test_location_description
+	location_21% test_location_description
+	location_22% test_location_description
+	location_23% test_location_description
+	location_24% test_location_description
+	location_25% test_location_description
+	location_26% test_location_description
+	location_27% test_location_description
+	location_28% test_location_description
+	location_29% test_location_description
+	location_30% test_location_description
+	location_31% test_location_description
+	location_32% test_location_description
+	location_33% test_location_description
+	location_34% test_location_description
+	location_35% test_location_description
+	location_36% test_location_description
+	location_37% test_location_description
+	location_38% test_location_description
+	location_39% test_location_description
+	location_40% test_location_description
+	location_41% test_location_description
+	location_42% test_location_description
+	location_43% test_location_description
+	location_44% test_location_description
+	location_45% test_location_description
+	location_46% test_location_description
+	location_47% test_location_description
+	location_48% test_location_description
+	location_49% test_location_description
+	location_50% test_location_description
+	location_51% test_location_description
+	;
+: test_descriptions  \ Comprueba todas las descripciones
+	;
 
 \eof  \ Final del programa; el resto del fichero es ignorado por SP-Forth
 
