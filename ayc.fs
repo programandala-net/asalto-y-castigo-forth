@@ -6,7 +6,7 @@ CR .( Asalto y castigo ) \ {{{
 \ A text adventure in Spanish, written in SP-Forth.
 \ Un juego conversacional en castellano, escrito en SP-Forth.
 
-: version$  S" A-01-2011120418"  ;  version$ TYPE CR
+: version$  S" A-01-2011120420"  ;  version$ TYPE CR
 
 \ Copyright (C) 2011 Marcos Cruz (programandala.net)
 
@@ -1419,7 +1419,7 @@ frecuentes con los entes.
 
 [then]  \ ......................................
 
-defer protagonist  \ Vector que después se redirigirá a la ficha del protagonista en la base de datos
+defer protagonist%  \ Vector que después se redirigirá a la ficha del protagonista en la base de datos
 
 ' ~north_exit alias ~first_exit  \ Primera salida definida en la ficha
 ' ~in_exit alias ~last_exit  \ Última salida definida en la ficha
@@ -1693,10 +1693,10 @@ create 'articles  \ Tabla de artículos
 	swap ~global_inside? @ or
 	;
 : my_location  ( -- a )  \ Devuelve el lugar del protagonista
-	protagonist where
+	protagonist% where
 	;
 : my_location!  ( a -- )  \ Mueve el protagonista al ente indicado
-	protagonist be_there
+	protagonist% be_there
 	;
 : am_i_there?  ( a -- f )  \ ¿Está el protagonista en el lugar indicado?
 	\ a = Ente que actúa de lugar
@@ -1716,10 +1716,10 @@ create 'articles  \ Tabla de artículos
 	am_i_outside? 0=
 	;
 : is_hold?  ( a -- f )  \ ¿Es el protagonista la localización de un ente?
-	where protagonist =
+	where protagonist% =
 	;
 : be_hold  ( a -- )  \ Hace que el protagonista sea la localización de un ente
-	~location protagonist swap !
+	~location protagonist% swap !
 	;
 : is_worn?  ( a -- )  \ ¿El protagonista lleva puesto el ente indicado?
 	dup is_hold?  swap ~worn? @  and
@@ -1872,7 +1872,7 @@ defer you_do_not_wear_what_error#
 defer you_need_what_error#
 
 \ }}}###########################################################
-section( Herramientas para crear la base de datos) \ {{{
+section( Herramientas para crear las fichas de la base de datos) \ {{{
 
 0  [if]  \ ......................................
 
@@ -1924,15 +1924,17 @@ defer 'entities  \ Dirección de los entes; vector que después será redirigido
 : setup_entity  ( a -- )  \ Prepara la ficha de un ente para ser completada con sus datos 
 	>r r@ backup_entity  r@ erase_entity  r> restore_entity
 	;
-0 value _%  \ Guardará el ente que está siendo definido
+0 value self%  \ Ente cuyos atribututos o descripción están siendo definidos (para aligerar la sintaxis)
 : [:attributes]  ( a -- )  \ Inicia la definición de propiedades de un ente
 	\ Esta palabra se ejecuta cada vez que hay que restaurar los datos del ente,
 	\ y antes de la definición de atributos contenida en la palabra correspondiente al ente.
-	dup to _%  \ Actualizar el puntero al ente, para aligerar la sintaxis
-	setup_entity
+	dup to self%  setup_entity
 	;
 : :name_str  ( a -- )  \ Crea una cadena dinámica para guardar el nombre del ente.
 	str-new swap ~name_str !
+	;
+: default_description  \ Descripción predeterminada de los entes para los que no se ha creado una palabra propia de descripción
+	^is_normal$ paragraph
 	;
 : (:attributes)  ( a xt -- )  \ Operaciones preliminares para la definición de atributos de un ente
 	\ Esta palabra solo se ejecuta una vez para cada ente,
@@ -1941,7 +1943,8 @@ defer 'entities  \ Dirección de los entes; vector que después será redirigido
 	\ a = Ente para la definición de cuyos atributos se ha creado una palabra
 	\ xt = Dirección de ejecución de la palabra recién creada
 	over ~init_xt !  \ Conservar la dirección de ejecución en la ficha del ente
-	:name_str  \ Crear una cadena dinámica para el campo ~NAME_STR
+	dup :name_str  \ Crear una cadena dinámica para el campo ~NAME_STR
+	['] default_description swap ~description_xt !  \ Poner la descripción predeterminada
 	;
 : :attributes  ( a -- )  \ Inicia la creación de una palabra sin nombre que definirá las propiedades de un ente
 	:noname (:attributes)  \ Crear la palabra y hacer las operaciones preliminares
@@ -1988,7 +1991,7 @@ false value sight  \ Guarda el ente dirección al que se mira en un escenario (o
 : [:description]  ( a -- )  \ Operacionas previas a la ejecución de la descripción de un ente
 	\ Esta palabra se ejecutará al comienzo de la palabra de descripción.
 	\ El identificador del ente está en la pila porque se compiló con LITERAL cuando se creó la palabra de descripción.
-	to _%  \ Actualizar el puntero al ente, para aligerar la sintaxis
+	to self%  \ Actualizar el puntero al ente, para aligerar la sintaxis
 	;
 : (:description)  ( a xt -- )  \ Operaciones preliminares para la definición de la descripción de un ente
 	\ Esta palabra solo se ejecuta una vez para cada ente,
@@ -1999,7 +2002,7 @@ false value sight  \ Guarda el ente dirección al que se mira en un escenario (o
 	\ s" en (:DESCRIPTION)" debug  \ Depuración!!!
 	over ~description_xt !  \ Conservar la dirección de ejecución en la ficha del ente
 	\ s" en (:DESCRIPTION)" debug  \ Depuración!!!
-	postpone literal  \ Compilar el identificador de ente en la palabra de descripción recién creada, para que [:DESCRIPTION] lo guarde en _% en tiempo de ejecución
+	postpone literal  \ Compilar el identificador de ente en la palabra de descripción recién creada, para que [:DESCRIPTION] lo guarde en SELF% en tiempo de ejecución
 	;
 : :description  ( a -- )  \ Inicia la definición de una palabra de descripción para un ente
 	:noname (:description)  \ Crear la palabra y hacer las operaciones preliminares
@@ -2013,7 +2016,6 @@ false value sight  \ Guarda el ente dirección al que se mira en un escenario (o
 	postpone [;description]  \ Compilar la palabra [;DESCRIPTION] en la palabra creada, para que se ejecute cuando sea llamada
 	postpone ;
 	; immediate
-' noop alias default_description  \ Descripción predeterminada de los entes para los que no se ha creado una palabra propia de descripción; no hace nada; no se usa!!!
 : (describe)  ( a -- )  \ Ejecuta la palabra de descripción de un ente
 	~description_xt @ execute
 	;
@@ -2036,17 +2038,22 @@ false value sight  \ Guarda el ente dirección al que se mira en un escenario (o
 	to sight  \ Poner el ente dirección en SIGHT
 	my_location describe_other  \ Y describir el escenario actual como un ente normal; ahí se hace la distinción
 	;
-: describe  ( a -- )  \ Describe un ente, según su tipo
-	[debug]  [if]  s" En DESCRIBE" debug  [then]  \ Depuración!!!
+: description_type  ( a -- u )  \ Convierte un ente en el tipo de descripción que requiere
+	\ a = Ente
+	\ u = Tipo de descripción (2:dirección, 1:escenario, 0:otros, 3:¡error!)
+	\ Nota: Un resultado de 3 significaría que el ente es a la vez dirección y escenario
 	dup ~location? @ abs
 	over is_direction? 2 and +
+	;
+: describe  ( a -- )  \ Describe un ente, según su tipo
+	[debug]  [if]  s" En DESCRIBE" debug  [then]  \ Depuración!!!
+	description_type
 	[debug]  [if]  s" En DESCRIBE antes de CASE" debug  [then]  \ Depuración!!!
 	case
 		0 of  describe_other  endof
 		1 of  describe_location  endof
 		2 of  describe_direction  endof
-		\ Un 3 significaría que un ente es a la vez dirección y escenario!!!
-		true abort" Error fatal en DESCRIBE: datos incorrectos" \ depuración!!!
+		3 of  true abort" Error fatal en DESCRIBE: dato incorrecto"  endof \ depuración!!!
 	endcase
 	;
 : that_direction_is_normal  ( -- )  \ Muestra la descripción de la direcciones que no tienen nada especial
@@ -2084,7 +2091,7 @@ alfabético es solo por claridad.
 [then]  \ ......................................
 
 entity: ulfius%
-' ulfius% is protagonist  \ Actualizar el vector que apunta al ente protagonista
+' ulfius% is protagonist%  \ Actualizar el vector que apunta al ente protagonista
 
 \ Entes que son personajes: 
 entity: ambrosio%
@@ -2403,11 +2410,11 @@ section( Atributos y descripciones de entes) \ {{{
 \ Ente protagonista
 
 ulfius% :attributes
-	s" Ulfius" _% name!
-	_% ~human? on
-	_% ~personal_name? on
-	_% ~no_article? on
-	location_01% _% be_there
+	s" Ulfius" self% name!
+	self% ~human? on
+	self% ~personal_name? on
+	self% ~no_article? on
+	location_01% self% be_there
 	;attributes
 ulfius% :description
 	\ Provisional!!!
@@ -2425,23 +2432,23 @@ ulfius% :description
 \ Entes personaje
 
 ambrosio% :attributes
-	s" hombre ambrosio!!!" _% name!  \ El nombre cambiará a «Ambrosio» durante el juego
-	_% ~character? on
-	_% ~human? on
-	location_19% _% be_there
+	s" hombre ambrosio!!!" self% name!  \ El nombre cambiará a «Ambrosio» durante el juego
+	self% ~character? on
+	self% ~human? on
+	location_19% self% be_there
 	;attributes
 ambrosio% :description
-	_% is_known?  if
+	self% is_known?  if
 		s" Ambrosio"
 		s" es un hombre de mediana edad, que te mira afable." s&
 	else  s" Es de mediana edad y mirada afable."
 	then  paragraph
 	;description
 leader% :attributes
-	s" hombre leader!!!" _% name!
-	_% ~character? on
-	_% ~human? on
-	location_28% _% be_there
+	s" hombre leader!!!" self% name!
+	self% ~character? on
+	self% ~human? on
+	location_28% self% be_there
 	;attributes
 leader% :description
 	s" Es el jefe de los refugiados."
@@ -2451,11 +2458,11 @@ leader% :description
 \ Entes objeto
 
 altar% :attributes
-	s" altar" _% name!
-	_% ~decoration? on
+	s" altar" self% name!
+	self% ~decoration? on
 	\ Error!!! imposible_error# es un vector sin inicializar:
-	impossible_error# _% ~take_error# !
-	location_18% _% be_there
+	impossible_error# self% ~take_error# !
+	location_18% self% be_there
 	;attributes
 altar% :description
 	s" Está colocado justo en la mitad del puente."
@@ -2465,9 +2472,9 @@ altar% :description
 	paragraph
 	;description
 arch% :attributes
-	s" arco" _% name!
-	_% ~decoration? on
-	location_18% _% be_there
+	s" arco" self% name!
+	self% ~decoration? on
+	location_18% self% be_there
 	;attributes
 arch% :description
 	\ Provisional!!!
@@ -2475,16 +2482,17 @@ arch% :description
 	paragraph
 	;description
 bed% :attributes
-	s" catre" _% name!
-	location_46% _% be_there
+	s" catre" self% name!
+	location_46% self% be_there
 	;attributes
 bed% :description
 	s" Parece poco confortable."
+	paragraph
 	;description
 bridge% :attributes
-	s" puente" _% name!
-	_% ~decoration? on
-	location_13% _% be_there
+	s" puente" self% name!
+	self% ~decoration? on
+	location_13% self% be_there
 	;attributes
 bridge% :description
 	\ Provisional!!!
@@ -2492,34 +2500,35 @@ bridge% :description
 	paragraph
 	;description
 candles% :attributes
-	s" velas" _% fnames!
-	location_46% _% be_there
+	s" velas" self% fnames!
+	location_46% self% be_there
 	;attributes
 candles% :description
 	s" Están muy consumidas."
+	paragraph
 	;description
 cloak% :attributes
-	s" capa" _% fname!
-	_% ~cloth? on
-	_% ~owned? on
-	_% ~worn? on
-	ulfius% _% be_there
+	s" capa" self% fname!
+	self% ~cloth? on
+	self% ~owned? on
+	self% ~worn? on
+	ulfius% self% be_there
 	;attributes
 cloak% :description
 	s" Tu capa de general, de fina lana tintada de negro."
 	paragraph
 	;description
 cuirasse% :attributes
-	s" coraza" _% fname!
-	_% ~cloth? on
-	_% ~owned? on
-	_% ~worn? on
-	ulfius% _% be_there
+	s" coraza" self% fname!
+	self% ~cloth? on
+	self% ~owned? on
+	self% ~worn? on
+	ulfius% self% be_there
 	;attributes
 door% :attributes
-	s" puerta" _% fname!
-	_% ~take_error# impossible_error# swap !
-	location_47% _% be_there
+	s" puerta" self% fname!
+	self% ~take_error# impossible_error# swap !
+	location_47% self% be_there
 	;attributes
 door% :description
 	s" Es muy recia y tiene un gran candado."
@@ -2533,28 +2542,28 @@ door% :description
 	paragraph
 	;description
 emerald% :attributes
-	s" esmeralda" _% fname!
-	location_39% _% be_there
+	s" esmeralda" self% fname!
+	location_39% self% be_there
 	;attributes
 emerald% :description
 	s" Es preciosa."
 	paragraph
 	;description
 fallen_away% :attributes
-	s" derrumbe" _% name!
-	_% ~decoration? on
-	_% ~take_error# nonsense_error# swap !
-	location_09% _% be_there
+	s" derrumbe" self% name!
+	self% ~decoration? on
+	self% ~take_error# nonsense_error# swap !
+	location_09% self% be_there
 	;attributes
 fallen_away% :description
 	s" Muchas, inalcanzables rocas, apiladas una sobre otra."
 	paragraph
 	;description
 flags% :attributes
-	s" banderas" _% fnames!
-	_% ~decoration? on
-	_% ~take_error# nonsense_error# swap !
-	location_28% _% be_there
+	s" banderas" self% fnames!
+	self% ~decoration? on
+	self% ~take_error# nonsense_error# swap !
+	location_28% self% be_there
 	;attributes
 flags% :description
 	s" Son las banderas britana y sajona."
@@ -2562,25 +2571,25 @@ flags% :description
 	paragraph
 	;description
 flint% :attributes
-	s" pedernal" _% name!
+	s" pedernal" self% name!
 	;attributes
 flint% :description
 	s" Es dura y afilada." 
 	paragraph
 	;description
 idol% :attributes
-	s" ídolo" _% name!
-	_% ~decoration? on
-	_% ~take_error# impossible_error# swap !
-	location_41% _% be_there
+	s" ídolo" self% name!
+	self% ~decoration? on
+	self% ~take_error# impossible_error# swap !
+	location_41% self% be_there
 	;attributes
 idol% :description
 	s" El ídolo tiene dos agujeros por ojos."
 	paragraph
 	;description
 key% :attributes
-	s" llave" _% fname!
-	location_46% _% be_there
+	s" llave" self% fname!
+	location_46% self% be_there
 	;attributes
 key% :description
 	\ Crear herrumbre y óxido, visibles con la llave en la mano!!!
@@ -2588,10 +2597,10 @@ key% :description
 	paragraph
 	;description
 lake% :attributes
-	s" lago" _% name!
-	_% ~decoration? on
-	_% ~take_error# nonsense_error# swap !
-	location_44% _% be_there
+	s" lago" self% name!
+	self% ~decoration? on
+	self% ~take_error# nonsense_error# swap !
+	location_44% self% be_there
 	;attributes
 lake% :description
 	s{ s" La" s" Un rayo de" }s
@@ -2599,15 +2608,13 @@ lake% :description
 	paragraph
 	;description
 lock% :attributes
-	s" candado" _% name!
-	_% ~decoration? on
-	_% ~take_error# impossible_error# swap !
+	s" candado" self% name!
+	self% ~decoration? on
+	self% ~take_error# impossible_error# swap !
 	;attributes
 lock% :description
-	s" Está" lock% >open|closed$ s&
-	if  s" Está abierto."
-	else  s" Está cerrado."
-	then  s" Es grande y parece resistente." s&
+	s" Está" lock% >open|closed$ s& period+
+	s" Es grande y parece resistente." s&
 	paragraph
 	;description
 piece% :description
@@ -2615,8 +2622,8 @@ piece% :description
 	paragraph
 	;description
 log% :attributes
-	s" tronco" _% name!
-	location_15% _% be_there
+	s" tronco" self% name!
+	location_15% self% be_there
 	;attributes
 log% :description
 	s" Es un tronco"
@@ -2626,29 +2633,29 @@ log% :description
 	paragraph
 	;description
 piece% :attributes
-	s" trozo" _% name!
+	s" trozo" self% name!
 	;attributes
 rags% :attributes
-	s" harapo" _% name!
+	s" harapo" self% name!
 	;attributes
 rags% :description
 	s" Un trozo un poco grande" of_your_ex_cloak$ s&
 	paragraph
 	;description
 rocks% :attributes
-	s" rocas" _% fnames!
-	_% ~decoration? on
-	location_31% _% be_there
+	s" rocas" self% fnames!
+	self% ~decoration? on
+	location_31% self% be_there
 	;attributes
 rocks% :description
 	s" Son muchas, aunque parecen ligeras y con huecos entre ellas."
 	paragraph
 	;description
 snake% :attributes
-	s" serpiente" _% fname!
-	_% ~animal? on
-	_% ~take_error# dangerous_error# swap !
-	location_43% _% be_there
+	s" serpiente" self% fname!
+	self% ~animal? on
+	self% ~take_error# dangerous_error# swap !
+	location_43% self% be_there
 	;attributes
 snake% :description
 	\ Provisional!!! Distinguir si está muerta.
@@ -2657,17 +2664,17 @@ snake% :description
 	paragraph
 	;description
 stone% :attributes
-	s" piedra" _% fname!
-	location_18% _% be_there
+	s" piedra" self% fname!
+	location_18% self% be_there
 	;attributes
 stone% :description
 	s" Recia y pesada, pero no muy grande, de forma piramidal."
 	paragraph
 	;description
 sword% :attributes
-	s" espada" _% fname!
-	_% ~owned? on
-	ulfius% _% be_there
+	s" espada" self% fname!
+	self% ~owned? on
+	ulfius% self% be_there
 	;attributes
 sword% :description
 	s{ s" Legado" s" Herencia" }s s" de tu padre," s&
@@ -2677,14 +2684,15 @@ sword% :description
 	paragraph
 	;description
 table% :attributes
-	s" mesa" _% fname!
-	location_46% _% be_there
+	s" mesa" self% fname!
+	location_46% self% be_there
 	;attributes
 table% :description
-	s" Pequeña y de basta madera."
+	s" Es pequeña y de" s{ s" basta" s" tosca" }s& s" madera." s&
+	paragraph
 	;description
 thread% :attributes
-	s" hilo" _% name!
+	s" hilo" self% name!
 	;attributes
 thread% :description
 	\ Mover esto al evento de cortar la capa!!!
@@ -2693,9 +2701,9 @@ thread% :description
 	paragraph
 	;description
 torch% :attributes
-	s" antorcha" _% fname!
-	_% ~light? on
-	_% ~lit? off
+	s" antorcha" self% fname!
+	self% ~light? on
+	self% ~lit? off
 	;attributes
 torch% :description
 	\ Inacabado!!! 
@@ -2703,10 +2711,10 @@ torch% :description
 	paragraph
 	;description
 waterfall% :attributes
-	s" cascada" _% fname!
-	_% ~decoration? on
-	_% ~take_error# nonsense_error# swap !
-	location_38% _% be_there
+	s" cascada" self% fname!
+	self% ~decoration? on
+	self% ~take_error# nonsense_error# swap !
+	location_38% self% be_there
 	;attributes
 waterfall% :description
 	s" No ves nada por la cortina de agua."
@@ -2732,13 +2740,13 @@ puestas.
 [then]  \ ......................................
 
 location_01% :attributes
-	s" aldea sajona" _% fname!
-	0 location_02% 0 0 0 0 0 0 _% init_location
+	s" aldea sajona" self% fname!
+	0 location_02% 0 0 0 0 0 0 self% init_location
 	;attributes
 location_01% :description
 	\ Crear colina!!! en los tres escenarios
 	sight case
-	_%  of
+	self%  of
 		s" No ha quedado nada en pie, ni piedra sobre piedra."
 		s" El entorno es desolador." s&
 		s" Solo resta volver al Sur, a casa." s&
@@ -2774,13 +2782,13 @@ location_01% :description
 	endcase
 	;description
 location_02% :attributes
-	s" cima de la colina" _% fname!
-	location_01% 0 0 location_03% 0 0 0 0 _% init_location
+	s" cima de la colina" self% fname!
+	location_01% 0 0 location_03% 0 0 0 0 self% init_location
 	;attributes
 location_02% :description
 	\ Crear aldea!!!
 	sight case
-	_%  of
+	self%  of
 		s" Sobre la colina, casi sobre la niebla de la aldea sajona arrasada al Norte, a tus pies."
 		s" El camino desciende hacia el Oeste." s&
 		paragraph
@@ -2809,12 +2817,12 @@ location_02% :description
 	endcase
 	;description
 location_03% :attributes
-	s" camino entre colinas" _% name!
-	0 0 location_02% location_04% 0 0 0 0 _% init_location
+	s" camino entre colinas" self% name!
+	0 0 location_02% location_04% 0 0 0 0 self% init_location
 	;attributes
 location_03% :description
 	sight case
-	_%  of
+	self%  of
 		^the_path$ s" avanza por el valle," s&
 		s" desde la parte alta, al Este," s&
 		s" a una zona" s& very_$ s& s" boscosa, al Oeste." s&
@@ -2843,12 +2851,12 @@ location_03% :description
 	endcase
 	;description
 location_04% :attributes
-	s" cruce de caminos" _% name!
-	location_05% 0 location_03% location_09% 0 0 0 0 _% init_location
+	s" cruce de caminos" self% name!
+	location_05% 0 location_03% location_09% 0 0 0 0 self% init_location
 	;attributes
 location_04% :description
 	sight case
-	_%  of
+	self%  of
 		s" Una senda parte al Oeste, a la sierra por el paso del Perro,"
 		s" y otra hacia el Norte, por un frondoso bosque que la rodea." s&
 		paragraph
@@ -2872,12 +2880,12 @@ location_04% :description
 	endcase
 	;description
 location_05% :attributes
-	s" linde del bosque" _% name!
-	0 location_04% 0 location_06% 0 0 0 0 _% init_location
+	s" linde del bosque" self% name!
+	0 location_04% 0 location_06% 0 0 0 0 self% init_location
 	;attributes
 location_05% :description
 	sight case
-	_%  of
+	self%  of
 		s" Desde la linde, al Sur,"
 		s" hacia el Oeste se extiende frondoso el bosque que rodea la sierra." s&
 		s" La salida se abre hacia el Sur." s&
@@ -2908,12 +2916,12 @@ location_05% :description
 	endcase
 	;description
 location_06% :attributes
-	s" bosque" _% name!
-	0 0 location_05% location_07% 0 0 0 0 _% init_location
+	s" bosque" self% name!
+	0 0 location_05% location_07% 0 0 0 0 self% init_location
 	;attributes
 location_06% :description
 	sight case
-	_%  of
+	self%  of
 		s" Jirones de niebla se enzarcen en frondosas ramas y arbustos."
 		^the_path$ s& s" serpentea entre raíces, de un luminoso Este al Oeste." s&
 		paragraph
@@ -2941,12 +2949,12 @@ location_06% :description
 	endcase
 	;description
 location_07% :attributes
-	s" paso del Perro" _% name!
-	0 location_08% location_06% 0 0 0 0 0 _% init_location
+	s" paso del Perro" self% name!
+	0 location_08% location_06% 0 0 0 0 0 self% init_location
 	;attributes
 location_07% :description
 	sight case
-	_%  of
+	self%  of
 		s" Abruptamente, del bosque se pasa a un estrecho camino entre altas rocas.
 		s" El inquietante desfiladero tuerce de Este a Sur." s&
 		paragraph
@@ -2975,13 +2983,13 @@ location_07% :description
 	endcase
 	;description
 location_08% :attributes
-	s" entrada a la cueva" _% fname!
-	location_07% location_10% 0 0 0 0 0 0 _% init_location
+	s" entrada a la cueva" self% fname!
+	location_07% location_10% 0 0 0 0 0 0 self% init_location
 	;attributes
 location_08% :description
 	\ Pendiente!!! Crear pared y roca y desfiladero
 	sight case
-	_%  of
+	self%  of
 		s" El paso entre el desfiladero sigue de Norte a Este"
 		s" junto a una rocosa pared." s&
 		paragraph
@@ -3010,12 +3018,12 @@ location_08% :description
 	endcase
 	;description
 location_09% :attributes
-	s" derrumbe" _% name!
-	0 0 location_04% 0 0 0 0 0 _% init_location
+	s" derrumbe" self% name!
+	0 0 location_04% 0 0 0 0 0 self% init_location
 	;attributes
 location_09% :description
 	sight case
-	_%  of
+	self%  of
 		s" El camino desciende hacia la agreste sierra, al Oeste, desde los verdes valles al Este."
 		s" Pero un gran derrumbe bloquea el paso hacia la sierra." s&
 		paragraph
@@ -3043,12 +3051,12 @@ location_09% :description
 	endcase
 	;description
 location_10% :attributes
-	s" gruta de entrada" _% fname!
-	location_08% 0 0 location_11% 0 0 0 0 _% init_location
+	s" gruta de entrada" self% fname!
+	location_08% 0 0 location_11% 0 0 0 0 self% init_location
 	;attributes
 location_10% :description
 	sight case
-	_%  of
+	self%  of
 		s" El estrecho paso se adentra hacia el Oeste, desde la boca, al Norte."
 		paragraph
 		endof
@@ -3073,13 +3081,13 @@ location_10% :description
 	endcase
 	;description
 location_11% :attributes
-	s" gran lago" _% name!
-	0 0 location_10% 0 0 0 0 0 _% init_location
+	s" gran lago" self% name!
+	0 0 location_10% 0 0 0 0 0 self% init_location
 	;attributes
 location_11% :description
 	\ Crear estancia y aguas!!!
 	sight case
-	_%  of
+	self%  of
 		s" Una gran estancia alberga un lago"
 		s" de profundas e iridiscentes aguas," s&
 		s" debido a la luz exterior." s&
@@ -3108,13 +3116,13 @@ location_11% :description
 	endcase
 	;description
 location_12% :attributes
-	s" salida del paso secreto" _% fname!
-	0 0 0 location_13% 0 0 0 0 _% init_location
+	s" salida del paso secreto" self% fname!
+	0 0 0 location_13% 0 0 0 0 self% init_location
 	;attributes
 location_12% :description
 	\ Crear agua aquí!!!
 	sight case
-	_%  of
+	self%  of
 		s" Una gran estancia se abre hacia el Oeste,"
 		s" y se estrecha hasta morir, al Este, en una parte de agua." s&
 		paragraph
@@ -3142,13 +3150,13 @@ location_12% :description
 	endcase
 	;description
 location_13% :attributes
-	s" puente semipodrido" _% name!
-	0 0 location_12% location_14% 0 0 0 0 _% init_location
+	s" puente semipodrido" self% name!
+	0 0 location_12% location_14% 0 0 0 0 self% init_location
 	;attributes
 location_13% :description
 	\ Crear canal, agua, lecho(~catre)!!!
 	sight case
-	_%  of
+	self%  of
 		s" La sala se abre en semioscuridad"
 		s" a un puente cubierto de podredumbre" s&
 		s" sobre el lecho de un canal, de Este a Oeste." s&
@@ -3177,12 +3185,12 @@ location_13% :description
 	endcase
 	;description
 location_14% :attributes
-	s" recodo de la cueva" _% name!
-	0 location_15% location_13% 0 0 0 0 0 _% init_location
+	s" recodo de la cueva" self% name!
+	0 location_15% location_13% 0 0 0 0 0 self% init_location
 	;attributes
 location_14% :description
 	sight case
-	_%  of
+	self%  of
 		s" La iridiscente cueva gira de Este a Sur."
 		paragraph
 		endof
@@ -3207,12 +3215,12 @@ location_14% :description
 	endcase
 	;description
 location_15% :attributes
-	s" pasaje arenoso" _% name!
-	location_14% location_17% location_16% 0 0 0 0 0 _% init_location
+	s" pasaje arenoso" self% name!
+	location_14% location_17% location_16% 0 0 0 0 0 self% init_location
 	;attributes
 location_15% :description
 	sight case
-	_%  of
+	self%  of
 		s" La gruta desciende de Norte a Sur"
 		s" sobre un lecho arenoso." s&
 		s" Al Este, un agujero del que llega claridad." s&
@@ -3244,12 +3252,12 @@ location_15% :description
 	endcase
 	;description
 location_16% :attributes
-	s" pasaje del agua" _% name!
-	0 0 0 location_15% 0 0 0 0 _% init_location
+	s" pasaje del agua" self% name!
+	0 0 0 location_15% 0 0 0 0 self% init_location
 	;attributes
 location_16% :description
 	sight case
-	_%  of
+	self%  of
 		s" Como un acueducto, el agua baja con gran fuerza de Norte a Este,"
 		s" aunque la salida practicable es la del Oeste." s&
 		paragraph
@@ -3278,14 +3286,14 @@ location_16% :description
 	endcase
 	;description
 location_17% :attributes
-	s" estalactitas" _% fname!
-	location_15% location_20% location_18% 0 0 0 0 0 _% init_location
+	s" estalactitas" self% fname!
+	location_15% location_20% location_18% 0 0 0 0 0 self% init_location
 	;attributes
 location_17% :description
 \ Descripción inacabada!!!
 	\ Crear estalactitas!!!
 	sight case
-	_%  of
+	self%  of
 		s" Muchas estalactitas se agrupan encima de tu cabeza,"
 		s" y se abren cual arco de entrada hacia el Este y Sur." s&
 		paragraph
@@ -3312,13 +3320,13 @@ location_17% :description
 	endcase
 	;description
 location_18% :attributes
-	s" puente de piedra" _% name!
-	0 0 location_19% location_17% 0 0 0 0 _% init_location
+	s" puente de piedra" self% name!
+	0 0 location_19% location_17% 0 0 0 0 self% init_location
 	;attributes
 location_18% :description
 \ Descripción inacabada!!!
 	sight case
-	_%  of
+	self%  of
 		s" Un arco de piedra se eleva, cual puente sobre la oscuridad, de Este a Oeste."
 		s" En su mitad, un altar." s&
 		paragraph
@@ -3344,13 +3352,13 @@ location_18% :description
 	endcase
 	;description
 location_19% :attributes
-	s" recodo arenoso del canal" _% name!
-	0 0 0 location_18% 0 0 0 0 _% init_location
+	s" recodo arenoso del canal" self% name!
+	0 0 0 location_18% 0 0 0 0 self% init_location
 	;attributes
 location_19% :description
 \ Descripción inacabada!!!
 	sight case
-	_%  of
+	self%  of
 		s" La furiosa corriente, de Norte a Este, impide el paso, excepto al Oeste."
 		s" Al fondo, se oye un gran estruendo." s&
 		paragraph
@@ -3376,13 +3384,13 @@ location_19% :description
 	endcase
 	;description
 location_20% :attributes
-	s" tramo de cueva" _% name!
-	location_17% location_22% location_25% 0 0 0 0 0 _% init_location
+	s" tramo de cueva" self% name!
+	location_17% location_22% location_25% 0 0 0 0 0 self% init_location
 	;attributes
 location_20% :description
 \ Descripción inacabada!!!
 	sight case
-	_%  of
+	self%  of
 		s" Un tramo de cueva estrecho"
 		s" te permite avanzar hacia el Norte y el Sur;" s&
 		s" un pasaje surge al Este." s&
@@ -3409,13 +3417,13 @@ location_20% :description
 	endcase
 	;description
 location_21% :attributes
-	s" tramo de cueva" _% name!
-	0 location_27% location_23% location_20% 0 0 0 0 _% init_location
+	s" tramo de cueva" self% name!
+	0 location_27% location_23% location_20% 0 0 0 0 self% init_location
 	;attributes
 location_21% :description
 \ Descripción inacabada!!!
 	sight case
-	_%  of
+	self%  of
 		s" Un tramo de cueva estrecho te permite avanzar de Este a Oeste; un pasaje surge al Sur."
 		paragraph
 		endof
@@ -3440,13 +3448,13 @@ location_21% :description
 	endcase
 	;description
 location_22% :attributes
-	s" tramo de cueva" _% name!
-	0 location_24% location_27% location_22% 0 0 0 0 _% init_location
+	s" tramo de cueva" self% name!
+	0 location_24% location_27% location_22% 0 0 0 0 self% init_location
 	;attributes
 location_22% :description
 \ Descripción inacabada!!!
 	sight case
-	_%  of
+	self%  of
 		s" Un tramo de cueva estrecho te permite avanzar de Este a Oeste; un pasaje surge al Sur."
 		paragraph
 		endof
@@ -3471,13 +3479,13 @@ location_22% :description
 	endcase
 	;description
 location_23% :attributes
-	s" tramo de cueva" _% name!
-	0 location_25% 0 location_21% 0 0 0 0 _% init_location
+	s" tramo de cueva" self% name!
+	0 location_25% 0 location_21% 0 0 0 0 self% init_location
 	;attributes
 location_23% :description
 \ Descripción inacabada!!!
 	sight case
-	_%  of
+	self%  of
 		s" Un tramo de cueva estrecho te permite avanzar de Oeste a Sur."
 		paragraph
 		endof
@@ -3502,13 +3510,13 @@ location_23% :description
 	endcase
 	;description
 location_24% :attributes
-	s" tramo de cueva" _% name!
-	location_22% 0 location_26% 0 0 0 0 0 _% init_location
+	s" tramo de cueva" self% name!
+	location_22% 0 location_26% 0 0 0 0 0 self% init_location
 	;attributes
 location_24% :description
 \ Descripción inacabada!!!
 	sight case
-	_%  of
+	self%  of
 		s" Un tramo de cueva estrecho te permite avanzar de Este a Norte."
 		paragraph
 		endof
@@ -3533,13 +3541,13 @@ location_24% :description
 	endcase
 	;description
 location_25% :attributes
-	s" tramo de cueva" _% name!
-	location_22% location_28% location_23% location_21% 0 0 0 0 _% init_location
+	s" tramo de cueva" self% name!
+	location_22% location_28% location_23% location_21% 0 0 0 0 self% init_location
 	;attributes
 location_25% :description
 \ Descripción inacabada!!!
 	sight case
-	_%  of
+	self%  of
 		s" Un tramo de cueva estrecho te permite avanzar de Este a Oeste."
 		s" Al Norte y al Sur surgen pasajes." s&
 		paragraph
@@ -3565,13 +3573,13 @@ location_25% :description
 	endcase
 	;description
 location_26% :attributes
-	s" tramo de cueva" _% name!
-	location_26% 0 location_20% location_27% 0 0 0 0 _% init_location
+	s" tramo de cueva" self% name!
+	location_26% 0 location_20% location_27% 0 0 0 0 self% init_location
 	;attributes
 location_26% :description
 \ Descripción inacabada!!!
 	sight case
-	_%  of
+	self%  of
 		s" Un tramo de cueva estrecho te permite avanzar de Este a Oeste."
 		s" Al Norte surge un pasaje." s&
 		paragraph
@@ -3597,13 +3605,13 @@ location_26% :description
 	endcase
 	;description
 location_27% :attributes
-	s" tramo de cueva" _% name!
-	location_27% 0 0 location_25% 0 0 0 0 _% init_location
+	s" tramo de cueva" self% name!
+	location_27% 0 0 location_25% 0 0 0 0 self% init_location
 	;attributes
 location_27% :description
 \ Descripción inacabada!!!
 	sight case
-	_%  of
+	self%  of
 		s" Un tramo de cueva estrecho te permite avanzar al Oeste."
 		s" Al Norte surge un pasaje." s&
 		paragraph
@@ -3629,13 +3637,13 @@ location_27% :description
 	endcase
 	;description
 location_28% :attributes
-	s" refugio" _% name!
-	location_26% 0 0 0 0 0 0 0 _% init_location
+	s" refugio" self% name!
+	location_26% 0 0 0 0 0 0 0 self% init_location
 	;attributes
 location_28% :description
 \ Descripción inacabada!!!
 	sight case
-	_%  of
+	self%  of
 		\ Crear refugiados!!!
 		s" Una amplia estancia de Norte a Este hace de albergue a refugiados:"
 		s" hay banderas de ambos bandos." s&
@@ -3664,13 +3672,13 @@ location_28% :description
 	endcase
 	;description
 location_29% :attributes
-	s" espiral" _% fname!
-	0 0 0 location_28% 0 location_30% 0 0 _% init_location
+	s" espiral" self% fname!
+	0 0 0 location_28% 0 location_30% 0 0 self% init_location
 	;attributes
 location_29% :description
 \ Descripción inacabada!!!
 	sight case
-	_%  of
+	self%  of
 		s" Cual escalera de caracol gigante, desciende a las profundidades,"
 		s" dejando a los refugiados al Oeste." s&
 		paragraph
@@ -3696,13 +3704,13 @@ location_29% :description
 	endcase
 	;description
 location_30% :attributes
-	s" inicio de la espiral" _% name!
-	0 0 location_31% 0 location_29% 0 0 0 _% init_location
+	s" inicio de la espiral" self% name!
+	0 0 location_31% 0 location_29% 0 0 0 self% init_location
 	;attributes
 location_30% :description
 \ Descripción inacabada!!!
 	sight case
-	_%  of
+	self%  of
 		s" Se eleva en la penumbra."
 		s" La caverna se estrecha ahora como para una sola persona, hacia el este." s&
 		paragraph
@@ -3728,13 +3736,13 @@ location_30% :description
 	endcase
 	;description
 location_31% :attributes
-	s" puerta norte" _% fname!
-	0 0 0 location_30% 0 0 0 0 _% init_location
+	s" puerta norte" self% fname!
+	0 0 0 location_30% 0 0 0 0 self% init_location
 	;attributes
 location_31% :description
 \ Descripción inacabada!!!
 	sight case
-	_%  of
+	self%  of
 		s" En este pasaje grandes rocas se encuentran entre las columnas de un arco de medio punto."
 		paragraph
 		endof
@@ -3759,13 +3767,13 @@ location_31% :description
 	endcase
 	;description
 location_32% :attributes
-	s" precipicio" _% name!
-	0 location_33% 0 location_31% 0 0 0 0 _% init_location
+	s" precipicio" self% name!
+	0 location_33% 0 location_31% 0 0 0 0 self% init_location
 	;attributes
 location_32% :description
 \ Descripción inacabada!!!
 	sight case
-	_%  of
+	self%  of
 		s" El camino ahora no excede de dos palmos de cornisa sobre un abismo insondable."
 		s" El soporte de roca gira en forma de «U» de Oeste a Sur." s&
 		paragraph
@@ -3791,13 +3799,13 @@ location_32% :description
 	endcase
 	;description
 location_33% :attributes
-	s" pasaje de salida" _% name!
-	location_32% 0 location_34% 0 0 0 0 0 _% init_location
+	s" pasaje de salida" self% name!
+	location_32% 0 location_34% 0 0 0 0 0 self% init_location
 	;attributes
 location_33% :description
 \ Descripción inacabada!!!
 	sight case
-	_%  of
+	self%  of
 		s" El paso se va haciendo menos estrecho a medida que se avanza hacia el Sur, para entonces comenzar hacia el este."
 		paragraph
 		endof
@@ -3823,13 +3831,13 @@ location_33% :description
 	;description
 location_34% :attributes
 	\ crear gravilla
-	s" pasaje de gravilla" _% name!
-	location_35% 0 0 location_33% 0 0 0 0 _% init_location
+	s" pasaje de gravilla" self% name!
+	location_35% 0 0 location_33% 0 0 0 0 self% init_location
 	;attributes
 location_34% :description
 \ Descripción inacabada!!!
 	sight case
-	_%  of
+	self%  of
 		\ anchea?!!!
 		\ crear guijarros, moho,
 		s" El paso se anchea de Oeste a Norte,"
@@ -3857,13 +3865,13 @@ location_34% :description
 	endcase
 	;description
 location_35% :attributes
-	s" puente sobre el acueducto" _% name!
-	location_40% location_34% 0 location_36% 0 location_36% 0 0 _% init_location
+	s" puente sobre el acueducto" self% name!
+	location_40% location_34% 0 location_36% 0 location_36% 0 0 self% init_location
 	;attributes
 location_35% :description
 \ Descripción inacabada!!!
 	sight case
-	_%  of
+	self%  of
 		s" Un puente se tiende de Norte a Sur sobre el curso del agua."
 		s" Resbaladizas escaleras descienden hacia el Oeste." s&
 		paragraph
@@ -3889,13 +3897,13 @@ location_35% :description
 	endcase
 	;description
 location_36% :attributes
-	s" remanso" _% name!
-	0 0 location_35% location_37% location_35% 0 0 0 _% init_location
+	s" remanso" self% name!
+	0 0 location_35% location_37% location_35% 0 0 0 self% init_location
 	;attributes
 location_36% :description
 \ Descripción inacabada!!!
 	sight case
-	_%  of
+	self%  of
 		s" Una estruendosa corriente baja con el pasaje elevado desde el Oeste, y forma un meandro arenoso."
 		s" Unas escaleras suben al Este." s&
 		paragraph
@@ -3921,13 +3929,13 @@ location_36% :description
 	endcase
 	;description
 location_37% :attributes
-	s" canal de agua" _% name!
-	0 0 location_36% location_38% 0 0 0 0 _% init_location
+	s" canal de agua" self% name!
+	0 0 location_36% location_38% 0 0 0 0 self% init_location
 	;attributes
 location_37% :description
 \ Descripción inacabada!!!
 	sight case
-	_%  of
+	self%  of
 		s" El agua baja del Oeste con renovadas fuerzas,"
 		s" dejando un estrecho paso elevado lateral para avanzar a Este o a Oeste." s&
 		paragraph
@@ -3953,13 +3961,13 @@ location_37% :description
 	endcase
 	;description
 location_38% :attributes
-	s" gran cascada" _% fname!
-	0 0 location_37% location_39% 0 0 0 0 _% init_location
+	s" gran cascada" self% fname!
+	0 0 location_37% location_39% 0 0 0 0 self% init_location
 	;attributes
 location_38% :description
 \ Descripción inacabada!!!
 	sight case
-	_%  of
+	self%  of
 		s" Cae el agua hacia el Este, descendiendo con gran fuerza hacia el canal,"
 		s" no sin antes embalsarse en un lago poco profundo." s&
 		paragraph
@@ -3985,13 +3993,13 @@ location_38% :description
 	endcase
 	;description
 location_39% :attributes
-	s" interior de la cascada" _% name!
-	0 0 location_38% 0 0 0 0 0 _% init_location
+	s" interior de la cascada" self% name!
+	0 0 location_38% 0 0 0 0 0 self% init_location
 	;attributes
 location_39% :description
 \ Descripción inacabada!!!
 	sight case
-	_%  of
+	self%  of
 		\ Crear musgo, cortina, agua, hueco!!!
 		s" Musgoso y rocoso, con la cortina de agua tras de ti,"
 		s" el nivel del agua ha crecido un poco en este curioso hueco." s&
@@ -4018,13 +4026,13 @@ location_39% :description
 	endcase
 	;description
 location_40% :attributes
-	s" explanada" _% fname!
-	0 location_35% location_41% 0 0 0 0 0 _% init_location
+	s" explanada" self% fname!
+	0 location_35% location_41% 0 0 0 0 0 self% init_location
 	;attributes
 location_40% :description
 \ Descripción inacabada!!!
 	sight case
-	_%  of
+	self%  of
 		\ Crear losas y losetas, estalactitas, panorama, escalones!!! 
 		s" Una gran explanada enlosetada contempla un bello panorama de estalactitas."
 		s" Unos casi imperceptibles escalones conducen al Este." s&
@@ -4051,13 +4059,13 @@ location_40% :description
 	endcase
 	;description
 location_41% :attributes
-	s" ídolo" _% name!
-	0 0 0 location_40% 0 0 0 0 _% init_location
+	s" ídolo" self% name!
+	0 0 0 location_40% 0 0 0 0 self% init_location
 	;attributes
 location_41% :description
 \ Descripción inacabada!!!
 	sight case
-	_%  of
+	self%  of
 		s" El ídolo parece un centinela siniestro de una gran roca que se encuentra al Sur."
 		s" Se puede volver a la explanada al Oeste." s&
 		paragraph
@@ -4085,13 +4093,13 @@ location_41% :description
 	endcase
 	;description
 location_42% :attributes
-	s" pasaje estrecho" _% name!
-	location_41% location_43% 0 0 0 0 0 0 _% init_location
+	s" pasaje estrecho" self% name!
+	location_41% location_43% 0 0 0 0 0 0 self% init_location
 	;attributes
 location_42% :description
 \ Descripción inacabada!!!
 	sight case
-	_%  of
+	self%  of
 		s" Como un pasillo que corteja el canal de agua, a su lado, baja de Norte a Sur."
 		\ s" Se aprecia un aumento de luz hacia el Sur." s&
 		paragraph
@@ -4120,13 +4128,13 @@ location_42% :description
 	endcase
 	;description
 location_43% :attributes
-	s" pasaje de la serpiente" _% name!
-	location_42% 0 0 0 0 0 0 0 _% init_location
+	s" pasaje de la serpiente" self% name!
+	location_42% 0 0 0 0 0 0 0 self% init_location
 	;attributes
 location_43% :description
 \ Descripción inacabada!!!
 	sight case
-	_%  of
+	self%  of
 		s" El pasaje sigue de Norte a Sur."
 		paragraph
 		endof
@@ -4153,13 +4161,13 @@ location_43% :description
 	endcase
 	;description
 location_44% :attributes
-	s" lago interior" _% name!
-	location_43% 0 0 location_45% 0 0 0 0 _% init_location
+	s" lago interior" self% name!
+	location_43% 0 0 location_45% 0 0 0 0 self% init_location
 	;attributes
 location_44% :description
 \ Descripción inacabada!!!
 	sight case
-	_%  of
+	self%  of
 		s" Unas escaleras dan paso a un hermoso lago interior, y siguen hacia el Oeste."
 		s" Al Norte, un oscuro y estrecho pasaje sube." s&
 		paragraph
@@ -4187,13 +4195,13 @@ location_44% :description
 	endcase
 	;description
 location_45% :attributes
-	s" cruce de pasajes" _% name!
-	0 location_47% location_44% location_46% 0 0 0 0 _% init_location
+	s" cruce de pasajes" self% name!
+	0 location_47% location_44% location_46% 0 0 0 0 self% init_location
 	;attributes
 location_45% :description
 \ Descripción inacabada!!!
 	sight case
-	_%  of
+	self%  of
 		s" Estrechos pasos permiten ir al Oeste, al Este y al Sur." 
 		paragraph
 		endof
@@ -4221,13 +4229,13 @@ location_45% :description
 	endcase
 	;description
 location_46% :attributes
-	s" hogar de Ambrosio" _% name!
-	0 0 location_45% 0 0 0 0 0 _% init_location
+	s" hogar de Ambrosio" self% name!
+	0 0 location_45% 0 0 0 0 0 self% init_location
 	;attributes
 location_46% :description
 \ Descripción inacabada!!!
 	sight case
-	_%  of
+	self%  of
 		s" Un catre, algunas velas y una mesa es todo lo que tiene Ambrosio."
 		paragraph
 		endof
@@ -4253,13 +4261,13 @@ location_46% :description
 	endcase
 	;description
 location_47% :attributes
-	s" salida de la cueva" _% fname!
-	location_45% 0 0 0 0 0 0 0 _% init_location
+	s" salida de la cueva" self% fname!
+	location_45% 0 0 0 0 0 0 0 self% init_location
 	;attributes
 location_47% :description
 \ Descripción inacabada!!! 
 	sight case
-	_%  of
+	self%  of
 		s" Por el Oeste,"
 		door% full_name s& door% >open|closed$ s&
 		door% open?  if
@@ -4311,13 +4319,13 @@ location_47% :description
 	endcase
 	;description
 location_48% :attributes
-	s" bosque a la entrada" _% name!
-	0 0 location_47% location_49% 0 0 0 0 _% init_location
+	s" bosque a la entrada" self% name!
+	0 0 location_47% location_49% 0 0 0 0 self% init_location
 	;attributes
 location_48% :description
 	\ Crear cueva!!!
 	sight case
-	_%  of
+	self%  of
 		s" Apenas se puede reconocer la entrada de la cueva, al Este."
 		s" El sendero sale del bosque hacia el Oeste." s&
 		paragraph
@@ -4347,12 +4355,12 @@ location_48% :description
 	endcase
 	;description
 location_49% :attributes
-	s" sendero del bosque" _% name!
-	0 0 location_48% location_50% 0 0 0 0 _% init_location
+	s" sendero del bosque" self% name!
+	0 0 location_48% location_50% 0 0 0 0 self% init_location
 	;attributes
 location_49% :description
 	sight case
-	_%  of
+	self%  of
 		s" El sendero recorre esta parte del bosque de Este a Oeste."
 		paragraph
 		endof
@@ -4380,12 +4388,12 @@ location_49% :description
 	endcase
 	;description
 location_50% :attributes
-	s" camino norte" _% name!
-	0 location_51% location_49% 0 0 0 0 0 _% init_location
+	s" camino norte" self% name!
+	0 location_51% location_49% 0 0 0 0 0 self% init_location
 	;attributes
 location_50% :description
 	sight case
-	_%  of
+	self%  of
 		s" El camino norte que sale de Westmorland se interna en el bosque,"
 		s" aunque en tu estado no puedes ir." s&
 		paragraph
@@ -4413,14 +4421,14 @@ location_50% :description
 	endcase
 	;description
 location_51% :attributes
-	s" Westmorland" _% fname!
-	_% ~no_article? on
-	location_50% 0 0 0 0 0 0 0 _% init_location
+	s" Westmorland" self% fname!
+	self% ~no_article? on
+	location_50% 0 0 0 0 0 0 0 self% init_location
 	;attributes
 location_51% :description
 	\ Crear mercado, plaza, villa, pueblo, castillo!!!
 	sight case
-	_%  of
+	self%  of
 		^the_village$ s" bulle de actividad con el mercado en el centro de la plaza," s&
 		s" donde se encuentra el castillo." s&
 		paragraph
@@ -4450,8 +4458,8 @@ location_51% :description
 \ Entes globales
 
 cave% :attributes
-	s" cueva" _% fname!
-	_% ~global_inside? on
+	s" cueva" self% fname!
+	self% ~global_inside? on
 	;attributes
 cave% :description
 	\ Provisional!!!
@@ -4459,8 +4467,8 @@ cave% :description
 	paragraph
 	;description
 ceiling% :attributes
-	s" techo" _% name!
-	_% ~global_inside? on
+	s" techo" self% name!
+	self% ~global_inside? on
 	;attributes
 ceiling% :description
 	\ Provisional!!!
@@ -4468,19 +4476,22 @@ ceiling% :description
 	paragraph
 	;description
 clouds% :attributes
-	s" nubes" _% fnames!
-	_% ~global_outside? on
+	s" nubes" self% fnames!
+	self% ~global_outside? on
 	;attributes
 clouds% :description
-	\ Provisional!!!
+	\ Pendiente!!!:
+	\ Distinguir no solo interiores, sino lugares en
+	\ que se puede vislumbrar el exterior.
+	\ Provisional!!!:
 	s" Los estratocúmulos que traen la nieve y que cuelgan sobre la Tierra"
 	s" en la estación del frío se han alejado por el momento. " s&
-	2 random  if  paragraph  else  sky% describe  then  \ check!!!
+	2 random  if  paragraph  else  2drop sky% describe  then  \ check!!!
 	;description
 floor% :attributes
-	s" suelo" _% name!
-	_% ~global_inside? on
-	_% ~global_outside? on
+	s" suelo" self% name!
+	self% ~global_inside? on
+	self% ~global_outside? on
 	;attributes
 floor% :description
 	\ Provisional!!!
@@ -4493,8 +4504,8 @@ floor% :description
 	then
 	;description
 sky% :attributes
-	s" cielo" _% name!
-	_% ~global_outside? on
+	s" cielo" self% name!
+	self% ~global_outside? on
 	;attributes
 sky% :description
 	\ Provisional!!!
@@ -4511,9 +4522,9 @@ inventory% :attributes
 	;attributes
 enemy% :attributes
 	\ Inacabado!!!
-	s" enemigos" _% names!
-	_% ~human? on
-	_% ~decoration? on
+	s" enemigos" self% names!
+	self% ~human? on
+	self% ~decoration? on
 	;attributes
 enemy% :description
 	\ Inacabado!!!
@@ -4534,29 +4545,29 @@ enemy% :description
 \ y para hacer los cálculos en las acciones de movimiento.
 
 north% :attributes
-	s" Norte" _% name!
-	_% ~definite_article? on
-	north_exit _% ~direction !
+	s" Norte" self% name!
+	self% ~definite_article? on
+	north_exit self% ~direction !
 	;attributes
 south% :attributes
-	s" Sur" _% name!
-	_% ~definite_article? on
-	south_exit _% ~direction !
+	s" Sur" self% name!
+	self% ~definite_article? on
+	south_exit self% ~direction !
 	;attributes
 east% :attributes
-	s" Este" _% name!
-	_% ~definite_article? on
-	east_exit _% ~direction !
+	s" Este" self% name!
+	self% ~definite_article? on
+	east_exit self% ~direction !
 	;attributes
 west% :attributes
-	s" Oeste" _% name!
-	_% ~definite_article? on
-	west_exit _% ~direction !
+	s" Oeste" self% name!
+	self% ~definite_article? on
+	west_exit self% ~direction !
 	;attributes
 up% :attributes
-	s" arriba" _% name!
-	_% ~no_article? on
-	up_exit _% ~direction !
+	s" arriba" self% name!
+	self% ~no_article? on
+	up_exit self% ~direction !
 	;attributes
 up% :description
 	am_i_outside?
@@ -4565,9 +4576,9 @@ up% :description
 	then
 	;description
 down% :attributes
-	s" abajo" _% name!
-	_% ~no_article? on
-	down_exit _% ~direction !
+	s" abajo" self% name!
+	self% ~no_article? on
+	down_exit self% ~direction !
 	;attributes
 down% :description
 	\ Provisional!!!
@@ -4579,14 +4590,14 @@ down% :description
 	;description
 
 out% :attributes
-	s" afuera" _% name!
-	_% ~no_article? on
-	out_exit _% ~direction !
+	s" afuera" self% name!
+	self% ~no_article? on
+	out_exit self% ~direction !
 	;attributes
 in% :attributes
-	s" adentro" _% name!
-	_% ~no_article? on
-	in_exit _% ~direction !
+	s" adentro" self% name!
+	self% ~no_article? on
+	in_exit self% ~direction !
 	;attributes
 	
 \ }}}###########################################################
@@ -5084,7 +5095,7 @@ variable #elements  \ Total de los elementos de una lista
 	;
 : can_be_listed?  ( a -- f )  \ ¿El ente puede ser incluido en las listas?
 	\ Inacabado!!!
-	dup protagonist <>  \ ¿No es el protagonista?
+	dup protagonist% <>  \ ¿No es el protagonista?
 	over ~decoration? @ 0=  and  \ ¿Y no es decorativo?
 	swap is_global? 0=  and  \ ¿Y no es global?
 	;
@@ -6041,7 +6052,7 @@ subsection( Mirar, examinar y registrar) \ {{{
 	dup {looked}  (do_look)
 	;action
 :action do_look_yourself  \  Acción de mirarse
-	main_complement @ ?dup 0=  if  protagonist  then
+	main_complement @ ?dup 0=  if  protagonist%  then
 	(do_look)
 	;action
 \ Pendiente!!! traducir «otear»
@@ -6702,7 +6713,7 @@ subsection( Inventario) \ {{{
 	then
 	;
 :action do_inventory  \ Acción de hacer inventario
-	protagonist content_list  \ Hace la lista en la cadena dinámica PRINT_STR
+	protagonist% content_list  \ Hace la lista en la cadena dinámica PRINT_STR
 	#listed @ case
 		0 of  you_are_carrying_nothing$ 2swap s& endof
 		1 of  you_are_carrying_only$ 2swap s& endof
@@ -7330,7 +7341,7 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 : examinar  ['] do_examine action!  ;
 ' examinar synonyms{  ex examina examino examine  }synonyms
 
-: examinarse  ['] do_examine action! protagonist complement!  ;
+: examinarse  ['] do_examine action! protagonist% complement!  ;
 ' examinarse synonyms{
 	examínese
 	examinarte examínate examínete
@@ -8087,7 +8098,7 @@ errores.
 	depth 0<> -3 and throw
 	;
 : test_location_description  ( a -- )  \ Comprueba todas las descripciones de un ente escenario
-	cr ." = Descripción principal ===================="
+	cr ." = Descripción de escenario =======" cr
 	dup my_location!
 	describe_location check_stack
 	cr ." == Mirar al Norte:" cr
@@ -8108,60 +8119,19 @@ errores.
 \	cr ." == Mirar hacia dentro:" cr
 \	in% describe_direction check_stack
 	;
-: test_location_descriptions  ( -- )  \ Comprueba todas las descripciones de todos los entes escenario
-	location_01% test_location_description
-	location_02% test_location_description
-	location_03% test_location_description
-	location_04% test_location_description
-	location_05% test_location_description
-	location_06% test_location_description
-	location_07% test_location_description
-	location_08% test_location_description
-	location_09% test_location_description
-	location_10% test_location_description
-	location_11% test_location_description
-	location_12% test_location_description
-	location_13% test_location_description
-	location_14% test_location_description
-	location_15% test_location_description
-	location_16% test_location_description
-	location_17% test_location_description
-	location_18% test_location_description
-	location_19% test_location_description
-	location_20% test_location_description
-	location_21% test_location_description
-	location_22% test_location_description
-	location_23% test_location_description
-	location_24% test_location_description
-	location_25% test_location_description
-	location_26% test_location_description
-	location_27% test_location_description
-	location_28% test_location_description
-	location_29% test_location_description
-	location_30% test_location_description
-	location_31% test_location_description
-	location_32% test_location_description
-	location_33% test_location_description
-	location_34% test_location_description
-	location_35% test_location_description
-	location_36% test_location_description
-	location_37% test_location_description
-	location_38% test_location_description
-	location_39% test_location_description
-	location_40% test_location_description
-	location_41% test_location_description
-	location_42% test_location_description
-	location_43% test_location_description
-	location_44% test_location_description
-	location_45% test_location_description
-	location_46% test_location_description
-	location_47% test_location_description
-	location_48% test_location_description
-	location_49% test_location_description
-	location_50% test_location_description
-	location_51% test_location_description
+0 value tested
+: test_description  ( a -- )  \ Comprueba la descripciones de un ente 
+	to tested
+	cr ." = Nombre =========================" cr
+	tested full_name type
+	cr ." = Descripción ====================" cr
+	tested describe check_stack
+	tested ~location? @  if  tested test_location_description  then
 	;
-: test_descriptions  \ Comprueba todas las descripciones
+: test_descriptions  \ Comprueba la descripción de todos los entes
+	#entities 0  do
+		i #>entity test_description
+	loop
 	;
 
 \eof  \ Final del programa; el resto del fichero es ignorado por SP-Forth
