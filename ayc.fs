@@ -6,7 +6,7 @@ CR .( Asalto y castigo ) \ {{{
 \ A text adventure in Spanish, written in SP-Forth.
 \ Un juego conversacional en castellano, escrito en SP-Forth.
 
-: version$  S" A-01-2011120517"  ;  version$ TYPE CR
+: version$  S" A-01-2011120700"  ;  version$ TYPE CR
 
 \ Copyright (C) 2011 Marcos Cruz (programandala.net)
 
@@ -176,7 +176,7 @@ csb_set  \ Inicializar el almacén
 \ }}}##########################################################
 \ {{{ Herramientas
 
-: ((  \ Comentarios de bloque
+: ((  ( -- )  \ Comentarios de bloque
 	\ Código tomado de:
 	\ tools.f for advtr.f   Leo Wong 27 June 02003 fyj +
 	startlog
@@ -227,14 +227,14 @@ constant /counted_string  \ Longitud máxima de una cadena contada (incluyendo l
 
 \ Títulos de sección
 
-: .s?  \ Imprime el contenido de la pila si no está vacía
+: .s?  ( -- )  \ Imprime el contenido de la pila si no está vacía
 	depth  if  cr ." Pila: " .s cr key drop  then
 	;
 : section(  ( "text" -- )  \ Notación para los títulos de sección en el código fuente
 	\ Esta palabra permite hacer tareas de depuración mientras se compila el programa;
 	\ por ejemplo detectar el origen de descuadres en la pila.
 	cr postpone .(  \ El nombre de sección terminará con: )
-	cr .s?
+	.s?
 	;
 : subsection(  ( "text" -- )  \ Notación para los títulos de subsección en el código fuente
 	[char] * emit space postpone .(  \ El nombre de subsección terminará con: )
@@ -251,7 +251,7 @@ defer main
 	\ La causa última del problema no está clara.
 	windows?  if p" ayc.exe"  else  p" ayc"  then
 	;
-: create_executable  \ Crea un ejecutable con el programa
+: create_executable  ( -- )  \ Crea un ejecutable con el programa
 	false to spf-init?  \ Desactivar la inicialización del sistema
 \	true to console?  \ Activar el modo de consola (no está claro en el manual)
 \	false to gui?  \ Desactivar el modo gráfico (no está claro en el manual)
@@ -263,7 +263,7 @@ defer main
 section( Vocabulario principal) \ {{{
 
 vocabulary ayc_vocabulary  \ Vocabulario en que se crearán las palabras del programa (no se trata del vocabulario del jugador)
-: restore_vocabularies  \ Restaura los vocabularios FORTH y AYC_VOCABULARY a su orden habitual
+: restore_vocabularies  ( -- )  \ Restaura los vocabularios FORTH y AYC_VOCABULARY a su orden habitual
 	only also  ayc_vocabulary  definitions
 	;
 restore_vocabularies
@@ -330,7 +330,7 @@ variable seed
 : random  ( n -- 0..n-1 )  rnd um* nip  ;
 \ ...................... Fin del código tomado de Gforth
 
-: randomize  \ Reinicia la semilla de generación de números aleatorios
+: randomize  ( -- )  \ Reinicia la semilla de generación de números aleatorios
 	time&date 2drop 2drop * seed !
 	;
 
@@ -379,7 +379,7 @@ variable dstack>  \ Puntero al elemento superior de la pila (o cero si está vac
 	dstack_empty? abort" Error de anidación de S{ y }S : su pila está vacía."
 	'dstack> @ dstack> --
 	;
-: s{  \ Inicia una zona de selección aleatoria de cadenas
+: s{  ( -- )  \ Inicia una zona de selección aleatoria de cadenas
 	depth dstack!
 	;
 : }s  ( a1 u1 .. an un -- a' u' )  \ Elige una cadena entre las puestas en la pila desde que se ejecutó por última vez la palabra S{
@@ -400,6 +400,12 @@ variable dstack>  \ Puntero al elemento superior de la pila (o cero si está vac
 : s?+  ( a1 u1 a2 u3 -- a3 u3 )  \ Devuelve una cadena concatenada o no (al azar) a otra
 	s? s+
 	;
+: s+?  ( a1 u1 a2 u3 -- a3 u3 | a3 0 )  \ Devuelve dos cadenas concatenadas o (al azar) una cadena vacía
+	s+ s?
+	;
+: s&?  ( a1 u1 a2 u3 -- a3 u3 | a3 0 )  \ Devuelve dos cadenas concatenadas (con separación) o (al azar) una cadena vacía
+	s& s?
+	;
 : }s?  ( a1 u1 .. an un -- a' u' | a' 0 )  \ Elige una cadena entre las puestas en la pila desde que se ejecutó S{ y la vacía con el 50% de probabilidad
 	}s s?
 	;
@@ -409,9 +415,27 @@ variable dstack>  \ Puntero al elemento superior de la pila (o cero si está vac
 : }s?+  ( a0 u0 a1 u1 .. an un -- a' u' )  \ Elige una cadena entre las puestas en la pila desde que se ejecutó S{ y (con un 50% de probabilidad) la concatena (sin separación) a una cadena anterior
 	}s? s+
 	;
+: s&{  ( a1 u1 a2 u2 -- a3 u3 )  \ Concatena dos cadenas (con separación) e inicia una zona de selección aleatoria de cadenas
+	s& s{
+	;
+: s+{  ( a1 u1 a2 u2 -- a3 u3 )  \ Concatena dos cadenas (sin separación) e inicia una zona de selección aleatoria de cadenas
+	s+ s{
+	;
 : sswap  ( a1 u1 a2 u2 -- a1 u1 a2 u2 | a2 u2 a1 u1 )  \ Intercambia (con 50% de probabililad) la posición de dos textos
 	2 random  if  2swap  then
 	;
+: both?  ( a1 u1 a2 u2 -- a3 u3 )  \ Devuelve al azar una de dos cadenas, o bien ambas unidas en cualquier orden por «y»
+	\ Ejemplo: si los parámetros fueran «espesa» y «fría»,
+	\ los cuatro resultados posibles serían: «espesa», «fría», «fría y espesa» y «espesa y fría».
+	sswap s" y" 2swap s&? s&
+	;
+: both?&  ( a0 u0 a1 u1 a2 u2 -- a3 u3 )  \ Concatena (con separación) al azar una de dos cadenas (o bien ambas unidas en cualquier orden por «y») a una tercera cadena
+	both? s&
+	;
+: both?+  ( a0 u0 a1 u1 a2 u2 -- a3 u3 )  \ Concatena (sin separación) al azar una de dos cadenas (o bien ambas unidas en cualquier orden por «y») a una tercera cadena
+	both? s&
+	;
+	
 
 \ }}}###########################################################
 section( Variables) \ {{{
@@ -433,7 +457,7 @@ variable talked_to_the_leader?  \ ¿El protagonista ha hablado con el líder?
 variable hacked_the_log?  \ ¿El protagonista ha afilado el tronco?
 variable hold#  \ Contador de cosas llevadas por el protagonista (no usado!!!)
 
-: init_plot  \ Inicializa las variables de la trama
+: init_plot  ( -- )  \ Inicializa las variables de la trama
 	battle# off
 	ambrosio_follows? off
 	talked_to_the_leader? off
@@ -525,52 +549,52 @@ constant +lighter  \ Diferencia entre los dos niveles de brillo
 \ }}}---------------------------------------------
 subsection( Colores utilizados) \ {{{
 
-: debug_color  \ Pone el color de texto usado en los mensajes de depuración
+: debug_color  ( -- )  \ Pone el color de texto usado en los mensajes de depuración
 	red paper  white pen
 	;
-: default_color  \ Pone el color de texto predeterminado en el sistema
+: default_color  ( -- )  \ Pone el color de texto predeterminado en el sistema
 	trm.foreground-default
 	trm.background-default
 	trm.reset
 	3 sgr 
 	;
-: common_paper  \ Pone el color de papel común a todas las modalidades de texto
+: common_paper  ( -- )  \ Pone el color de papel común a todas las modalidades de texto
 	black paper
 	;
-: about_color  \ Pone el color de texto de los créditos
-	common_paper  white pen
+: about_color  ( -- )  \ Pone el color de texto de los créditos
+	common_paper  dark_gray pen
 	;
-: error_color  \ Pone el color de texto de los errores
+: error_color  ( -- )  \ Pone el color de texto de los errores
 	common_paper  light_red pen  
 	;
-: command_prompt_color  \ Pone el color de texto del presto de entrada de comandos
+: command_prompt_color  ( -- )  \ Pone el color de texto del presto de entrada de comandos
 	common_paper  cyan pen
 	;
-: pause_prompt_color  \ Pone el color de texto del presto de pausa de impresión
+: pause_prompt_color  ( -- )  \ Pone el color de texto del presto de pausa de impresión
 	common_paper  green pen
 	;
-: scene_prompt_color  \ Pone el color de texto del presto de fin de escena
+: scene_prompt_color  ( -- )  \ Pone el color de texto del presto de fin de escena
 	common_paper  green pen
 	;
-: input_color  \ Pone el color de texto para la entrada de comandos
+: input_color  ( -- )  \ Pone el color de texto para la entrada de comandos
 	common_paper  light_cyan pen
 	;
-: location_name_color  \ Pone el color de texto del nombre de los escenarios
+: location_name_color  ( -- )  \ Pone el color de texto del nombre de los escenarios
 	green paper  black pen
 	;
-: location_description_color  \ Pone el color de texto de las descripciones de los entes escenario
+: location_description_color  ( -- )  \ Pone el color de texto de las descripciones de los entes escenario
 	common_paper  green pen
 	;
-: description_color  \ Pone el color de texto de las descripciones de los entes que no son escenarios
-	common_paper  white pen
+: description_color  ( -- )  \ Pone el color de texto de las descripciones de los entes que no son escenarios
+	common_paper  dark_gray pen
 	;
-: narration_color  \ Pone el color de texto de la narración
-	common_paper  white pen
+: narration_color  ( -- )  \ Pone el color de texto de la narración
+	common_paper  dark_gray pen
 	;
-: speak_color  \ Pone el color de texto de los diálogos
+: speak_color  ( -- )  \ Pone el color de texto de los diálogos
 	common_paper  brown pen 
 	;
-: answer_color  \ Pone el color de texto de las preguntas de tipo «sí o no»
+: answer_color  ( -- )  \ Pone el color de texto de las preguntas de tipo «sí o no»
 	common_paper  white pen
 	;
 
@@ -580,7 +604,7 @@ subsection( Demo de colores) \ {{{
 : color_bar  ( u -- )  \ Imprime una barra de 64 espacios con el color indicado
 	paper cr 64 spaces  black paper space
 	;
-: color_demo  \ Prueba los colores
+: color_demo  ( -- )  \ Prueba los colores
 	cr ." Colores descritos como se ven en Debian"
 	black color_bar ." negro"
 	dark_gray color_bar ." gris oscuro"
@@ -609,7 +633,7 @@ subsection( Demo de colores) \ {{{
 \ }}}---------------------------------------------
 subsection( Otros atributos) \ {{{
 
-: bold  \ Activa la negrita
+: bold  ( -- )  \ Activa la negrita
 	trm.bold 1 sgr
 	;
 : underline  ( f -- )  \ Activa o desactiva el subrayado
@@ -636,29 +660,29 @@ subsection( Cursor) \ {{{
 : cursor!  ( u1 u2 -- )  \ Actualiza las variables del cursor en columna u1 y fila u2
 	cursor_y !  cursor_x !
 	;
-: init_cursor  \ Pone a cero las variables del cursor
+: init_cursor  ( -- )  \ Pone a cero las variables del cursor
 	0 dup cursor!
 	;
 : at-xy  ( u1 u2 -- )  \ Sitúa el cursor en columna u1 y fila u2
 	2dup trm+move-cursor cursor!
 	;
-: home  \ Sitúa el cursor en la esquina superior izquierda
+: home  ( -- )  \ Sitúa el cursor en la esquina superior izquierda
 	0 dup at-xy
 	;
 
 \ }}}---------------------------------------------
 subsection( Borrado de pantalla) \ {{{
 
-: page  \ Borra la pantalla y sitúa el cursor en su origen
+: page  ( -- )  \ Borra la pantalla y sitúa el cursor en su origen
 	trm+erase-display home
 	;
-: clear_screen  \ Restaura el color de tinta y borra la pantalla
+: clear_screen  ( -- )  \ Restaura el color de tinta y borra la pantalla
 	gray pen  page  \ Nota!!!: ¿Por qué esa tinta?
 	;
-: clear_screen_for_location  \ Restaura el color de tinta y borra la pantalla para cambiar de escenario
+: clear_screen_for_location  ( -- )  \ Restaura el color de tinta y borra la pantalla para cambiar de escenario
 	location_page? @  if  clear_screen  then
 	;
-: init_screen  \ Prepara la pantalla la primera vez
+: init_screen  ( -- )  \ Prepara la pantalla la primera vez
 	trm+reset init_cursor default_color home
 	;
 
@@ -674,10 +698,10 @@ section( Depuración) \ {{{
 	else  2drop 
 	then
 	;
-: wait  \ Hace una pausa
+: wait  ( -- )  \ Hace una pausa
 	1000 2 * pause
 	;
-: .stack  \ Imprime el estado de la pila
+: .stack  ( -- )  \ Imprime el estado de la pila
 	[false]  [if]  \ versión antigua!!!
 	." Pila" depth
 	if  ." :" .s ." ( " depth . ." )"
@@ -687,19 +711,19 @@ section( Depuración) \ {{{
 	depth  if  cr ." Pila: " .s cr  then
 	[then]
 	;
-: .csb  \ Imprime el estado del almacén circular de cadenas
+: .csb  ( -- )  \ Imprime el estado del almacén circular de cadenas
 	." Espacio para cadenas:" csb ?
 	;
-: .cursor  \ Imprime las coordenadas del cursor
+: .cursor  ( -- )  \ Imprime las coordenadas del cursor
 	." Cursor:" cursor_x ? cursor_y ?
 	;
-: .system_status  \ Muestra el estado del sistema
+: .system_status  ( -- )  \ Muestra el estado del sistema
 	( .csb ) .stack ( .cursor )
 	;
 : .debug_message  ( a u -- )  \ Imprime el mensaje del punto de chequeo, si no está vacío
 	dup  if  cr type cr  else  2drop  then
 	;
-: debug_pause  \ Pausa tras mostrar la información de depuración
+: debug_pause  ( -- )  \ Pausa tras mostrar la información de depuración
 	[debug_pause]  [if]  depth  if  key drop  then  [then]
 	;
 : debug  ( a u -- )  \ Punto de chequeo: imprime un mensaje y muestra el estado del sistema
@@ -785,45 +809,45 @@ section( Textos variables)  \ {{{
 : old_man$  ( -- a u )  \ Devuelve una forma de llamar al líder de los refugiados
 	s{ s" hombre" s" viejo" s" anciano" }s
 	;
-: with_him$  ( -- a u )
+: with_him$  ( -- a u )  \ Devuelve una variante de «consigo» o una cadena vacía
 	s{ 0$ s" consigo" s" encima" }s
 	;
-: with_you$  ( -- a u )
+: with_you$  ( -- a u )  \ Devuelve «contigo» o una cadena vacía
 	s" contigo" s?
 	;
-: carries$  ( -- a u )
+: carries$  ( -- a u )  \ Devuelve una variante de «lleva»
 	s{ s" tiene" s" lleva" }s
 	;
-: you_carry$  ( -- a u )
+: you_carry$  ( -- a u )  \ Devuelve una variante de «llevas»
 	s{ s" tienes" s" llevas" }s
 	;
-: ^you_carry$  ( -- a u )
+: ^you_carry$  ( -- a u )  \ Devuelve una variante de «Llevas» (con la primera mayúscula)
 	you_carry$ ^uppercase
 	;
-: now$  ( -- a u )
+: now$  ( -- a u )  \ Devuelve una variante de «ahora» o una cadena vacía
 	s{ 0$ s" ahora" s" en este momento" s" en estos momentos" }s
 	;
 : now_$  ( -- a u )  \ Devuelve el resultado de NOW$ o una cadena vacía
 	\ Sirve como versión de NOW$ con mayor probabilidad devolver una cadena vacía.
 	now$ s?
 	;
-: here$  ( -- a u )
+: here$  ( -- a u )  \ Devuelve una variante de «aquí» o una cadena vacía
 	s{ 0$ s" en este lugar" s" por aquí" s" aquí" }s
 	;
-: now|here$  ( -- a u )
+: now|here$  ( -- a u )  \ Devuelve el resultado de NOW$ o el de HERE$ 
 	s{ now$ here$ }s
 	;
-: only$  ( -- a u )
+: only$  ( -- a u )  \ Devuelve una variante de «solamente»
 	s{ s" tan solo" s" solo" s" solamente" s" únicamente" }s
 	;
-: ^only$  ( -- a u )
+: ^only$  ( -- a u )  \ Devuelve una variante de «Solamente» (con la primera mayúscula)
 	\ Nota: no se puede calcular este texto a partir de la versión en minúsculas, porque el cambio entre minúsculas y mayúsculas no funciona con caracteres codificados en UTF-8 de más de un octeto.
 	s{ s" Tan solo" s" Solo" s" Solamente" s" Únicamente" }s
 	;
-: only_$  ( -- a u )
+: only_$  ( -- a u )  \ Devuelve una variante de «solamente» o una cadena vacía
 	only$ s?
 	;
-: ^only_$  ( -- a u )
+: ^only_$  ( -- a u )  \ Devuelve una variante de «Solamente» (con la primera mayúscula) o u una cadena vacía
 	^only$ s?
 	;
 : again$  ( -- a u )
@@ -845,14 +869,20 @@ section( Textos variables)  \ {{{
 : toward$&  ( a1 u1 -- a2 u2 )
 	toward$ s&
 	;
-: toward_the(feminine)$  ( -- a u )
+: toward_the(f)$  ( -- a u )
 	toward$ s" la" s&
 	;
-: toward_the(masculine)$  ( -- a u )
+: toward_the(m)$  ( -- a u )
 	s{ s" al" s" hacia el" }s
 	;
-: ^toward_the(masculine)$  ( -- a u )
-	toward_the(masculine)$ ^uppercase
+: ^toward_the(m)$  ( -- a u )
+	toward_the(m)$ ^uppercase
+	;
+: to_go_back$  ( -- a u )
+	s{ s" volver" s" regresar" }s
+	;
+: remains$  ( -- a u )
+	s{ s" resta" s" queda" }s
 	;
 : possible1$  ( -- a u )  \ Devuelve «posible» o una cadena vacía
 	s" posible" s?
@@ -964,12 +994,30 @@ section( Textos variables)  \ {{{
 : the_pass$  ( -- a u )
 	s" el" pass$ s&
 	;
+: pass_way$  ( -- a u )  \ Devuelve una variante de «pasaje»
+	s{ s" paso" s" pasaje" }s
+	;
+: the_pass_way$  ( -- a u )  \ Devuelve una variante de «el pasaje»
+	s" el" pass_way$ s&
+	;
+: ^the_pass_way$  ( -- a u )  \ Devuelve una variante de «El pasaje» (con la primera mayúscula)
+	the_pass_way$ ^uppercase
+	;
+: pass_ways$  ( -- a u )  \ Devuelve una variante de «pasajes»
+	pass_way$ s" s" s+
+	;
+: ^pass_ways$  ( -- a u )  \ Devuelve una variante de «Pasajes» (con la primera mayúscula)
+	pass_ways$ ^uppercase
+	;
 : surrounds$  ( -- a u )
 	\ Comprobar traducción!!!
 	s{ s" rodea" s" circunvala" s" cerca" s" circuye" s" da un rodeo a" }s
 	;
 : leads$  ( -- a u )
 	s{ s" lleva" s" conduce" }s
+	;
+: lead$  ( -- a u )
+	leads$ s" n" s+
 	;
 : can_see$  ( -- a u )  \ Devuelve una forma de decir «ves»
 	s{ s" ves" s" se ve" s" puedes ver" }s
@@ -1017,6 +1065,11 @@ section( Textos variables)  \ {{{
 : over_there$  ( -- a u )
 	s{ s" allí" s" allá" }s
 	;
+: goes_down_into_the_deep$  ( -- a u )  \ Devuelve una variante de «desciende a las profundidades»
+	s{ s" desciende" toward$& s" se adentra en"
+	s" conduce" toward$& s" baja" toward$& }s
+	s" las profundidades" s&
+	;
 : in_that_direction$  ( -- a u )  \ Devuelve una variante de «en esa dirección»
 	s{ s" en esa dirección" s{ s" por" s" hacia" }s over_there$ s& }s
 	;
@@ -1052,7 +1105,10 @@ s" de Westmorland" sconstant of_westmorland$
 : of_the_village$  ( -- a u )
 	s" de" the_village$ s&
 	;
-: they_block$  ( -- a u )
+: (it)_blocks$  ( -- a u )
+	s{ s" impide" s" bloquea" }s
+	;
+: (they)_block$  ( -- a u )
 	s{ s" impiden" s" bloquean" }s
 	;
 : (rocks)_on_the_floor$  ( -- a u )  \ Devuelve un texto sobre las rocas que ya han sido desmoronadas
@@ -1070,7 +1126,7 @@ s" de Westmorland" sconstant of_westmorland$
 : ^that_way$  ( -- a u )  \ Devuelve una variante de «En esa dirección» (con la primera letra mayúscula)
 	that_way$ ^uppercase
 	;
-: gets_wider$  ( -- a u )  \ Devuelve una variane de «se ensancha»
+: gets_wider$  ( -- a u )  \ Devuelve una variante de «se ensancha»
 	s{
 	s" se" s{ s" anchea" s" ensancha" s" va ensanchando"
 	s" va haciendo más ancho" s" hace más ancho"
@@ -1079,16 +1135,61 @@ s" de Westmorland" sconstant of_westmorland$
 	s{ s" ensánchase" s" hácese más ancho" s" vuélvese más ancho" }s
 	}s
 	;
-: (they)_go_down$  ( -- a u )  \ Devuelve una variante de «bajan»
-	s{ s" bajan" s" descienden" }s
+: (narrow)$  ( -- a u )
+	s{ s" estrech" s" angost" }s
 	;
-
+: narrow(f)$  ( -- a u )  \ Devuelve una variante de «estrecha»
+	(narrow)$ s" a" s+
+	;
+: narrow(m)$  ( -- a u )  \ Devuelve una variante de «estrecho»
+	(narrow)$ s" o" s+
+	;
+: narrow(mp)$  ( -- a u )  \ Devuelve una variante de «estrechos»
+	narrow(m)$ s" s" s+
+	;
+: ^narrow(mp)$  ( -- a u )  \ Devuelve una variante de «Estrechos» (con la primera mayúscula)
+	narrow(mp)$  ^uppercase
+	;
+: gets_narrower(f)$  ( -- a u )  \ Devuelve una variante de «se hace más estrecha» (femenino)
+	s{
+	s" se" s{ s" estrecha" s" va estrechando" }s&
+	2dup \ Aumentar las probabilidades de la primera variante
+	s" se" s{ s" va haciendo más" s" hace más"
+	s" vuelve más" s" va volviendo más" }s& narrow(f)$ s&
+	2dup \ Aumentar las probabilidades de la segunda variante
+	s{ s" estréchase" s{ s" hácese" s" vuélvese" }s s" más" s& narrow(f)$ s& }s
+	}s
+	;
+: goes_up$  ( -- a u )  \ Devuelve una variante de «sube»
+	s{ s" sube" s" asciende" }s
+	;
+: goes_down$  ( -- a u )  \ Devuelve una variante de «baja»
+	s{ s" baja" s" desciende" }s
+	;
+: (they)_go_down$  ( -- a u )  \ Devuelve una variante de «bajan»
+	goes_down$ s" n" s+
+	;
+: almost_invisible(plural)$  ( -- a u )  \ Devuelve una variante de «casi imperceptibles»
+	s" casi" s{ s" imperceptibles" s" invisibles" s" desapercibidos" }s
+	\ Confirmar significados!!!
+	;
+: ^a_narrow_pass_way$  ( -- a u )
+	s" Un" narrow(m)$ pass_way$ sswap s& s&
+	;
+: beautiful(m)$  ( -- a u )
+	s{ s" bonito" s" bello" s" hermoso" }s
+	;
+: a_snake_blocks_the_way$  ( -- a u )
+	s" Una serpiente"
+	s{ s" bloquea" s" está bloqueando" }s&
+	the_pass$ s& toward_the(m)$ s" Sur" s& s?&
+	;
 \ }}}###########################################################
 section( Cadena dinámica para impresión) \ {{{
 
 str-create print_str  \ Cadena dinámica para almacenar el texto antes de imprimirlo justificado
 
-: «»-clear  \ Vacía la cadena dinámica PRINT_STR
+: «»-clear  ( -- )  \ Vacía la cadena dinámica PRINT_STR
 	print_str str-clear
 	;
 : «»!  ( a u -- )  \ Guarda una cadena en la cadena dinámica PRINT_STR
@@ -1132,13 +1233,13 @@ subsection( Presto de pausa en la impresión de párrafos) \ {{{
 s" ..." sconstant pause_prompt$ 
 1 value /pause_prompt  \ Número de líneas de intervalo para mostrar un presto
 
-: pause_prompt_key  \ Espera la pulsación de una tecla y actualiza con ella el estado del desplazamiento
+: pause_prompt_key  ( -- )  \ Espera la pulsación de una tecla y actualiza con ella el estado del desplazamiento
 	key  bl =  scroll !
 	;
-: .pause_prompt$  \ Imprime el presto de pausa
+: .pause_prompt$  ( -- )  \ Imprime el presto de pausa
 	pause_prompt$ type
 	;
-: .pause_prompt  \ Imprime el presto de pausa, espera una tecla y borra el presto
+: .pause_prompt  ( -- )  \ Imprime el presto de pausa, espera una tecla y borra el presto
 	trm+save-cursor
 	pause_prompt_color .pause_prompt$ pause_prompt_key
 	trm+erase-line  trm+restore-cursor
@@ -1184,18 +1285,18 @@ dtm-create deadline  \ Variable para guardar el momento final de las pausas
 	begin  no_time_left? no_key? or  until
 	begin  no_time_left? key? or  until
 	;
-: short_pause  \ Hace una pausa corta; se usa entre ciertos párrafos
+: short_pause  ( -- )  \ Hace una pausa corta; se usa entre ciertos párrafos
 	\ duración provisional!!!
 	1 wait_for_key_press
 	;
-: long_pause  \ Hace una pausa larga; se usa tras cada escena
+: long_pause  ( -- )  \ Hace una pausa larga; se usa tras cada escena
 	\ duración provisional!!!
 	1 wait_for_key_press
 	;
-: .scene_prompt$  \ Imprime el presto de fin de escena
+: .scene_prompt$  ( -- )  \ Imprime el presto de fin de escena
 	scene_prompt_color .pause_prompt$ 
 	;
-: end_of_scene  \ Muestra un presto y hace una pausa larga. 
+: end_of_scene  ( -- )  \ Muestra un presto y hace una pausa larga. 
 	trm+save-cursor
 	.scene_prompt$ long_pause
 	trm+erase-line  trm+restore-cursor
@@ -1207,7 +1308,7 @@ subsection( Impresión de párrafos ajustados) \ {{{
 
 variable /indentation  \ Longitud de la indentación de cada párrafo
 8 constant max_indentation
-: line++  \ Incrementa el número de línea, si se puede
+: line++  ( -- )  \ Incrementa el número de línea, si se puede
 	\ No se usa!!!
 	\ Versión para no pasar del máximo:
 	\   cursor_y @ 1+ max_y 1- min cursor_y !
@@ -1218,7 +1319,7 @@ variable /indentation  \ Longitud de la indentación de cada párrafo
 	\ 2011-12-01 Cambio!!!:
 	cursor_y @ 1+ dup max_y < and  0 swap at-xy
 	;
-: cr+  \ Hace un salto de línea y actualiza el cursor
+: cr+  ( -- )  \ Hace un salto de línea y actualiza el cursor
 	cr cursor_y ++ cursor_x off
 	;
 : ?cr  ( u -- )  \ Hace un salto de línea si hace falta
@@ -1227,7 +1328,7 @@ variable /indentation  \ Longitud de la indentación de cada párrafo
 : not_at_the_top?  ( -- f )  \ ¿La línea de pantalla donde se imprimirá es la primera?
 	cursor_y @ 0>
 	;
-: indentation+  \ Añade indentación ficticia (con un carácter distinto del espacio) a la cadena dinámica PRINT_STR, si la línea del cursor no es la primera
+: indentation+  ( -- )  \ Añade indentación ficticia (con un carácter distinto del espacio) a la cadena dinámica PRINT_STR, si la línea del cursor no es la primera
 	not_at_the_top?  if
 		[char] X /indentation @ char>string «+
 	then
@@ -1235,7 +1336,7 @@ variable /indentation  \ Longitud de la indentación de cada párrafo
 : indentation-  ( a1 u1 -- a2 u2 )  \ Quita a una cadena tantos caracteres por la izquierda como el valor de la indentación
 	/indentation @ -  swap /indentation @ +  swap
 	;
-: indent  \ Mueve el cursor a la posición requerida por la indentación
+: indent  ( -- )  \ Mueve el cursor a la posición requerida por la indentación
 	/indentation @ ?dup  if  trm+move-cursor-right  then
 	;
 : indentation>  ( a1 u1 -- a2 u2 ) \ Prepara la indentación de una línea
@@ -1256,7 +1357,7 @@ variable /indentation  \ Longitud de la indentación de cada párrafo
 	dup #lines !  scroll on
 	0  ?do  .line  i .pause_prompt?  loop
 	;
-: (paragraph)  \ Imprime la cadena dinámica PRINT_STR ajustándose al ancho de la pantalla
+: (paragraph)  ( -- )  \ Imprime la cadena dinámica PRINT_STR ajustándose al ancho de la pantalla
 	indentation+  \ Añade indentación ficticia
 	print_str str-get max_x str+columns  \ Divide la cadena dinámica PRINT_STR en tantas líneas como haga falta
 	[debug]  [if]  s" En (PARAGRAPH)" debug  [then]  \ Depuración!!!
@@ -1355,11 +1456,12 @@ estructuras de datos es -- (dos guiones); para usar este
 nombre de palabra para otro uso (decrementar variables), en
 este programa se ha creado un alias para la palabra -- con
 el nombre de OFFSET: (tomado de las utilidades ToolBelt de
-Will Baden, de 2003).
+Will Baden, de 2003), aunque el nombre habitual en la
+mayoría de las implementaciones es FIELD .
 
-El funcionamiento de OFFSET: es muy sencillo. Toma de la pila
-dos valores: el inferior es el desplazamiento en octetos
-desde el inicio del «registro» (que en este programa
+El funcionamiento de OFFSET: es muy sencillo. Toma de la
+pila dos valores: el inferior es el desplazamiento en
+octetos desde el inicio del «registro» (que en este programa
 denominamos «ficha»); el superior es el número de octetos
 necesarios para almacenar el campo a crear. Con ellos crea
 una palabra nueva (cuyo nombre es tomado del flujo de
@@ -1371,52 +1473,59 @@ ficha de datos, y cuando sea ejecutada lo sumará al número
 de la parte superior de la pila, que deberá ser la dirección
 en memoria de la ficha.
 
-Aunque hay campos binarios que podrían almacenarse en un
-solo bitio, y otros que no precisarían más de un octeto,
-para simplificar el código optamos por almacenar cada campo
-en una «celda» (concepto de ANS Forth, unidad en que se mide
-el tamaño de cada elemento de la pila y equivalente a 4
-octetos en un sistema Forth de 32 bitios).  El motivo es
-facilitar el desarrollo.  Cuando la memoria usada por los
-campos de datos varía, las operaciones para leer y modificar
-los campos varían también en cada caso.  Para evitar esto se
-podría escribir fácilmente un conjunto de palabras que
-actuara como capa superior para manipular los campos de
-datos, escondiendo las interioridades de cómo se guarda
-efectivamente cada dato en la ficha (en un bitio, en un
-octeto, en dos o en cuatro).  No obstante, para simplificar
-aun más, y dado que no hay escasez de memoria, hemos optado
-por usar el mismo tamaño en todos los campos.  De este modo
-la aplicación puede usar con todos los campos las palabras
-habituales en Forth para leer y escribir direcciones de la
-memoria. 
+En cada ficha hay campos binarios que podrían almacenarse en
+un solo bitio, y otros que no precisarían más de un octeto.
+Pero cuando la memoria usada por cada campo no es la misma
+para todos, las operaciones para leer y modificar los campos
+tienen ser diferentes también en cada caso.  Para evitar
+este inconveniente se podría escribir fácilmente un conjunto
+de palabras que actuara como capa superior de abstracción
+para manipular los campos de datos, escondiendo las
+interioridades de cómo se guarda efectivamente cada dato en
+la ficha (en un bitio, en un octeto, o en varios).
 
-El contenido de un campo puede ser un número, un indicador
-buleano o una dirección de memoria (de una cadena, de una
-palabra o de otra estructura de datos). Para facilitar la
-legibilidad, los nombres de los campos empiezan con el signo
-«>». Los que contienen datos buleanos terminan con «?».  Los
-que contienen direcciones de ejecución terminan con «_xt».
-Los que contienen códigos de error terminan «_error#».
+No obstante, dado que la cantidad de datos es pequeña y la
+memoria disponible no es un condicionante, y con el objetivo
+de simplificar el código, hemos optado por usar el mismo
+tamaño en todos los campos: una «celda».
+
+La «celda» es un concepto de ANS Forth: es la unidad en que
+se mide el tamaño de cada elemento de la pila, y capaz por
+tanto de contener una dirección de memoria.  En los sistemas
+Forth de 8 o 16 bitios una celda equivale a un valor de 16
+bitios; en los sistemas Forth de 32 bitios, como SP-Forth,
+una celda equivale a un valor de 32 bitios.
+
+El contenido de un campo puede representar un número (con o
+sin signo), un indicador buleano o una dirección de memoria
+(de una cadena contada, de una cadena dinámica, de una
+palabra de Forth, de la ficha de otro ente, de otra
+estructura de datos...).
+
+Para facilitar la legibilidad, los nombres de los campos
+empiezan con el signo de tilde («~»); los que contienen
+datos buleanos terminan con una interrogación («?»);  los
+que contienen direcciones de ejecución terminan con «_xt»;
+los que contienen códigos de error terminan «_error#».
 
 [then]  \ .......................................
 
 0 \ Valor inicial de desplazamiento para el primer campo
 cell offset: ~name_str  \ Dirección de una cadena dinámica que contendrá el nombre del ente
 cell offset: ~personal_name?  \ Indicador: ¿el nombre del ente es un nombre propio?
-cell offset: ~feminine?  \ Indicador: ¿el género gramatical del nombre es femenino?
-cell offset: ~plural?  \ Indicador: ¿el nombre es plural?
+cell offset: ~feminine_name?  \ Indicador: ¿el género gramatical del nombre es femenino?
+cell offset: ~plural_name?  \ Indicador: ¿el nombre es plural?
 cell offset: ~no_article?  \ Indicador: ¿el nombre no debe llevar artículo?
 cell offset: ~definite_article?  \ Indicador: ¿el artículo debe ser siempre el artículo definido?
 cell offset: ~description_xt  \ Dirección de ejecución de la palabra que describe el ente
 cell offset: ~init_xt  \ Dirección de ejecución de la palabra que inicializa las propiedades de un ente (experimental!!!)
 cell offset: ~character?  \ Indicador: ¿el ente es un personaje?
 cell offset: ~conversations  \ Contador para personajes: número de conversaciones tenidas con el protagonista
-cell offset: ~decoration?  \ Indicador: ¿el ente forma parte de la decoración de su lugar?
+cell offset: ~decoration?  \ Indicador: ¿el ente forma parte de la decoración de su localización?
 cell offset: ~take_error#  \ Identificador del error adecuado al intentar tomar el ente (cero si no hay error); se usa para casos especiales; los errores apuntados por este campo no reciben parámetros salvo en WHAT
 cell offset: ~break_error#  \ Identificador del error adecuado al intentar romper el ente (cero si no hay error); se usa para casos especiales; los errores apuntados por este campo no reciben parámetros salvo en WHAT
-cell offset: ~global_outside?  \ Indicador ¿el ente es global (común) en los lugares al aire libre?
-cell offset: ~global_inside?  \ Indicador ¿el ente es global (común) en los lugares interiores? 
+cell offset: ~global_outside?  \ Indicador ¿el ente es global (común) en los escenarios al aire libre?
+cell offset: ~global_inside?  \ Indicador ¿el ente es global (común) en los escenarios interiores? 
 cell offset: ~owned?  \ Indicador: ¿el ente pertenece al protagonista? 
 cell offset: ~cloth?  \ Indicador: ¿el ente es una prenda que puede ser llevada como puesta?
 cell offset: ~worn?  \ Indicador: ¿el ente, que es una prenda, está puesto? 
@@ -1426,8 +1535,8 @@ cell offset: ~vegetal?  \ Indicador: ¿es vegetal?
 cell offset: ~animal?  \ Indicador: ¿es animal? 
 cell offset: ~human?  \ Indicador: ¿es humano? 
 cell offset: ~open?  \ Indicador: ¿está abierto? 
-cell offset: ~location?  \ Indicador: ¿es un lugar? 
-cell offset: ~location  \ Identificador del ente en que está localizado (sea lugar, contenedor, personaje o «limbo»)
+cell offset: ~location?  \ Indicador: ¿es un escenario? 
+cell offset: ~location  \ Identificador del ente en que está localizado (sea escenario, contenedor, personaje o «limbo»)
 cell offset: ~location_plot_xt  \ Dirección de ejecución de la palabra que se ocupa de la trama del escenario
 cell offset: ~familiar  \ Contador de familiaridad (cuánto le es conocido el ente al protagonista)
 cell offset: ~north_exit  \ Ente de destino hacia el Norte
@@ -1440,7 +1549,9 @@ cell offset: ~out_exit  \ Ente de destino hacia fuera
 cell offset: ~in_exit  \ Ente de destino hacia dentro
 cell offset: ~direction  \ Desplazamiento del campo de dirección al que corresponde el ente (solo se usa en los entes que son direcciones)
 \ Campos omitidos porque aún no se usan!!!:
-\ cell offset: ~lock?  \ Indicador: ¿está cerrado con cerrojo? 
+\ cell offset: ~lock?  \ Indicador: ¿está cerrado con llave? 
+\ cell offset: ~openable?  \ Indicador: ¿es abrible? 
+\ cell offset: ~lockable?  \ Indicador: ¿es cerrable con llave? 
 \ cell offset: ~desambiguation_xt  \ Dirección de ejecución de la palabra que desambigua e identifica el ente
 \ cell offset: ~container?  \ Indicador: ¿es un contenedor?
 \ cell offset: ~stamina  \ Energía de los entes vivos
@@ -1470,6 +1581,9 @@ frecuentes con los entes.
 
 defer protagonist%  \ Vector que después se redirigirá a la ficha del protagonista en la base de datos
 
+\ ------------------------------------------------
+\ Interfaz para los campos de dirección
+
 ' ~north_exit alias ~first_exit  \ Primera salida definida en la ficha
 ' ~in_exit alias ~last_exit  \ Última salida definida en la ficha
 
@@ -1493,26 +1607,275 @@ last_exit cell+ first_exit - constant /exits  \ Espacio en octetos ocupado por l
 	\ a = Contenido de un campo de salida de un ente (que será el ente de destino, o cero)
 	no_exit <>
 	;
-: north_exit?  ( a -- f )  \ ¿El ente tiene salida por el norte?
-	\ a = Ente
+: has_north_exit?  ( a -- f )  \ ¿Tiene un ente salida por el Norte?
 	~north_exit @ exit?
 	;
-	
-: living_being?  ( a -- f )  \ ¿El ente es un ser vivo (aunque esté muerto)?
-	dup ~vegetal? @
-	over ~animal? @ or
-	swap ~human? @ or
+: has_east_exit?  ( a -- f )  \ ¿Tiene un ente salida por el Este?
+	~east_exit @ exit?
 	;
-: known?  ( a -- f )  \ El ente es conocido del protagonista?
-	dup ~owned? @
-	swap ~familiar @ 0> or
-	;
-: open?  ( a -- f )  \ ¿Está abierto un ente?
+
+\ ------------------------------------------------
+\ Interfaz para leer y modificar algunos campos frecuentes
+
+0  [if]  \ ......................................
+
+Las palabras que siguen permiten hacer las operaciones
+básicas de obtención y modificación del contenido de los
+campos más usados.
+
+Por conveniencia, en el caso de los campos buleanos creamos
+palabras también para la propiedad contraria.  Por ejemplo,
+en las fichas existe el campo ~OPEN? para indicar si un ente
+está abierto, pero creamos las palabras necesarias para
+examinar y modificar tanto la propiedad de «cerrado» como la
+de «abierto». Esto ayuda a escribir posteriormente el código
+efectivo (pues no hace falta recordar si la propiedad real y
+por tanto el campo de la ficha del ente era «abierto» o
+«cerrado») y hace el código más conciso y legible.
+
+[then]  \ ......................................
+
+: is_open?  ( a -- f )  \ ¿Está abierto un ente?
 	~open? @
 	;
-: closed?  ( a -- f )  \ ¿Está cerrado un ente?
-	open? 0=
+: is_open  ( a -- )  \ Marca un ente como abierto
+	~open? on
 	;
+: is_closed?  ( a -- f )  \ ¿Está cerrado un ente?
+	is_open? 0=
+	;
+: is_closed  ( a -- )  \ Marca un ente como cerrado
+	~open? off
+	;
+: has_feminine_name?  ( a -- f )  \ ¿El género gramatical del nombre de un ente es femenino?
+	~feminine_name? @
+	;
+: has_feminine_name  ( a -- )  \ Marca como femenino el género gramatical del nombre de un ente
+	~feminine_name? on
+	;
+: has_masculine_name?  ( a -- f )  \ ¿El género gramatical del nombre de un ente es femenino?
+	has_feminine_name? 0=
+	;
+: has_masculine_name  ( a -- )  \ Marca como masculino el género gramatical del nombre de un ente
+	~feminine_name? off
+	;
+: has_plural_name?  ( a -- f )  \ Indicador: ¿el nombre de un ente es plural?
+	~plural_name? @
+	;
+: has_plural_name  ( a -- )  \ Marca como plural el nombre de un ente
+	~plural_name? on
+	;
+: has_singular_name?  ( a -- f )  \ Indicador: ¿el nombre de un ente es singular?
+	has_plural_name? 0=
+	;
+: is_global_outside?  ( a -- f )  \ ¿Es un ente global (común) en los escenarios al aire libre?
+	~global_outside? @
+	;
+: is_global_inside?  ( a -- f )  \ ¿Es un ente es global (común) en los escenarios interiores? 
+	~global_inside? @
+	;
+: is_owned?  ( a -- f )  \ ¿Pertenece un ente al protagonista? 
+	~owned? @
+	;
+: is_owned  ( a -- f )  \ Marcar un ente como perteneciente al protagonista
+	~owned? on
+	;
+: is_cloth?  ( a -- f )  \ ¿Es un ente una prenda que puede ser llevada como puesta?
+	~cloth? @
+	;
+: is_cloth  ( a -- )  \ Marca un ente como prenda que puede ser llevada como puesta
+	~cloth? on
+	;
+: is_worn?  ( a -- f )  \ ¿Un ente, que es una prenda, está puesto por quien lo tiene? 
+	~worn? @
+	;
+: is_worn  ( a -- )  \ Marca un ente, que es una prenda, como que está puesto por quien lo tiene
+	~worn? on
+	;
+: is_light?  ( a -- f )  \ ¿Es un ente una fuente de luz que puede ser encendida?
+	~light? @
+	;
+: is_lit?  ( a -- f )  \ ¿Un ente, que es una fuente de luz que puede ser encendida, está encendido?
+	~lit? @
+	;
+: is_vegetal?  ( a -- f )  \ ¿Es un ente un vegetal?
+	~vegetal? @
+	;
+: is_animal?  ( a -- f )  \ ¿Es un ente un animal? 
+	~animal? @
+	;
+: is_human?  ( a -- f )  \ ¿Es un ente un humano? 
+	~human? @
+	;
+: is_human  ( a -- )  \ Marcar un ente como humano
+	~human? on
+	;
+: is_character?  ( a -- f )  \ ¿Es un ente un personaje? 
+	~character? @
+	;
+: is_character  ( a -- )  \ Marcar un ente como personaje
+	~character? on
+	;
+: is_location?  ( a -- f )  \ ¿Es un ente un escenario? 
+	~location? @
+	;
+: has_definite_article?  ( a -- f )  \ ¿El artículo de un ente debe ser siempre el artículo definido?
+	~definite_article? @
+	;
+: has_definite_article  ( a -- )  \ Marca un ente para que su nombre lleve siempre artículo definido
+	~definite_article? on
+	;
+: no_article?  ( a -- f )  \ ¿El nombre de un ente no debe llevar artículo?
+	~no_article? @
+	;
+: has_no_article  ( a -- )  \ Marca un ente para que su nombre no lleve artículo
+	~no_article? on
+	;
+: has_personal_name?  ( a -- f )  \ ¿El nombre de un ente es un nombre propio?
+	~personal_name? @
+	;
+: has_personal_name  ( a -- )  \ Marca un ente para indicar que su nombre es un nombre propio
+	~personal_name? on
+	;
+: is_decoration?  \ ¿Un ente forma parte de la decoración de su localización?
+	~decoration? @
+	;
+: is_decoration  ( a -- )  \ Marca un ente como parte de la decoración de su localización
+	~decoration? on
+	;
+
+\ ------------------------------------------------
+\ Campos calculados o seudo-campos
+
+0  [if]  \ ......................................
+
+Los seudo-campos devuelven un cálculo. Sirven para añadir
+una capa adicional de abstracción y simplificar el código.
+
+Pendiente!!! Hay que unificar el criterio de los nombres de
+estas palabras, y sacar de aquí las que se refieran a campos
+básicos.
+
+[then]  \ ......................................
+
+: is_living_being?  ( a -- f )  \ ¿El ente es un ser vivo (aunque esté muerto)?
+	dup is_vegetal?
+	over is_animal? or
+	swap is_human? or
+	;
+: is_known?  ( a -- f )  \ El ente es conocido del protagonista?
+	dup is_owned?
+	swap ~familiar @ 0> or
+	;
+: location  ( a1 -- a2 )  \ Devuelve el ente que es la localización de otro
+	~location @
+	;
+: is_there  ( a1 a2 -- )  \ Hace que un ente sea la localización de otro
+	\ a1 = Ente que será la localización de a2
+	\ a2 = Ente cuya localización será a1
+	~location !
+	;
+: is_there?  ( a1 a2 -- f )  \ ¿Está un ente localizado en otro?
+	\ a1 = Ente que actúa de localización
+	\ a2 = Ente cuya localización se comprueba
+	location =
+	;
+: is_direction?  ( a -- f )  \ ¿Es el ente un ente dirección? 
+	~direction @ 0<>
+	;
+: is_global?  ( a -- f )  \ ¿Es el ente un ente global?
+	dup is_global_outside?
+	swap is_global_inside? or
+	;
+: my_location  ( -- a )  \ Devuelve la localización del protagonista
+	protagonist% location
+	;
+: my_location!  ( a -- )  \ Mueve el protagonista al ente indicado
+	protagonist% is_there
+	;
+: am_i_there?  ( a -- f )  \ ¿Está el protagonista en la localización indicada?
+	\ a = Ente que actúa de localización
+	my_location =
+	;
+: is_outside_location?  ( a -- f )  \ ¿Es el ente un escenario al aire libre?
+	\ Cálculo provisional!!!
+	drop 0
+	;
+: is_inside_location?  ( a -- f )  \ ¿Es el ente un escenario cerrado, no al aire libre?
+	is_outside_location? 0=
+	;
+: am_i_outside?  ( -- f )  \ ¿Está el protagonista en un escenario al aire libre?
+	my_location is_outside_location?
+	;
+: am_i_inside?  ( -- f )  \ ¿Está el protagonista en un escenario cerrado, no al aire libre?
+	am_i_outside? 0=
+	;
+: is_hold?  ( a -- f )  \ ¿Es el protagonista la localización de un ente?
+	location protagonist% =
+	;
+: is_hold  ( a -- )  \ Hace que el protagonista sea la localización de un ente
+	~location protagonist% swap !
+	;
+: is_worn?  ( a -- )  \ ¿El protagonista lleva puesto el ente indicado?
+	dup is_hold?  swap ~worn? @  and
+	;
+: is_known?  ( a -- f )  \ ¿El protagonista ya conoce el ente?
+	dup ~conversations @ 0>  \ ¿Ha hablado ya con él? (si no es un personaje, la comprobación no tendrá efecto)
+	swap ~familiar @ 0>  or  \ ¿O ya le es familiar?
+	;
+: is_unknown?  ( a -- f ) \ ¿El protagonista aún no conoce el ente?
+	is_known? 0=
+	;
+: is_here?  ( a -- f )  \ ¿Está un ente en la misma localización que el protagonista?
+	\ El resultado depende de cualquiera de tres condiciones:
+	dup location am_i_there?  \ ¿Está efectivamente en la misma localización?
+	over is_global_outside? am_i_outside? and or \ ¿O es un «global exterior» y estamos en un escenario exterior?
+	swap is_global_inside? am_i_inside? and or  \ ¿O es un «global interior» y estamos en un escenario interior?
+	;
+: is_not_here?  ( a -- f )  \ ¿Está un ente en otra localización que la del protagonista?
+	\ No se usa!!!
+	is_here? 0=
+	;
+: is_here_and_unknown?  ( a -- f )  \ ¿¿Está un ente en la misma localización que el protagonista y aún no es conocido por él?
+	dup is_here? swap is_unknown? and
+	;
+: is_here  ( a -- )  \ Hace que un ente esté en la misma localización que el protagonista
+	my_location swap is_there
+	;
+: is_accessible?  ( a -- f )  \ ¿Es un ente accesible para el protagonista?
+	dup is_hold?  swap is_here?  or
+	;
+: is_not_accessible?  ( a -- f )  \ ¿Un ente no es accesible para el protagonista?
+	is_accessible? 0=
+	;
+: can_be_looked_at?  ( a -- f )  \ ¿El ente puede ser mirado?
+	dup my_location =  \ ¿Es la localización del protagonista?
+	over is_direction? or  \ ¿O es un ente dirección?
+	swap is_accessible?  or  \ ¿O está accesible? 
+	;
+
+\ ------------------------------------------------
+\ Herramientas de artículos y pronombres
+
+0  [if]  \ ......................................
+
+La selección del artículo adecuado para el nombre de un ente
+tiene su complicación. Depende por supuesto del número y
+género gramatical del nombre, pero también de la relación
+con el protagonista (distinción entre artículos definidos e
+indefinidos) y de la naturaleza del ente (cosa o personaje).
+
+Por conveniencia, consideramos como artículos ciertas
+palabras que son adjetivos (como «esta», «ninguna»...), pues
+en la práctica para el programa su manejo es idéntico: se
+usan para preceder a los nombres bajo ciertas condiciones.
+
+En este mismo apartado proporcionamos palabras para calcular
+los pronombres de objeto indirecto (le/s) y de objeto
+directo (la/s, lo/s), así como terminaciones habituales.
+
+[then]  \ ......................................
+
 create 'articles  \ Tabla de artículos
 	\ Indefinidos:
 	s" un       " s,
@@ -1545,32 +1908,26 @@ create 'articles  \ Tabla de artículos
 4 /article * constant /article_type_set  \ Separación entre cada grupo según el tipo (definidos, indefinidos, posesivos y negativos)
 
 : article_number>  ( a -- u )  \ Devuelve un desplazamiento parcial en la tabla de artículos según el número gramatical del ente
-\ antiguo!!!:
-\	~plural? @ abs /article_number_set *
-	~plural? @ /article_number_set and
+	has_plural_name? /article_number_set and
 	;
 : article_gender>  ( a -- u )  \ Devuelve un desplazamiento parcial en la tabla de artículos según el género gramatical del ente
-\ antiguo!!!:
-\	~feminine? @ abs /article_gender_set *
-	~feminine? @ /article_gender_set and
+	has_feminine_name? /article_gender_set and
 	;
 : article_gender+number>  ( a -- u )  \ Devuelve un desplazamiento parcial en la tabla de artículos según el género gramatical y el número del ente
 	dup article_gender> 
 	swap article_number> +
 	;
 : definite_article>  ( a -- 0 | 1 )  \ Devuelve el desplazamiento (en número de grupos) para apuntar a los artículos definidos de la tabla, si el ente indicado necesita uno
-	dup ~definite_article? @  \ Si el ente necesita siempre artículo definido
-	swap known? or abs  \ O bien si el ente es ya conocido por el protagonista
+	dup has_definite_article?  \ Si el ente necesita siempre artículo definido
+	swap is_known? or abs  \ O bien si el ente es ya conocido por el protagonista
 	;
 : possesive_article>  ( a -- 0 | 2 )  \ Devuelve el desplazamiento (en número de grupos) para apuntar a los artículos posesivos de la tabla, si el ente indicado necesita uno
-\ antiguo!!!:
-\	~owned? @ abs 2 *
-	~owned? @ 2 and
+	is_owned? 2 and
 	;
 : negative_articles>  ( -- u )  \ Devuelve el desplazamiento (en número de caracteres) para apuntar a los «artículos negativos» de la tabla
 	/article_type_set 3 *
 	;
-: undefinite_articles>  ( -- u )  \ Devuelve el desplazamiento (en número de caracteres) para apuntar a los artículos indefinidos de la tabla
+: undefined_articles>  ( -- u )  \ Devuelve el desplazamiento (en número de caracteres) para apuntar a los artículos indefinidos de la tabla
 	0
 	;
 : definite_articles>  ( -- u )  \ Devuelve el desplazamiento (en número de caracteres) para apuntar a los artículos definidos de la tabla
@@ -1593,10 +1950,10 @@ create 'articles  \ Tabla de artículos
 	>article
 	;
 : article  ( a -- a1 u1 | a 0 )  \ Devuelve el artículo apropiado para un ente, si lo necesita; en caso contrario devuelve una cadena vacía 
-	dup ~no_article? @  if  0  else  (article)  then
+	dup no_article?  if  0  else  (article)  then
 	;
-: undefinite_article  ( a -- a1 u1 )  \ Devuelve el artículo indefinido correspondiente al género y número de un ente
-	article_gender+number> undefinite_articles> +
+: undefined_article  ( a -- a1 u1 )  \ Devuelve el artículo indefinido correspondiente al género y número de un ente
+	article_gender+number> undefined_articles> +
 	>article
 	;
 : definite_article  ( a -- a1 u1 )  \ Devuelve el artículo definido correspondiente al género y número de un ente
@@ -1617,21 +1974,21 @@ create 'articles  \ Tabla de artículos
 : plural_ending  ( a -- a u )  \ Devuelve la terminación adecuada del plural para el nombre de un ente
 	[false]  [if]
 		\ Método 1, «estilo BASIC»:
-		~plural? @  if  s" s"  else  0$  then
+		has_plural_name?  if  s" s"  else  0$  then
 	[else]
 		\ Método 2, sin estructuras condicionales, «estilo Forth»:
-		s" s" rot ~plural? @ and
+		s" s" rot has_plural_name? and
 	[then]
 	;
 : gender_ending  ( a -- a u )  \ Devuelve la terminación adecuada del género gramatical para el nombre de un ente
 	[false]  [if]
 		\ Método 1, «estilo BASIC»:
-		~feminine? @  if  s" a"  else  s" o"  then
+		has_feminine_name?  if  s" a"  else  s" o"  then
 	[else]
 		\ Método 2, sin estructuras condicionales, «estilo Forth»:
-\		s" oa" drop swap ~feminine? @ abs + 1
+\		s" oa" drop swap has_feminine_name? abs + 1
 		\ Método 3, más directo:
-		~feminine? @ c" oa" swap abs + 1+ 1
+		has_feminine_name? c" oa" swap abs + 1+ 1
 	[then]
 	;
 : noun_ending  ( a -- a1 u1 )  \ Devuelve la terminación adecuada para el nombre de un ente
@@ -1646,6 +2003,26 @@ create 'articles  \ Tabla de artículos
 : noun_ending+  ( a1 u1 a -- a2 u2 )  \ Añade a una cadena la terminación adecuada para el nombre de un ente
 	noun_ending s+
 	;
+
+\ ------------------------------------------------
+\ Interfaz para los nombres de los entes
+
+0  [if]  \ ......................................
+
+Como ya se explicó, el nombre de cada ente se guarda en una
+cadena dinámica (que se crea en la memoria con ALLOCATE , no
+en el espacio del diccionario del sistema).  El manejo de
+estas cadenas dinámicas se hace con el módulo
+correspondiente de Forth Foundation Library.
+
+En la ficha del ente se guarda solo la dirección de la
+cadena dinámica (en el campo ~NAME_STR ).  Por ello hacen
+falta palabras que hagan de interfaz para gestionar los
+nombres de ente de forma análoga a como se hace con el resto
+de datos de su ficha.
+
+[then]  \ ......................................
+
 : name!  ( a u a1 -- )  \ Guarda el nombre de un ente
 	\ a u = Nombre
 	\ a1 = Ente
@@ -1654,17 +2031,17 @@ create 'articles  \ Tabla de artículos
 : names!  ( a u a1 -- )  \ Guarda el nombre de un ente, y lo marca como plural
 	\ a u = Nombre
 	\ a1 = Ente
-	dup ~plural? on  name!
+	dup has_plural_name  name!
 	;
 : fname!  ( a u a1 -- )  \ Guarda el nombre de un ente, indicando también que es de género gramatical femenino
 	\ a u = Nombre
 	\ a1 = Ente
-	dup ~feminine? on  name!
+	dup has_feminine_name  name!
 	;
 : fnames!  ( a u a1 -- )  \ Guarda el nombre de un ente, indicando también que es de género gramatical femenino y plural
 	\ a u = Nombre
 	\ a1 = Ente
-	dup ~plural? on  fname!
+	dup has_plural_name  fname!
 	;
 : name  ( a -- a1 u1 )  \ Devuelve el nombre de un ente
 	\ a = Ente
@@ -1674,9 +2051,9 @@ create 'articles  \ Tabla de artículos
 : ^name  ( a -- a1 u1 )  \ Devuelve el nombre de un ente, con la primera letra mayúscula
 	name ^uppercase
 	;
-: name&  ( a a1 u1 -- a2 u2 )  \ Añade a un artículo el nombre de un ente
+: name&  ( a a1 u1 -- a2 u2 )  \ Añade a un (supuesto) artículo el nombre de un ente
 	\ a = Ente
-	\ a1 u1 = Artículo
+	\ a1 u1 = Artículo correspondiente (o cualquier otro texto)
 	\ a2 u2 = Nombre completo
 	rot name s& 
 	;
@@ -1690,7 +2067,7 @@ create 'articles  \ Tabla de artículos
 	dup definite_article name&
 	;
 : undefined_full_name  ( a -- a1 u1 )  \ Devuelve el nombre completo de un ente, con un artículo indefinido
-	dup undefinite_article name&
+	dup undefined_article name&
 	;
 : negative_full_name  ( a -- a1 u1 )  \ Devuelve el nombre completo de un ente, con un «artículo negativo»
 	dup negative_article name&
@@ -1699,26 +2076,27 @@ create 'articles  \ Tabla de artículos
 	dup distant_article name&
 	;
 : nonhuman_subjective_negative_name  ( a -- a1 u1 )  \ Devuelve el nombre subjetivo (negativo) de un ente (no humano), desde el punto de vista del protagonista
+	s{
 	negative_full_name 2dup 2dup  \ Tres nombres repetidos con «artículo negativo»
 	s" eso" s" esa cosa" s" tal cosa"  \ Tres alternativas
-	6 schoose
+	}s
 	;
 : human_subjective_negative_name  ( a -- a1 u1 )  \ Devuelve el nombre subjetivo (negativo) de un ente (humano), desde el punto de vista del protagonista
-	dup known?
+	dup is_known?
 	if  full_name  else  drop s" nadie"  then
 	;
 : subjective_negative_name  ( a -- a1 u1 )  \ Devuelve el nombre subjetivo (negativo) de un ente, desde el punto de vista del protagonista
-	dup ~human? @
+	dup is_human?
 	if  human_subjective_negative_name
 	else  nonhuman_subjective_negative_name
 	then
 	;
 : /l$  ( a -- a1 u1 | a1 0 )  \ Devuelve la terminación «l» del artículo determinado masculino para añadirla a la preposición «a», si un ente humano lo requiere para ser usado como objeto directo; o una cadena vacía
 	\ No se usa!!!
-	s" l" rot ~personal_name? @ 0= and
+	s" l" rot has_personal_name? 0= and
 	;
 : a/$  ( a -- a1 u1 | a1 0 )  \ Devuelve la preposición «a» si un ente lo requiere para ser usado como objeto directo; o una cadena vacía
-	s" a" rot ~human? @ and
+	s" a" rot is_human? and
 	; 
 : a/l$  ( a -- a1 u1 )  \ Devuelve la preposición «a», con posible artículo determinado, si un ente lo requiere para ser usado como objeto directo
 	\ No se usa!!!
@@ -1731,107 +2109,18 @@ create 'articles  \ Tabla de artículos
 	\ No se usa!!!
 	full_name paragraph
 	;
-: where  ( a1 -- a2 )  \ Devuelve el ente que es la localización de otro
-	~location @
-	;
-: be_there  ( a1 a2 -- )  \ Hace que un ente sea la localización de otro
-	\ a1 = Ente que será la localización de a2
-	\ a2 = Ente cuya localización será a1
-	~location !
-	;
-: there?  ( a1 a2 -- f )  \ ¿Está un ente localizado en otro?
-	\ a1 = Ente que actúa de localización
-	\ a2 = Ente cuya localización se comprueba
-	where =
-	;
-: direction?  ( a -- f )  \ ¿Es el ente un ente dirección? 
-	~direction @ 0<>
-	;
-: global?  ( a -- f )  \ ¿Es el ente un ente global?
-	dup ~global_outside? @
-	swap ~global_inside? @ or
-	;
-: my_location  ( -- a )  \ Devuelve la localización del protagonista
-	protagonist% where
-	;
-: my_location!  ( a -- )  \ Mueve el protagonista al ente indicado
-	protagonist% be_there
-	;
-: am_i_there?  ( a -- f )  \ ¿Está el protagonista en la localización indicada?
-	\ a = Ente que actúa de localización
-	my_location =
-	;
-: outside_location?  ( a -- f )  \ ¿Es el ente un escenario al aire libre?
-	\ Cálculo provisional!!!
-	drop 0
-	;
-: inside_location?  ( a -- f )  \ ¿Es el ente un escenario cerrado, no al aire libre?
-	outside_location? 0=
-	;
-: am_i_outside?  ( -- f )  \ ¿Está el protagonista en un escenario al aire libre?
-	my_location outside_location?
-	;
-: am_i_inside?  ( -- f )  \ ¿Está el protagonista en un escenario cerrado, no al aire libre?
-	am_i_outside? 0=
-	;
-: hold?  ( a -- f )  \ ¿Es el protagonista la localización de un ente?
-	where protagonist% =
-	;
-: be_hold  ( a -- )  \ Hace que el protagonista sea la localización de un ente
-	~location protagonist% swap !
-	;
-: worn?  ( a -- )  \ ¿El protagonista lleva puesto el ente indicado?
-	dup hold?  swap ~worn? @  and
-	;
-: known?  ( a -- f )  \ ¿El protagonista ya conoce el ente?
-	dup ~conversations @ 0>  \ ¿Ha hablado ya con él? (si no es un personaje, la comprobación no tendrá efecto)
-	swap ~familiar @ 0>  or  \ ¿O ya le es familiar?
-	;
-: unknown?  ( a -- f ) \ ¿El protagonista aún no conoce el ente?
-	known? 0=
-	;
-: here?  ( a -- f )  \ ¿Está un ente en la misma localización que el protagonista?
-	\ El resultado depende de cualquiera de tres condiciones:
-	dup where am_i_there?  \ ¿Está efectivamente en el mismo lugar?
-	over ~global_outside? @ am_i_outside? and or \ ¿O es un «global exterior» y estamos en un escenario exterior?
-	swap ~global_inside? @ am_i_inside? and or  \ ¿O es un «global interior» y estamos en un escenario interior?
-	;
-: not_here?  ( a -- f )  \ ¿Está un ente en otra localización que la del protagonista?
-	here? 0=
-	;
-: here_and_unknown?  ( a -- f )  \ ¿¿Está un ente en la misma localización que el protagonista y aún no es conocido por él?
-	dup here? swap unknown? and
-	;
-: be_here  ( a -- )  \ Hace que un ente esté en la misma localización que el protagonista
-	~location my_location swap !
-	;
-: accessible?  ( a -- f )  \ ¿Es un ente accesible para el protagonista?
-	dup hold?  swap here?  or
-	;
-: not_accessible?  ( a -- f )  \ ¿Un ente no es accesible para el protagonista?
-	accessible? 0=
-	;
-: can_be_looked_at?  ( a -- f )  \ ¿El ente puede ser mirado?
-	dup my_location =  \ ¿Es la localización del protagonista?
-	over direction? or  \ ¿O es un ente dirección?
-	swap accessible?  or  \ ¿O está accesible? 
-	;
-: more_familiar  ( a -- )  \ Aumenta el grado de familiaridad de un ente con el protagonista
-	\ Nota: comprobamos el límite, aunque en la práctica es inalcanzable (un número de 32 bitios)
-	~familiar dup @ 1+ ?dup
-	if  swap !  else  drop  then
-	;
-0 constant limbo \ Marcador para usar como localización de entes inexistentes
-: vanish  ( a -- )  \ Hace desaparecer un ente llevándolo al «limbo»
-	limbo swap be_there
-	;
-: vanish_if_hold  ( a -- )  \ Hace desaparecer un ente si su localización es el protagonista
-	\ No se usa!!!
-	dup hold?  if  vanish  else  drop  then
-	;
+
+\ ------------------------------------------------
+\ Textos calculados
+
+0  [if]  \ ......................................
+
+Nota!!!: ¿Mover a otra sección?
+
+[then]  \ ......................................
 
 : >open|closed$  ( a -- a1 u1 )  \ Devuelve «abierto/a/s» a «cerrado/a/s» según corresponda a un ente
-	dup open?  if  s" abiert"  else  s" cerrad"  then
+	dup is_open?  if  s" abiert"  else  s" cerrad"  then
 	rot noun_ending s+
 	;
 
@@ -1840,14 +2129,35 @@ section( Operaciones elementales con entes) \ {{{
 
 0  [if]  \ ......................................
 
-Algunas operaciones sencillas relacionadas con la trama. Es
-necesario crearlas como vectores porque se usan en las
+Algunas operaciones sencillas relacionadas con la trama.
+
+Alguna es necesario crearla como vector porque se usa en las
 descripciones de los entes o en las acciones, antes de
 definir la trama.
 
 [then]  \ ......................................
 
 defer lock_found  \ Encontrar el candado; la definición está en (LOCK_FOUND)
+
+: more_familiar  ( a -- )  \ Aumenta el grado de familiaridad de un ente con el protagonista
+	\ Nota: comprobamos el límite, aunque en la práctica es inalcanzable (un número de 32 bitios)
+	~familiar dup @ 1+ ?dup
+	if  swap !  else  drop  then
+	;
+0 constant limbo \ Marcador para usar como localización de entes inexistentes
+: vanished?  ( a -- f )  \ ¿Está un ente desaparecido?
+	location limbo =
+	;
+: not_vanished?  ( a -- f )  \ ¿No está un ente desaparecido?
+	vanished? 0=
+	;
+: vanish  ( a -- )  \ Hace desaparecer un ente llevándolo al «limbo»
+	limbo swap is_there
+	;
+: vanish_if_hold  ( a -- )  \ Hace desaparecer un ente si su localización es el protagonista
+	\ No se usa!!!
+	dup is_hold?  if  vanish  else  drop  then
+	;
 
 \ }}}###########################################################
 section( Códigos de error) \ {{{
@@ -1985,17 +2295,22 @@ defer 'entities  \ Dirección de los entes; vector que después será redirigido
 	;
 0 value self%  \ Ente cuyos atributos, descripción o trama están siendo definidos (usado para aligerar la sintaxis)
 : :name_str  ( a -- )  \ Crea una cadena dinámica nueva para guardar el nombre del ente
-	dup ~name_str @  if  str-free  then
+	[debug_init]  [if]  s" Inicio de :NAME_STR" debug [then]
+	dup ~name_str @ ?dup
+	[debug_init]  [if]  s" A punto para STR-FREE" debug [then]
+	if  str-free  then
 	str-new swap ~name_str !
+	[debug_init]  [if]  s" Final de :NAME_STR" debug [then]
 	;
 : [:attributes]  ( a -- )  \ Inicia la definición de propiedades de un ente
 	\ Esta palabra se ejecuta cada vez que hay que restaurar los datos del ente,
 	\ y antes de la definición de atributos contenida en la palabra correspondiente al ente.
+	\ El identificador del ente está en la pila porque se compiló con LITERAL cuando se creó la palabra de atributos.
 	dup to self%  \ Actualizar el puntero al ente, usado para aligerar la sintaxis
 	dup :name_str  \ Crear una cadena dinámica para el campo ~NAME_STR
 	setup_entity
 	;
-: default_description  \ Descripción predeterminada de los entes para los que no se ha creado una palabra propia de descripción
+: default_description  ( -- )  \ Descripción predeterminada de los entes para los que no se ha creado una palabra propia de descripción
 	^is_normal$ paragraph
 	;
 : (:attributes)  ( a xt -- )  \ Operaciones preliminares para la definición de atributos de un ente
@@ -2005,7 +2320,8 @@ defer 'entities  \ Dirección de los entes; vector que después será redirigido
 	\ a = Ente para la definición de cuyos atributos se ha creado una palabra
 	\ xt = Dirección de ejecución de la palabra recién creada
 	over ~init_xt !  \ Conservar la dirección de ejecución en la ficha del ente
-	['] default_description swap ~description_xt !  \ Poner la descripción predeterminada
+	['] default_description over ~description_xt !  \ Poner la descripción predeterminada
+	postpone literal  \ Compilar el identificador de ente en la palabra de descripción recién creada, para que [:DESCRIPTION] lo guarde en SELF% en tiempo de ejecución
 	;
 : :attributes  ( a -- )  \ Inicia la creación de una palabra sin nombre que definirá las propiedades de un ente
 	:noname (:attributes)  \ Crear la palabra y hacer las operaciones preliminares
@@ -2013,11 +2329,13 @@ defer 'entities  \ Dirección de los entes; vector que después será redirigido
 	;
 ' ; alias ;attributes immediate
 : init_entity  ( a -- )  \ Restaura la ficha de un ente a su estado original
-	[debug_init]  [if]  s" Inicio de INIT_ENTITY" debug dup entity># cr ." Entity # " .  [then]
-	dup ~init_xt @ execute
+	[debug_init]  [if]  s" Inicio de INIT_ENTITY" debug dup entity># cr ." Entity=" .  [then]
+	~init_xt @ 
+	[debug_init]  [if]  s" Antes de EXECUTE" debug [then]
+	execute 
 	[debug_init]  [if]  s" Final de INIT_ENTITY" debug  [then]
 	;
-: init_entities  \ Restaura las fichas de los entes a su estado original
+: init_entities  ( -- )  \ Restaura las fichas de los entes a su estado original
 	#entities 0  do
 		[debug_init]  [if]  i cr ." about to init entity #" .  [then]
 		i #>entity init_entity
@@ -2069,11 +2387,11 @@ false value sight  \ Guarda el ente dirección al que se mira en un escenario (o
 	:noname (:description)  \ Crear la palabra y hacer las operaciones preliminares
 	postpone [:description]  \ Compilar la palabra [:DESCRIPTION] en la palabra creada, para que se ejecute cuando sea llamada
 	;
-: [;description]  \ Operaciones finales tras la ejecución de la descripción de un ente
+: [;description]  ( -- )  \ Operaciones finales tras la ejecución de la descripción de un ente
 	\ Esta palabra se ejecutará al final de la palabra de descripción.
 	false to sight  \ Poner a cero el selector de vista, para evitar posibles errores
 	;
-: ;description  \ Termina la definición de una palabra de descripción de un ente
+: ;description  ( -- )  \ Termina la definición de una palabra de descripción de un ente
 	postpone [;description]  \ Compilar la palabra [;DESCRIPTION] en la palabra creada, para que se ejecute cuando sea llamada
 	postpone ;
 	; immediate
@@ -2103,8 +2421,8 @@ false value sight  \ Guarda el ente dirección al que se mira en un escenario (o
 	\ a = Ente
 	\ u = Tipo de descripción (2:dirección, 1:escenario, 0:otros, 3:¡error!)
 	\ Nota: Un resultado de 3 significaría que el ente es a la vez dirección y escenario
-	dup ~location? @ abs
-	over direction? 2 and +
+	dup is_location? abs
+	over is_direction? 2 and +
 	;
 : describe  ( a -- )  \ Describe un ente, según su tipo
 	[debug]  [if]  s" En DESCRIBE" debug  [then]  \ Depuración!!!
@@ -2156,7 +2474,9 @@ entity: ulfius%
 
 \ Entes que son personajes: 
 entity: ambrosio%
-entity: leader%
+entity: refugee_leader%
+entity: your_soldiers%
+entity: refugees%
 
 \ Entes que son objetos:
 entity: altar%
@@ -2385,8 +2705,8 @@ in% in_exit exits_table!
 [then]
 
 : -->  ( a1 a2 u -- )  \ Comunica el ente a1 con el ente a2 mediante la salida indicada por el desplazamiento u
-	\ a1 = Ente escenario origen
-	\ a2 = Ente escenario destino
+	\ a1 = Ente origen de la conexión
+	\ a2 = Ente destino de la conexión
 	\ u = Desplazamiento del campo de dirección a usar en a1
 	rot + !
 	;
@@ -2478,11 +2798,12 @@ a la sección de textos calculados.
 
 [then]  \ ......................................
 
-\ LOCATION_28% , albegue de los refugiados:
+\ ------------------------------------------------
+\ Albegue de los refugiados
 
 : they_don't_let_you_pass$  ( -- a u )  \ Devuelve el mensaje de que los refugiados no te dejan pasar
 	s{
-	s" te" s? they_block$ s&
+	s" te" s? (they)_block$ s&
 	s" te rodean,"
 	s{ s" impidiéndote" s" impidiendo"
 	s" obstruyendo" s" obstruyéndote"
@@ -2513,43 +2834,12 @@ a la sección de textos calculados.
 	['] they_let_you_pass_2$
 	3 choose execute
 	;
-: they_let_you_pass?  ( -- f )  \ ¿Hay ya salida al Este desde el albergue?
-	location_28% ~east_exit @ 0<>
-	;
-: the_old_man_is_angry?  ( -- f )  \ ¿El anciano se enfada porque llevas algo prohibido?
-	stone% accessible?
-	sword% accessible?  or
-	;
-: he_looks_at_you_with_anger$  ( -- a u )  \ Devuelve una versión del texto de que el líder de los refugiados te mira
-	s" parece sorprendido y" s?
-	s{
-	s" te mira" s{ s" con dureza" s" con preocupación" }s&
-	s" te dirige una dura mirada"
-	s" dirige su mirada hacia ti"
-	}s&
-	;
-: he_looks_at_you_with_calm$  ( -- a u )  \ Devuelve una versión del texto de que el líder de los refugiados te mira
-	s" advierte tu presencia y" s?
-	s{ s" por un momento" s" durante unos instantes" }s?&
-	s" te" s& s{ s" observa" s" contempla" }s&
-	s{ s" con serenidad" s" con expresión serena" s" en calma" s" sereno" }s&
-	;
-: the_leader_looks_at_you$  ( -- a u )  \ Devuelve el texto de que el líder de los refugiados te mira
-	leader% ^full_name  the_old_man_is_angry?
-	if  he_looks_at_you_with_anger$ 
-	else  he_looks_at_you_with_calm$
-	then  s& period+
-	;
-: the_people_surround_you$  ( -- a u )  \ Devuelve descripción de la actitud de los refugiados
-	s" Los refugiados"  they_let_you_pass?
-	if  they_let_you_pass$ 
-	else  they_don't_let_you_pass$
-	then  period+ s&
-	;
-: goes_down_into_the_deep$  ( -- a u )  \ Devuelve una variante de «desciende a las profundidades»
-	s{ s" desciende" toward$& s" se adentra en"
-	s" conduce" toward$& s" baja" toward$& }s
-	s" las profundidades" s&
+
+\ ------------------------------------------------
+\ Condiciones varias
+
+: pass_still_open?  ( -- f )  \ ¿El paso del desfiladero está abierto por el Norte?
+	location_08% has_north_exit?
 	;
 
 \ }}}###########################################################
@@ -2559,70 +2849,96 @@ section( Atributos y descripciones de entes) \ {{{
 
 ulfius% :attributes
 	s" Ulfius" self% name!
-	self% ~human? on
-	self% ~personal_name? on
-	self% ~no_article? on
-	location_01% self% be_there
+	self% is_human
+	self% has_personal_name
+	self% has_no_article
+	location_01% self% is_there
 	;attributes
 ulfius% :description
 	\ Provisional!!!
-	my_location outside_location?
-	if   s" De pie al sol,"
-	else  s" En las sombras,"
-	then
-	s" no pareces muy fuerte, a pesar de tener un metro sesenta y cinco de estatura." s&
-	my_location outside_location?  if
-		s" Después de un invierno benigno, la primavera ha traído tal calor que" s&
-		s" te hallas a gusto sin vestidos." s& 
-	then  paragraph
+	s" [descripción de Ulfius]"
+	paragraph	
 	;description
 
 \ Entes personaje
 
 ambrosio% :attributes
-	s" hombre ambrosio!!!" self% name!  \ El nombre cambiará a «Ambrosio» durante el juego
-	self% ~character? on
-	self% ~human? on
-	location_19% self% be_there
+	s" hombre" self% name!  \ El nombre cambiará a «Ambrosio» durante el juego
+	self% is_character
+	self% is_human
+	location_19% self% is_there
 	;attributes
 ambrosio% :description
-	self% known?  if
+	self% is_known?  if
 		s" Ambrosio"
 		s" es un hombre de mediana edad, que te mira afable." s&
 	else  s" Es de mediana edad y mirada afable."
 	then  paragraph
 	;description
-leader% :attributes
+refugee_leader% :attributes
 	s" anciano" self% name!
-	self% ~character? on
-	self% ~human? on
-	location_28% self% be_there
+	self% is_character
+	self% is_human
+	location_28% self% is_there
 	;attributes
-leader% :description
+refugee_leader% :description
 	s" Es el jefe de los refugiados."
 	paragraph
+	;description
+your_soldiers% :attributes
+	s" soldados" self% name!
+	self% has_plural_name
+	self% is_human
+	self% more_familiar
+	self% is_decoration
+	\ self% has_definite_article  \ Mejor implementar que tenga posesivo!!!...
+	self% is_owned  \ ...aunque quizá esto baste!!!
+	;attributes
+defer your_soldiers_description  \ Vector a la futura descripción
+your_soldiers% :description
+	\ La descripción de los soldados
+	\ necesita usar palabras que aún no están definidas,
+	\ y por ello es mejor crearla después.
+	your_soldiers_description
+	;description
+refugees% :attributes
+	s" refugiados" self% name!
+	self% has_plural_name
+	self% is_human
+	self% is_decoration
+	;attributes
+refugees% :description
+	\ Pendiente!!! Descripciones provisionales
+	my_location  case
+	location_28%  of
+		s" Los refugiados bla bla bla..." paragraph
+		endof
+	location_29%  of
+		s" Todos los refugiados quedaron atrás." paragraph
+		endof
+	endcase
 	;description
 
 \ Entes objeto
 
 altar% :attributes
 	s" altar" self% name!
-	self% ~decoration? on
+	self% is_decoration
 	\ Error!!! imposible_error# es un vector sin inicializar:
 	impossible_error# self% ~take_error# !
-	location_18% self% be_there
+	location_18% self% is_there
 	;attributes
 altar% :description
 	s" Está colocado justo en la mitad del puente."
-	idol% known? 0=  if
+	idol% is_known? 0=  if
 		s" Debe de sostener algo importante." s&
 	then
 	paragraph
 	;description
 arch% :attributes
 	s" arco" self% name!
-	self% ~decoration? on
-	location_18% self% be_there
+	self% is_decoration
+	location_18% self% is_there
 	;attributes
 arch% :description
 	\ Provisional!!!
@@ -2631,7 +2947,7 @@ arch% :description
 	;description
 bed% :attributes
 	s" catre" self% name!
-	location_46% self% be_there
+	location_46% self% is_there
 	;attributes
 bed% :description
 	s" Parece poco confortable."
@@ -2639,8 +2955,8 @@ bed% :description
 	;description
 bridge% :attributes
 	s" puente" self% name!
-	self% ~decoration? on
-	location_13% self% be_there
+	self% is_decoration
+	location_13% self% is_there
 	;attributes
 bridge% :description
 	\ Provisional!!!
@@ -2649,7 +2965,7 @@ bridge% :description
 	;description
 candles% :attributes
 	s" velas" self% fnames!
-	location_46% self% be_there
+	location_46% self% is_there
 	;attributes
 candles% :description
 	s" Están muy consumidas."
@@ -2657,10 +2973,10 @@ candles% :description
 	;description
 cloak% :attributes
 	s" capa" self% fname!
-	self% ~cloth? on
-	self% ~owned? on
-	self% ~worn? on
-	ulfius% self% be_there
+	self% is_cloth
+	self% is_owned
+	self% is_worn
+	ulfius% self% is_there
 	;attributes
 cloak% :description
 	s" Tu capa de general, de fina lana tintada de negro."
@@ -2668,21 +2984,21 @@ cloak% :description
 	;description
 cuirasse% :attributes
 	s" coraza" self% fname!
-	self% ~cloth? on
-	self% ~owned? on
-	self% ~worn? on
-	ulfius% self% be_there
+	self% is_cloth
+	self% is_owned
+	self% is_worn
+	ulfius% self% is_there
 	;attributes
 door% :attributes
 	s" puerta" self% fname!
 	self% ~take_error# impossible_error# swap !
-	location_47% self% be_there
+	location_47% self% is_there
 	;attributes
 door% :description
 	s" Es muy recia y tiene un gran candado."
 \ Inacabado!!!
 \	s" Es muy recia y"
-\	door% ~open? @
+\	door% is_open?
 \	if  s" tiene un gran candado."
 \	else  s" tiene un gran candado."
 \	then  s&
@@ -2691,7 +3007,7 @@ door% :description
 	;description
 emerald% :attributes
 	s" esmeralda" self% fname!
-	location_39% self% be_there
+	location_39% self% is_there
 	;attributes
 emerald% :description
 	s" Es preciosa."
@@ -2699,9 +3015,9 @@ emerald% :description
 	;description
 fallen_away% :attributes
 	s" derrumbe" self% name!
-	self% ~decoration? on
+	self% is_decoration
 	self% ~take_error# nonsense_error# swap !
-	location_09% self% be_there
+	location_09% self% is_there
 	;attributes
 fallen_away% :description
 	s" Muchas, inalcanzables rocas, apiladas una sobre otra."
@@ -2709,9 +3025,9 @@ fallen_away% :description
 	;description
 flags% :attributes
 	s" banderas" self% fnames!
-	self% ~decoration? on
+	self% is_decoration
 	self% ~take_error# nonsense_error# swap !
-	location_28% self% be_there
+	location_28% self% is_there
 	;attributes
 flags% :description
 	s" Son las banderas britana y sajona."
@@ -2727,9 +3043,9 @@ flint% :description
 	;description
 idol% :attributes
 	s" ídolo" self% name!
-	self% ~decoration? on
+	self% is_decoration
 	self% ~take_error# impossible_error# swap !
-	location_41% self% be_there
+	location_41% self% is_there
 	;attributes
 idol% :description
 	s" El ídolo tiene dos agujeros por ojos."
@@ -2737,7 +3053,7 @@ idol% :description
 	;description
 key% :attributes
 	s" llave" self% fname!
-	location_46% self% be_there
+	location_46% self% is_there
 	;attributes
 key% :description
 	\ Crear ente!!! hierro, herrumbre y óxido, visibles con la llave en la mano
@@ -2746,9 +3062,9 @@ key% :description
 	;description
 lake% :attributes
 	s" lago" self% name!
-	self% ~decoration? on
+	self% is_decoration
 	self% ~take_error# nonsense_error# swap !
-	location_44% self% be_there
+	location_44% self% is_there
 	;attributes
 lake% :description
 	s{ s" La" s" Un rayo de" }s
@@ -2757,7 +3073,7 @@ lake% :description
 	;description
 lock% :attributes
 	s" candado" self% name!
-	self% ~decoration? on
+	self% is_decoration
 	self% ~take_error# impossible_error# swap !
 	;attributes
 lock% :description
@@ -2771,7 +3087,7 @@ piece% :description
 	;description
 log% :attributes
 	s" tronco" self% name!
-	location_15% self% be_there
+	location_15% self% is_there
 	;attributes
 log% :description
 	s" Es un tronco"
@@ -2792,11 +3108,11 @@ rags% :description
 	;description
 rocks% :attributes
 	s" rocas" self% fnames!
-	self% ~decoration? on
-	location_31% self% be_there
+	self% is_decoration
+	location_31% self% is_there
 	;attributes
 rocks% :description
-	location_31% north_exit?
+	location_31% has_north_exit?
 	if  (rocks)_on_the_floor$ ^uppercase
 	else  (rocks)_clue$
 	then  period+ paragraph
@@ -2805,7 +3121,7 @@ snake% :attributes
 	s" serpiente" self% fname!
 	self% ~animal? on
 	self% ~take_error# dangerous_error# swap !
-	location_43% self% be_there
+	location_43% self% is_there
 	;attributes
 snake% :description
 	\ Provisional!!! Distinguir si está muerta
@@ -2815,7 +3131,7 @@ snake% :description
 	;description
 stone% :attributes
 	s" piedra" self% fname!
-	location_18% self% be_there
+	location_18% self% is_there
 	;attributes
 stone% :description
 	s" Recia y pesada, pero no muy grande, de forma piramidal."
@@ -2823,8 +3139,8 @@ stone% :description
 	;description
 sword% :attributes
 	s" espada" self% fname!
-	self% ~owned? on
-	ulfius% self% be_there
+	self% is_owned
+	ulfius% self% is_there
 	;attributes
 sword% :description
 	s{ s" Legado" s" Herencia" }s s" de tu padre," s&
@@ -2835,7 +3151,7 @@ sword% :description
 	;description
 table% :attributes
 	s" mesa" self% fname!
-	location_46% self% be_there
+	location_46% self% is_there
 	;attributes
 table% :description
 	s" Es pequeña y de" s{ s" basta" s" tosca" }s& s" madera." s&
@@ -2862,9 +3178,9 @@ torch% :description
 	;description
 waterfall% :attributes
 	s" cascada" self% fname!
-	self% ~decoration? on
+	self% is_decoration
 	self% ~take_error# nonsense_error# swap !
-	location_38% self% be_there
+	location_38% self% is_there
 	;attributes
 waterfall% :description
 	s" No ves nada por la cortina de agua."
@@ -2898,8 +3214,11 @@ location_01% :description
 	sight case
 	self%  of
 		s" No ha quedado nada en pie, ni piedra sobre piedra."
-		s" El entorno es desolador." s&
-		s" Solo resta volver al Sur, a casa." s&
+		s{ s" El entorno es desolador." s" Todo alrededor es desolación." }s&
+		s{ only$ remains$ s&
+		s" Lo único que" remains$ s& s" por hacer" s?& s" es" s&
+		s" No" remains$ s& s{ s" más" s" otra cosa" }s& s" que" s&
+		}s& to_go_back$ s& s" al Sur, a casa." s&
 		paragraph
 		endof
 	north%  of
@@ -2907,7 +3226,7 @@ location_01% :description
 		endof
 	south%  of
 		2 random  if \ Versión 0:
-			^toward_the(masculine)$ s" Sur" s&
+			^toward_the(m)$ s" Sur" s&
 			s{ s" está" s" puedo ver" s" se puede ver" }s&
 			s" la colina." s&  \ Descripción principal
 			s" Y mucho más allá está tu" home$ s& period+  \ Coletilla...
@@ -2936,15 +3255,19 @@ location_02% :attributes
 	location_01% 0 0 location_03% 0 0 0 0 self% init_location
 	;attributes
 location_02% :description
-	\ Crear ente!!! aldea
+	\ Crear ente!!! aldea, niebla
 	sight case
 	self%  of
-		s" Sobre la colina, casi sobre la niebla de la aldea sajona arrasada al Norte, a tus pies."
-		s" El camino desciende hacia el Oeste." s&
+		s" Sobre" s" la cima de" s?&
+		s" la colina, casi" s& s{ s" sobre" s" por encima de" }s&
+		s" la" s&
+		s" espesa" s" fría" both?& s" niebla de la aldea sajona arrasada al Norte, a tus pies." s&
+		^the_path$ s& goes_down$ s& toward$ s& s" el Oeste." s&
 		paragraph
 		endof
 	north%  of
-		s" La aldea sajona agoniza bajo la niebla." \ tmp!!!
+		s" La aldea sajona" s" , arrasada," s?+ s" agoniza bajo la" s&
+		s" espesa" s" fría" both?& s" niebla." s&
 		paragraph
 		endof
 	south%  of
@@ -2954,11 +3277,12 @@ location_02% :description
 		uninteresting_direction
 		endof
 	west%  of
-		s" El camino desciende por la colina."
+		^the_path$ goes_down$ s& s" por la" s& s" ladera de" s?& s" colina." s&
 		paragraph
 		endof
 	down%  of
-		s" La aldea sajona agoniza bajo la niebla." \ tmp!!!
+		s" La aldea sajona" s" , arrasada," s?+ s" agoniza bajo la" s&
+		s" espesa" s" fría" both?& s" niebla." s&
 		paragraph
 		endof
 	up%  of
@@ -3022,7 +3346,7 @@ location_04% :description
 		uninteresting_direction
 		endof
 	west%  of
-		^a_path$ leads$ s& toward_the(feminine)$ s& s" sierra por el paso del Perro." s&
+		^a_path$ leads$ s& toward_the(f)$ s& s" sierra por el paso del Perro." s&
 		paragraph
 		endof
 	down%  of  endof
@@ -3174,8 +3498,9 @@ location_09% :attributes
 location_09% :description
 	sight case
 	self%  of
-		s" El camino desciende hacia la agreste sierra, al Oeste, desde los verdes valles al Este."
-		s" Pero un gran derrumbe bloquea el paso hacia la sierra." s&
+		^the_path$ goes_down$ s& s" hacia la agreste sierra, al Oeste," s&
+		s" desde los" s& s" verdes" s" valles" sswap s& s& s" al Este." s&
+		s" Pero un gran derrumbe" s& (it)_blocks$ s& s" el paso hacia la sierra." s&
 		paragraph
 		endof
 	north%  of
@@ -3185,11 +3510,11 @@ location_09% :description
 		uninteresting_direction
 		endof
 	east%  of
-		s" Se ve la salida del bosque."
+		^can_see$ s" la salida del bosque." s&
 		paragraph
 		endof
 	west%  of
-		s" Un gran derrumbe bloquea el paso hacia la sierra."
+		s" Un gran derrumbe" (it)_blocks$ s& the_pass$ s& toward$ s& s" la sierra." s&
 		paragraph
 		endof
 	up%  of
@@ -3440,7 +3765,6 @@ location_17% :attributes
 	location_15% location_20% location_18% 0 0 0 0 0 self% init_location
 	;attributes
 location_17% :description
-\ Descripción inacabada!!!
 	\ Crear ente!!! estalactitas
 	sight case
 	self%  of
@@ -3475,7 +3799,7 @@ location_18% :attributes
 	0 0 location_19% location_17% 0 0 0 0 self% init_location
 	;attributes
 location_18% :description
-\ Descripción inacabada!!!
+\ Crear ente!!! puente, arco
 	sight case
 	self%  of
 		s" Un arco de piedra se eleva, cual puente sobre la oscuridad, de Este a Oeste."
@@ -3489,10 +3813,12 @@ location_18% :description
 		uninteresting_direction
 		endof
 	east%  of
-		uninteresting_direction
+		s" El arco de piedra se extiende" that_way$ s& period+
+		paragraph
 		endof
 	west%  of
-		uninteresting_direction
+		s" El arco de piedra se extiende" that_way$ s& period+
+		paragraph
 		endof
 	up%  of
 		uninteresting_direction
@@ -3796,15 +4122,13 @@ location_28% :description
 	sight case
 	self%  of
 		\ Crear ente!!! refugiados,estancia(para todos,estancia(para todos),albergue
-		self% known?  if  s" La"  else  s" Una"  then
+		self% is_known?  if  s" La"  else  s" Una"  then
 		s" amplia estancia, que se extiende de Norte a Este," s&
-		leader% ~conversations @ dup
-		if  s" hace de albergue para los"
-		else  s" está llena de"
-		then  s" refugiados." s&
+		refugee_leader% ~conversations @
+		if  s" hace de albergue para los refugiados."
+		else  s" está llena de gente. Parecen refugiados."
+		then  s& 
 		s" Hay banderas de ambos bandos." s&
-		the_people_surround_you$ s&
-		the_leader_looks_at_you$ s&
 		paragraph
 		endof
 	north%  of
@@ -3814,7 +4138,8 @@ location_28% :description
 		uninteresting_direction
 		endof
 	east%  of
-		s" Los refugiados"  they_let_you_pass?
+		s" Los refugiados"
+		self% has_east_exit?
 		if  they_let_you_pass$ s&
 		else  they_don't_let_you_pass$ s&
 		then  period+ paragraph
@@ -3873,7 +4198,8 @@ location_30% :description
 	sight case
 	self%  of
 		s" Se eleva en la penumbra."
-		s" La" cave$ s& s" se estrecha ahora como para una sola persona, hacia el Este." s&
+		s" La" s& cave$ s& gets_narrower(f)$ s&
+		s" ahora como para una sola persona, hacia el Este." s&
 		paragraph
 		endof
 	north%  of
@@ -3883,14 +4209,14 @@ location_30% :description
 		uninteresting_direction
 		endof
 	east%  of
-		s" La" cave$ s& s" se estrecha."
+		s" La" cave$ s& gets_narrower(f)$ s& period+
 		paragraph
 		endof
 	west%  of
 		uninteresting_direction
 		endof
 	up%  of
-		s" La" cave$ s& s" se eleva en la penumbra."
+		s" La" cave$ s& s" se eleva en la penumbra." s&
 		paragraph
 		endof
 	down%  of
@@ -3910,9 +4236,9 @@ location_31% :description
 		paragraph
 		endof
 	north%  of
-		s" Las rocas"  self% north_exit?
+		s" Las rocas"  self% has_north_exit?
 		if  (rocks)_on_the_floor$
-		else  they_block$ the_pass$ s&
+		else  (they)_block$ the_pass$ s&
 		then  s& period+ paragraph
 		endof
 	south%  of
@@ -4053,11 +4379,14 @@ location_35% :description
 		paragraph
 		endof
 	north%  of
+		\ !!!?
 		s" El puente" leads$ s& that_way$ s& period+
 		paragraph
 		endof
 	south%  of
-		uninteresting_direction
+		\ !!!?
+		s" El puente" leads$ s& that_way$ s& period+
+		paragraph
 		endof
 	east%  of
 		uninteresting_direction
@@ -4211,10 +4540,9 @@ location_40% :attributes
 	0 location_35% location_41% 0 0 0 0 0 self% init_location
 	;attributes
 location_40% :description
-\ Descripción inacabada!!!
+\ Crear ente!!! losas y losetas, estalactitas, panorama, escalones
 	sight case
 	self%  of
-		\ Crear losas y losetas, estalactitas, panorama, escalones!!! 
 		s" Una gran explanada enlosetada contempla un bello panorama de estalactitas."
 		s" Unos casi imperceptibles escalones conducen al Este." s&
 		paragraph
@@ -4223,43 +4551,53 @@ location_40% :description
 		uninteresting_direction
 		endof
 	south%  of
-		uninteresting_direction
+		^that_way$ s" se va" s& toward_the(m)$ s& s" puente." s&
+		paragraph
 		endof
 	east%  of
-		uninteresting_direction
+		s" Los escalones" lead$ s& that_way$ s& period+
+		paragraph
 		endof
 	west%  of
 		uninteresting_direction
 		endof
 	up%  of
-		uninteresting_direction
+		s{ s" Sobre" s" Por encima de" }s
+		s{ s" ti" s" tu cabeza" }s& s" se" s& 
+		s{ s" exhibe" s" extiende" s" disfruta" }s&
+		s" un" s& beautiful(m)$ s&
+		s{ s" panorama" s" paisaje" }s s& s" de estalactitas." s&
+		paragraph
 		endof
 	down%  of
-		uninteresting_direction
+		s" Es una" s{ s" gran" s" buena" }s s& s" explanada enlosetada." s&
+		paragraph
 		endof
 	endcase
 	;description
 location_41% :attributes
+\ Pendiente!!! Cambiar el nombre. No se puede pasar a mayúscula un carácter pluriocteto en UTF-8.
 	s" ídolo" self% name!
 	0 0 0 location_40% 0 0 0 0 self% init_location
 	;attributes
 location_41% :description
-\ Descripción inacabada!!!
+\ Crear ente!!! roca, centinela
 	sight case
 	self%  of
 		s" El ídolo parece un centinela siniestro de una gran roca que se encuentra al Sur."
-		s" Se puede volver a la explanada al Oeste." s&
+		s" Se puede" s& to_go_back$ s& toward$ s& s" la explanada hacia el Oeste." s&
 		paragraph
 		endof
 	north%  of
 		uninteresting_direction
 		endof
 	south%  of
-		s" Hay roca enorme en esa dirección."
+		s" Hay una" s" roca" s" enorme" sswap s& s&
+		that_way$ s& period+
 		paragraph
 		endof
 	west%  of
-		s" Se puede volver a la explanada al Oeste."
+		s" Se puede volver" toward$ s& s" la explanada" s& that_way$ s& period+
 		paragraph
 		endof
 	east%  of
@@ -4278,20 +4616,22 @@ location_42% :attributes
 	location_41% location_43% 0 0 0 0 0 0 self% init_location
 	;attributes
 location_42% :description
-\ Descripción inacabada!!!
 	sight case
 	self%  of
 		s" Como un pasillo que corteja el canal de agua, a su lado, baja de Norte a Sur."
-		\ s" Se aprecia un aumento de luz hacia el Sur." s&
 		paragraph
 		endof
 	north%  of
-		s" El pasaje asciende en esa dirección, de donde procede el agua."
+		^the_pass_way$ goes_up$ s& that_way$ s&
+		s" , de donde" s{ s" corre" s" procede" s" viene" s" proviene" }s& s" el agua." s& s+
 		paragraph
 		endof
 	south%  of
-		s" El pasaje desciende hacia el Sur, siguiendo el canal de agua."
-		s" Se aprecia un aumento de luz en esa dirección." s&
+		^the_pass_way$ goes_down$ s& that_way$ s&
+		s" , siguiendo el canal de agua," s+
+		s" hacia un lugar en que" s&
+		s{ s" se aprecia" s" puede apreciarse" s" se distingue" }s&
+		s" un aumento de luz." s&
 		paragraph
 		endof
 	east%  of
@@ -4313,19 +4653,21 @@ location_43% :attributes
 	location_42% 0 0 0 0 0 0 0 self% init_location
 	;attributes
 location_43% :description
-\ Descripción inacabada!!!
 	sight case
 	self%  of
-		s" El pasaje sigue de Norte a Sur."
+		^the_pass_way$ s" sigue de Norte a Sur." s&
 		paragraph
 		endof
 	north%  of
-		s" El pasaje continúa por el Norte."
-		narrate
+		^the_pass_way$ s" continúa" s& that_way$ s& period+
+		paragraph
 		endof
 	south%  of
-		s" El pasaje continúa por el Sur."
-		narrate
+		snake% is_here?
+		if  a_snake_blocks_the_way$
+		else  ^the_pass_way$ s" continúa" s& that_way$ s&
+		then  period+
+		paragraph
 		endof
 	east%  of
 		uninteresting_direction
@@ -4346,22 +4688,24 @@ location_44% :attributes
 	location_43% 0 0 location_45% 0 0 0 0 self% init_location
 	;attributes
 location_44% :description
-\ Descripción inacabada!!!
+\ Crear ente!!! lago, escaleras, pasaje, lago
 	sight case
 	self%  of
-		s" Unas escaleras dan paso a un hermoso lago interior, y siguen hacia el Oeste."
-		s" Al Norte, un oscuro y estrecho pasaje sube." s&
+		s" Unas escaleras" s{ s" dan" s" permiten el" }s& s{ s" paso" s" acceso" }s&
+		s" a un" s& beautiful(m)$ s& s" lago interior, hacia el Oeste." s&
+		s" Al Norte, un oscuro y"
+		narrow(m)$ s& pass_way$ s& goes_up$ s& period+ s?&
 		paragraph
 		endof
 	north%  of
-		s" Un pasaje oscuro y estrecho sube en esa dirección."
+		s" Un pasaje oscuro y" narrow(m)$ s& goes_up$ s& that_way$ s& period+
 		paragraph
 		endof
 	south%  of
 		uninteresting_direction
 		endof
 	west%  of
-		s" Las escaleras conducen en esa dirección, hacia el lago."
+		s" Las escaleras" lead$ s& that_way$ s& s" , hacia el lago" s?+ period+
 		paragraph
 		endof
 	east%  of
@@ -4380,25 +4724,31 @@ location_45% :attributes
 	0 location_47% location_44% location_46% 0 0 0 0 self% init_location
 	;attributes
 location_45% :description
-\ Descripción inacabada!!!
+\ Crear ente!!! pasaje/camino/paso/senda
 	sight case
 	self%  of
-		s" Estrechos pasos permiten ir al Oeste, al Este y al Sur." 
+		^narrow(mp)$ pass_ways$ s&
+		s" permiten ir al Oeste, al Este y al Sur." s&
 		paragraph
 		endof
 	north%  of
 		uninteresting_direction
 		endof
 	south%  of
-		s" Un estrecho paso permite ir hacia el Sur, de donde proviene una gran luminosidad."
+		^a_narrow_pass_way$ s" permite ir" s& that_way$ s&
+		s" , de donde" s+ s{ s" proviene" s" procede" }s&
+		s{ s" una gran" s" mucha" }s& s" luminosidad." s&
 		paragraph
 		endof
 	west%  of
-		s" Un estrecho paso conduce hacia el Oeste."
+		^a_narrow_pass_way$ leads$ s& that_way$ s& period+
 		paragraph
 		endof
 	east%  of
-		s" Un estrecho paso permite ir hacia el Este, de donde proviene algo de claridad."
+		^a_narrow_pass_way$ leads$ s& that_way$ s& period+
+		s" , de donde" s{ s" proviene" s" procede" }s&
+		s{ s" algo de" s" una poca" s" un poco de" }s&
+		s{ s" claridad" s" luz" }s& period+ s+
 		paragraph
 		endof
 	up%  of
@@ -4427,7 +4777,8 @@ location_46% :description
 		uninteresting_direction
 		endof
 	east%  of
-		s" Hacia el Este está la salida de la casa de Ambrosio."
+		s" La salida" s" de la casa de Ambrosio" s?&
+		s" está" s& that_way$ s& period+
 		paragraph
 		endof
 	west%  of
@@ -4451,12 +4802,12 @@ location_47% :description
 	self%  of
 		s" Por el Oeste,"
 		door% full_name s& door% >open|closed$ s&
-		door% open?  if
+		door% is_open?  if
 			comma+
 			s" por la cual entra la luz que ilumina la estancia," s&
 			s" permite salir de la cueva."
 		else
-			door% known?
+			door% is_known?
 			if
 				comma+
 				s" al otro lado de la cual se adivina la luz diurna," s&
@@ -4467,7 +4818,7 @@ location_47% :description
 				s" parece ser la salida de la cueva." s&
 			then
 		then
-		door% open?  if
+		door% is_open?  if
 			s" adivina la luz diurna al otro lado." s&
 		else
 			s" Se adivina la luz diurna al otro lado." s&
@@ -4481,7 +4832,7 @@ location_47% :description
 		uninteresting_direction
 		endof
 	west%  of
-		door% open?  if
+		door% is_open?  if
 			s" La luz diurna que entra por la puerta."
 		else	
 			s" Se adivina la luz diurna al otro lado de la puerta."
@@ -4603,7 +4954,7 @@ location_50% :description
 	;description
 location_51% :attributes
 	s" Westmorland" self% fname!
-	self% ~no_article? on
+	self% has_no_article
 	location_50% 0 0 0 0 0 0 0 self% init_location
 	;attributes
 location_51% :description
@@ -4662,7 +5013,7 @@ clouds% :attributes
 	;attributes
 clouds% :description
 	\ Pendiente!!!:
-	\ Distinguir no solo interiores, sino lugares en
+	\ Distinguir no solo interiores, sino escenarios en
 	\ que se puede vislumbrar el exterior.
 	\ Provisional!!!:
 	s" Los estratocúmulos que traen la nieve y que cuelgan sobre la Tierra"
@@ -4704,8 +5055,8 @@ inventory% :attributes
 enemy% :attributes
 	\ Inacabado!!!
 	s" enemigos" self% names!
-	self% ~human? on
-	self% ~decoration? on
+	self% is_human
+	self% is_decoration
 	;attributes
 enemy% :description
 	\ Inacabado!!!
@@ -4727,27 +5078,27 @@ enemy% :description
 
 north% :attributes
 	s" Norte" self% name!
-	self% ~definite_article? on
+	self% has_definite_article
 	north_exit self% ~direction !
 	;attributes
 south% :attributes
 	s" Sur" self% name!
-	self% ~definite_article? on
+	self% has_definite_article
 	south_exit self% ~direction !
 	;attributes
 east% :attributes
 	s" Este" self% name!
-	self% ~definite_article? on
+	self% has_definite_article
 	east_exit self% ~direction !
 	;attributes
 west% :attributes
 	s" Oeste" self% name!
-	self% ~definite_article? on
+	self% has_definite_article
 	west_exit self% ~direction !
 	;attributes
 up% :attributes
 	s" arriba" self% name!
-	self% ~no_article? on
+	self% has_no_article
 	up_exit self% ~direction !
 	;attributes
 up% :description
@@ -4758,7 +5109,7 @@ up% :description
 	;description
 down% :attributes
 	s" abajo" self% name!
-	self% ~no_article? on
+	self% has_no_article
 	down_exit self% ~direction !
 	;attributes
 down% :description
@@ -4772,12 +5123,12 @@ down% :description
 
 out% :attributes
 	s" afuera" self% name!
-	self% ~no_article? on
+	self% has_no_article
 	out_exit self% ~direction !
 	;attributes
 in% :attributes
 	s" adentro" self% name!
-	self% ~no_article? on
+	self% has_no_article
 	in_exit self% ~direction !
 	;attributes
 	
@@ -4807,7 +5158,7 @@ variable what  \ Ente que ha provocado un error y puede ser citado en el mensaje
 	;
 ' is_not_here constant (is_not_here_error#)
 ' (is_not_here_error#) is is_not_here_error#
-: is_not_here_what  \  Informa de que el ente WHAT no está presente
+: is_not_here_what  ( -- )  \  Informa de que el ente WHAT no está presente
 	what @ is_not_here
 	;
 ' is_not_here_what constant (is_not_here_what_error#)
@@ -4867,7 +5218,7 @@ variable what  \ Ente que ha provocado un error y puede ser citado en el mensaje
 	['] it_is_impossible_x$
 	2 choose execute  period+ narrate
 	;
-: impossible  \ Informa de que una acción no especificada es imposible
+: impossible  ( -- )  \ Informa de que una acción no especificada es imposible
 	[debug]  [if]  s" En IMPOSSIBLE" debug  [then]  \ Depuración!!!
 	something_like_that$ is_impossible
 	;
@@ -4909,7 +5260,7 @@ variable what  \ Ente que ha provocado un error y puede ser citado en el mensaje
 	['] it_is_nonsense_x$ 
 	2 choose execute  period+ narrate
 	;
-: nonsense  \ Informa de que alguna acción no especificada no tiene sentido
+: nonsense  ( -- )  \ Informa de que alguna acción no especificada no tiene sentido
 	\ Provisional!!!
 	[debug]  [if]  s" En NONSENSE" debug  [then]  \ Depuración!!!
 	s" eso" is_nonsense 
@@ -4917,7 +5268,7 @@ variable what  \ Ente que ha provocado un error y puede ser citado en el mensaje
 ' nonsense constant (nonsense_error#)
 ' (nonsense_error#) is nonsense_error#
 : dangerous$  ( -- a u )  \ Devuelve una variante de «es peligroso», que formará parte de mensajes personalizados por cada acción
-	\ Pendiente!!! Quitar las variantes que no sean adecuadas a todos los casos
+	\ Pendiente!!! Quitar las variantes que no sean adecuadas a todos los casos y unificar 
 	s{
 	s" es algo descabellado"
 	s" es descabellado"
@@ -4952,7 +5303,7 @@ variable what  \ Ente que ha provocado un error y puede ser citado en el mensaje
 	['] it_is_dangerous_x$ 
 	2 choose execute  period+ narrate
 	;
-: dangerous  \ Informa de que alguna acción no especificada no tiene sentido
+: dangerous  ( -- )  \ Informa de que alguna acción no especificada no tiene sentido
 	something_like_that$ is_dangerous
 	;
 ' dangerous constant (dangerous_error#)
@@ -4997,18 +5348,18 @@ variable what  \ Ente que ha provocado un error y puede ser citado en el mensaje
 	\ Pendiente!!!
 	no_reason_for$ 2swap s& period+ narrate
 	;
-: no_reason  \ Informa de que no hay motivo para una acción no especificada
+: no_reason  ( -- )  \ Informa de que no hay motivo para una acción no especificada
 	\ Pendiente!!!
 	something_like_that$ no_reason_for_that
 	;
-: nonsense|no_reason  \ Informa de que una acción no especificada no tiene sentido o no tiene motivo
+: nonsense|no_reason  ( -- )  \ Informa de que una acción no especificada no tiene sentido o no tiene motivo
 	\ No se usa todavía!!!
 	['] nonsense
 	['] no_reason
 	2 choose execute
 	;
 variable silent_well_done?  silent_well_done? off
-: well_done  \ Informa de que una acción se ha realizado
+: well_done  ( -- )  \ Informa de que una acción se ha realizado
 	silent_well_done? @ 0=
 	if  s" Hecho." narrate  then
 	silent_well_done? off
@@ -5042,7 +5393,7 @@ variable silent_well_done?  silent_well_done? off
 	s" tiene utilidad"
 	}s&
 	;
-: do_not_worry  \ Informa de que una acción no tiene importancia
+: do_not_worry  ( -- )  \ Informa de que una acción no tiene importancia
 	\ Provisional!!! No se usa!!!
 	['] (do_not_worry_0)$
 	['] (do_not_worry_1)$ 2 choose execute
@@ -5079,7 +5430,7 @@ variable silent_well_done?  silent_well_done? off
 	s" No" you_carry$ s& rot full_name s& with_you$ s&
 	;
 : you_do_not_have_it  ( a -- )  \ Informa de que el protagonista no tiene un ente
-	dup known?  if
+	dup is_known?  if
 		['] you_do_not_have_it_(0)$
 		['] you_do_not_have_it_(1)$
 		2 choose execute
@@ -5088,7 +5439,7 @@ variable silent_well_done?  silent_well_done? off
 	;
 ' you_do_not_have_it constant (you_do_not_have_it_error#)
 ' (you_do_not_have_it_error#) is you_do_not_have_it_error#
-: you_do_not_have_what  \ Informa de que el protagonista no tiene el ente WHAT
+: you_do_not_have_what  ( -- )  \ Informa de que el protagonista no tiene el ente WHAT
 	what @ you_do_not_have_it
 	;
 ' you_do_not_have_what constant (you_do_not_have_what_error#)
@@ -5165,7 +5516,7 @@ variable silent_well_done?  silent_well_done? off
 	['] not_by_hand_1$
 	2 choose execute ^uppercase
 	;
-: not_by_hand  \ Informa de que la acción no puede hacerse sin una herramienta
+: not_by_hand  ( -- )  \ Informa de que la acción no puede hacerse sin una herramienta
 	not_by_hand$ narrate
 	;
 : you_need  ( a -- )  \ Informa de que el protagonista no tiene un ente necesario
@@ -5174,7 +5525,7 @@ variable silent_well_done?  silent_well_done? off
 	else  drop not_by_hand
 	then
 	;
-: you_need_what  \ Informa de que el protagonista no tiene el ente WHAT necesario
+: you_need_what  ( -- )  \ Informa de que el protagonista no tiene el ente WHAT necesario
 	what @ you_need
 	;
 ' you_need_what constant (you_need_what_error#)
@@ -5205,12 +5556,12 @@ variable silent_well_done?  silent_well_done? off
 	r> full_name s& period+ narrate
 	;
 : you_do_not_wear_it  ( a -- )  \ Informa de que el protagonista no lleva puesto un ente prenda, según lo lleve o no consigo
-	dup hold?
+	dup is_hold?
 	if  you_do_not_have_it
 	else  (you_do_not_wear_it) 
 	then
 	;
-: you_do_not_wear_what  \ Informa de que el protagonista no lleva puesto el ente WHAT , según lo lleve o no consigo
+: you_do_not_wear_what  ( -- )  \ Informa de que el protagonista no lleva puesto el ente WHAT , según lo lleve o no consigo
 	what @ you_do_not_wear_it
 	;
 ' you_do_not_wear_what constant (you_do_not_wear_what_error#)
@@ -5219,7 +5570,7 @@ variable silent_well_done?  silent_well_done? off
 	>r s" Ya llevas puest" r@ noun_ending+
 	r> full_name s& period+ narrate
 	;
-: you_already_wear_what  \ Informa de que el protagonista lleva puesto el ente WHAT
+: you_already_wear_what  ( -- )  \ Informa de que el protagonista lleva puesto el ente WHAT
 	what @ you_already_wear_it
 	;
 ' you_already_wear_what constant (you_already_wear_what_error#)
@@ -5229,13 +5580,13 @@ variable silent_well_done?  silent_well_done? off
 	s" No con eso..." 
 	2 schoose
 	;
-: not_with_that  \ Informa de que la acción no puede hacerse con la herramienta elegida
+: not_with_that  ( -- )  \ Informa de que la acción no puede hacerse con la herramienta elegida
 	not_with_that$ narrate
 	;
 : it_is_already_open  ( a -- )  \ Informa de que un ente ya está abierto
 	s" Ya está abiert" r@ noun_ending+ period+ narrate
 	;
-: what_is_already_open  \ Informa de que el ente WHAT ya está abierto
+: what_is_already_open  ( -- )  \ Informa de que el ente WHAT ya está abierto
 	what @ it_is_already_open
 	;
 ' what_is_already_open constant (what_is_already_open_error#)
@@ -5243,7 +5594,7 @@ variable silent_well_done?  silent_well_done? off
 : it_is_already_closed  ( a -- )  \ Informa de que un ente ya está cerrado
 	s" Ya está cerrad" r@ noun_ending+ period+ narrate
 	;
-: what_is_already_closed  \ Informa de que el ente WHAT ya está cerrado
+: what_is_already_closed  ( -- )  \ Informa de que el ente WHAT ya está cerrado
 	what @ it_is_already_closed
 	;
 ' what_is_already_closed constant (what_is_already_closed_error#)
@@ -5277,8 +5628,8 @@ variable #elements  \ Total de los elementos de una lista
 : can_be_listed?  ( a -- f )  \ ¿El ente puede ser incluido en las listas?
 	\ Inacabado!!!
 	dup protagonist% <>  \ ¿No es el protagonista?
-	over ~decoration? @ 0=  and  \ ¿Y no es decorativo?
-	swap global? 0=  and  \ ¿Y no es global?
+	over is_decoration? 0=  and  \ ¿Y no es decorativo?
+	swap is_global? 0=  and  \ ¿Y no es global?
 	;
 : /list++  ( u1 a1 a2 -- u1 | u2 )  \ Actualiza un contador si un ente es la localización de otro y puede ser listado
 	\ u1 = Contador
@@ -5286,7 +5637,7 @@ variable #elements  \ Total de los elementos de una lista
 	\ a2 = Ente cuya localización hay que comprobar
 	\ u2 = Contador incrementado
 	dup can_be_listed?
-	if  where = abs +  else  2drop  then
+	if  location = abs +  else  2drop  then
 	;
 : /list  ( a -- u )  \ Cuenta el número de entes cuya localización es el ente indicado y pueden ser listados
 	\ a = Ente que actúa como localización
@@ -5321,13 +5672,13 @@ variable #elements  \ Total de los elementos de una lista
 	dup about_to_list if
 		#entities 1  do
 			dup i #>entity dup can_be_listed?  if
-				there?  if  i #>entity (content_list)  then
+				is_there?  if  i #>entity (content_list)  then
 			else  2drop
 			then
 		loop  s" ." »+
 	then  drop  «»@
 	;
-: .present  \ Lista los entes presentes
+: .present  ( -- )  \ Lista los entes presentes
 	my_location content_list dup
 	if  s" Ves" s" Puedes ver" 2 schoose 2swap s& narrate
 	else  2drop
@@ -5368,51 +5719,97 @@ section( Herramientas para las tramas asociadas a lugares) \ {{{
 	;
 
 \ }}}###########################################################
-section( Tramas asociadas a lugares) \ {{{
+section( Recursos de las tramas asociadas a lugares) \ {{{
 
-: pass_still_open?  ( -- f )  \ ¿El paso del desfiladero está abierto por el Norte?
-	location_08% north_exit?
-	;
-: going_home  \ De vuelta a casa
-	s{ s" Tus" s" Todos tus" }s
-	soldiers$ s&
+\ ------------------------------------------------
+\ Regreso a casa
+
+: your_soldiers_follow_you  ( -- )  \ De vuelta a casa
+	all_your$ soldiers$ s&
 	s{ s" siguen tus pasos." s" te siguen." }s&
 	narrate
 	;
-: maybe_going_home  \ De vuelta a casa, si procede
-	pass_still_open?  if  going_home  then
+: going_home  ( -- )  \ De vuelta a casa, si procede
+	pass_still_open?  if  your_soldiers_follow_you  then
 	;
 
+\ ------------------------------------------------
+\ Albegue de los refugiados
+
+: the_old_man_is_angry?  ( -- f )  \ ¿El anciano se enfada porque llevas algo prohibido?
+	stone% is_accessible?
+	sword% is_accessible?  or
+	;
+: he_looks_at_you_with_anger$  ( -- a u )  \ Devuelve una versión del texto de que el líder de los refugiados te mira
+	s" parece sorprendido y" s?
+	s{
+	s" te mira" s{ s" con dureza" s" con preocupación" }s&
+	s" te dirige una dura mirada"
+	s" dirige su mirada hacia ti"
+	}s&
+	;
+: he_looks_at_you_with_calm$  ( -- a u )  \ Devuelve una versión del texto de que el líder de los refugiados te mira
+	s" advierte tu presencia y" s?
+	s{ s" por un momento" s" durante unos instantes" }s?&
+	s" te" s&{ s" observa" s" contempla" }s&
+	s{ s" con serenidad" s" con expresión serena" s" en calma" s" sereno" }s&
+	;
+: the_leader_looks_at_you$  ( -- a u )  \ Devuelve el texto de que el líder de los refugiados te mira
+	refugee_leader% ^full_name  the_old_man_is_angry?
+	if  he_looks_at_you_with_anger$ 
+	else  he_looks_at_you_with_calm$
+	then  s& period+
+	;
+: the_refugees_surround_you$  ( -- a u )  \ Devuelve descripción de la actitud de los refugiados
+	s" Los refugiados"
+	location_28% has_east_exit?
+	if  they_let_you_pass$ 
+	else  they_don't_let_you_pass$
+	then  period+ s&
+	;
+
+\ }}}###########################################################
+section( Tramas asociadas a lugares) \ {{{
+
 location_01% :location_plot
-	maybe_going_home
-	enemy% be_here  \ temp!!!?
+	your_soldiers% is_here
+	going_home
+	enemy% is_here  \ temp!!!?
 	;location_plot
 location_02% :location_plot
-	maybe_going_home
+	your_soldiers% is_here
+	going_home
 	;location_plot
 location_03% :location_plot
-	maybe_going_home
+	your_soldiers% is_here
+	going_home
 	;location_plot
 location_04% :location_plot
-	maybe_going_home
+	your_soldiers% is_here
+	going_home
 	;location_plot
 location_05% :location_plot
-	maybe_going_home
+	your_soldiers% is_here
+	going_home
 	;location_plot
 location_06% :location_plot
-	maybe_going_home
+	your_soldiers% is_here
+	going_home
 	;location_plot
 location_07% :location_plot
-	maybe_going_home
+	your_soldiers% is_here
+	going_home
 	;location_plot
 location_08% :location_plot
-	maybe_going_home
+	your_soldiers% is_here
+	going_home
 	;location_plot
 location_09% :location_plot
-	maybe_going_home
+	your_soldiers% is_here
+	going_home
 	;location_plot
 location_11% :location_plot
-	self% lake% be_there
+	lake% is_here
 	;location_plot
 location_16% :location_plot
 	s" En la distancia, por entre los resquicios de las rocas,"
@@ -5421,127 +5818,49 @@ location_16% :location_plot
 	narrate
 	;location_plot
 location_28% :location_plot
-	no_exit self% ~east_exit !
+	self% no_exit e-->  \ Cerrar la salida hacia el Este
+	refugees% is_here
+	the_refugees_surround_you$ narrate
+	the_leader_looks_at_you$ narrate
+	;location_plot
+location_28% :location_plot
+	refugees% is_here  \ Para que sean visibles en la distancia
 	;location_plot
 location_31% :location_plot
-	self% north_exit?  if
-		s" Las rocas yacen desmoronadas a lo largo del pasaje."
+	self% has_north_exit?  if
+		s" Las rocas yacen desmoronadas a lo largo del" pass_way$ s& period+
 	else
-		s" Las rocas bloquean el camino."
+		s" Las rocas" (they)_block$ s& s" el paso."
 	then  narrate
 	;location_plot
 location_38% :location_plot
-	self% lake% be_there
+	lake% is_here
 	;location_plot
 location_43% :location_plot
-	snake% here?  if
-		s" Una serpiente bloquea el paso al Sur."
+	snake% is_here?  if
+		a_snake_blocks_the_way$ period+
 		narrate
 	then
 	;location_plot
 location_44% :location_plot
-	self% lake% be_there
+	lake% is_here
 	;location_plot
 
 \ }}}###########################################################
 section( Trama global) \ {{{
 
-: (lock_found)  \ Encontrar el candado (al mirar la puerta o al intentar abrirla)
-	door% ~location @ lock% be_there
+\ ------------------------------------------------
+\ Miscelánea
+
+: (lock_found)  ( -- )  \ Encontrar el candado (al mirar la puerta o al intentar abrirla)
+	door% ~location @ lock% is_there
 	lock% more_familiar
 	;  ' (lock_found) is lock_found
 
-\ Emboscada de los sajones
+\ ------------------------------------------------
+\ Persecución
 
-: ambush?  ( -- f )  \ ¿Ha caído el protagonista en la emboscada?
-	my_location location_08% =  \ ¿Está en el escenario 8?
-	pass_still_open?  and  \ ¿Y además el paso está abierto?
-	;
-: the_battle_ends  \ Termina la batalla
-	battle# off
-	;
-: the_pass_is_closed  \ Cerrar es paso, la salida norte
-	no_exit location_08% ~north_exit !
-	;
-: the_battle_begins  \ Comienza la batalla
-	1 battle# !
-	;
-: the_ambush_begins  \ Comienza la emboscada
-	s" Una partida sajona aparece por el Este."
-	s" Para cuando" s&
-	s{ s" te vuelves" s" intentas volver" }s&
-	toward_the(masculine)$ s& s" Norte," s&
-	s" ya no" s{ s" te queda" s" tienes" }s&
-	s{ s" duda alguna:" s" ninguna duda:" }s&
-	s{
-		s" es" s" se trata de"
-		s{ s" te" s" os" }s s" han tendido" s&
-	}s& s" una" s&
-	s{ s" emboscada" s" celada" s" encerrona" s" trampa" }s&
-	period+  narrate short_pause
-	;
-
-: they_win_0$  ( -- a u )  \ Devuelve la primera versión de la parte final de las palabras de los oficiales
-	s{ s" su" s{ s" victoria" s" triunfo" }s&
-	s" nuestra" s{ s" derrota" s" humillación" }s&
-	}s s" será" s& s{ s" doble" s" mayor" }s&
-	;
-: they_win_1$  ( -- a u )  \ Devuelve la segunda versión de la parte final de las palabras de los oficiales
-	s{ s" ganan" s" nos ganan" s" vencen"
-	s" perdemos" s" nos vencen" s" nos derrotan" }s
-	s{ s" doblemente" s" por partida doble" }s&
-	;
-: they_win$  ( -- a u )  \ Devuelve la parte final de las palabras de los oficiales
-	they_win_0$ they_win_1$ 2 schoose period+
-	;
-: taking_prisioner$  ( -- a u )  \ Devuelve una parte de las palabras de los oficiales
-	s{ s" capturando" s" haciendo prisionero"
-	s" tomando prisionero" s" si capturan"
-	s" si hacen prisionero" s" si toman prisionero" }s
-	;
-: officers_speach  \ Palabras de los oficiales
-	sire,$ s?  dup taking_prisioner$
-	rot 0=  if  ^uppercase  then  s&
-	s" a un general britano" s& they_win$ s&  speak
-	;
-: your_officers_talk_to_you  \ Tus oficiales hablan con el protagonista
-	s" Tus oficiales te"
-	s{ s" conminan a huir."
-	s" conminan a ponerte a salvo."
-	s" piden que te pongas a salvo."
-	s" piden que huyas." }s&  narrate
-	officers_speach
-	s{ s" Sabes" s" Comprendes" }s s" que" s&
-	s{ s" es cierto" s" llevan razón"
-	s" están en lo cierto" }s&
-	s" , y te duele." s+  narrate
-	;
-: the_enemy_is_stronger  \ El enemigo es superior
-	s" En el"
-	s{ s" estrecho" s" angosto" }s& s" paso es posible" s&
-	s{ s" resistir," s" defenderse," }s& s" pero" s&
-	s{ s" por desgracia" s" desgraciadamente" }s&
-	s{
-	\ s" sus efectivos son muy superiores a los tuyos."  \ Anulado!!! porque «efectivo» en ese sentido es acepción moderna
-	s" los sajones son muy superiores en número"
-	s" sus soldados son más numerosos que los tuyos"
-	s" sus tropas son más numerosas que las tuyas"
-	s" sus hombres son más numerosos que los tuyos"
-	s" ellos son muy superiores en número"
-	s" ellos son mucho más numerosos"
-	}s& period+  narrate end_of_scene
-	;
-: ambush  \ Emboscada
-	the_pass_is_closed
-	the_ambush_begins
-	the_battle_begins
-	the_enemy_is_stronger
-	your_officers_talk_to_you
-	;
-
-\ Textos usados para la ambientación de la batalla y la persecución
-
-: pursued  \ Perseguido por los sajones
+: pursued  ( -- )  \ Perseguido por los sajones
 	s{
 	s" El tiempo apremia"
 	s" Hay que apresurarse"
@@ -5556,6 +5875,13 @@ section( Trama global) \ {{{
 	s" Tienes que apresurarte"
 	}s s" ..." s+  narrate
 	;
+: pursue_location?  ( -- f )  \ ¿En un escenario en que los sajones pueden perseguir al protagonista?
+	my_location location_12% <
+	;
+
+\ ------------------------------------------------
+\ Batalla
+
 : all_your_men  ( -- a u f )  \ Devuelve una variante de «Todes tus hombres», y un indicador de número
 	\ a u = Cadena
 	\ f = ¿El texto está en plural?
@@ -5588,14 +5914,8 @@ section( Trama global) \ {{{
 	s{ s" héroes" s" valientes" s" jabatos" }s&
 	;
 : (bravery)$  ( -- a u )  \ Devuelve una variante de «con denuedo»
-	s{
-	s" con denuedo"
-	s" con bravura"
-	s" con coraje"
-	s" heroicamente" 
-	s" esforzadamente"
-	s" valientemente"
-	}s
+	s{ s" con denuedo" s" con bravura" s" con coraje"
+	s" heroicamente" s" esforzadamente" s" valientemente" }s
 	;
 : bravery$  ( f -- a u )  \ Devuelve una variante de «con denuedo», en singular o plural
 	\ f = ¿El resultado debe estar en plural?
@@ -5605,124 +5925,136 @@ section( Trama global) \ {{{
 	2 schoose 
 	;
 : step_by_step$  ( -- a u )  \ Devuelve una variante de «poco a poco»
-	s" por momentos"
-	s" palmo a palmo" 
-	s" poco a poco" 3 schoose
+	s{ s" por momentos" s" palmo a palmo" s" poco a poco" }s
 	;
 : field$  ( -- a u )  \ Devuelve «terreno» o «posiciones»
-	s" terreno"
-	s" posiciones" 2 schoose
+	s{ s" terreno" s" posiciones" }s
 	;
-
-\ Fases del combate
-
-: battle_phase_00  \ Combate (fase 00)
-	s{
-	s" A pesar de"
-	s" haber sido atacados por sorpresa,"
-	s" haber sido sorprendidos,"
-	s" la sorpresa inicial,"
-	s" la sorpresa,"
-	s" lo sorpresivo del ataque,"
-	s" lo imprevisto del ataque,"
-	}s& your_soldiers$ s&
+: last(fp)$  ( -- a u )  \ Devuelve una variante de «últimas»
+	s{ s" últimas" s" postreras" }s
+	;
+: last$  ( -- a u )  \ Devuelve una variante de «último»
+\ Nota!!! Confirmar «postrer»
+	s{ s" último" s" postrer" }s
+	;
+: last_energy(fp)$  ( -- a u )  \ Devuelve una variante de «últimas energías»
+	last(fp)$ s{ s" energías" s" fuerzas" }s&
+	;
+: battle_phase_00$  ( -- a u ) \ Devuelve la descripción del combate (fase 00)
+	s" A pesar de" s{
+	s" haber sido" s{ s" atacados por sorpresa" s" sorprendidos" }s&
+	s" la sorpresa" s" inicial" s?&
+	s" lo" s{ s" inesperado" s" sorpresivo" s" sorprendente" s" imprevisto" }s&
+	s" del ataque" s& }s& comma+ your_soldiers$ s&
 	s{ s" responden" s" reaccionan" }s&
-	s{
-	s" con prontitud"
-	s" sin perder un instante"
-	s" rápidamente"
-	s" como si fueran uno solo"
-	}s& s" y" s&
-	s{
-	s" adoptan una formación defensiva."
-	s" organizan la defensa."
-	s" se preparan para defenderse."
-	}s&  narrate
+	s{ s" con prontitud" s" sin perder un instante"
+	s" rápidamente" s" como si fueran uno solo"
+	}s& s" y" s&{
+	s" adoptan una formación defensiva"
+	s" organizan la defensa"
+	s" se" s{ s" preparan" s" aprestan" }s& s" para" s&
+	s{ s" defenderse" s" la defensa" }s&
+	}s& period+ 
 	;
-: battle_phase_01  \ Combate (fase 01)
+: battle_phase_00  ( -- )  \ Combate (fase 00)
+	battle_phase_00$ narrate
+	;
+: battle_phase_01$  ( -- a u ) \ Devuelve la descripción del combate (fase 01)
 	all_your_men  dup resist/s$  rot bravery$  s& s&
-	s{
-	s" el ataque inicial"
-	s" el empuje inicial"
-	s" la acometida inicial"
-	s" el primer ataque"
-	s" el primer empuje" 
+	s{ s{ s" el ataque" s" el empuje" s" la acometida" }s
+	s" inicial" s&
+	s" el primer" s{ s" ataque" s" empuje" }s&
 	s" la primera acometida"
-	}s&
-	of_the_enemy/enemies$ s&  period+ narrate
+	}s& of_the_enemy/enemies$ s& period+ 
 	;
-: battle_phase_02  \ Combate (fase 02)
+: battle_phase_01  ( -- )  \ Combate (fase 01)
+	battle_phase_01$ narrate
+	;
+: battle_phase_02$  ( -- a u ) \ Devuelve la descripción del combate (fase 02)
 	all_your_men  dup fight/s$  rot bravery$  s& s&
 	s" contra" s&  the_enemy/enemies$ s&  period+
-	narrate
 	;
-: battle_phase_03  \ Combate (fase 03)
+: battle_phase_02  ( -- )  \ Combate (fase 02)
+	battle_phase_02$ narrate
+	;
+: battle_phase_03$  ( -- a u ) \ Devuelve la descripción del combate (fase 03)
 	\ Inacabado!!!
 	^your_soldiers$
 	s" empiezan a acusar" s&
 	s{ 0$ s" visiblemente" s" notoriamente" }s&
-	s" el" s&
-	s{ s" titánico" s" enorme" }s&
+	s" el" s&{ s" titánico" s" enorme" }s?&
 	s" esfuerzo." s&
-	narrate
 	;
-: battle_phase_04  \ Combate (fase 04)
+: battle_phase_03  ( -- )  \ Combate (fase 03)
+	battle_phase_03$ narrate
+	;
+: battle_phase_04$  ( -- a u ) \ Devuelve la descripción del combate (fase 04)
 	^the_enemy/enemies
 	s" parece que empieza* a" rot *>verb_ending s&
 	s{ s" dominar" s" controlar" }s&
-	s" el campo"
-	s" el combate" 
-	s" la situación" 3 schoose s&  period+
-	narrate
+	s{ s" el campo" s" el combate" s" la situación" s" el terreno" }s&
+	period+ 
 	;
-: battle_phase_05  \ Combate (fase 05)
-	\ Inacabado!!!
-	^the_enemy/enemies
+: battle_phase_04  ( -- )  \ Combate (fase 04)
+	battle_phase_04$ narrate
+	;
+: battle_phase_05$  ( -- a u ) \ Devuelve la descripción del combate (fase 05)
+	\ Inacabado!!!?
+	^the_enemy/enemies s{
 	s" está* haciendo retroceder a" your_soldiers$ s&
 	s" está* obligando a" your_soldiers$ s& s" a retroceder" s&
-	2 schoose rot *>verb_ending s&
-	step_by_step$ s&  period+
-	narrate
+	}s rot *>verb_ending s&
+	step_by_step$ s& period+
 	;
-: battle_phase_06  \ Combate (fase 06)
+: battle_phase_05  ( -- )  \ Combate (fase 05)
+	battle_phase_05$ narrate
+	;
+: battle_phase_06$  ( -- a u ) \ Devuelve la descripción del combate (fase 06)
 	\ Inacabado!!!
-	^the_enemy/enemies
+	^the_enemy/enemies s{
 	s" va* ganando" field$ s&
 	s" va* adueñándose del terreno"
 	s" va* conquistando" field$ s&
-	s" se va* abriendo paso" 4 schoose  rot *>verb_ending s&
-	step_by_step$ s&  period+
-	narrate
+	s" se va* abriendo paso"
+	}s rot *>verb_ending s&
+	step_by_step$ s& period+
 	;
-: battle_phase_07  \ Combate (fase 07)
+: battle_phase_06  ( -- )  \ Combate (fase 06)
+	battle_phase_06$ narrate
+	;
+: battle_phase_07$  ( -- a u ) \ Devuelve la descripción del combate (fase 07)
 	^your_soldiers$
 	s{ s" caen" s" van cayendo," }s&
 	s" uno tras otro," s?&
 	s{ s" vendiendo cara su vida" s" defendiéndose" }s&
 	like_heroes$ s& period+
-	narrate
 	;
-: battle_phase_08  \ Combate (fase 08)
+: battle_phase_07  ( -- )  \ Combate (fase 07)
+	battle_phase_07$ narrate
+	;
+: battle_phase_08$  ( -- a u ) \ Devuelve la descripción del combate (fase 08)
 	^the_enemy/enemies
 	s{ s" aplasta* a" s" acaba* con" }s
 	rot *>verb_ending s&
 	s" los últimos de" s" entre" s?& s&
 	your_soldiers$ s& s" que," s&
-	s{
-	s" heridos y agotados,"
-	s" apurando sus últimas fuerzas,"
-	s" haciendo un último esfuerzo,"
-	}s& still$ s&
-	s{
-	s" se mantienen en pie"
-	s" pueden mantenerse en pie"
-	s" combaten"
-	s" ofrecen resistencia" 
-	s" pueden ofrecer resistencia"
-	}s& period+  narrate
+	s{ s" heridos y agotados" s" extenuados"
+	s{ s" apurando" s" con" }s s" sus" s& last_energy(fp)$ s&
+	s" con su" last$ s& s" aliento" s&
+	s" haciendo un" last$ s& s" esfuerzo" s&
+	}s& comma+ still$ s&
+	s{ s" combaten" s" resisten"
+	s{ s" se mantienen" s" aguantan" s" pueden mantenerse" }s
+	s" en pie" s&
+	s{ s" ofrecen" s" pueden ofrecer" }s s" alguna" s?&
+	s" resistencia" s&
+	}s& period+
+	;
+: battle_phase_08  ( -- )  \ Combate (fase 08)
+	battle_phase_08$ narrate
 	;
 create 'battle_phases  \ Tabla para las fases del combate
-here \ Dirección libre actual, para calcular después las fases
+here \ Dirección libre actual, para calcular después el número de fases
 	\ Guardar la dirección de ejecución de cada fase: 
 	' battle_phase_00 ,
 	' battle_phase_01 ,
@@ -5734,20 +6066,21 @@ here \ Dirección libre actual, para calcular después las fases
 	' battle_phase_07 ,
 	' battle_phase_08 ,
 here swap - cell / constant battle_phases  \ Fases de la batalla
-: battle_phase  \ Ejecuta la fase en curso del combate
-	battle# @ 1- cells 'battle_phases + @ execute  
+: (battle_phase)  ( u -- )  \ Ejecuta una fase del combate
+	\ u = Fase del combate (la primera es la cero)
+	cells 'battle_phases + @ execute  
 	;
-: pursue_location?  ( -- f )  \ ¿En un escenario en que los sajones pueden perseguir al protagonista?
-	my_location location_12% <
+: battle_phase  ( -- )  \ Ejecuta la fase en curso del combate
+	battle# @ 1- (battle_phase)
 	;
 : battle_location?  ( -- f )  \ ¿En el escenario de la batalla?
 	my_location location_10% <  \ ¿Está el protagonista en un escenario menor que el 10?
 	pass_still_open? 0=  and  \ ¿Y el paso del desfiladero está cerrado?
 	;
-: battle_phase++  \ Incrementar la fase de la batalla (salvo una de cada diez veces, al azar)
+: battle_phase++  ( -- )  \ Incrementar la fase de la batalla (salvo una de cada diez veces, al azar)
 	10 random  if  battle# ++  then
 	;
-: battle  \ Batalla y persecución
+: battle  ( -- )  \ Batalla y persecución
 	battle_location?  if  battle_phase  then
 	pursue_location?  if  pursued  then
 	battle_phase++
@@ -5755,15 +6088,105 @@ here swap - cell / constant battle_phases  \ Fases de la batalla
 : battle?  ( -- f)  \ ¿Ha empezado la batalla?
 	battle# @ 0>
 	;
+: the_battle_ends  ( -- )  \ Termina la batalla
+	battle# off
+	;
+: the_battle_begins  ( -- )  \ Comienza la batalla
+	1 battle# !
+	;
 
+\ ------------------------------------------------
+\ Emboscada de los sajones
+
+: ambush?  ( -- f )  \ ¿Ha caído el protagonista en la emboscada?
+	my_location location_08% =  \ ¿Está en el escenario 8?
+	pass_still_open?  and  \ ¿Y además el paso está abierto?
+	;
+: the_pass_is_closed  ( -- )  \ Cerrar es paso, la salida norte
+	no_exit location_08% ~north_exit !
+	;
+: the_ambush_begins  ( -- )  \ Comienza la emboscada
+	s" Una partida sajona aparece por el Este."
+	s" Para cuando" s&
+	s{ s" te vuelves" s" intentas volver" }s&
+	toward_the(m)$ s& s" Norte," s&
+	s" ya no" s{ s" te queda" s" tienes" }s&
+	s{ s" duda alguna:" s" ninguna duda:" }s&
+	s{
+		s" es" s" se trata de"
+		s{ s" te" s" os" }s s" han tendido" s&
+	}s& s" una" s&
+	s{ s" emboscada" s" celada" s" encerrona" s" trampa" }s&
+	period+  narrate short_pause
+	;
+
+: they_win_0$  ( -- a u )  \ Devuelve la primera versión de la parte final de las palabras de los oficiales
+	s{ s" su" s{ s" victoria" s" triunfo" }s&
+	s" nuestra" s{ s" derrota" s" humillación" }s&
+	}s s" será" s&{ s" doble" s" mayor" }s&
+	;
+: they_win_1$  ( -- a u )  \ Devuelve la segunda versión de la parte final de las palabras de los oficiales
+	s{ s" ganan" s" nos ganan" s" vencen"
+	s" perdemos" s" nos vencen" s" nos derrotan" }s
+	s{ s" doblemente" s" por partida doble" }s&
+	;
+: they_win$  ( -- a u )  \ Devuelve la parte final de las palabras de los oficiales
+	they_win_0$ they_win_1$ 2 schoose period+
+	;
+: taking_prisioner$  ( -- a u )  \ Devuelve una parte de las palabras de los oficiales
+	s{ s" capturando" s" haciendo prisionero"
+	s" tomando prisionero" s" si capturan"
+	s" si hacen prisionero" s" si toman prisionero" }s
+	;
+: officers_speach  ( -- )  \ Palabras de los oficiales
+	sire,$ s?  dup taking_prisioner$
+	rot 0=  if  ^uppercase  then  s&
+	s" a un general britano" s& they_win$ s&  speak
+	;
+: your_officers_talk_to_you  ( -- )  \ Tus oficiales hablan con el protagonista
+	s" Tus oficiales te"
+	s{ s" conminan a huir."
+	s" conminan a ponerte a salvo."
+	s" piden que te pongas a salvo."
+	s" piden que huyas." }s&  narrate
+	officers_speach
+	s{ s" Sabes" s" Comprendes" }s s" que" s&
+	s{ s" es cierto" s" llevan razón"
+	s" están en lo cierto" }s&
+	s" , y te duele." s+  narrate
+	;
+: the_enemy_is_stronger  ( -- )  \ El enemigo es superior
+	s" En el"
+	s{ s" estrecho" s" angosto" }s& s" paso es posible" s&
+	s{ s" resistir," s" defenderse," }s& s" pero" s&
+	s{ s" por desgracia" s" desgraciadamente" }s&
+	s{
+	\ s" sus efectivos son muy superiores a los tuyos."  \ Anulado!!! porque «efectivo» en ese sentido es acepción moderna
+	s" los sajones son muy superiores en número"
+	s" sus soldados son más numerosos que los tuyos"
+	s" sus tropas son más numerosas que las tuyas"
+	s" sus hombres son más numerosos que los tuyos"
+	s" ellos son muy superiores en número"
+	s" ellos son mucho más numerosos"
+	}s& period+  narrate end_of_scene
+	;
+: ambush  ( -- )  \ Emboscada
+	the_pass_is_closed
+	the_ambush_begins
+	the_battle_begins
+	the_enemy_is_stronger
+	your_officers_talk_to_you
+	;
+
+\ ------------------------------------------------
 \ Zona oscura de la cueva
 
 : dark_cave?  ( -- f )  \ ¿Entrar en la zona oscura de cueva y sin luz?
-	torch% not_accessible?
-	torch% ~lit? @ 0=  or
+	torch% is_not_accessible?
+	torch% is_lit? 0=  or
 	my_location location_20% =  and
 	;
-: dark_cave  \ En la cueva y sin luz
+: dark_cave  ( -- )  \ En la cueva y sin luz
 	clear_screen
 	s" Ante la reinante"
 	s" e intimidante"
@@ -5776,14 +6199,67 @@ here swap - cell / constant battle_phases  \ Fases de la batalla
 	location_17% enter
 	;
 
+\ ------------------------------------------------
+\ Ambrosio nos sigue
+
+0  [if]  \ ......................................
+
+Pondiente!!!:
+
+Confirmar la función de la llave aquí. En el código original
+solo se distingue que sea manipulable o no, lo que es
+diferente a que esté accesible.
+
+[then]  \ ......................................
+
+: ambrosio_must_follow?  ( -- )  \ ¿Ambrosio tiene que estar siguiéndonos?
+	ambrosio% not_vanished?  key% is_accessible? and
+	location_46% am_i_there?  ambrosio_follows? @ or  and
+	;
+: ambrosio_must_follow  ( -- )  \ Ambrosio tiene que estar siguiéndonos
+	my_location ambrosio% is_there
+	s" Tu benefactor te sigue, esperanzado." narrate	
+	;
+
+\ ------------------------------------------------
 \ Gestor de la trama global
 
-: plot  \ Trama global
+: plot  ( -- )  \ Trama global
 	\ Nota: Las subtramas deben comprobarse en orden cronológico:
 	ambush?  if  ambush exit  then
 	battle?  if  battle exit  then
 	dark_cave?  if  dark_cave  then
+	ambrosio_must_follow?  if  ambrosio_must_follow  then
 	;
+
+\ }}}###########################################################
+section( Descripciones especiales)  \ {{{
+
+0  [if]  \ ......................................
+
+Esta sección contiene palabras que muestran descripciones
+que necesitan un tratamiento especial porque hacen
+uso de palabras relacionadas con la trama.
+
+En lugar de crear vectores para las palabras que estas
+descripciones utilizan, es más sencillo crearlos para las
+descripciones y definirlas aquí, a continuación de la trama.
+
+[then]  \ ......................................
+
+: your_soldiers_go_home  ( -- )  \ Describe a tus soldados durante el regreso a casa
+	all_your$ soldiers$ s& s" te seguirían hasta el" s&
+	s{ s{ s" mismo" s" mismísimo" }s s" infierno" s&
+	s" último rincón de la Tierra"
+	}s& period+  paragraph
+	;
+: (your_soldiers_description)  ( -- )  \ Describe a tus soldados
+	true  case
+		pass_still_open?  of  your_soldiers_go_home  endof
+		battle?  of  battle_phase  endof
+	endcase
+	;
+' (your_soldiers_description) is your_soldiers_description
 
 \ }}}###########################################################
 section( Errores del intérprete de comandos)  \ {{{
@@ -5861,7 +6337,7 @@ section( Errores del intérprete de comandos)  \ {{{
 	s" reconoce" 3 schoose s& 
 	s{ s" el" s" ningún" }s&
 	;
-: too_many_actions  \ Informa de que se ha producido un error porque hay dos verbos en el comando
+: too_many_actions  ( -- )  \ Informa de que se ha producido un error porque hay dos verbos en el comando
 	there_are$ s" dos verbos"
 	there_is$ s" más de un verbo" s&
 	there_are$ s" al menos dos verbos"
@@ -5869,7 +6345,7 @@ section( Errores del intérprete de comandos)  \ {{{
 	;
 ' too_many_actions constant (too_many_actions_error#)
 ' (too_many_actions_error#) is too_many_actions_error#
-: too_many_complements  \ Informa de que se ha producido un error porque hay dos complementos en el comando
+: too_many_complements  ( -- )  \ Informa de que se ha producido un error porque hay dos complementos en el comando
 	\ Provisional!!!
 	there_are$
 	s" dos complementos indirectos o preposicionales" s&
@@ -5881,17 +6357,17 @@ section( Errores del intérprete de comandos)  \ {{{
 	;
 ' too_many_complements constant (too_many_complements_error#)
 ' (too_many_complements_error#) is too_many_complements_error#
-: no_verb  \ Informa de que se ha producido un error por falta de verbo en el comando
+: no_verb  ( -- )  \ Informa de que se ha producido un error por falta de verbo en el comando
 	there_is_no$ s" verbo" s& language_error
 	;
 ' no_verb constant (no_verb_error#)
 ' (no_verb_error#) is no_verb_error#
-: no_main_complement  \ Informa de que se ha producido un error por falta de complemento directo en el comando
+: no_main_complement  ( -- )  \ Informa de que se ha producido un error por falta de complemento directo en el comando
 	there_is_no$ s" complemento directo" s& language_error
 	;
 ' no_main_complement constant (no_main_complement_error#)
 ' (no_main_complement_error#) is no_main_complement_error# 
-: unexpected_main_complement  \ Informa de que se ha producido un error por presencia de complemento directo en el comando
+: unexpected_main_complement  ( -- )  \ Informa de que se ha producido un error por presencia de complemento directo en el comando
 	there_is$ s" un complemento directo" s&
 	s" pero el verbo no puede llevarlo" s&
 	language_error
@@ -5920,7 +6396,7 @@ variable last_masculine_singular_complement
 variable last_feminine_plural_complement
 variable last_masculine_plural_complement
 
-: init_command  \ Prepara los valores variables usados en los comandos
+: init_command  ( -- )  \ Prepara los valores variables usados en los comandos
 	\ Inacabado!!! No usado!!!
 	last_action off
 	\ last_feminine_singular_complement off
@@ -5979,7 +6455,7 @@ condicionales anidadas.
 	main_complement @
 	0<> unexpected_main_complement_error# and throw
 	;
-: main_complement{required}  \ Provoca un error si no hay complemento directo
+: main_complement{required}  ( -- )  \ Provoca un error si no hay complemento directo
 	main_complement @
 	halto" main_complement{required} 1"
 	0= no_main_complement_error# and throw
@@ -5987,78 +6463,78 @@ condicionales anidadas.
 	;
 : {hold}  ( a -- )  \ Provoca un error si un ente no está en inventario
 	dup what !
-	hold? 0= you_do_not_have_what_error# and throw
+	is_hold? 0= you_do_not_have_what_error# and throw
 	;
 : ?{hold}  ( a | 0 -- )  \ Provoca un error si un supuesto ente lo es no está en inventario
 	?dup  if  {hold}  then
 	;
-: main_complement{hold}  \ Provoca un error si el complemento directo existe y no está en inventario
+: main_complement{hold}  ( -- )  \ Provoca un error si el complemento directo existe y no está en inventario
 	main_complement @ ?{hold}
 	;
-: tool_complement{hold}  \ Provoca un error si el complemento instrumental existe y no está en inventario
+: tool_complement{hold}  ( -- )  \ Provoca un error si el complemento instrumental existe y no está en inventario
 	tool_complement @ ?{hold}
 	;
 : {not_hold}  ( a -- )  \ Provoca un error si un ente está en inventario
 	dup what !
-	hold? you_already_have_what_error# and throw
+	is_hold? you_already_have_what_error# and throw
 	;
 : ?{not_hold}  ( a | 0 -- )  \ Provoca un error si un supuesto ente lo es y está en inventario
 	?dup  if  {not_hold}  then
 	;
-: main_complement{not_hold}  \ Provoca un error si el complemento directo existe y está en inventario
+: main_complement{not_hold}  ( -- )  \ Provoca un error si el complemento directo existe y está en inventario
 	main_complement @ ?{not_hold}
 	;
 : {worn}  ( a -- )  \ Provoca un error si un ente no lo llevamos puesto
 	dup what !
-	worn? 0= you_do_not_wear_what_error# and throw
+	is_worn? 0= you_do_not_wear_what_error# and throw
 	;
 : ?{worn}  ( a | 0 -- )  \ Provoca un error si un supuesto ente lo es y no lo llevamos puesto
 	?dup  if  {worn}  then
 	;
-: main_complement{worn}  \ Provoca un error si el complemento directo existe y no lo llevamos puesto
+: main_complement{worn}  ( -- )  \ Provoca un error si el complemento directo existe y no lo llevamos puesto
 	main_complement @ ?{worn}
 	;
 : {open}  ( a -- )  \ Provoca un error si un ente no está abierto
 	dup what !
-	closed? what_is_already_closed_error# and throw
+	is_closed? what_is_already_closed_error# and throw
 	;
 : {closed}  ( a -- )  \ Provoca un error si un ente no está cerrado
 	dup what !
-	open? what_is_already_open_error# and throw
+	is_open? what_is_already_open_error# and throw
 	;
 : {not_worn}  ( a -- )  \ Provoca un error si un ente lo llevamos puesto
 	dup what !
-	worn? you_already_wear_what_error# and throw
+	is_worn? you_already_wear_what_error# and throw
 	;
 : ?{not_worn}  ( a | 0 -- )  \ Provoca un error si un supuesto ente lo es y lo llevamos puesto
 	?dup  if  {not_worn}  then
 	;
-: main_complement{not_worn}  \ Provoca un error si el complemento directo existe y lo llevamos puesto
+: main_complement{not_worn}  ( -- )  \ Provoca un error si el complemento directo existe y lo llevamos puesto
 	main_complement @ ?{not_worn}
 	;
 : {cloth}  ( a -- )  \ Provoca un error si un ente no se puede llevar puesto
-	~cloth? @ 0= nonsense_error# and throw
+	is_cloth? 0= nonsense_error# and throw
 	;
 : ?{cloth}  ( a | 0 -- )  \ Provoca un error si un supuesto ente lo es y no se puede llevar puesto
 	?dup  if  {cloth}  then
 	;
-: main_complement{cloth}  \ Provoca un error si el complemento directo existe y no se puede llevar puesto
+: main_complement{cloth}  ( -- )  \ Provoca un error si el complemento directo existe y no se puede llevar puesto
 	main_complement @ ?{cloth}
 	;
 : {here}  ( a -- )  \ Provoca un error si un ente no está presente
 	dup what !
-	here? 0= is_not_here_what_error# and throw
+	is_here? 0= is_not_here_what_error# and throw
 	;
 : ?{here}  ( a | 0 -- )  \ Provoca un error si un supuesto ente lo es y no está presente
 	?dup  if  {here}  then
 	;
-: main_complement{here}  \ Provoca un error si el complemento directo existe y no está presente
+: main_complement{here}  ( -- )  \ Provoca un error si el complemento directo existe y no está presente
 	main_complement @ ?{here}
 	;
 : {accessible}  ( a -- )  \ Provoca un error si un ente no está accessible
 	halto" {accessible} 1"
 	dup what !
-	accessible?
+	is_accessible?
 	halto" {accessible} 1a"
 	0= cannot_see_what_error# and
 	halto" {accessible} 1b"
@@ -6070,7 +6546,7 @@ condicionales anidadas.
 	?dup  if  {accessible}  then
 	halto" ?{accessible} 1"
 	;
-: main_complement{accessible}  \ Provoca un error si el complemento directo existe y no está accessible
+: main_complement{accessible}  ( -- )  \ Provoca un error si el complemento directo existe y no está accessible
 	halto" main_complement{accessible} 1"
 	main_complement @ ?{accessible}
 	halto" main_complement{accessible} 2"
@@ -6082,7 +6558,7 @@ condicionales anidadas.
 : ?{taken}  ( a | 0 -- )  \ Provoca un error si un supuesto ente lo es y no puede ser tomado
 	?dup  if  {taken}  then
 	;
-: main_complement{taken}  \ Provoca un error si el complemento directo existe y no puede ser tomado
+: main_complement{taken}  ( -- )  \ Provoca un error si el complemento directo existe y no puede ser tomado
 	main_complement @ ?{taken}
 	;
 : {broken}  ( a -- )  \ Provoca un error si un ente no puede ser roto
@@ -6092,7 +6568,7 @@ condicionales anidadas.
 : ?{broken}  ( a | 0 -- )  \ Provoca un error si un supuesto ente lo es y no puede ser roto
 	?dup  if  {broken}  then
 	;
-: main_complement{broken}  \ Provoca un error si el complemento directo existe y no puede ser roto
+: main_complement{broken}  ( -- )  \ Provoca un error si el complemento directo existe y no puede ser roto
 	main_complement @ ?{broken}
 	;
 : {looked}  ( a -- )  \ Provoca un error si un ente no puede ser mirado
@@ -6103,12 +6579,12 @@ condicionales anidadas.
 : ?{looked}  ( a | 0 -- )  \ Provoca un error si un supuesto ente lo es y no puede ser mirado
 	?dup  if  {looked}  then
 	;
-: main_complement{looked}  \ Provoca un error si el complemento directo existe y no puede ser mirado
+: main_complement{looked}  ( -- )  \ Provoca un error si el complemento directo existe y no puede ser mirado
 	main_complement @ ?{looked}
 	;
 : {living}  ( a -- )  \ Provoca un error si un ente no es un ser vivo
 	halto" {living} 1"
-	living_being? 0= nonsense_error# and throw
+	is_living_being? 0= nonsense_error# and throw
 	halto" {living} 2"
 	;
 : ?{living}  ( a | 0 -- )  \ Provoca un error si un supuesto ente lo es y no es un ser vivo
@@ -6116,29 +6592,29 @@ condicionales anidadas.
 	?dup  if  {living}  then
 	halto" ?{living} 2"
 	;
-: main_complement{living}  \ Provoca un error si el complemento directo existe y no es un ser vivo
+: main_complement{living}  ( -- )  \ Provoca un error si el complemento directo existe y no es un ser vivo
 	halto" main_complement{living} 1"
 	main_complement @ ?{living}
 	halto" main_complement{living} 2"
 	;
 : {needed}  ( a -- )  \ Provoca un error si un ente no está en inventario, pues es necesario
 	dup what !
-	hold? 0= you_need_what_error# and throw
+	is_hold? 0= you_need_what_error# and throw
 	;
 : ?{needed}  ( a | 0 -- )  \ Provoca un error si un supuesto ente lo es y no está en inventario, pues es necesario
 	?dup  if  {needed}  then
 	;
-: main_complement{needed}  \ Provoca un error si el complemento directo existe y no está en inventario, pues lo necesitamos
+: main_complement{needed}  ( -- )  \ Provoca un error si el complemento directo existe y no está en inventario, pues lo necesitamos
 	main_complement @ ?{needed}
 	;
 : {direction}  ( a -- )  \ Provoca un error si un ente no es una dirección
 	dup what !
-	direction? 0= nonsense_error# and throw
+	is_direction? 0= nonsense_error# and throw
 	;
 : ?{direction}  ( a | 0 -- )  \ Provoca un error si un supuesto ente lo es y no es una dirección
 	?dup  if  {direction}  then
 	;
-: main_complement{direction}  \ Provoca un error si el complemento directo existe y no es una dirección
+: main_complement{direction}  ( -- )  \ Provoca un error si el complemento directo existe y no es una dirección
 	main_complement @ ?{direction}
 	;
 
@@ -6220,16 +6696,16 @@ subsection( Herramientas) \ {{{
 : whom  ( -- a | 0 )  \ Devuelve un ente personaje al que probablemente se refiera un comando
 	\ Se usa para averiguar el objeto de algunas acciones cuando el jugador no lo especifica
 	true case
-		ambrosio% here?  of  ambrosio%  endof
-		leader% here?  of  leader%  endof
+		ambrosio% is_here?  of  ambrosio%  endof
+		refugee_leader% is_here?  of  refugee_leader%  endof
 		false swap
 	endcase
 	;
 : unknown_whom  ( -- a | 0 )  \ Devuelve un ente personaje desconocido al que probablemente se refiera un comando
 	\ Se usa para averiguar el objeto de algunas acciones cuando el jugador no lo especifica
 	true case
-		ambrosio% here_and_unknown?  of  ambrosio%  endof
-		leader% here_and_unknown?  of  leader%  endof
+		ambrosio% is_here_and_unknown?  of  ambrosio%  endof
+		refugee_leader% is_here_and_unknown?  of  refugee_leader%  endof
 		false swap
 	endcase
 	;
@@ -6239,7 +6715,7 @@ subsection( Mirar, examinar y registrar) \ {{{
 
 : (do_look)  ( a -- )  \ Mira un ente
 	dup describe
-	dup ~location? @  if  .present  then
+	dup is_location?  if  .present  then
 	more_familiar 
 	;
 :action do_look  \  Acción de mirar
@@ -6343,7 +6819,7 @@ variable #free_exits  \ Contador de las salidas posibles
 subsection( Ponerse y quitarse prendas) \ {{{
 
 : (do_put_on)  ( a -- )  \ Ponerse una prenda
-	~worn? on  well_done
+	is_worn  well_done
 	;
 :action do_put_on  \ Acción de ponerse una prenda
 	\ Pendiente!!! Hacer que tome la prenda si no la tiene
@@ -6403,7 +6879,7 @@ subsection( Tomar y dejar) \ {{{
 \ 	nonsense
 \ 	;
 : (do_take)  ( a -- )  \ Toma un ente
-	dup be_hold more_familiar well_done
+	dup is_hold more_familiar well_done
 	;
 :action do_take  \ Acción de tomar
 	main_complement{required}
@@ -6413,7 +6889,7 @@ subsection( Tomar y dejar) \ {{{
 	main_complement @ (do_take)
 	;action
 : (do_drop)  ( a -- )  \ Deja un ente 
-	dup ~worn? off  be_here  well_done
+	dup ~worn? off  is_here  well_done
 	;
 :action do_drop  \ Acción de dejar
 	main_complement{required}
@@ -6431,12 +6907,12 @@ subsection( Cerrar y abrir) \ {{{
 : (do_close)  ( a -- )  \ Cerrar un ente
 	~open? off
 	;
-: close_the_door  \ Cerrar la puerta, si es posible
+: close_the_door  ( -- )  \ Cerrar la puerta, si es posible
 	door% {open}
 	key% {hold}
 	door% (do_close)  well_done
 	;
-: close_the_lock  \ Cerrar el candado, si es posible
+: close_the_lock  ( -- )  \ Cerrar el candado, si es posible
 	lock% {open}
 	key% {hold}
 	lock% (do_close)  well_done
@@ -6455,24 +6931,24 @@ subsection( Cerrar y abrir) \ {{{
 	;action
 : (do_open)  ( a -- )  \ Abrir un ente
 	s" (do_open)" halto  \ Depuración!!!
-	~open? on
+	is_open
 	;
-: the_door_is_locked  \ Informa de que la puerta está cerrada por el candado
+: the_door_is_locked  ( -- )  \ Informa de que la puerta está cerrada por el candado
 	lock% ^full_name s" bloquea la puerta." s&
 	narrate
 	lock_found
 	;
-: unlock_the_door  \ Abrir la puerta candada, si es posible
+: unlock_the_door  ( -- )  \ Abrir la puerta candada, si es posible
 	the_door_is_locked
 	key% {needed}
 	lock% (do_open)
 	;
-: open_the_door  \ Abrir la puerta, si es posible
+: open_the_door  ( -- )  \ Abrir la puerta, si es posible
 	door% {closed}
-	lock% closed?  if  unlock_the_door  then
+	lock% is_closed?  if  unlock_the_door  then
 	door% (do_open)
 	;
-: open_the_lock  \ Abrir el candado, si es posible
+: open_the_lock  ( -- )  \ Abrir el candado, si es posible
 	lock% {closed}
 	key% {needed}
 	lock% (do_open)
@@ -6509,7 +6985,7 @@ subsection( Cerrar y abrir) \ {{{
 \ }}}---------------------------------------------
 subsection( Agredir) \ {{{
 
-: the_snake_runs_away  \ La serpiente huye
+: the_snake_runs_away  ( -- )  \ La serpiente huye
 	s{ s" Sorprendida por" s" Ante" }s
 	s" los amenazadores tajos," s&
 	s" la serpiente" s&
@@ -6521,22 +6997,22 @@ subsection( Agredir) \ {{{
 	s{ 0$ s" asustada" s" atemorizada" }s&
 	narrate
 	;
-: attack_the_snake  \ Atacar la serpiente
+: attack_the_snake  ( -- )  \ Atacar la serpiente
 	sword% {needed}
 	the_snake_runs_away
 	snake% vanish
 	;
-: attack_ambrosio  \ Atacar a Ambrosio
+: attack_ambrosio  ( -- )  \ Atacar a Ambrosio
 	no_reason
 	;
-: attack_leader  \ Atacar al jefe
+: attack_leader  ( -- )  \ Atacar al jefe
 	no_reason
 	;
 : (do_attack)  ( a -- )  \ Atacar un ser vivo
 	case
 		snake%  of  attack_the_snake  endof
 		ambrosio%  of  attack_ambrosio  endof
-		leader%  of  attack_leader  endof
+		refugee_leader%  of  attack_leader  endof
 		do_not_worry
 	endcase
 	;
@@ -6555,22 +7031,22 @@ subsection( Agredir) \ {{{
 	tool_complement{hold}
 	main_complement @ (do_attack)
 	;action
-: kill_the_snake  \ Matar la serpiente
+: kill_the_snake  ( -- )  \ Matar la serpiente
 	sword% {needed}
 	the_snake_runs_away
 	snake% vanish
 	;
-: kill_ambrosio  \ Matar a Ambrosio
+: kill_ambrosio  ( -- )  \ Matar a Ambrosio
 	no_reason
 	;
-: kill_leader  \ Matar al jefe
+: kill_leader  ( -- )  \ Matar al jefe
 	no_reason
 	;
 : (do_kill)  ( a -- )  \ Matar un ser vivo
 	case
 		snake%  of  kill_the_snake  endof
 		ambrosio%  of  kill_ambrosio  endof
-		leader%  of  kill_leader  endof
+		refugee_leader%  of  kill_leader  endof
 		do_not_worry
 	endcase
 	;
@@ -6587,7 +7063,7 @@ subsection( Agredir) \ {{{
 	main_complement @ (do_kill)
 	halto" do_kill 6"
 	;action
-: break_the_cloak  \ Romper la capa
+: break_the_cloak  ( -- )  \ Romper la capa
 	;
 : (do_break)  ( a -- )  \ Romper un ente
 	case
@@ -6647,19 +7123,19 @@ subsection( Agredir) \ {{{
 	^no_need_to_do_it_again$ period+ s&
 	log_already_sharpened$ ^uppercase period+ s&
 	;
-: log_already_sharpened  \ Informa de que el tronco ya estaba afilado
+: log_already_sharpened  ( -- )  \ Informa de que el tronco ya estaba afilado
 	['] log_already_sharpened_0$
 	['] log_already_sharpened_1$
 	2 choose execute  narrate
 	;
-: sharpen_the_log  \ Afila el tronco
+: sharpen_the_log  ( -- )  \ Afila el tronco
 	\ Inacabado!!! Distinguir herramientas
 	hacked_the_log? @
 	if  log_alreadY_sharpened
 	else  hacked_the_log? on  well_done
 	then
 	;
-: sharpen_the_sword  \ Afila la espada
+: sharpen_the_sword  ( -- )  \ Afila la espada
 	\ Inacabado!!!
 	;
 : (do_sharpen)  ( a -- )  \ Afila un ente que puede ser afilado
@@ -6682,11 +7158,11 @@ subsection( Movimiento) \ {{{
 
 : toward_that_direction  ( a -- a2 u2 )  \ Devuelve «al/hacia la dirección indicada»
 	\ a = Ente dirección
-	dup >r  ~no_article? @
+	dup >r  no_article?
 	if  \ no debe llevar artículo
 		s" hacia" r> full_name 
 	else  \ debe llevar artículo
-		toward_the(masculine)$ r> ^name
+		toward_the(m)$ r> ^name
 	then  s&
 	;
 : impossible_move  ( a -- )  \ El movimiento es imposible
@@ -6708,7 +7184,7 @@ subsection( Movimiento) \ {{{
 	then
 	[debug]  [if]  s" Al salir de DO_GO_IF_POSSIBLE" debug  [then]  \ Depuración!!!
 	;
-: simply_do_go  \ Ir sin dirección específica
+: simply_do_go  ( -- )  \ Ir sin dirección específica
 	\ Inacabado!!!
 	s" Ir sin rumbo...?" narrate
 	;
@@ -6773,7 +7249,7 @@ subsection( Partir [desambiguación]) \ {{{
 		else  simply_do_go  \ Sin complementos, suponemos que es «marchar»
 		then
 	else
-		main_complement @ direction?
+		main_complement @ is_direction?
 		if  do_go  else  do_break  then 
 	then
 	;action
@@ -6797,7 +7273,7 @@ subsection( Nadar) \ {{{
 	s" Buceas" s{ s" pensando en" s" deseando"
 	s" con la esperanza de" s" con la intención de" }s&
 	s{ s" avanzar," s" huir," s" escapar,"  s" salir," }s&
-	s" aunque" s& s{ s" perdido." s" desorientado." }s&
+	s" aunque" s&{ s" perdido." s" desorientado." }s&
 	;
 : drop_the_cuirasse$  ( f -- a u )  \ Devuelve mensaje sobre deshacerse de la coraza dentro del agua
 	\ f = ¿Inicio de frase?
@@ -6810,7 +7286,7 @@ subsection( Nadar) \ {{{
 	then  period+
 	;
 : you_leave_the_cuirasse$  ( -- a u )  \ Devuelve mensaje sobre quitarse y soltar la coraza dentro del agua
-	cuirasse% worn?  \ ¿La llevamos puesta?
+	cuirasse% is_worn?  \ ¿La llevamos puesta?
 	if
 		s{ s" Como puedes," s" No sin dificultad," }s
 		s{ s" logras quitártela" s" te la quitas" }s&
@@ -6847,7 +7323,7 @@ subsection( Nadar) \ {{{
 	you_sink$ you_leave_the_cuirasse$ s&
 	;
 : you_swim$  ( -- a u )  \  Devuelve mensaje sobre nadar
-	cuirasse% hold? 
+	cuirasse% is_hold? 
 	if  you_swim_with_cuirasse$  cuirasse% vanish
 	else  0$
 	then  swiming$ s&
@@ -6868,7 +7344,7 @@ subsection( Escalar) \ {{{
 
 : do_climb_if_possible  ( a -- )  \ Escalar el ente indicado si es posible
 	\ Inacabado!!!
-	dup here?  if  s" [escalar]" narrate
+	dup is_here?  if  s" [escalar]" narrate
 	else  drop s" [no está aquí]" narrate
 	then
 	;
@@ -6930,120 +7406,156 @@ subsection( Hacer) \ {{{
 	;action
 
 \ }}}---------------------------------------------
-subsection( Hablar) \ {{{
+subsection( Hablar y presentarse) \ {{{
 
-: talked_to_the_leader  \ Aumentar el contador de conversaciones con el líder
-	leader% ~conversations ++
-	;
-: a_man_takes_the_stone  \ Mensaje sobre el hombre que devuelve la pieda a su sitio
-	s{ s" Un hombre" s" Uno de los hombres" s" Uno de los refugiados" }s
-	s{ s" te arrebata" s" te quita" }s&
+\ ------------------------------------------------
+\ Conversaciones con el líder de los refugiados
+
+: a_man_takes_the_stone  ( -- )  \ Mensaje sobre el hombre que devuelve la pieda a su sitio
+	s{ s" Un hombre" s" Uno de los" s{ s" hombres" s" refugiados" }s }s
+	s" te" s&{ s" arrebata" s" quita" }s&
 	s" la piedra" s& s" de las manos" s?& s" y" s&
-	2 random  if
+	s{
 		s" se la lleva."
-	else
-		s{ s" se marcha" s" se va" s" desaparece" }s
-		s" con ella" s?& period+
-	then  s&
-	narrate  location_18% stone% be_there
+		s{ s" se marcha" s" se va" s" desaparece" }s s" con ella" s?& period+
+	}s&
+	narrate  location_18% stone% is_there
 	;
-: the_leader_talks_about_the_stone  \ El líder habla acerca de la piedra
-	s" El" old_man$ s& s" se" s&
-	s{ s" irrita" s" enfada" s" enfurece" }s& period+
+: gets_angry$  ( -- a u )  \ Devuelve una variante de «se enfada»
+	s" se" s{ s" irrita" s" enfada" s" enoja" s" enfurece" }s& 
+	;
+: the_leader_gets_angry$  ( -- a u )  \ Devuelve una variante de «El líder se enfada»
+	s" El" old_man$ s& gets_angry$ s& 
+	;
+: the_leader_gets_angry  ( -- )  \ Mensaje de que el líder se enfada
+	the_leader_gets_angry$ gets_angry$ s& period+
 	narrate
+	;
+: you_can_not_take_the_stone  ( -- )  \ El líder dice que no te puedes llevar la piedra
 	s" No podemos" s{ s" permitiros" s" consentiros" }s
 	s{ s" huir con" s" escapar con" s" marchar con" s" pasar con"
 	s" que os vayáis con" s" que os marchéis con"
 	s" que marchéis con" s" que os llevéis" s" que robéis"
 	}s& s" la piedra del druida." speak
-	\ Pendiente!!! cambiar el nombre de la piedra por «piedra del druida»
-	s" Hace un gesto..." narrate short_pause
+	s" piedra del druida" stone% name!  \ Nuevo nombre para la piedra
+	s" Hace un gesto..."
+	narrate short_pause
+	;
+: the_stone_must_be_in_its_place  ( -- )  \ El líder dice que la piedra debe ser devuelta
 	s" La piedra" s{ s" debe" s" tiene que" }s&
 	s{ s" ser devuelta" s" devolverse" s" regresar" s" volver" }s&
-	s" a su lugar" s" de encierro" s?& period+ speak
+	s" a su lugar" s" de encierro" s?& period+
+	speak
 	;
-: the_leader_talks_about_the_sword  \ El líder habla acerca de la espada
-	s" El" old_man$ s& s" se" s& 
-	s{ s" irrita" s" enfada" s" enoja" s" enfurece" }s&
-	s" y" s& s{ s" alza" s" extiende" s" levanta" }s&
+: the_leader_talks_about_the_stone  ( -- )  \ El líder habla acerca de la piedra
+	the_leader_gets_angry
+	you_can_not_take_the_stone  
+	the_stone_must_be_in_its_place
+	;
+: the_leader_points_to_the_north  ( -- )  \ El líder se enfada y apunta al Norte
+	the_leader_gets_angry$  
+	s" y" s&{ s" alza" s" extiende" s" levanta" }s&
 	s{ s" su" s" el" }s& s" brazo" s&
 	s{ s" indicando" s" en dirección" s" señalando" }s&
-	toward_the(masculine)$ s& s" Norte." s&
+	toward_the(m)$ s& s" Norte." s&
 	narrate
+	;
+: nobody_passes_with_arms  ( -- )  \ El líder dice que nadie pasa con armas
 	s{ s" Nadie" s" Ningún hombre" }s
 	s{ s" con" s" llevando" s" portando" s" portador de"
 	s" que porte" s" que lleve" }s&
 	s{ s" armas" s" un arma" s" una espada" }s&
-	with_him$ s& s{ s" debe" s" puede " s" podrá" }s& 
+	with_him$ s&{ s" debe" s" puede " s" podrá" }s& 
 	s" pasar." s&  speak
 	;
-: the_leader_lets_you_go  \ El jefe deja marchar al protagonista
-	location_28% location_29% e-->  \ Hacer que la salida al Este de LOCATION_28% conduzca a LOCATION_29%
+: the_leader_talks_about_the_sword  ( -- )  \ El líder habla acerca de la espada
+	the_leader_points_to_the_north  
+	nobody_passes_with_arms  
+	;
+: the_leader_points_to_the_east  ( -- )  \ El líder se enfada y apunta al Este
 	s" El" old_man$ s& comma+
 	s{ s" calmado," s" sereno," s" tranquilo," }s&
 	s{ s" indica" s" señala" }s&
-	s{ toward_the(masculine)$ s" en dirección al" }s& s" Este y" s&
+	s{ toward_the(m)$ s" en dirección al" }s& s" Este y" s&
 	s{ s" habla:" s" dice:" s" pronuncia las siguientes palabras:" }s&
 	narrate
+	;
+: go_in_peace  ( -- )  \ El líder dice que puedes ir en paz
 	s" Si vienes en paz, puedes ir en paz." speak
-	s{ s" Todos" s" Todos los refugiados" s" Los refugiados" }s
-	s" se apartan y" s&
-	s{ s" permiten ahora el paso" s" dejan el camino libre"
-	s" dejan libre el camino" s" dejan libre el paso"
-	s" dejan el paso libre" }s&
-	toward_the(masculine)$ s& s" Este." s&
+	;
+: the_refugees_let_you_go  ( -- )  \ Los refugiados te dejan pasar
+	s{ s" Todos" s" los refugiados" s?& s" Los refugiados" }s
+	s" se apartan y" s& s" te" s?&
+	s{ s" permiten" s{ s" el paso" s" pasar" }s&
+	s" dejan"
+	s" libre" s" el" s{ s" paso" s" camino" }s& sswap s& }s&
+	toward_the(m)$ s& s" Este." s&
 	narrate
 	;
-: talked_to_the_leader  \ Aumentar el contador de conversaciones con el jefe de los refugiados
-	leader% ~conversations ++
+: the_leader_lets_you_go  ( -- )  \ El jefe deja marchar al protagonista
+	location_28% location_29% e-->  \ Hacer que la salida al Este de LOCATION_28% conduzca a LOCATION_29%
+	the_leader_points_to_the_east
+	go_in_peace  the_refugees_let_you_go  
 	;
+: talked_to_the_leader  ( -- )  \ Aumentar el contador de conversaciones con el jefe de los refugiados
+	refugee_leader% ~conversations ++
+	;
+: we_are_refugees  ( -- )  \ Somos refugiados
+	s" Somos refugiados de la gran guerra."
+	s{
+	s{ ^only$ s" buscamos" s& s" Buscamos" }s
+	s{ ^only$ s" queremos" s& s" Queremos" }s
+	}s&  s{ s" la" s" vivir en" }s& s" paz." s&
+	speak short_pause
+	; 
 : first_conversation_with_the_leader
 	my_name_is$ s" Ulfius y..." s& speak
 	talked_to_the_leader
-	s" El" old_man$ s&
-	s" asiente, impaciente." s& narrate
-	s" Somos refugiados de la gran guerra."
-	s{ ^only$ s" buscamos" s& s" Buscamos" }s
-	s{ ^only$ s" queremos" s& s" Queremos" }s
-	2 schoose s&  s" la paz." s&
-	speak short_pause
+	s" El" old_man$ s& s" asiente, impaciente." s& narrate
+	we_are_refugees
 	;
-: the_leader_checks_what_you_carry  \ El jefe controla lo que llevas
+: the_leader_checks_what_you_carry  ( -- )  \ El jefe controla lo que llevas
 	true case
-		stone% accessible?  of
+		stone% is_accessible?  of
 			the_leader_talks_about_the_stone
 			a_man_takes_the_stone
 		endof
-		sword% accessible?  of
+		sword% is_accessible?  of
 			the_leader_talks_about_the_sword
 		endof
 		the_leader_lets_you_go
 	endcase
 	;
-: talk_to_the_leader  \ Hablar con el jefe
-	leader% ~conversations @ 0=
+: talk_to_the_leader  ( -- )  \ Hablar con el jefe
+	refugee_leader% ~conversations @ 0=
 	if  first_conversation_with_the_leader  then
 	the_leader_checks_what_you_carry  
 	;
-: talked_to_ambrosio  \ Aumentar el contador de conversaciones con Ambrosio
+
+\ ------------------------------------------------
+\ Conversaciones con Ambrosio
+
+: talked_to_ambrosio  ( -- )  \ Aumentar el contador de conversaciones con Ambrosio
 	ambrosio% ~conversations ++
 	;
-: (conversation_0_with_ambrosio)  \ Primera conversación con Ambrosio
+: (conversation_0_with_ambrosio)  ( -- )  \ Primera conversación con Ambrosio
 	s" Hola, buen hombre." speak
 	s" Hola, Ulfius." 
 	my_name_is$ s& s" Ambrosio" 2dup ambrosio% name!
 	period+ s& speak
 	end_of_scene
-	\ Consultar!!! ¿a qué se refiere «primera vez»?
-	s" Por primera vez en mucho tiempo, te sientas"
-	s" y cuentas a alguien todo lo que ha pasado." s&
-	s" Y tras tanto acontecido, lloras desconsoladamente." s&
+	s" Por" s" primera" s" vez" sswap s& s& s" en" s&
+	s{ s" mucho" s" largo" }s& s" tiempo, te sientas"
+	s" y" s& s" le" s?& s{ s" cuentas" s" narras" }s&
+	s" a alguien todo lo que ha" s&{ s" pasado." s" ocurrido." }s&
+	s" Y tras tanto acontecido, lloras" s&
+	s{ s" desconsoladamente." s" sin consuelo" }s&
 	narrate end_of_scene
 	s" Ambrosio te propone un trato, que aceptas:"
 	s" por ayudarle a salir de la cueva," s&
 	s" objetos, vitales para la empresa, te son entregados." s&
 	narrate short_pause
-	torch% be_hold  flint% be_hold
+	torch% is_hold  flint% is_hold
 	s{ s" Bien," s" Venga," s" Vamos," }s
 	s" Ambrosio," s&
 	s{
@@ -7051,7 +7563,7 @@ subsection( Hablar) \ {{{
 	s" pongámonos en" s{ s" marcha" s" camino" }s&
 	}s& period+
 	speak
-	location_46% ambrosio% be_there
+	location_46% ambrosio% is_there
 	s" Te das la vuelta"
 	s" para ver si Ambrosio te sigue," s&
 	s" pero... ha desaparecido." s&
@@ -7060,11 +7572,11 @@ subsection( Hablar) \ {{{
 	s" de que supiera tu nombre." s&
 	narrate end_of_scene  talked_to_ambrosio
 	;
-: conversation_0_with_ambrosio  \ Primera conversación con Ambrosio, si se dan las condiciones
+: conversation_0_with_ambrosio  ( -- )  \ Primera conversación con Ambrosio, si se dan las condiciones
 	location_19% am_i_there?
 	if  (conversation_0_with_ambrosio)  then
 	;
-: (conversation_1_with_ambrosio)  \ Segunda conversación con Ambrosio
+: (conversation_1_with_ambrosio)  ( -- )  \ Segunda conversación con Ambrosio
 	s" La llave, Ambrosio, estaba ya en vuestro poder."
 	s" Y es obvio que conocéis un camino más corto." s&
 	speak
@@ -7076,28 +7588,27 @@ subsection( Hablar) \ {{{
 	s" No lo entiendo, la verdad." speak
 	talked_to_ambrosio
 	;
-: conversation_1_with_ambrosio  \ Segunda conversación con Ambrosio, si se dan las condiciones
+: conversation_1_with_ambrosio  ( -- )  \ Segunda conversación con Ambrosio, si se dan las condiciones
 	location_46% am_i_there?
 	ambrosio_follows? 0=  and
 	if  (conversation_1_with_ambrosio)  then
 	;
-: (conversation_2_with_ambrosio)  \ Tercera conversación con Ambrosio
+: (conversation_2_with_ambrosio)  ( -- )  \ Tercera conversación con Ambrosio
 	s{ s" Por favor," s" Os lo ruego," }s
 	s" Ulfius," s&
 	s" cumplid vuestra" s{ s" promesa." s" palabra." }s&
 	s" Tomad la llave" s&
 	s{ 0$ s" en vuestra mano" s" en vuestras manos" s" con vos" }s&
 	s" y abrid la puerta de la cueva." s&  speak
-	key% be_hold
+	key% is_hold
 	\ aquí en SuperBASIC: do_takeable the_key \ pendiente!!!
 	ambrosio_follows? on  talked_to_ambrosio  
 	;
-: conversation_2_with_ambrosio  \ Tercera conversación con Ambrosio, si se dan las condiciones
+: conversation_2_with_ambrosio  ( -- )  \ Tercera conversación con Ambrosio, si se dan las condiciones
 	location_45% 1- location_47% 1+ my_location within 
 	if  (conversation_2_with_ambrosio)  then
 	;
-: (talk_to_ambrosio)  \ Hablar con Ambrosio
-
+: (talk_to_ambrosio)  ( -- )  \ Hablar con Ambrosio
 	\ Método nuevo en pruebas!!!:
 	ambrosio% ~conversations @  case
 		0  of  conversation_0_with_ambrosio  endof
@@ -7105,7 +7616,6 @@ subsection( Hablar) \ {{{
 		2  of  conversation_2_with_ambrosio  endof
 		\ Aquí faltaría algo!!!
 	endcase
-
 	\ Métodos antiguos!!!:
 	[false]  [if]
 	my_location case
@@ -7126,13 +7636,17 @@ subsection( Hablar) \ {{{
 	then
 	[then]
 	;
-: talk_to_ambrosio  \ Hablar con Ambrosio, si se puede
+: talk_to_ambrosio  ( -- )  \ Hablar con Ambrosio, si se puede
 	\ Provisional!!! Esto debería comprobarse en DO_SPEAK o DO_SPEAK_IF_POSSIBLE
-	ambrosio% here?
+	ambrosio% is_here?
 	if  (talk_to_ambrosio)
 	else  ambrosio% is_not_here
 	then
 	;
+
+\ ------------------------------------------------
+\ Conversaciones sin éxito
+
 : talk_to_something  ( a -- )  \ Hablar con un ente que no es un personaje 
 	\ Pendiente!!!
 	2 random
@@ -7145,13 +7659,17 @@ subsection( Hablar) \ {{{
 	s" hablarse" s{ s" a sí" s" a uno" }s& s" mismo" s?&
 	}s 
 	;
-: talk_to_yourself  \ Hablar solo
+: talk_to_yourself  ( -- )  \ Hablar solo
 	talk_to_yourself$ is_nonsense
 	;
+
+\ ------------------------------------------------
+\ Acciones
+
 : do_speak_if_possible  ( a -- )  \ Hablar con un ente si es posible
 	[debug]  [if]  s" En DO_SPEAK_IF_POSSIBLE" debug  [then]  \ Depuración!!!
 	case
-		leader%  of  talk_to_the_leader  endof
+		refugee_leader%  of  talk_to_the_leader  endof
 		ambrosio%  of  talk_to_ambrosio  endof
 		dup talk_to_something
 	endcase
@@ -7206,7 +7724,7 @@ más transportable entre plataformas.
 	;
 defer reenter
 svariable filename
-: (do_save_the_game)  \ Graba el juego
+: (do_save_the_game)  ( -- )  \ Graba el juego
 	\ Inacabado!!! No está decidido el sistema que se usará para salvar las partidas
 	\ 2011-12-01 No funciona bien. Muestra mensajes de gcc con parámetros sacados de textos del programa!
 \	false to spf-init?  \ Desactivar la inicialización del sistema
@@ -7249,7 +7767,7 @@ Forth.
 
 vocabulary player_vocabulary  \ Vocabulario para guardar en él las palabras del juego
 
-: init_parsing  \ Preparativos previos al análisis
+: init_parsing  ( -- )  \ Preparativos previos al análisis
 	action off
 	main_complement off
 	;
@@ -7262,7 +7780,7 @@ vocabulary player_vocabulary  \ Vocabulario para guardar en él las palabras del
 	[debug_catch]  [if]  s" En (EXECUTE_ACTION) después de ?MISUNDERSTOOD" debug  [then]  \ Depuración!!!
 	[debug]  [if]  s" Al final de (EXECUTE_ACTION)" debug  [then]  \ Depuración!!!
 	;
-: execute_action  \ Ejecuta la acción del comando, si existe
+: execute_action  ( -- )  \ Ejecuta la acción del comando, si existe
 	[debug]  [if]  s" En EXECUTE_ACTION" debug  [then]  \ Depuración!!!
 	[debug_catch]  [if]  s" En EXECUTE_ACTION" debug  [then]  \ Depuración!!!
 	action @ ?dup
@@ -7285,6 +7803,14 @@ vocabulary player_vocabulary  \ Vocabulario para guardar en él las palabras del
 	restore_vocabularies
 	[debug]  [if]  s" Saliendo de VALID_PARSING?" debug  [then]  \ Depuración!!!
 	[debug_catch]  [if]  s" Saliendo de VALID_PARSING?" debug  [then]  \ Depuración!!!
+	;
+: save_command_elements  ( -- )
+	action @ last_action !
+	main_complement @ 
+	last_feminine_singular_complement !
+	last_masculine_singular_complement !
+	last_feminine_plural_complement !
+	last_masculine_plural_complement !
 	;
 : obbey  ( a u -- )  \ Evalúa un comando con el vocabulario del juego
 	[debug]  [if]  s" Al entrar en OBBEY" debug  [then]  \ Depuración!!!
@@ -7428,9 +7954,9 @@ adecuado.
 [then]  \ ......................................
 
 : (man) ( -- a | false )  \ Devuelve el ente adecuado a la palabra «hombre» y sus sinónimos (o FALSE si la ambigüedad no puede ser resuelta)
-	leader% here?  if
+	refugee_leader% is_here?  if
 		\ El jefe de los refugiados tiene preferencia si está presente
-		leader%  
+		refugee_leader%  
 	else
 		\ Si Ulfius no ha hablado con Ambrosio (y por tanto aún no sabe su nombre), la palabra se refiere a Ambrosio:
 \ antiguo!!!
@@ -7618,6 +8144,24 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 
 : ulfius  ulfius% complement!  ;
 : ambrosio  (ambrosio) complement!  ;
+: hombre  (man) complement!  ;
+' hombre synonyms{  señor tipo individuo persona  }synonyms
+\ Ambigüedad!!!: jefe de los enemigos durante la batalla
+: jefe  refugee_leader% complement!  ;
+' jefe synonyms{  líder viejo anciano  }synonyms
+: soldados  your_soldiers% complement!  ;
+' soldados synonyms{ guerreros luchadores combatientes }synonyms
+: refugiados  refugees% complement!  ;
+' refugiados synonyms{
+	refugiado refugiada refugiadas
+	niño niños niña niñas
+	muchacho muchachos muchacha muchachas
+	adolescente adolescentes 
+	anciano ancianos anciana ancianas mayores
+	joven jóvenes
+	bebé bebés beba bebas bebito bebitos bebita bebitas
+	}synonyms  
+
 : altar  altar% complement!  ;
 : arco  arch% complement!  ;
 : capa  cloak% complement!  ;
@@ -7644,10 +8188,6 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 \ Ambigüedad!!!: cierre
 : tronco  log% complement!  ;
 ' tronco synonyms{  leño madero  }synonyms
-: hombre  (man) complement!  ;
-' hombre synonyms{  señor tipo individuo persona  }synonyms
-: jefe  leader% complement!  ;
-' jefe synonyms{  líder viejo anciano  }synonyms
 : trozo  piece% complement!  ;
 ' trozo synonyms{  pedazo retal  }synonyms
 : harapo  rags% complement!  ;
@@ -7765,17 +8305,19 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 \ Términos ambiguos
 
 : cierre
-	action @
-	if  lock% complement!  \ candado
-	else  ['] do_close action!  \ cerrar
-	then
+	action @  if  candado  else  cerrar  then
 	;
 : parte 
-	action @
-	if  piece% complement!  \ pedazo
-	else  ['] do_go_or_do_break action!  \ partir (que a su vez será desambiguada)
-	then
+	action @  if  trozo  else  partir  then
 	;
+: hombres
+	true  case
+		battle?  of  soldados  endof
+		location_28% am_i_there?  of  refugiados  endof
+		location_29% am_i_there?  of  refugiados  endof
+	endcase
+	;
+' hombres synonyms{ gente }synonyms
 
 : notfound  ( a u -- )  2drop  ;
 
@@ -7807,13 +8349,13 @@ resultado será el mismo que si no se hubiera escrito nada.
 [then]  \ ......................................
 
 variable answer  \ Su valor será 0 si no ha habido respuesta válida; negativo para «no»; y positivo para «sí»
-: answer_undefined  \ Inicializa la variable antes de hacer la pregunta
+: answer_undefined  ( -- )  \ Inicializa la variable antes de hacer la pregunta
 	answer off
 	;
-: answer_no  \ Indica que la respuesta fue negativa
+: answer_no  ( -- )  \ Indica que la respuesta fue negativa
 	answer --
 	;
-: answer_yes  \ Indica que la respuesta fue afirmativa
+: answer_yes  ( -- )  \ Indica que la respuesta fue afirmativa
 	answer ++
 	;
 
@@ -7846,7 +8388,7 @@ create command /command chars allot  \ Zona de almacenamiento del comando
 : (wait_for_input)  ( -- a u )  \ Devuelve el comando introducido por el jugador
 	input_color command /command accept  command swap  
 	;
-: .command_prompt  \ Imprime un presto para la entrada de comandos
+: .command_prompt  ( -- )  \ Imprime un presto para la entrada de comandos
 	command_prompt_color indent ." >" space
 	;
 : wait_for_input  ( -- a u )  \ Imprime un presto y devuelve el comando introducido por el jugador
@@ -7884,231 +8426,7 @@ section( Entrada de respuestas de tipo «sí o no») \ {{{
 	;
 
 \ }}}###########################################################
-section( Preparativos) \ {{{
-
-: init/once  \ Preparativos que hay que hacer solo una vez, antes de la primera partida
-	init_screen  \ Pantalla
-	;
-: init/game  \ Preparativos que hay que hacer antes de cada partida
-	randomize
-	init_entities  \ Entes
-	init_plot  \ Trama
-	;
-
-\ }}}###########################################################
-section( Fin) \ {{{
-
-: success?  ( -- f )  \ ¿Ha completado con éxito su misión el protagonista?
-	my_location location_51% =
-	;
-false  [if]
-: battle_phases  ( -- u )  \ Devuelve el número máximo de fases de la batalla
-	5 random 7 +  \ Número al azar, de 8 a 11
-	;
-[then]
-: failure?  ( -- f )  \ ¿Ha fracasado el protagonista?
-	battle# @ battle_phases >
-	;
-: .bye  \ Mensaje final cuando el jugador no quiere jugar otra partida
-	\ Provisional!!!
-	s" ¡Adiós!" narrate
-	;
-: bye_bye  \ Abandona el programa
-	clear_screen .bye bye
-	;
-: play_again?$  ( -- a u )  \ Devuelve la pregunta que se hace al jugador tras haber completado con éxito el juego
-	s{ s" ¿Quieres" s" ¿Te animas a" s" ¿Te apetece" }s
-	s{ s" jugar" s" empezar" }s&  again?$ s&
-	;
-: retry?1$  ( -- a u )  \ Devuelve una variante para el comienzo de la pregunta que se hace al jugador tras haber fracasado
-	s" ¿Tienes"
-	s{ s" fuerzas" s" arrestos" s" agallas" s" energías" s" ánimos" }s&
-	;
-: retry?2$  ( -- a u )  \ Devuelve una variante para el comienzo de la pregunta que se hace al jugador tras haber fracasado
-	s{ s" ¿Te quedan" s" ¿Guardas" s" ¿Conservas" }s
-	s{ s" fuerzas" s" energías" s" ánimos" }s&
-	;
-: retry?$  ( -- a u )  \ Devuelve la pregunta que se hace al jugador tras haber fracasado
-	s{ retry?1$ retry?2$ }s s" para" s&
-	s{ s" jugar" s" probar" s" intentarlo" }s& again?$ s&
-	;
-: enough?  ( -- f )  \ ¿Prefiere el jugador no jugar otra partida?
-	success?  if  play_again?$  else  retry?$  then  cr+ no?
-	;
-: surrender?  ( -- f )  \ ¿Quiere el jugador dejar el juego?
-	\ No se usa!!!
-	s{
-	s" ¿Quieres"
-	s" ¿En serio quieres"
-	s" ¿De verdad quieres"
-	s" ¿Estás segur" player_o/a+ s" de que quieres" s& 
-	s" ¿Estás decidid" player_o/a+ s" a" s&
-	}s s{
-	s" dejarlo?"
-	s" rendirte?"
-	s" abandonar?"
-	}s&  yes? 
-	;
-: game_over?  ( -- f )  \ ¿Se terminó ya el juego?
-	success? failure? or
-	;
-: the_happy_end  \ Final del juego con éxito
-	s" Agotado, das parte en el castillo de tu llegada"
-	s" y de lo que ha pasado." s&
-	narrate  short_pause
-	s" Pides audiencia al rey, Uther Pendragon."
-	narrate  end_of_scene
-	castilian_quotes? @
-	if  \ Comillas castellanas
-		s" El rey" rquote$ s+ s" , te indica el valido," s+
-		lquote$ s" ha ordenado que no se lo moleste," s+ s&
-	else  \ Raya
-		s" El rey" 
-		dash$ s" te indica el valido" dash$ comma+ s+ s+ s&
-		s" ha ordenado que no se lo moleste," s&
-	then
-	s" pues sufre una amarga tristeza." s&
-	speak  short_pause
-	s" No puedes entenderlo. El rey, tu amigo."
-	narrate  short_pause
-	s" Agotado, decepcionado, apesadumbrado,"
-	s" decides ir a dormir a tu casa." s&
-	s" Es lo poco que puedes hacer." s&
-	narrate  short_pause
-	s" Te has ganado un buen descanso."
-	narrate
-	;
-: enemy_speech  \ Palabras del general enemigo
-	s" Su general, sonriendo ampliamente, dice:" s&
-	narrate  short_pause
-	s{
-	s" Hoy es"
-	s" Hoy parece ser" 
-	s" Hoy sin duda es"
-	s" No cabe duda de que hoy es"
-	}s s" mi día de suerte..." s&
-	s{ s" Bien, bien..." s" Excelente..." }s&
-	s{
-	s" Por el gran Ulfius podremos pedir un buen rescate"
-	s" Del gran Ulfius podremos sacar una buena ventaja"
-	}s& period+  speak
-	;
-: the_sad_end  \ Final del juego con fracaso
-	s" Los sajones te"
-	s{ s" hacen prisionero" s" capturan" s" atrapan" }s& period+
-	enemy_speech
-	;
-: the_end  \ Mensaje final del juego
-	success?  if  the_happy_end  else  the_sad_end  then
-	end_of_scene 
-	;
-:action (do_finish)  \ Abandonar el juego
-	restore_vocabularies default_color cr (title) quit
-	;action
-:action do_finish  \ Acción de abandonar el juego
-	surrender?  if
-		\ retry?$  cr+ no?  if  (do_finish)  then
-		(do_finish)
-	then
-	;action
-
-\ }}}###########################################################
-section( Acerca del programa) \ {{{
-
-: based_on  \ Muestra un texto sobre el programa original
-	s" «Asalto y castigo» (escrito en SP-Forth) está basado"
-	s" en el programa homónimo escrito en BASIC en 2009 por"s&
-	s" Baltasar el Arquero (http://caad.es/baltasarq/)." s&
-	paragraph
-	;
-: license  \ Muestra un texto sobre la licencia
-	s" (C) 2011 Marcos Cruz (programandala.net)" paragraph
-	s" «Asalto y castigo» (escrito en SP-Forth) es un programa libre;"
-	s" puedes distribuirlo y/o modificarlo bajo los términos de" s&
-	s" la Licencia Pública General de GNU, tal como está publicada" s&
-	s" por la Free Software Foundation (Fundación para los Programas Libres)," s&
-	s" bien en su versión 2 o, a tu elección, cualquier versión posterior" s&
-	s" (http://gnu.org/licenses/)." s& \ Confirmar!!!
-	paragraph
-	;
-: program  \ Muestra el nombre y versión del programa
-	s" «Asalto y castigo» (escrito en SP-Forth)" paragraph/
-	s" Versión " version$ s& paragraph/
-	;
-: about  \ Muestra información sobre el programa
-	clear_screen about_color
-	program	license based_on
-	end_of_scene
-	;
-
-\ }}}###########################################################
-section( Introducción) \ {{{
-
-: intro_0  \ Muestra la introducción al juego (parte 0)
-	s" El sol despunta de entre la niebla,"
-	s" haciendo humear los tejados de paja." s&
-	narrate  short_pause
-	;
-: intro_1  \ Muestra la introducción al juego (parte 1)
-	s" Piensas en"
-	s{ s" el encargo de"
-	s" la" s{ s" tarea" s" misión" }s& s" encomendada por" s&
-	s" la orden dada por" s" las órdenes de" }s&
-	s{ s" Uther Pendragon" s" , tu rey" s?+ s" tu rey" }s& \ tmp!!!
-	s" ..." s+
-	narrate  short_pause
-	;
-: intro_2  \ Muestra la introducción al juego (parte 2)
-	s{ s" Atacar" s" Arrasar" }s s" una" s&
-	s" aldea" s{ s" tranquila" s" pacífica" }s sswap s& s&
-	s" , aunque" s+ s{ s" sea una" s" esté" }s&
-	s{ s" llena de" s" habitada por" s" repleta de" }s&
-	s" sajones, no te" s& s{ s" llena" s" colma" }s&
-	s" de orgullo." s&
-	narrate  short_pause
-	;
-: intro_3  \ Muestra la introducción al juego (parte 3)
-	s" Los hombres se" s{ s" ciernen" s" lanzan" }s&
-	s" sobre la aldea, y la destruyen." s&
-	s" No hubo tropas enemigas, ni honor en" s&
-	s{ s" la batalla." s" el combate." }s&
-	narrate  end_of_scene
-	;
-: intro_4  \ Muestra la introducción al juego (parte 4)
-	sire,$ s{
-	s" el asalto" s" el combate" s" la batalla"
-	s" la lucha" s" todo" s" la misión"
-	}s& s{ s" ha terminado." s" ha concluido." }s&
-	speak
-	;
-: needed_orders$  ( -- a u )  \ Devuelve una variante de «órdenes necesarias»
-	s" órdenes" s{ 0$ s" necesarias" s" pertinentes" }s&
-	;
-: intro_5  \ Muestra la introducción al juego (parte 5)
-	s" Lentamente," s{
-	s" ordenas"
-	s" das la orden de"
-	s" das las" needed_orders$ s& s" para" s&
-	}s& s{ s" volver" s" regresar" }s& s" a casa." s&
-	narrate short_pause
-	;
-: intro_6  \ Muestra la introducción al juego (parte 6)
-	s{ s" Los" s" Tus" }s s" oficiales" s&
-	s{
-	s" intentan detener"
-	s" detienen como pueden"
-	s" hacen" s{ s" todo" s? s" lo que pueden" s& s" lo imposible" }s&
-		s{ s" para" s" por" }s& s" detener" s&
-	}s& s{ s" el saqueo" 2dup s" el pillaje" }s& period+
-	narrate  end_of_scene
-	;
-: intro  \ Muestra la introducción al juego 
-	clear_screen
-	intro_0 intro_1 intro_2 intro_3 intro_4 intro_5 intro_6
-	;
-
-\ }}}###########################################################
-section( Herramientas para interpretar el fichero de configuración) \ {{{
+section( Fichero de configuración) \ {{{
 
 0  [if]  \ ......................................
 
@@ -8151,31 +8469,31 @@ also config_vocabulary  definitions
 : líneas ( u -- )  \ Cambia el número de líneas
 	1- to max_y
 	;
-: varón  \ Indica que el jugador es un varón
+: varón  ( -- )  \ Indica que el jugador es un varón
 	woman_player? off
 	;
 ' varón alias hombre
 ' varón alias masculino
-: mujer  \ Indica que el jugador es una mujer
+: mujer  ( -- )  \ Indica que el jugador es una mujer
 	woman_player? on
 	;
 ' mujer alias femenino
-: raya  \ Indica que se use la raya en las citas 
+: raya  ( -- )  \ Indica que se use la raya en las citas 
 	castilian_quotes? off
 	;
-: comillas  \ Indica que se usen las comillas castellanas en las citas
+: comillas  ( -- )  \ Indica que se usen las comillas castellanas en las citas
 	castilian_quotes? on
 	;
 : indentación  ( u -- )  \ Fija la indentación de los párrafos
 	max_indentation min /indentation !
 	;
-: borrar_pantalla_para_escenarios  \ Indica que se borre la pantalla al entrar en un escenario o describirlo
+: borrar_pantalla_para_escenarios  ( -- )  \ Indica que se borre la pantalla al entrar en un escenario o describirlo
 	location_page? on
 	;
-: borrar_pantalla_tras_escenas  \ Indica que se borre la pantalla tras la pausa de fin de escena
+: borrar_pantalla_tras_escenas  ( -- )  \ Indica que se borre la pantalla tras la pausa de fin de escena
 	scene_page? on
 	;
-: párrafos_separados  \ Indica que se separen los párrafos con un línea en blanco
+: párrafos_separados  ( -- )  \ Indica que se separen los párrafos con un línea en blanco
 	cr? on
 	;
 
@@ -8186,7 +8504,7 @@ also config_vocabulary  definitions
 
 restore_vocabularies
 
-: init_config  \ Inicializa las variables de configuración con sus valores predeterminados
+: init_config  ( -- )  \ Inicializa las variables de configuración con sus valores predeterminados
 	woman_player? off
 	castilian_quotes? on
 	location_page? off
@@ -8197,26 +8515,236 @@ restore_vocabularies
 	default_max_x to max_x  \ Número máximo de columna 
 	default_max_y to max_y  \ Número máximo de fila 
 	;
-
-: read_config  \ Lee el fichero de configuración
+: read_config  ( -- )  \ Lee el fichero de configuración
 	only config_vocabulary
 	[ config_file$ ] sliteral included
 	restore_vocabularies
+	;
+: get_config  ( -- )  \ Lee el fichero de configuración tras inicializar las variables de configuración
+	init_config read_config
+	;
+
+\ }}}###########################################################
+section( Fin) \ {{{
+
+: success?  ( -- f )  \ ¿Ha completado con éxito su misión el protagonista?
+	my_location location_51% =
+	;
+false  [if]
+: battle_phases  ( -- u )  \ Devuelve el número máximo de fases de la batalla
+	5 random 7 +  \ Número al azar, de 8 a 11
+	;
+[then]
+: failure?  ( -- f )  \ ¿Ha fracasado el protagonista?
+	battle# @ battle_phases >
+	;
+: .bye  ( -- )  \ Mensaje final cuando el jugador no quiere jugar otra partida
+	\ Provisional!!!
+	s" ¡Adiós!" narrate
+	;
+: bye_bye  ( -- )  \ Abandona el programa
+	clear_screen .bye bye
+	;
+: play_again?$  ( -- a u )  \ Devuelve la pregunta que se hace al jugador tras haber completado con éxito el juego
+	s{ s" ¿Quieres" s" ¿Te animas a" s" ¿Te apetece" }s
+	s{ s" jugar" s" empezar" }s&  again?$ s&
+	;
+: retry?1$  ( -- a u )  \ Devuelve una variante para el comienzo de la pregunta que se hace al jugador tras haber fracasado
+	s" ¿Tienes"
+	s{ s" fuerzas" s" arrestos" s" agallas" s" energías" s" ánimos" }s&
+	;
+: retry?2$  ( -- a u )  \ Devuelve una variante para el comienzo de la pregunta que se hace al jugador tras haber fracasado
+	s{ s" ¿Te quedan" s" ¿Guardas" s" ¿Conservas" }s
+	s{ s" fuerzas" s" energías" s" ánimos" }s&
+	;
+: retry?$  ( -- a u )  \ Devuelve la pregunta que se hace al jugador tras haber fracasado
+	s{ retry?1$ retry?2$ }s s" para" s&
+	s{ s" jugar" s" probar" s" intentarlo" }s& again?$ s&
+	;
+: enough?  ( -- f )  \ ¿Prefiere el jugador no jugar otra partida?
+	success?  if  play_again?$  else  retry?$  then  cr+ no?
+	;
+: surrender?  ( -- f )  \ ¿Quiere el jugador dejar el juego?
+	\ No se usa!!!
+	s{
+	s" ¿Quieres"
+	s" ¿En serio quieres"
+	s" ¿De verdad quieres"
+	s" ¿Estás segur" player_o/a+ s" de que quieres" s& 
+	s" ¿Estás decidid" player_o/a+ s" a" s&
+	}s s{
+	s" dejarlo?"
+	s" rendirte?"
+	s" abandonar?"
+	}s&  yes? 
+	;
+: game_over?  ( -- f )  \ ¿Se terminó ya el juego?
+	success? failure? or
+	;
+: the_happy_end  ( -- )  \ Final del juego con éxito
+	s" Agotado, das parte en el castillo de tu llegada"
+	s" y de lo que ha pasado." s&
+	narrate  short_pause
+	s" Pides audiencia al rey, Uther Pendragon."
+	narrate  end_of_scene
+	castilian_quotes? @
+	if  \ Comillas castellanas
+		s" El rey" rquote$ s+ s" , te indica el valido," s+
+		lquote$ s" ha ordenado que no se lo moleste," s+ s&
+	else  \ Raya
+		s" El rey" 
+		dash$ s" te indica el valido" dash$ comma+ s+ s+ s&
+		s" ha ordenado que no se lo moleste," s&
+	then
+	s" pues sufre una amarga tristeza." s&
+	speak  short_pause
+	s" No puedes entenderlo. El rey, tu amigo."
+	narrate  short_pause
+	s" Agotado, decepcionado, apesadumbrado,"
+	s" decides ir a dormir a tu casa." s&
+	s" Es lo poco que puedes hacer." s&
+	narrate  short_pause
+	s" Te has ganado un buen descanso."
+	narrate
+	;
+: enemy_speech  ( -- )  \ Palabras del general enemigo
+	s" Su general, sonriendo ampliamente, dice:" s&
+	narrate  short_pause
+	s{
+	s" Hoy es"
+	s" Hoy parece ser" 
+	s" Hoy sin duda es"
+	s" No cabe duda de que hoy es"
+	}s s" mi día de suerte..." s&
+	s{ s" Bien, bien..." s" Excelente..." }s&
+	s{
+	s" Por el gran Ulfius podremos pedir un buen rescate"
+	s" Del gran Ulfius podremos sacar una buena ventaja"
+	}s& period+  speak
+	;
+: the_sad_end  ( -- )  \ Final del juego con fracaso
+	s" Los sajones te"
+	s{ s" hacen prisionero" s" capturan" s" atrapan" }s& period+
+	enemy_speech
+	;
+: the_end  ( -- )  \ Mensaje final del juego
+	success?  if  the_happy_end  else  the_sad_end  then
+	end_of_scene 
+	;
+:action (do_finish)  \ Abandonar el juego
+	restore_vocabularies default_color cr (title) quit
+	;action
+:action do_finish  \ Acción de abandonar el juego
+	surrender?  if
+		\ retry?$  cr+ no?  if  (do_finish)  then
+		(do_finish)
+	then
+	;action
+
+\ }}}###########################################################
+section( Acerca del programa) \ {{{
+
+: based_on  ( -- )  \ Muestra un texto sobre el programa original
+	s" «Asalto y castigo» está basado"
+	s" en el programa homónimo escrito en BASIC en 2009 por" s&
+	s" Baltasar el Arquero (http://caad.es/baltasarq/)." s&
+	paragraph
+	;
+: license  ( -- )  \ Muestra un texto sobre la licencia
+	s" (C) 2011 Marcos Cruz (programandala.net)" paragraph
+	s" «Asalto y castigo» es un programa libre;"
+	s" puedes distribuirlo y/o modificarlo bajo los términos de" s&
+	s" la Licencia Pública General de GNU, tal como está publicada" s&
+	s" por la Free Software Foundation (Fundación para los Programas Libres)," s&
+	s" bien en su versión 2 o, a tu elección, cualquier versión posterior" s&
+	s" (http://gnu.org/licenses/)." s& \ Confirmar!!!
+	paragraph
+	;
+: program  ( -- )  \ Muestra el nombre y versión del programa
+	s" «Asalto y castigo» (escrito en SP-Forth)" paragraph/
+	s" Versión " version$ s& paragraph/
+	;
+: about  ( -- )  \ Muestra información sobre el programa
+	clear_screen about_color
+	program	cr license cr based_on
+	end_of_scene
+	;
+
+\ }}}###########################################################
+section( Introducción) \ {{{
+
+: intro_0  ( -- )  \ Muestra la introducción al juego (parte 0)
+	s" El sol despunta de entre la niebla,"
+	s" haciendo humear los tejados de paja." s&
+	narrate  short_pause
+	;
+: intro_1  ( -- )  \ Muestra la introducción al juego (parte 1)
+	s" Piensas en"
+	s{ s" el encargo de"
+	s" la" s{ s" tarea" s" misión" }s& s" encomendada por" s&
+	s" la orden dada por" s" las órdenes de" }s&
+	s{ s" Uther Pendragon" s" , tu rey" s?+ s" tu rey" }s& \ tmp!!!
+	s" ..." s+
+	narrate  short_pause
+	;
+: intro_2  ( -- )  \ Muestra la introducción al juego (parte 2)
+	s{ s" Atacar" s" Arrasar" }s s" una" s&
+	s" aldea" s{ s" tranquila" s" pacífica" }s sswap s& s&
+	s" , aunque" s+ s{ s" sea una" s" esté" }s&
+	s{ s" llena de" s" habitada por" s" repleta de" }s&
+	s" sajones, no te" s&{ s" llena" s" colma" }s&
+	s" de orgullo." s&
+	narrate  short_pause
+	;
+: intro_3  ( -- )  \ Muestra la introducción al juego (parte 3)
+	s" Los hombres se" s{ s" ciernen" s" lanzan" }s&
+	s" sobre la aldea, y la destruyen." s&
+	s" No hubo tropas enemigas, ni honor en" s&
+	s{ s" la batalla." s" el combate." }s&
+	narrate  end_of_scene
+	;
+: intro_4  ( -- )  \ Muestra la introducción al juego (parte 4)
+	sire,$ s{
+	s" el asalto" s" el combate" s" la batalla"
+	s" la lucha" s" todo" s" la misión"
+	}s& s{ s" ha terminado." s" ha concluido." }s&
+	speak
+	;
+: needed_orders$  ( -- a u )  \ Devuelve una variante de «órdenes necesarias»
+	s" órdenes" s{ 0$ s" necesarias" s" pertinentes" }s&
+	;
+: intro_5  ( -- )  \ Muestra la introducción al juego (parte 5)
+	s" Lentamente," s{
+	s" ordenas"
+	s" das la orden de"
+	s" das las" needed_orders$ s& s" para" s&
+	}s& s{ s" volver" s" regresar" }s& s" a casa." s&
+	narrate short_pause
+	;
+: intro_6  ( -- )  \ Muestra la introducción al juego (parte 6)
+	s{ s" Los" s" Tus" }s s" oficiales" s&
+	s{
+	s" intentan detener"
+	s" detienen como pueden"
+	s" hacen" s{ s" todo" s? s" lo que pueden" s& s" lo imposible" }s&
+		s{ s" para" s" por" }s& s" detener" s&
+	}s& s{ s" el saqueo" 2dup s" el pillaje" }s& period+
+	narrate  end_of_scene
+	;
+: intro  ( -- )  \ Muestra la introducción al juego 
+	clear_screen
+	intro_0 intro_1 intro_2 intro_3 intro_4 intro_5 intro_6
 	;
 
 \ }}}###########################################################
 section( Principal) \ {{{
 
-: game  \ Bucle de la partida
-	begin
-		plot  listen obbey
-	game_over? until
+: init/once  ( -- )  \ Preparativos que hay que hacer solo una vez, antes de la primera partida
+	init_screen  \ Pantalla
 	;
-: game_preparation  \ Preparación de la partida
-
-	init/game
-	init_config read_config
-
+: init/game  ( -- )  \ Preparativos que hay que hacer antes de cada partida
+	randomize
+	init_entities init_plot get_config
 	\ Anular esto para depuración!!!:
 	\ about cr intro  
 	location_01% enter
@@ -8225,33 +8753,28 @@ section( Principal) \ {{{
 	\ location_08% enter  \ Emboscada 
 	\ location_47% enter
 	\ location_01% enter
-	\ snake% be_here
-	\ ambrosio% be_here
+	\ snake% is_here
+	\ ambrosio% is_here
 	;
-: (main)  \ Bucle principal del juego
+: game  ( -- )  \ Bucle de la partida
+	begin
+		plot  listen obbey
+	game_over? until
+	;
+: (main)  ( -- )  \ Bucle principal del juego
 	startlog  \ Depuración!!!
 	clear_screen
 	begin
-		game_preparation game the_end
+		init/game game the_end
 	enough? until
 	bye_bye
 	;
 ' (main) is main
-0 [if]  \ Antiguo!!! Inacabado!!! No está decidido el sistema que se usará para salvar las partidas.
-: (reenter)  \ Punto de entrada tras cargar una partida salvada
-	my_location describe  game the_end  (main)
-	;
-' (reenter) is reenter
-: main  \ Punto de entrada para la primera sesión de juego
-	\ Inacabado!!! No está decidido el sistema que se usará para salvar las partidas
-	init/once (main)
-	;
-[then]
 ' main alias ayc
 ' main alias go
 
-: i0  \ Hace toda la inicialización; para depuración!!!
-	init/once game_preparation
+: i0  ( -- )  \ Hace toda la inicialización; para depuración!!!
+	init/once init/game
 	." Datos preparados."
 	;
 
@@ -8269,7 +8792,10 @@ errores.
 
 [then]  \ ......................................
 
-: check_stack  \ Provoca un error -3 («stack overflow») si la pila no está vacía
+: check_stack1  ( -- )  \ Provoca un error -3 («stack overflow») si la pila no tiene solo un elemento
+	depth 1 <> -3 and throw
+	;
+: check_stack  ( -- )  \ Provoca un error -3 («stack overflow») si la pila no está vacía
 	depth 0<> -3 and throw
 	;
 : test_location_description  ( a -- )  \ Comprueba todas las descripciones de un ente escenario
@@ -8301,11 +8827,21 @@ errores.
 	tested full_name type
 	cr ." = Descripción ====================" cr
 	tested describe check_stack
-	tested ~location? @  if  tested test_location_description  then
+	tested is_location?  if  tested test_location_description  then
 	;
-: test_descriptions  \ Comprueba la descripción de todos los entes
+: test_descriptions  ( -- )  \ Comprueba la descripción de todos los entes
 	#entities 0  do
 		i #>entity test_description
+	loop
+	;
+: test_battle_phase  ( u -- ) \ Comprueba una fase de la batalla
+	32 0  do  \ 32 veces cada fase, porque los textos son aleatorios
+		dup (battle_phase) check_stack1
+	loop  drop
+	;
+: test_battle  ( -- )  \ Comprueba todas las fases de la batalla
+	battle_phases 0  do
+		i test_battle_phase
 	loop
 	;
 
@@ -8317,27 +8853,29 @@ errores.
 ------------------------------------------------
 Novedades significativas respecto a la versión en SuperBASIC y a las versiones originales
 
-Todos los objetos citados en las descripciones exiten como
-tales (p.e. catre, puente, pared...) y por tanto son
-manipulables, pero no se incluyen en la lista de los objetos
-presentes.
+Todos los objetos citados en las descripciones existen como
+tales (p.e. catre, puente, pared...).
 
 Objetos globales (p.e. cielo, suelo, techo, pared...)
 
 Las direcciones de salida son objetos virtuales, lo que
 permite expresiones como «ve al Norte» o «mira hacia el Sur».
 
-La condición final de la batalla no es un número fijo de
-pasos sino aleatorio.
+La mayoría de los textos se construye combinando
+aleatoriamente sus componentes y/o eligiendo entre
+alternativas.
 
-Algunas de las descripciones de los objetos y personajes
-varían en función de la trama y la situación. \ Pendiente!!!
+Algunas de las descripciones de los escenarios, objetos y
+personajes varían en función de la trama y la situación.
+
+La batalla consta de varias fases.  La condición final de la
+batalla no es un número fijo de pasos sino aleatorio.
 
 ------------------------------------------------
 Términos usados en los comentarios del programa
 
 «ente»
-«lugar»
+«lugar»/«escenario»
 «salida»/«dirección»
 «protagonista»
 «base de datos»
@@ -8345,7 +8883,7 @@ Términos usados en los comentarios del programa
 «campo»/«atributo»
 
 ------------------------------------------------
-Dudas
+Dudas sobre SP-Forth
 
 ¿Cómo saber la dirección de la pila? No hay SP0 .
 
@@ -8358,6 +8896,40 @@ Dudas
 \ }}}##########################################################
 \ Tareas pendientes: programación {{{
 
+
+...........................
+
+Implementar «describir», sinónimo de examinar para entes
+presentes pero que funciona con entes no presentes ya
+conocidos!
+
+...........................
+
+Implementar hombres/soldados!!!
+
+...........................
+
+Implementar «esperar» («z»)
+
+...........................
+
+Hacer más robusto el analizador con:
+
+«ahora»:
+
+>coge libro
+>ahora la espada
+
+nombres sueltos, ¿mirarlos?:
+
+>espada
+Es muy bonita.
+
+...........................
+
+Error nuevo para no coger las cosas de la casa de Ambrosio:
+Es mejor dejar las cosas de Ambrosio donde están.
+
 ...........................
 
 Solucionar el eterno problema de los sinónimos que 
@@ -8366,8 +8938,6 @@ no tienen el mismo género o número...
 La palabra del vocabulario podría ponerse a sí misma como
 nombre del ente... Pero esto obligaría a usar el género
 y número de la ficha en las descripciones.
-
-
 
 ...........................
 
@@ -8411,7 +8981,7 @@ No es algo donde pueda ir.
 
 Para otro proyecto:
 
-Crear tramas de lugar separadas: entrar de él, estar en él y
+Crear tramas de escenario separadas: entrar de él, estar en él y
 salir de él.
 
 Hay que distinguir tramas de descripción de escenario (como
