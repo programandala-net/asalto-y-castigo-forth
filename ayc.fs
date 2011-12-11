@@ -6,7 +6,7 @@ CR .( Asalto y castigo ) \ {{{
 \ A text adventure in Spanish, written in SP-Forth.
 \ Un juego conversacional en castellano, escrito en SP-Forth.
 
-: version$  S" A-01-2011120902"  ;  version$ TYPE CR
+: version$  S" A-01-2011121102"  ;  version$ TYPE CR
 
 \ Copyright (C) 2011 Marcos Cruz (programandala.net)
 
@@ -362,6 +362,7 @@ defer palabrita  \ Crear el vector
 [then]  \ ......................................
 
 defer protagonist%  \ Ente protagonista
+defer do_exits  \ Acción de listar las salidas
 
 \ }}}###########################################################
 section( Códigos de error) \ {{{
@@ -586,8 +587,10 @@ variable dstack>  \ Puntero al elemento superior de la pila (o cero si está vac
 \ Desordenar al azar varios elementos de la pila
 
 0 value unsort#
-: unsort  ( .. u -- .. )  \ Desordena un número de elementos de la pila
+: unsort  ( x1..xu u -- x1'..xu' )  \ Desordena un número de elementos de la pila
+	\ x1..xu = Elementos a desordenar
 	\ u = Número de elementos de la pila que hay que desordenar 
+	\ x1'..xu' = Los mismos elementos, desordenados
 	dup to unsort# 0  do
 		unsort# random roll
 	loop	
@@ -955,6 +958,9 @@ str-create tmp_str  \ Cadena dinámica de texto temporal para usos variados
 	;
 : comma+  ( a1 u1 -- a2 u2 )  \ Añade una coma al final de una cadena
 	s" ," s+
+	;
+: colon+  ( a1 u1 -- a2 u2 )  \ Añade dos puntos al final de una cadena
+	s" :" s+
 	;
 : and&  ( a1 u1 -- a2 u2 )  \ Añade una conjunción «y» al final de una cadena
 	\ No se usa!!!
@@ -1880,8 +1886,14 @@ por tanto el campo de la ficha del ente era «abierto» o
 : is_global_outside?  ( a -- f )  \ ¿Es un ente global (común) en los escenarios al aire libre?
 	~global_outside? @
 	;
+: is_global_outside  ( a -- )  \ ¿Marcar un ente como global (común) en los escenarios al aire libre
+	~global_outside? on
+	;
 : is_global_inside?  ( a -- f )  \ ¿Es un ente es global (común) en los escenarios interiores? 
 	~global_inside? @
+	;
+: is_global_inside  ( a -- )  \ Marcar un ente como global (común) en los escenarios interiores
+	~global_inside? on
 	;
 : is_owned?  ( a -- f )  \ ¿Pertenece un ente al protagonista? 
 	~owned? @
@@ -2313,8 +2325,12 @@ de datos de su ficha.
 	dup distant_article name&
 	;
 : nonhuman_subjective_negative_name  ( a -- a1 u1 )  \ Devuelve el nombre subjetivo (negativo) de un ente (no humano), desde el punto de vista del protagonista
+	\ Nota: En este caso hay que usar NEGATIVE_FULL_NAME antes de S{ y pasar la cadena
+	\ mediante la pila de retorno; de otro modo S{ y }S no pueden calcular bien
+	\ el crecimiento de la pila.
+	negative_full_name 2>r
 	s{
-	negative_full_name 2dup 2dup  \ Tres nombres repetidos con «artículo negativo»
+	2r> 2dup 2dup  \ Tres nombres repetidos con «artículo negativo»
 	s" eso" s" esa cosa" s" tal cosa"  \ Tres alternativas
 	}s
 	;
@@ -2739,7 +2755,7 @@ entity: cave%  \ Inacabado!!!
 \ Entes virtuales
 \ (necesarios para la ejecución de algunos comandos):
 entity: inventory%
-entity: exit%
+entity: exits%
 entity: north%
 entity: south%
 entity: east%
@@ -3695,7 +3711,9 @@ location_02% :description
 		paragraph
 		endof
 	down%  of
-		\ El destino de la bajada de la colina se decide al azar cada vez que se
+		\ Bajar la colina
+		\ puede equivaler a bajar por el sur o por el oeste; esto
+		\ se decide al azar cada vez que se
 		\ entra en el escenario, por lo que su descripción
 		\ debe tenerlo en cuenta y redirigir a la descripción adecuada:
 		self% down_exit self% north_exit =
@@ -4980,8 +4998,14 @@ sky% :description
 
 \ Entes virtuales
 
-exit% :attributes
+exits% :attributes
+	s" salida" self% fname!
+	self% is_global_outside
+	self% is_global_inside
 	;attributes
+exits% :description
+	do_exits
+	;description
 inventory% :attributes
 	;attributes
 enemy% :attributes
@@ -6060,7 +6084,7 @@ here swap - cell / constant battle_phases  \ Fases de la batalla
 	s" Para cuando" s&
 	s{ s" te vuelves" s" intentas volver" }s&
 	toward_the(m)$ s& s" Norte," s&
-	s" ya no" s{ s" te" s? s" queda" s& s" tienes" }s&
+	s" ya no" s& s{ s" te" s? s" queda" s& s" tienes" }s&
 	s{ s" duda:" s" duda alguna:" s" ninguna duda:" }s&
 	s{
 		s" es" s" se trata de"
@@ -6267,7 +6291,7 @@ descripciones y definirlas aquí, a continuación de la trama.
 		still_in_the_village?  of  soldiers_steal  endof
 \		back_to_the_village?  of  soldiers_go_home  endof  \ No se usa!!!
 		pass_still_open?  of  soldiers_go_home  endof
-		battle?  of  battle_phase  endof
+\		battle?  of  battle_phase  endof  \ No se usa!!! Redundante, porque tras la descripción se mostrará otra vez la situación de la batalla
 	endcase
 	;
 ' (soldiers_description) is soldiers_description
@@ -6342,10 +6366,12 @@ section( Errores del intérprete de comandos)  \ {{{
 	s{ s" el" s" ningún" }s&
 	;
 : too_many_actions  ( -- )  \ Informa de que se ha producido un error porque hay dos verbos en el comando
+	halto" x1"
 	s{ there_are$ s" dos verbos" s&
 	there_is$ s" más de un verbo" s&
 	there_are$ s" al menos dos verbos" s&
 	}s  language_error
+	halto" x2"
 	;
 ' too_many_actions constant (too_many_actions_error#)
 ' (too_many_actions_error#) is too_many_actions_error#
@@ -6380,11 +6406,11 @@ section( Errores del intérprete de comandos)  \ {{{
 ' unexpected_main_complement constant (unexpected_main_complement_error#)
 ' (unexpected_main_complement_error#) is unexpected_main_complement_error# 
 
-: ?misunderstood  ( xt | 0 -- )  \ Informa, si es preciso, de un error en el comando
+: ?wrong  ( xt | 0 -- )  \ Informa, si es preciso, de un error en el comando
 	\ xt = Dirección de ejecución de la palabra de error (que se usa también como código del error)
-	[debug_catch]  [if]  s" Al entrar en ?MISUNDERSTOOD" debug  [then]  \ Depuración!!!
+	[debug_catch]  [if]  s" Al entrar en ?WRONG" debug  [then]  \ Depuración!!!
 	?dup  if  execute  then
-	[debug_catch]  [if]  s" Al salir de ?MISUNDERSTOOD" debug  [then]  \ Depuración!!!
+	[debug_catch]  [if]  s" Al salir de ?WRONG" debug  [then]  \ Depuración!!!
 	;
 
 \ }}}###########################################################
@@ -6539,9 +6565,9 @@ condicionales anidadas.
 : {accessible}  ( a -- )  \ Provoca un error si un ente no está accessible
 	halto" {accessible} 1"
 	dup what !
-	is_accessible?
+	is_not_accessible?
 	halto" {accessible} 1a"
-	0= cannot_see_what_error# and
+	cannot_see_what_error# and
 	halto" {accessible} 1b"
 	throw
 	halto" {accessible} 2"
@@ -6664,7 +6690,7 @@ action: do_close
 action: do_do
 action: do_drop
 action: do_examine
-action: do_exits
+action: (do_exits)  ' (do_exits) is do_exits
 action: do_fear  \ Confirmar traducción!!!
 action: do_finish  \ Esta acción se define en la sección de finales
 action: do_go
@@ -6794,13 +6820,16 @@ variable #free_exits  \ Contador de las salidas posibles
 	#free_exits @ #listed @ list_separator$
 	;
 : (do_exit)  ( u -- )  \ Lista una salida
-	\ u = Campo de dirección
+	\ u = Puntero a un campo de dirección (desplazamiento relativo desde el inicio de la ficha)
 	[debug_do_exits]  [if]  cr ." (do_exit)" cr .stack  [then]  \ Depuración!!!
 	exit_separator$ »+
 	exits_table@ full_name »+
 	#listed ++
 	[debug_do_exits]  [if]  cr .stack  [then]  \ Depuración!!!
 	;
+
+false [if]  \ Primera versión: las salidas se listan siempre en el mismo orden (en el que están definidas en las fichas)
+
 : free_exits  ( a -- u )  \ Devuelve el número de salidas posibles de un ente
 	[debug_do_exits]  [if]  cr ." free_exits" cr .stack  [then]  \ Depuración!!!
 	0 swap
@@ -6810,7 +6839,7 @@ variable #free_exits  \ Contador de las salidas posibles
 	cell  +loop 
 	[debug_do_exits]  [if]  cr .stack  [then]  \ Depuración!!!
 	;
-:action do_exits  \ Lista las salidas posibles de la localización del protagonista
+:action (do_exits)  \ Lista las salidas posibles de la localización del protagonista
 	«»-clear  \ Borrar la cadena dinámica de impresión, que servirá para guardar la lista de salidas.
 	#listed off
 	my_location dup free_exits #free_exits !
@@ -6822,6 +6851,31 @@ variable #free_exits  \ Contador de las salidas posibles
 	cell  +loop  drop
 	.exits
 	;action
+
+[else]  \ Segunda versión: las salidas se muestran cada vez en orden aleatorio
+
+0 value this_location  \ Guardará el ente del que queremos calcular las salidas libres (para simplificar el manejo de la pila en el bucle)
+: free_exits  ( a0 -- a1..au u )  \ Devuelve el número de salidas posibles de un ente
+	\ a0 = Ente
+	\ a1..au = Entes de salida del ente a0
+	\ u = número de entes de salida del ente a0
+	[debug_do_exits]  [if]  cr ." free_exits" cr .stack  [then]  \ Depuración!!!
+	to this_location  depth >r
+	last_exit> 1+ first_exit>  do
+		this_location i + @  if  i  then
+	cell  +loop 
+	depth r> -
+	[debug_do_exits]  [if]  cr .stack  [then]  \ Depuración!!!
+	;
+:action do_exits  \ Lista las salidas posibles de la localización del protagonista
+	«»-clear  \ Borrar la cadena dinámica de impresión, que servirá para guardar la lista de salidas.
+	#listed off
+	my_location free_exits
+	dup >r unsort r>  dup #free_exits !
+	0 do  (do_exit)  loop  .exits
+	;action
+
+[then]
 
 \ }}}---------------------------------------------
 subsection( Ponerse y quitarse prendas) \ {{{
@@ -7765,20 +7819,35 @@ section( Intérprete de comandos) \ {{{
 
 Gracias al uso del propio intérprete de Forth como
 intérprete de comandos del juego, más de la mitad del
-trabajo ya está hecha por anticipado.
+trabajo ya está hecha por anticipado. Para ello
+basta crear las palabras del vocabulario juego como
+palabras propias de Forth y hacer que Forth interprete
+directamente la entrada del jugador.
 
 Sin embargo hay una consideración importante: Al pasarle
 directamente al intérprete de Forth el texto del comando
-escrito por el jugador, el sistema ejecutará las palabras
-que reconozca y en el orden en que estén escritas en la
-frase. Esto quiere decir que, al contrario de lo que ocurre
-con otros sistemas de intérpretes más convencionales, no
-podemos tener una visión global del comando del jugador: ni
-de cuántas palabras consta ni, en principio, qué viene a
-continuación de la palabra que está siendo interpretada en
-cada momento.  Esta limitación hay que contrarrestarla con
-algo de ingenio y con la extraordinaria flexibilidad de
-Forth.
+escrito por el jugador, Forth ejecutará las palabras que
+reconozca y en el orden en que estén escritas en la frase.
+Esto quiere decir que, al contrario de lo que ocurre con
+otros métodos, no podremos tener una visión global del
+comando del jugador: ni de cuántas palabras consta ni, en
+principio, qué viene a continuación de la palabra que está
+siendo interpretada en cada momento.
+
+Una solución sería que cada palabra del jugador guardara un
+identificador unívoco en la pila o en una tabla, y
+posteriormente interpretáramos el resultado de una forma
+convencional, con la ventaja de que el paso de texto 
+a números ya está hecho.
+
+Sin embargo, hemos optado por dejar a Forth hacer su trabajo
+hasta el final, pues nos parece más sencillo y eficaz: las
+palabras reconocidas en el comando del jugador se ejecutarán
+pues en el orden en que fueron escritas. Cada una
+actualizará el elemento del comando que represente (verbo o
+complemento) tras comprobar si ya ha habido una palabra
+previa que realice la misma función y en su caso deteniendo
+el proceso con un error.
 
 [then]  \ ......................................
 
@@ -7793,8 +7862,8 @@ vocabulary player_vocabulary  \ Vocabulario para guardar en él las palabras del
 	[debug_catch]  [if]  s" En (EXECUTE_ACTION) antes de CATCH" debug  [then]  \ Depuración!!!
 	catch  \ Ejecutar la acción a través de CATCH para poder regresar directamente con THROW en caso de error
 	[debug_catch]  [if]  s" En (EXECUTE_ACTION) después de CATCH" debug  [then]  \ Depuración!!!
-	?misunderstood
-	[debug_catch]  [if]  s" En (EXECUTE_ACTION) después de ?MISUNDERSTOOD" debug  [then]  \ Depuración!!!
+	?wrong
+	[debug_catch]  [if]  s" En (EXECUTE_ACTION) después de ?WRONG" debug  [then]  \ Depuración!!!
 	[debug]  [if]  s" Al final de (EXECUTE_ACTION)" debug  [then]  \ Depuración!!!
 	;
 : execute_action  ( -- )  \ Ejecuta la acción del comando, si existe
@@ -7802,9 +7871,7 @@ vocabulary player_vocabulary  \ Vocabulario para guardar en él las palabras del
 	[debug_catch]  [if]  s" En EXECUTE_ACTION" debug  [then]  \ Depuración!!!
 	action @ ?dup
 	[debug_catch]  [if]  s" En EXECUTE_ACTION tras ACTION @ ?DUP" debug  [then]  \ Depuración!!!
-	if  (execute_action)
-	else  no_verb_error# ?misunderstood
-	then
+	if  (execute_action)  else  no_verb_error# ?wrong  then
 	[debug_catch]  [if]  s" Al final de EXECUTE_ACTION" debug  [then]  \ Depuración!!!
 	[debug]  [if]  s" Al final de EXECUTE_ACTION" debug  [then]  \ Depuración!!!
 	;
@@ -7813,10 +7880,21 @@ vocabulary player_vocabulary  \ Vocabulario para guardar en él las palabras del
 	\ f = ¿El comando se analizó sin error?
 	[debug]  [if]  s" Entrando en VALID_PARSING?" debug  [then]  \ Depuración!!!
 	only player_vocabulary  \ Dejar solo el diccionario PLAYER_VOCABULARY activo
-	[debug_catch]  [if]  s" En VALID_PARSING? antes de CATCH" debug  [then]  \ Depuración!!!
-	['] evaluate catch  \ Llamar a EVALUATE a través de CATCH para poder regresar directamente con THROW en caso de error
-	[debug_catch]  [if]  s" En VALID_PARSING? después de CATCH" debug  [then]  \ Depuración!!!
-	dup 0= swap ?misunderstood
+	\ [debug_catch]  [if]  s" En VALID_PARSING? antes de CATCH" debug  [then]  \ Depuración!!!
+	halto" en valid_parsing? antes de preparar CATCH"
+	['] evaluate 
+
+	halto" en valid_parsing? antes de CATCH"
+	catch  \ Llamar a EVALUATE a través de CATCH para poder regresar directamente con THROW en caso de error
+	halto" en valid_parsing? después de CATCH"
+	\ Pendiente!!! problema aún no resuelto
+	\ Ahora «abre» sin complemento
+	\ nip nip  \ Arreglar la pila, pues CATCH hace que apunte a su posición previa
+	\ [debug_catch]  [if]  s" En VALID_PARSING? después de CATCH" debug  [then]  \ Depuración!!!
+	dup  if  nip nip  then
+	halto" en valid_parsing? tras NIP NIP"
+	dup ?wrong 0=
+	halto" en valid_parsing? tras ?WRONG"
 	restore_vocabularies
 	[debug]  [if]  s" Saliendo de VALID_PARSING?" debug  [then]  \ Depuración!!!
 	[debug_catch]  [if]  s" Saliendo de VALID_PARSING?" debug  [then]  \ Depuración!!!
@@ -7840,14 +7918,21 @@ vocabulary player_vocabulary  \ Vocabulario para guardar en él las palabras del
 	; 
 : second?  ( a1 a2 -- a1 f )  \ ¿La acción o el complemento son los segundos que se encuentran?
 	\ a1 = Acción o complemento recién encontrado
-	\ a2 = Acción o complemento almacenado, o cero
+	\ a2 = Acción o complemento anterior, o cero
+	halto" second? 1"
 	2dup <> swap 0<> and  \ ¿Hay ya otro anterior y es diferente?
+	halto" second? 2"
 	;
 : action!  ( a -- )  \ Comprueba y almacena la acción (la dirección de ejecución de su palabra) 
+	halto" action! 1"
 	action @ second?  \ ¿Había ya una acción?
-	if  too_many_actions_error# throw  \ Sí, error
-	else  action !  \ No, guardarla
-	then
+	halto" action! 2"
+	too_many_actions_error# and
+	halto" action! antes de throw"
+	throw  \ Sí, error
+	halto" action! 2a"
+	action !  \ No, guardarla
+	halto" action! 3"
 	;
 : (complement!)  ( a -- )  \
 	[debug]  [if]  s" En (COMPLEMENT!)" debug  [then]  \ Depuración!!!
@@ -8053,7 +8138,7 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 ' otear synonyms{ oteo otea otead otee }synonyms
 
 : x  ['] do_exits action!  ;
-: salida  ['] do_exits exit% action|complement!  ;
+: salida  ['] do_exits exits% action|complement!  ;
 ' salida synonyms{  salidas  }synonyms
 
 : examinar  ['] do_examine action!  ;
@@ -8382,24 +8467,76 @@ resultado será el mismo que si no se hubiera escrito nada.
 
 [then]  \ ......................................
 
-variable answer  \ Su valor será 0 si no ha habido respuesta válida; negativo para «no»; y positivo para «sí»
+variable #answer  \ Su valor será 0 si no ha habido respuesta válida; negativo para «no»; y positivo para «sí»
 : answer_undefined  ( -- )  \ Inicializa la variable antes de hacer la pregunta
-	answer off
+	#answer off
 	;
-: answer_no  ( -- )  \ Indica que la respuesta fue negativa
-	answer --
+: think_it_again$  ( -- a u )  \ Devuelve un mensaje complementario para los errores
+	s{ s" Piénsalo mejor"
+	s" Decídete" s" Cálmate" s" Concéntrate"
+	s" Presta atención"
+	s{ s" Prueba" s" Inténtalo" }s again$ s&
+	s" No es tan difícil" }s colon+
 	;
-: answer_yes  ( -- )  \ Indica que la respuesta fue afirmativa
-	answer ++
+: but|and$  ( -- a u )
+	s{ s" y" s" pero" }s
+	;
+: yes_but_no$  ( -- a u )  \ Devuelve mensaje de error: se dijo «no» tras «sí»
+	s" ¿Primero «sí»" but|and$ s&
+	s" después «no»?" s& think_it_again$ s&
+	;
+: no_but_yes$  ( -- a u )  \ Devuelve mensaje de error: se dijo «sí» tras «no»
+	s" ¿Primero «no»" but|and$ s&
+	s" después «sí»?" s& think_it_again$ s&
+	;
+: yes_but_no  ( -- )  \ Muestra error: se dijo «no» tras «sí»
+	yes_but_no$ narrate
+	;
+' yes_but_no constant yes_but_no_error#
+: no_but_yes  ( -- )  \ Muestra error: se dijo «sí» tras «no»
+	no_but_yes$ narrate
+	;
+' no_but_yes constant no_but_yes_error#
+: two_options_only$  ( -- a u )  \ Devuelve un mensaje que informa de las opciones disponibles
+	^only$ s{ s" hay" s" tienes" }s&
+	s" dos" s& s" respuestas" s" posibles" r2swap s& s& colon+
+	s" «sí»" s" «no»" both& s" (o sus iniciales)" s& period+
+	;
+: two_options_only  ( -- )  \ Muestra error: sólo hay dos opciones
+	two_options_only$ narrate
+	;
+' two_options_only constant two_options_only_error#
+: wrong_yes$  ( -- a u )  \ Devuelve el mensaje usado para advertir de que se ha escrito mal «sí»
+	s{ s" ¿Si qué...?" s" ¿Si...?" s" ¿Cómo «si»?" s" ¿Cómo que «si»?" }s
+	s" No" s& s{
+	s{ s" hay" s" puedes poner" }s 	s" condiciones" s&
+	s{ s" hay" s" tienes" }s s" nada que negociar" s& }s&
+	s{ s" aquí" s" en esto" s" en esta cuestión" }s& period+
+	two_options_only$ s&
+	;
+: wrong_yes  ( -- )  \ Muestra error: se ha usado la forma errónea «si»
+	wrong_yes$ narrate
+	;
+' wrong_yes constant wrong_yes_error#
+: answer_no  ( -- )  \ Anota una respuesta negativa
+	#answer @ 0> yes_but_no_error# and throw  \ Provocar error si antes había habido síes
+	#answer --
+	;
+: answer_yes  ( -- )  \ Anota una respuesta afirmativa
+	#answer @ 0< no_but_yes_error# and throw  \ Provocar error si antes había habido noes
+	#answer ++
 	;
 
 vocabulary yes/no_vocabulary  \ Nuevo vocabulario de Forth para analizar la respuesta a preguntas de «sí» o «no»
 also yes/no_vocabulary definitions  \ Las palabras que siguen se crearán en dicho vocabulario
 
 : sí  answer_yes  ;
+: SÍ  answer_yes  ;  \ Necesario, por el problema del cambio de capitalidad y UTF-8
 : s  answer_yes  ;
 : no  answer_no  ;
 : n  answer_no  ;
+: si  wrong_yes_error# throw  ;
+\ Pendiente!!!: hacer que no se acepte ninguna otra palabra:
 : notfound  ( a u -- )  2drop  ;
 
 restore_vocabularies
@@ -8437,26 +8574,39 @@ create command /command chars allot  \ Zona de almacenamiento del comando
 \ }}}###########################################################
 section( Entrada de respuestas de tipo «sí o no») \ {{{
 
-: evaluate_answer  ( a u -- )  \ Evalúa una respuesta a una pregunta del tipo «sí o no»
-	only  yes/no_vocabulary
-	evaluate 
+: yes|no  ( a u -- n )  \ Evalúa una respuesta a una pregunta del tipo «sí o no»
+	\ a u = Respuesta a evaluar
+	\ n = Resultado (un número negativo para «no» y positivo para «sí»; cero si no se ha respondido ni «sí» ni «no», o si se produjo un error)
+	answer_undefined  only yes/no_vocabulary
+	['] evaluate catch
+	dup  if  nip nip  then  \ Reajustar la pila si ha habido error
+	dup ?wrong 0=  \ Ejecutar el posible error y preparar su indicador para usarlo en el resultado
+	#answer @ 0= two_options_only_error# and ?wrong  \ Ejecutar error si la respuesta fue irreconocible
+	#answer @ dup 0<> and and  \ Calcular el resultado final
 	restore_vocabularies
 	;
-: answer@  ( a u -- u2 )  \ Devuelve el contenido de ANSWER tras formular una pregunta del tipo «sí o no»
+svariable question
+: .question  ( -- )  \ Imprime la pregunta
+	answer_color question count cr type
+	;
+: answer  ( a u -- n )  \ Devuelve la respuesta a una pregunta del tipo «sí o no»
 	\ a u = Pregunta
-	\ u2 = Contenido de la variable ANSWER
-	answer_color cr type wait_for_input
-	answer_undefined evaluate_answer  answer @
+	\ n = Respuesta: un número negativo para «no» y positivo para «sí»
+	question place
+	begin
+		.question cr wait_for_input 
+		yes|no ?dup
+	until
 	;
 : yes?  ( a u -- f )  \ ¿Es afirmativa la respuesta a una pregunta?
 	\ a u = Pregunta
 	\ f = ¿Es la respuesta positiva?
-	answer@ 0>
+	answer 0>
 	;
 : no?  ( a u -- f )  \ ¿Es negativa la respuesta a una pregunta?
 	\ a u = Pregunta
 	\ f = ¿Es la respuesta negativa?
-	answer@ 0<
+	answer 0<
 	;
 
 \ }}}###########################################################
@@ -8927,6 +9077,50 @@ Dudas sobre SP-Forth
 Anotar que ha habido paalabras no reconocidas, para variar el error en lugar de actuar como si faltaran.
 p.e. mirar / mirar xxx.
 
+
+...........................
+
+
+Hacer más naturales los mensajes que dicen
+que no hay nada de interés en la dirección indicada,
+p.e.,
+miras hacia
+intentas vislumbrar (en la cueva oscura)
+contemplas el cielo...
+miras a tus pies...
+
+...........................
+
+Añadir variante:
+«No observas nada digno de mención al mirar hacia el Este».
+
+...........................
+
+Añadir «tocar».
+
+...........................
+
+Para otro proyecto:
+
+Contraejemplo de La Mansión:
+> coge libros
+No creo que tenga sentido cargar con eso
+
+Mejor así:
+> coge libros
+Por un momento tienes la absurda tentación de coger los libros,
+pero la descartas.
+
+Y mejor aún si las sucesivas órdenes iguales no tuvieran
+respuesta (o diferente respuesta de forma gradual). Para eso
+hay que implementar una lista de recuerdo...
+
+...........................
+
+Implementar que «todo» pueda usarse
+con examinar y otros verbos, y se cree una lista
+ordenada aleatoriamente de entes que cumplan
+los requisitos.
 
 ...........................
 
