@@ -8,7 +8,7 @@ CR .( Asalto y castigo )  \ {{{
 \ Copyright (C) 2011 Marcos Cruz (programandala.net)
 
 ONLY FORTH DEFINITIONS
-: version$  ( -- a u )  S" A-01-2011121530"  ;
+: version$  ( -- a u )  S" A-01-201112160000"  ;
 version$ TYPE CR
 
 \ 'Asalto y castigo' (written in SP-Forth) is free software; you can redistribute it and/or
@@ -4837,7 +4837,8 @@ location_39% :description
 		\ Crear ente!!! musgo, cortina, agua, hueco
 		s" Musgoso y rocoso, con la cortina de agua"
 		s{ s" tras de ti," s" a tu espalda," }s&
-		s" el nivel del agua ha crecido" s&
+		s{ s" el nivel" s" la altura" }s& s" del agua ha" s&
+		s{ s" subido" s" crecido" }s&
 		s{ s" un poco" s" algo" }s& s" en este" s&
 		s{ s" curioso" s" extraño" }s& s" hueco." s&
 		paragraph
@@ -9064,15 +9065,14 @@ section( Entrada de respuestas de tipo «sí o no»)  \ {{{
 	;
 svariable question
 : .question  ( -- )  \ Imprime la pregunta
-	question_color question count cr type
+	question_color question count paragraph
 	;
 : answer  ( a u -- n )  \ Devuelve la respuesta a una pregunta del tipo «sí o no»
 	\ a u = Pregunta
 	\ n = Respuesta: un número negativo para «no» y positivo para «sí»
 	question place
 	begin
-		.question cr wait_for_input 
-		yes|no ?dup
+		.question wait_for_input  yes|no ?dup
 	until
 	;
 : yes?  ( a u -- f )  \ ¿Es afirmativa la respuesta a una pregunta?
