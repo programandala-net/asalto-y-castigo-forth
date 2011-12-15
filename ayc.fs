@@ -8,7 +8,7 @@ CR .( Asalto y castigo )  \ {{{
 \ Copyright (C) 2011 Marcos Cruz (programandala.net)
 
 ONLY FORTH DEFINITIONS
-: version$  ( -- a u )  S" A-01-2011121401"  ;
+: version$  ( -- a u )  S" A-01-2011121530"  ;
 version$ TYPE CR
 
 \ 'Asalto y castigo' (written in SP-Forth) is free software; you can redistribute it and/or
@@ -189,11 +189,12 @@ csb_set  \ Inicializar el almacén
 \ Indicadores para depuración
 
 false value [debug] immediate  \ Indicador: ¿Modo de depuración global?
-false value [debug_init] immediate  \ Indicador: ¿Modo de depuración global?
+false value [debug_init] immediate  \ Indicador: ¿Modo de depuración para la inicialización?
+false value [debug_parsing] immediate  \ Indicador: ¿Modo de depuración para el analizador?
 false value [debug_do_exits] immediate  \ Indicador: ¿Depurar la acción DO_EXITS ?
 false value [debug_catch] immediate  \ Indicador: ¿Depurar CATCH y THROW ?
 true value [debug_info] immediate  \ Indicador: ¿Mostrar info de depuración sobre el presto de comandos? 
-false value [debug_pause] immediate  \ Indicador: ¿Hacer una pausa en cada punto de depuración?
+true value [debug_pause] immediate  \ Indicador: ¿Hacer una pausa en cada punto de depuración?
 
 [debug]
 [debug_init] or
@@ -257,15 +258,16 @@ section( Vocabularios de Forth)  \ {{{
 
 \ Creamos los vocabularios que necesitaremos en el programa
 
-vocabulary ayc_vocabulary  \ Vocabulario principal del programa 
+vocabulary game_vocabulary  \ Vocabulario principal del programa (no de la aventura)
 
 : restore_vocabularies  ( -- )  \ Restaura los vocabularios a su orden habitual
-	only also  ayc_vocabulary  definitions
+	only also  game_vocabulary  definitions
 	;
 restore_vocabularies
 
-vocabulary player_vocabulary  \ Vocabulario para las palabras del juego (los comandos del jugador)
-vocabulary yes/no_vocabulary  \ Vocabulario para las respuestas a preguntas de «sí» o «no»
+vocabulary menu_vocabulary  \ Vocabulario para las palabras del menú \ No se usa!!!
+vocabulary player_vocabulary  \ Vocabulario para las palabras de la aventura en sí (los comandos del jugador)
+vocabulary answer_vocabulary  \ Vocabulario para las respuestas a preguntas de «sí» o «no»
 vocabulary config_vocabulary  \ Vocabulario para las palabras de configuración del juego
 
 \ }}}###########################################################
@@ -278,14 +280,18 @@ section( Palabras genéricas)  \ {{{
 : drops  ( x1..xn n -- )  \ Elimina n celdas de la pila
 	0  do  drop  loop
 	;
+: truncate_length  ( u1 -- u1 | u2 )  \ Recorta la longitud de una cadena si es demasiado larga
+	/counted_string chars min 
+	;
 : sconstant  ( "name" ; a1 u -- )  \ Crea una constante de cadena
-	create  /counted_string chars min dup c, s, align
+	create  truncate_length dup c, s, align
 	does>  ( -- a2 u )  count
 	;
 : svariable  ( "name" ; -- )  \ Crea una variable de cadena
 	create  /counted_string chars allot align
 	;
 : place  ( a1 u1 a2 -- )  \ Guarda una cadena en una variable de cadena
+	swap truncate_length swap
 	2dup c!  char+ swap chars cmove
 	; 
 : (alias)  ( xt a u -- )  \ Crea un alias de una palabra
@@ -309,6 +315,11 @@ section( Palabras genéricas)  \ {{{
 	;
 : --  ( a -- )  \ Decrementa el contenido de una dirección de memoria
  	-1 swap +!
+	;
+: (++)  ( a -- )  \ Incrementa el contenido de una dirección, si es posible
+	\ Nota: En la práctica el límite es inalcanzable (un número de 32 bitios), pero así queda mejor hecho
+	dup @ 1+ ?dup
+	if  swap !  else  drop  then
 	;
 
 \ }}}###########################################################
@@ -731,14 +742,16 @@ variable location_name_pen
 variable location_name_paper
 variable narration_pen
 variable narration_paper
-variable pause_prompt_pen
-variable pause_prompt_paper
+variable scroll_prompt_pen
+variable scroll_prompt_paper
 variable question_pen
 variable question_paper
 variable scene_prompt_pen
 variable scene_prompt_paper
 variable speech_pen
 variable speech_paper
+variable narration_prompt_pen
+variable narration_prompt_paper
 
 : init_colors  ( -- )  \ Asigna los colores predeterminados
 	\ black background_paper !  \ No implementado!!!
@@ -760,14 +773,16 @@ variable speech_paper
 	green location_name_paper !
 	dark_gray narration_pen !
 	black narration_paper !
-	green pause_prompt_pen !
-	black pause_prompt_paper !
+	green scroll_prompt_pen !
+	black scroll_prompt_paper !
 	white question_pen !
 	black question_paper !
 	green scene_prompt_pen !
 	black scene_prompt_paper !
 	brown speech_pen !
 	black speech_paper !
+	green narration_prompt_pen !
+	black narration_prompt_paper !
 	;
 
 : about_color  ( -- )  \ Pone el color de texto de los créditos
@@ -803,8 +818,8 @@ variable speech_paper
 : narration_color  ( -- )  \ Pone el color de texto de la narración
 	narration_paper narration_pen @colors
 	;
-: pause_prompt_color  ( -- )  \ Pone el color de texto del presto de pausa de impresión
-	pause_prompt_paper pause_prompt_pen @colors
+: scroll_prompt_color  ( -- )  \ Pone el color de texto del presto de pantalla llena
+	scroll_prompt_paper scroll_prompt_pen @colors
 	;
 : question_color  ( -- )  \ Pone el color de texto de las preguntas de tipo «sí o no»
 	question_paper question_pen @colors
@@ -814,6 +829,9 @@ variable speech_paper
 	;
 : speech_color  ( -- )  \ Pone el color de texto de los diálogos
 	speech_paper speech_pen @colors
+	;
+: narration_prompt_color  ( -- )  \ Pone el color de texto del presto de pausa 
+	narration_prompt_paper narration_prompt_pen @colors
 	;
 
 \ }}}---------------------------------------------
@@ -913,13 +931,13 @@ false  [if]  \ No implementado!!!
 	home
 	;
 false  [if]  \ Antiguo!!!
-: clear_screen  ( -- )  \ Restaura el color de tinta y borra la pantalla
+: new_page  ( -- )  \ Restaura el color de tinta y borra la pantalla
 	background_paper @ paper page 
 	;
 [then]
-' page alias clear_screen
+' page alias new_page
 : clear_screen_for_location  ( -- )  \ Restaura el color de tinta y borra la pantalla para cambiar de escenario
-	location_page? @  if  clear_screen  then
+	location_page? @  if  new_page  then
 	;
 : init_screen  ( -- )  \ Prepara la pantalla la primera vez
 	trm+reset init_cursor system_color home
@@ -1523,102 +1541,35 @@ variable scroll  \ Indicador de que la impresión no debe parar
 \ ------------------------------------------------
 subsection( Presto de pausa en la impresión de párrafos)  \ {{{
 
-svariable pause_prompt
-: pause_prompt$  ( -- a u )  \ Devuelve el presto de pausa
-	pause_prompt count
+svariable scroll_prompt  \ Guardará el presto de pausa
+: scroll_prompt$  ( -- a u )  \ Devuelve el presto de pausa
+	scroll_prompt count
 	;
-1 value /pause_prompt  \ Número de líneas de intervalo para mostrar un presto
+1 value /scroll_prompt  \ Número de líneas de intervalo para mostrar un presto
 
-: pause_prompt_key  ( -- )  \ Espera la pulsación de una tecla y actualiza con ella el estado del desplazamiento
+: scroll_prompt_key  ( -- )  \ Espera la pulsación de una tecla y actualiza con ella el estado del desplazamiento
 	key  bl =  scroll !
 	;
-: .pause_prompt  ( -- )  \ Imprime el presto de pausa, espera una tecla y borra el presto
-	trm+save-cursor  pause_prompt_color
-	pause_prompt$ type  pause_prompt_key
+: .scroll_prompt  ( -- )  \ Imprime el presto de pausa, espera una tecla y borra el presto
+	trm+save-cursor  scroll_prompt_color
+	scroll_prompt$ type  scroll_prompt_key
 	trm+erase-line  trm+restore-cursor
 	;
-: (pause_prompt?)  ( u -- f )  \ ¿Se necesita imprimir un presto para la línea actual?
+: (scroll_prompt?)  ( u -- f )  \ ¿Se necesita imprimir un presto para la línea actual?
 	\ u = Línea actual del párrafo que se está imprimiendo
 	\ Se tienen que cumplir dos condiciones:
 	dup 1+ #lines @ <>  \ ¿Es distinta de la última?
-	swap /pause_prompt mod 0=  and  \ ¿Y el intervalo es correcto?
+	swap /scroll_prompt mod 0=  and  \ ¿Y el intervalo es correcto?
 	;
-: pause_prompt?  ( u -- f )  \ ¿Se necesita imprimir un presto para la línea actual?
+: scroll_prompt?  ( u -- f )  \ ¿Se necesita imprimir un presto para la línea actual?
 	\ u = Línea actual del párrafo que se está imprimiendo
 	\ Si el valor de SCROLL es «verdadero», se devuelve «falso»; si no, se comprueban las otras condiciones.
 	\ ." L#" dup . ." /" #lines @ . \ Depuración!!!
-	scroll @  if  drop false  else  (pause_prompt?)  then
+	scroll @  if  drop false  else  (scroll_prompt?)  then
 	;
-: .pause_prompt?  ( u -- )  \ Imprime un presto y espera la pulsación de una tecla, si corresponde a la línea en curso
+: .scroll_prompt?  ( u -- )  \ Imprime un presto y espera la pulsación de una tecla, si corresponde a la línea en curso
 	\ u = Línea actual del párrafo que se está imprimiendo
-	pause_prompt?  if  .pause_prompt  then
-	;
-
-\ }}}---------------------------------------------
-subsection( Pausas en la narración)  \ {{{
-
-0  [if]  \ ......................................
-
-En SP-Forth para Linux, la palabra KEY? devuelve siempre
-cero porque aún no está completamente desarrollada, mientras
-que en la versión para Windows sí funciona correctamente.
-Esto impide, en Linux, crear pausas de duración máxima que
-puedan ser interrumpidas con una pulsación de teclas.
-
-[then]  \ ......................................
-
-windows?  [if]  \ Sistema completo, para Windows
-
-dtm-create deadline  \ Variable para guardar el momento final de las pausas
-
-: no_time_left?  ( -- f )  \ ¿Se acabó el tiempo?
-	0 time&date  \ Fecha y hora actuales (más cero para los milisegundos)
-	deadline dtm-compare  \ Comparar con el momento final (el resultado puede ser: -1, 0, 1)
-	1 =  \ ¿Nos hemos pasado?
-	;
-: no_key?  ( -- f )  \ ¿No hay una tecla pulsada?
-	key? 0=
-	;
-: wait_for_key_press ( u -- )  \ Espera los segundos indicados, o hasta que se pulse una tecla
-	deadline dtm-init  \ Guardar la fecha y hora actuales como límite...
-	s>d deadline dti-seconds+  \ ...y sumarle los segundos indicados
-	begin  no_time_left? no_key? or  until
-	begin  no_time_left? key? or  until
-	;
-: short_pause  ( -- )  \ Hace una pausa corta; se usa entre ciertos párrafos
-	\ duración provisional!!!
-	1 wait_for_key_press
-	;
-: long_pause  ( -- )  \ Hace una pausa larga; se usa tras cada escena
-	\ duración provisional!!!
-	3 wait_for_key_press
-	;
-
-[else]  \ Sistema alternativo provisional para Linux
-
-: short_pause  ( -- )  \ Hace una pausa corta; se usa entre ciertos párrafos
-	1000 ms
-	;
-: long_pause  ( -- )  \ Hace una pausa hasta que se pulse una tecla; se usa tras cada escena
-	key drop
-	;
-
-[then]
-
-svariable scene_prompt
-: scene_prompt$  ( -- a u )  \ Devuelve el presto de cambio de escena
-	scene_prompt count
-	;
-: .scene_prompt$  ( -- )  \ Imprime el presto de fin de escena
-	trm+save-cursor  scene_prompt_color
-	scene_prompt$ type  pause_prompt_key
-	trm+erase-line  trm+restore-cursor
-	;
-: end_of_scene  ( -- )  \ Muestra un presto y hace una pausa larga. 
-	trm+save-cursor
-	.scene_prompt$ long_pause
-	trm+erase-line  trm+restore-cursor
-	scene_page? @  if  clear_screen  then
+	scroll_prompt?  if  .scroll_prompt  then
 	;
 
 \ }}}---------------------------------------------
@@ -1631,9 +1582,9 @@ variable /indentation  \ Longitud de la indentación de cada párrafo
 	\ Versión para no pasar del máximo:
 	\   cursor_y @ 1+ max_y 1- min cursor_y !
 	\ Versión circular para pasar del máximo a cero:
-	\  cursor_y dup @ 1+ dup max_y < abs * swap !
+	\	cursor_y dup @ 1+ dup max_y < abs * swap !
 	\ Versión circular, con puesta a cero de la columna:
-	\ cursor_y @ 1+ dup max_y < abs *  0 swap at-xy
+	\	cursor_y @ 1+ dup max_y < abs *  0 swap at-xy
 	\ 2011-12-01 Cambio!!!:
 	cursor_y @ 1+ dup max_y < and  0 swap at-xy
 	;
@@ -1676,7 +1627,7 @@ variable indent_first_line_too?  \ ¿Se indentará también la línea superior d
 	\ an un = Primera línea de texto
 	\ n = Número de líneas de texto en la pila
 	dup #lines !  scroll on
-	0  ?do  .line  i .pause_prompt?  loop
+	0  ?do  .line  i .scroll_prompt?  loop
 	;
 : (paragraph)  ( -- )  \ Imprime la cadena dinámica PRINT_STR ajustándose al ancho de la pantalla
 	indentation+  \ Añade indentación ficticia
@@ -1697,6 +1648,96 @@ variable indent_first_line_too?  \ ¿Se indentará también la línea superior d
 	;
 : narrate  ( a u -- )  \ Imprime una cadena como una narración
 	narration_color paragraph system_color
+	;
+
+\ }}}---------------------------------------------
+subsection( Pausas y prestos en la narración)  \ {{{
+
+0  [if]  \ ......................................
+
+En SP-Forth para Linux, la palabra KEY? de ANS Forth
+devuelve siempre cero porque aún no está completamente
+implementada, mientras que en la versión para Windows sí
+funciona correctamente.  Esto impide, en Linux, crear pausas
+de duración máxima que puedan ser interrumpidas con una
+pulsación de teclas.
+
+Por ello hemos optado por un sistema alternativo.
+
+[then]  \ ......................................
+
+windows?  [if]  \ Sistema original, que funciona en SP-Forth para Windows
+
+dtm-create deadline  \ Variable para guardar el momento final de las pausas
+
+: no_time_left?  ( -- f )  \ ¿Se acabó el tiempo?
+	0 time&date  \ Fecha y hora actuales (más cero para los milisegundos)
+	deadline dtm-compare  \ Comparar con el momento final (el resultado puede ser: -1, 0, 1)
+	1 =  \ ¿Nos hemos pasado?
+	;
+: no_key?  ( -- f )  \ ¿No hay una tecla pulsada?
+	key? 0=
+	;
+: seconds_wait ( u -- )  \ Espera los segundos indicados, o hasta que se pulse una tecla
+	deadline dtm-init  \ Guardar la fecha y hora actuales como límite...
+	s>d deadline dti-seconds+  \ ...y sumarle los segundos indicados
+	begin  no_time_left? no_key? or  until
+	begin  no_time_left? key? or  until
+	;
+: narration_break  ( -- )  \ Hace una pausa en la narración; se usa entre ciertos párrafos
+	1 seconds_wait
+	;
+: scene_break  ( -- )  \ Hace una pausa en la narración; se usa entre ciertos párrafos
+	3 seconds_wait
+	;
+
+[then]
+
+variable indent_pause_prompts?  \ ¿Hay que indentar también los prestos?
+: .prompt  ( a u -- )  \ Imprime un presto
+	indent_pause_prompts? @  if  indent  then  type
+	;
+: pause  ( u -- )  \ Hace una pausa
+	\ u = Milisegundos (o un número negativo para pausa sin fin hasta la pulsación de una tecla)
+	dup 0<  if  key 2drop  else  ms  then
+	;
+variable narration_break_milliseconds  \ Milisegundos de espera en las pausas de la narración
+svariable narration_prompt  \ Guardará el presto usado en las pausas de la narración
+: narration_prompt$  ( -- a u )  \ Devuelve el presto usado en las pausas de la narración
+	narration_prompt count
+	;
+: .narration_prompt  ( -- )  \ Imprime el presto de fin de escena
+	narration_prompt_color narration_prompt$ .prompt
+	;
+: (narration_break)  ( n -- )  \ Alto en la narración: Muestra un presto y hace una pausa 
+	\ u = Milisegundos (o un número negativo para hacer una pausa indefinida hasta la pulsación de una tecla)
+	trm+save-cursor
+	.narration_prompt pause
+	trm+erase-line  trm+restore-cursor
+	;
+: narration_break  ( -- )  \ Alto en la narración, si es preciso
+	narration_break_milliseconds @ ?dup
+	if  (narration_break)  then
+	;
+
+variable scene_break_milliseconds  \ Milisegundos de espera en las pausas de final de escena
+svariable scene_prompt  \ Guardará el presto de cambio de escena
+: scene_prompt$  ( -- a u )  \ Devuelve el presto de cambio de escena
+	scene_prompt count
+	;
+: .scene_prompt  ( -- )  \ Imprime el presto de fin de escena
+	scene_prompt_color scene_prompt$ .prompt
+	;
+: (scene_break)  ( n -- )  \ Final de escena: Muestra un presto y hace una pausa 
+	\ n = Milisegundos (o un número negativo para hacer una pausa indefinida hasta la pulsación de una tecla)
+	trm+save-cursor
+	.scene_prompt pause
+	trm+erase-line  trm+restore-cursor
+	scene_page? @  if  new_page  then
+	;
+: scene_break  ( -- )  \ Final de escena, si es preciso
+	scene_break_milliseconds @ ?dup
+	if  (scene_break)  then
 	;
 
 \ }}}---------------------------------------------
@@ -2063,6 +2104,9 @@ por tanto el campo de la ficha del ente era «abierto» o
 : is_familiar?  ( a -- f )  \ ¿Un ente es familiar al protagonista? 
 	~familiar @ 0>
 	;
+: more_familiar  ( a -- )  \ Aumenta el grado de familiaridad de un ente con el protagonista
+	~familiar (++)
+	;
 : is_visited?  ( a -- f )  \ ¿Un ente escenario ha sido ya visitado anteriormente por el protagonista? 
 	~visits @ 0>
 	;
@@ -2070,7 +2114,7 @@ por tanto el campo de la ficha del ente era «abierto» o
 	~visits @ 0=
 	;
 : one_more_visit  ( a -- )  \ Añade una visita a un ente escenario
-	~visits ++
+	~visits (++)
 	;
 : has_definite_article?  ( a -- f )  \ ¿El artículo de un ente debe ser siempre el artículo definido?
 	~definite_article? @
@@ -2106,7 +2150,7 @@ por tanto el campo de la ficha del ente era «abierto» o
 	conversations 0=
 	;
 : one_more_conversation  ( a -- u )  \ Incrementa el número de conversaciones mantenidas con un ente
-	~conversations ++
+	~conversations (++)
 	;
 
 \ ------------------------------------------------
@@ -2549,11 +2593,6 @@ definir la trama.
 
 defer lock_found  \ Encontrar el candado; la definición está en (LOCK_FOUND)
 
-: more_familiar  ( a -- )  \ Aumenta el grado de familiaridad de un ente con el protagonista
-	\ Nota: comprobamos el límite, aunque en la práctica es inalcanzable (un número de 32 bitios)
-	~familiar dup @ 1+ ?dup
-	if  swap !  else  drop  then
-	;
 0 constant limbo \ Marcador para usar como localización de entes inexistentes
 : vanished?  ( a -- f )  \ ¿Está un ente desaparecido?
 	location limbo =
@@ -3559,7 +3598,6 @@ refugees% :description
 altar% :attributes
 	s" altar" self% name!
 	self% is_decoration
-	\ Error!!! imposible_error# es un vector sin inicializar:
 	impossible_error# self% ~take_error# !
 	location_18% self% is_there
 	;attributes
@@ -3626,7 +3664,7 @@ cuirasse% :attributes
 	;attributes
 door% :attributes
 	s" puerta" self% fname!
-	self% ~take_error# impossible_error# swap !
+	impossible_error# self% ~take_error# !
 	location_47% self% is_there
 	;attributes
 door% :description
@@ -4055,8 +4093,8 @@ location_07% :description
 	endcase
 	;description
 location_08% :attributes
-	s" entrada a la cueva" self% fname!
-	location_07% location_10% 0 0 0 0 0 0 self% init_location
+	s" desfiladero" self% name!
+	location_07% 0 0 0 0 0 0 0 self% init_location
 	;attributes
 location_08% :description
 	\ Pendiente!!! Crear pared y roca y desfiladero
@@ -4073,8 +4111,10 @@ location_08% :description
 		paragraph
 		endof
 	south%  of
+		self% location_10% s-->
+		s" entrada a la cueva" self% fname!
+		\ Pendiente!!! Enriquecer el texto
 		s" La entrada a una cueva se abre en la pared de roca."
-		\ Pendiente!!! activar entrada y cueva
 		paragraph
 		endof
 	uninteresting_direction
@@ -6077,7 +6117,7 @@ section( Trama global)  \ {{{
 	\ a u = Cadena
 	\ f = ¿El texto está en plural?
 	2 random dup
-	if  ^all_your$ s" Todos y cada uno de" 2 schoose
+	if  s{ s" Todos" s" Todos y cada uno de" }s
 	else  s" Hasta el último de"
 	then  your_soldiers$ s&  rot
 	;
@@ -6308,7 +6348,7 @@ here swap - cell / constant battle_phases  \ Fases de la batalla
 		s{ s" te" s" os" }s s" han tendido" s&
 	}s& s" una" s&
 	s{ s" emboscada" s" celada" s" encerrona" s" trampa" }s&
-	period+  narrate short_pause
+	period+  narrate narration_break
 	;
 
 : they_win_0$  ( -- a u )  \ Devuelve la primera versión de la parte final de las palabras de los oficiales
@@ -6325,9 +6365,7 @@ here swap - cell / constant battle_phases  \ Fases de la batalla
 	they_win_0$ they_win_1$ 2 schoose period+
 	;
 : taking_prisioner$  ( -- a u )  \ Devuelve una parte de las palabras de los oficiales
-	s{ s" capturando" s" haciendo prisionero"
-	s" tomando prisionero" s" si capturan"
-	s" si hacen prisionero" s" si toman prisionero" }s
+	s" si" s{ s" capturan" s" hacen prisionero" s" toman prisionero" }s&
 	;
 : officers_speach  ( -- )  \ Palabras de los oficiales
 	sire,$ s?  dup taking_prisioner$
@@ -6358,7 +6396,7 @@ here swap - cell / constant battle_phases  \ Fases de la batalla
 	s" sus hombres son más numerosos que los tuyos"
 	s" ellos son muy superiores en número"
 	s" ellos son mucho más numerosos"
-	}s& period+  narrate end_of_scene
+	}s& period+  narrate scene_break
 	;
 : ambush  ( -- )  \ Emboscada
 	the_pass_is_closed
@@ -6377,14 +6415,14 @@ here swap - cell / constant battle_phases  \ Fases de la batalla
 	my_location location_20% =  and
 	;
 : dark_cave  ( -- )  \ En la cueva y sin luz
-	clear_screen
+	new_page
 	s" Ante la reinante"
 	s{ s" e intimidante" s" e impenetrable" s" y sobrecogedora" }s&
 	s" oscuridad," s&
 	s{ s" vuelves atrás" s" retrocedes" }s&
 	s{ 0$ s" unos pasos" s" sobre tus pasos" }s&
 	s" hasta donde puedes ver." s&
-	narrate  end_of_scene
+	narrate  scene_break
 	location_17% enter
 	;
 
@@ -7620,8 +7658,8 @@ subsection( Nadar)  \ {{{
 :action do_swim  \ Acción de nadar
 	my_location location_11% =  if
 		clear_screen_for_location
-		you_swim$ narrate short_pause
-		you_emerge$ narrate short_pause
+		you_swim$ narrate narration_break
+		you_emerge$ narrate narration_break
 		location_12% enter  the_battle_ends
 	else
 		s" nadar" now|here$ s& is_nonsense
@@ -7729,7 +7767,7 @@ subsection( Hablar y presentarse)  \ {{{
 	}s& s" la piedra del druida." speak
 	s" piedra del druida" stone% name!  \ Nuevo nombre para la piedra
 	s" Hace un gesto..."
-	narrate short_pause
+	narrate narration_break
 	;
 : the_stone_must_be_in_its_place  ( -- )  \ El líder dice que la piedra debe ser devuelta
 	s" La piedra" s{ s" debe" s" tiene que" }s&
@@ -7796,7 +7834,7 @@ subsection( Hablar y presentarse)  \ {{{
 	s{ ^only$ s" buscamos" s& s" Buscamos" }s
 	s{ ^only$ s" queremos" s& s" Queremos" }s
 	}s&  s{ s" la" s" vivir en" }s& s" paz." s&
-	speak short_pause
+	speak narration_break
 	; 
 : first_conversation_with_the_leader
 	my_name_is$ s" Ulfius y..." s& speak
@@ -7833,18 +7871,18 @@ subsection( Hablar y presentarse)  \ {{{
 	s" Hola, Ulfius." 
 	my_name_is$ s& s" Ambrosio" 2dup ambrosio% name!
 	period+ s& speak
-	end_of_scene
+	scene_break
 	s" Por" s" primera" s" vez" r2swap s& s& s" en" s&
 	s{ s" mucho" s" largo" }s& s" tiempo, te sientas"
 	s" y" s& s" le" s?& s{ s" cuentas" s" narras" }s&
 	s" a alguien todo lo que ha" s&{ s" pasado." s" ocurrido." }s&
 	s" Y, tras tanto acontecido, lloras" s&
 	s{ s" desconsoladamente." s" sin consuelo" }s&
-	narrate end_of_scene
+	narrate scene_break
 	s" Ambrosio te propone un trato, que aceptas:"
 	s" por ayudarle a salir de la cueva," s&
 	s" objetos, vitales para la empresa, te son entregados." s&
-	narrate short_pause
+	narrate narration_break
 	torch% is_hold  flint% is_hold
 	s{ s" Bien," s" Venga," s" Vamos," }s
 	s" Ambrosio," s&
@@ -7855,10 +7893,10 @@ subsection( Hablar y presentarse)  \ {{{
 	s" Te das la vuelta"
 	s" para ver si Ambrosio te sigue," s&
 	s" pero... ha desaparecido." s&
-	narrate short_pause
+	narrate narration_break
 	s" Piensas entonces en el hecho curioso"
 	s" de que supiera tu nombre." s&
-	narrate end_of_scene  talked_to_ambrosio
+	narrate scene_break  talked_to_ambrosio
 	;
 : conversation_0_with_ambrosio  ( -- )  \ Primera conversación con Ambrosio, si se dan las condiciones
 	location_19% am_i_there?
@@ -8019,7 +8057,7 @@ svariable filename
 \	true to console?  \ Activar el modo de consola (no está claro en el manual)
 \	false to gui?  \ Desactivar el modo gráfico (no está claro en el manual)
 	['] reenter to <main>  \ Actualizar la palabra que se ejecutará al arrancar
-\	file_name$ save  clear_screen
+\	file_name$ save  new_page
 	file_name$ filename place filename count save  
 	;
 :action do_save_the_game  \ Acción de salvar el juego
@@ -8093,11 +8131,14 @@ el proceso con un error.
 : valid_parsing?  ( a u -- f )  \ Evalúa un comando con el vocabulario del juego
 	\ a u = Comando
 	\ f = ¿El comando se analizó sin error?
-	[debug]  [if]  s" Entrando en VALID_PARSING?" debug  [then]  \ Depuración!!!
-	only player_vocabulary  \ Dejar solo el diccionario PLAYER_VOCABULARY activo
+	[debug] [if]  s" Entrando en VALID_PARSING?" debug  [then]  \ Depuración!!!
+
+	case-ins off  \ Activar la distinción de mayúsculas Probarlo!!!
+	ONLY player_vocabulary  \ Dejar solo el diccionario PLAYER_VOCABULARY activo
 	\ [debug_catch]  [if]  s" En VALID_PARSING? antes de CATCH" debug  [then]  \ Depuración!!!
 	halto" en valid_parsing? antes de preparar CATCH"
-	['] evaluate 
+	['] EVALUATE 
+	CASE-INS ON  \ Desactivar la distinción de mayúsculas Probarlo!!!
 
 	halto" en valid_parsing? antes de CATCH"
 	catch  \ Llamar a EVALUATE a través de CATCH para poder regresar directamente con THROW en caso de error
@@ -8172,6 +8213,171 @@ el proceso con un error.
 	if  nip complement!  \ Sí, luego tomamos el uso de complemento
 	else  drop action!  \ No, luego tomamos el uso de acción
 	then
+	;
+
+\ }}}###########################################################
+section( Fichero de configuración)  \ {{{
+
+0  [if]  \ ......................................
+
+El juego tiene un fichero de configuración en que el
+jugador puede indicar sus preferencias. Este fichero
+es código en Forth y se interpreta directamente,
+pero solo serán reconocidas las palabras creadas
+para la configuración, así como las palabras
+habituales para hacer comentarios de bloques o líneas
+en Forth. Cualquier otra palabra dará error.
+
+El fichero de configuración se lee de nuevo al inicio de
+cada partida.
+
+[then]  \ ......................................
+
+s" ayc.ini" sconstant config_file$  \ Nombre del fichero de configuración
+
+svariable command_prompt
+
+also config_vocabulary  definitions
+
+\ Las palabras cuyas definiciones siguen a continuación
+\ se crearán en el vocabulario CONFIG_VOCABULARY y
+\ son las únicas que podrán usarse para configurar el juego
+\ en el fichero de configuración:
+
+[false]  [if]  \ En vez de así:
+: (  ( "texto<cierre de paréntesis>" ; -- ) \ Comentario clásico
+	postpone ( 
+	; immediate
+: \  ( "texto<fin de línea>" ; -- ) \ Comentario de línea
+	postpone \ 
+	; immediate
+[else]  \ Es más sencillo así:
+' ( alias (  immediate
+' \ alias \  immediate
+[then]
+' true alias sí
+' false alias no
+: columnas  ( u -- )  \ Cambia el número de columnas
+	1- to max_x
+	;
+: líneas ( u -- )  \ Cambia el número de líneas
+	1- to max_y
+	;
+: varón  ( -- )  \ Indica que el jugador es un varón
+	woman_player? off
+	;
+' varón alias hombre
+' varón alias masculino
+: mujer  ( -- )  \ Indica que el jugador es una mujer
+	woman_player? on
+	;
+' mujer alias femenino
+: comillas  ( f -- )  \ Indica si se usan las comillas castellanas en las citas
+	castilian_quotes? !
+	;
+: espacios_de_indentación  ( u -- )  \ Fija la indentación de los párrafos
+	max_indentation min /indentation !
+	;
+: indentar_primera_línea_de_pantalla  ( f -- )  \ Indica si se indentará también la línea superior de la pantalla, si un párrafo empieza en ella
+	indent_first_line_too? !
+	;
+: indentar_prestos_de_pausa  ( f -- )  \ Indica si se indentarán los prestos
+	indent_pause_prompts? !
+	;
+: borrar_pantalla_para_escenarios  ( f -- )  \ Indica si se borra la pantalla al entrar en un escenario o describirlo
+	location_page? !
+	;
+: borrar_pantalla_para_escenas  ( f -- )  \ Indica si se borra la pantalla tras la pausa de fin de escena
+	scene_page? !
+	;
+: separar_párrafos  ( f -- )  \ Indica si se separan los párrafos con un línea en blanco
+	cr? !
+	;
+: milisegundos_en_pausas_de_narración  ( u -- )  \ Indica los milisegundos de las pausas cortas (o, si es valor es cero, que hay que pulsar una tecla)
+	narration_break_milliseconds ! 
+	;
+: milisegundos_en_pausas_de_final_de_escena  ( u -- )  \ Indica los milisegundos de las pausas de final de esecena (o, si es valor es cero, que hay que pulsar una tecla)
+	scene_break_milliseconds !
+	;
+' black alias negro
+' blue alias azul
+' light_blue alias azul_claro
+' brown alias marrón
+' cyan alias cian
+' light_cyan alias cian_claro
+' green alias verde
+' light_green alias verde_claro
+' gray alias gris
+' dark_gray alias gris_oscuro
+' magenta alias magenta
+' light_magenta alias magenta_claro
+' red alias rojo
+' light_red alias rojo_claro
+' white alias blanco
+' yellow alias amarillo
+
+\ : papel_de_fondo  ( u -- )  background_paper !  ;  \ No implementado!!!
+: pluma_de_créditos  ( u -- )  about_pen !  ;
+: papel_de_créditos  ( u -- )  about_paper !  ;
+: pluma_de_presto_de_comandos  ( u -- )  command_prompt_pen !  ;
+: papel_de_presto_de_comandos  ( u -- )  command_prompt_paper !  ;
+: pluma_de_depuración  ( u -- )  debug_pen !  ;
+: papel_de_depuración  ( u -- )  debug_paper !  ;
+: pluma_de_descripción  ( u -- )  description_pen !  ;
+: papel_de_descripción  ( u -- )  description_paper !  ;
+: pluma_de_error  ( u -- )  error_pen !  ;
+: papel_de_error  ( u -- )  error_paper !  ;
+: pluma_de_entrada  ( u -- )  input_pen !  ;
+: papel_de_entrada  ( u -- )  input_paper !  ;
+: pluma_de_descripción_de_escenario  ( u -- )  location_description_pen !  ;
+: papel_de_descripción_de_escenario  ( u -- )  location_description_paper !  ;
+: pluma_de_nombre_de_escenario  ( u -- )  location_name_pen !  ;
+: papel_de_nombre_de_escenario  ( u -- )  location_name_paper !  ;
+: pluma_de_narración  ( u -- )  narration_pen !  ;
+: papel_de_narración  ( u -- )  narration_paper !  ;
+: pluma_de_presto_de_pantalla_llena  ( u -- )  scroll_prompt_pen !  ;
+: papel_de_presto_de_pantalla_llena  ( u -- )  scroll_prompt_paper !  ;
+: pluma_de_pregunta  ( u -- )  question_pen !  ;
+: papel_de_pregunta  ( u -- )  question_paper !  ;
+: pluma_de_presto_de_escena  ( u -- )  scene_prompt_pen !  ;
+: papel_de_presto_de_escena  ( u -- )  scene_prompt_paper !  ;
+: pluma_de_diálogos  ( u -- )  speech_pen !  ;
+: papel_de_diálogos  ( u -- )  speech_paper !  ;
+
+\ Nota!!!: no se puede definir NOTFOUND así porque los números no serían reconocidos:
+\ : notfound  ( a u -- )  2drop  ;
+
+\ Fin de las palabras permitidas en el fichero configuración.
+
+restore_vocabularies
+
+: init_config  ( -- )  \ Inicializa las variables de configuración con sus valores predeterminados
+	woman_player? off
+	castilian_quotes? on
+	location_page? on
+	cr? off
+	ignore_unknown_words? off
+	4 /indentation !
+	indent_first_line_too? on
+	indent_pause_prompts? on
+	s" ..." scroll_prompt place
+	s" ..." narration_prompt place
+	s" ..." scene_prompt place
+	s" >" command_prompt place
+	-1 narration_break_milliseconds !
+	-1 scene_break_milliseconds !
+	scene_page? on
+	default_max_x to max_x  \ Número máximo de columna 
+	default_max_y to max_y  \ Número máximo de fila 
+	init_colors  \ Colores predeterminados
+	;
+: read_config  ( -- )  \ Lee el fichero de configuración
+	only config_vocabulary
+	[ config_file$ ] sliteral included
+	restore_vocabularies
+	;
+: get_config  ( -- )  \ Lee el fichero de configuración tras inicializar las variables de configuración
+	init_config read_config
 	;
 
 \ }}}###########################################################
@@ -8362,10 +8568,6 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 
 : registrar  ['] do_search action!  ;
 ' registrar synonyms{  registra registrad registro registre  }synonyms
-
-: forth  (do_finish)  ;  \ Depuración!!!
-: bye  bye  ;  \ Depuración!!!
-: quit quit  ;  \ Depuración!!!
 
 : i  ['] do_inventory inventory% action|complement!  ;
 ' i synonyms{  inventario  }synonyms
@@ -8647,6 +8849,67 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 	;
 ' hombres synonyms{ gente personas }synonyms
 
+\ Comandos del sistema
+
+: COLOREAR  ( -- )  \ Restaura los colores predeterminados
+	init_colors  page  my_location describe
+	;
+' COLOREAR synonyms{
+	COLOREA COLOREO
+	RECOLOREAR RECOLOREA RECOLOREO
+	PINTAR PINTA PINTO
+	LIMPIAR LIMPIA LIMPIO
+	}synonyms
+' get_config alias CONFIGURAR  \ Restaura la configuración predeterminada y después carga el fichero de configuración
+' CONFIGURAR synonyms{
+	CONFIGURA CONFIGURO
+	}synonyms
+: GRABAR  ( "name<space" -- )  \ Graba el estado de la partida en un fichero
+	\ Pendiente!!! 
+	;
+' GRABAR synonyms{
+	GRABA GRABO
+	EXPORTAR EXPORTA EXPORTO
+	SALVAR SALVA SALVO
+	GUARDAR GUARDA GUARDO
+	}synonyms
+: CARGAR  ( "name<space" -- )  \ Carga el estado de la partida de un fichero
+	\ Pendiente!!! 
+	;
+' CARGAR synonyms{
+	CARGA CARGO
+	IMPORTAR IMPORTA IMPORTO
+	LEER LEE LEO
+	RECARGAR RECARGA RECARGO
+	RECUPERAR RECUPERA RECUPERO
+	RESTAURAR RESTAURA RESTAURO
+	}synonyms
+: FIN  ( -- )  do_finish  ;  \ Abandonar la partida
+' FIN synonyms{
+	ACABAR ACABA ACABO 
+	ADIÓS
+	APAGAR APAGA APAGO
+	CERRAR CIERRA CIERRO
+	CONCLUIR CONCLUYE CONCLUYO
+	FINALIZAR FINALIZA FINALIZO
+	SALIR SAL SALGO
+	TERMINAR TERMINA TERMINO 
+	}synonyms
+: AYUDA  ( -- )
+	\ Pendiente!!! 
+	;
+' AYUDA synonyms{
+	AYUDAR AYUDITA AYUDAS
+	INSTRUCCIONES MANUAL GUÍA MAPA PLANO MENÚ
+	PISTA PISTAS
+	SOCORRO AUXILIO
+	}synonyms
+
+\ Comandos para usar durante el desarrollo!!!:
+: forth  (do_finish)  ;
+: bye  bye  ;
+: quit quit  ; 
+
 : notfound  ( a u -- )  \ Tratar una palabra no encontrada
 	\ Esta palabra será ejecutada automáticamente por SP-Forth
 	\ tras no encontrar en el vocabulario una palabra del comando
@@ -8738,7 +9001,7 @@ variable #answer  \ Su valor será 0 si no ha habido respuesta válida; negativo
 	#answer ++
 	;
 
-also yes/no_vocabulary definitions  \ Las palabras que siguen se crearán en dicho vocabulario
+also answer_vocabulary definitions  \ Las palabras que siguen se crearán en dicho vocabulario
 
 : sí  answer_yes  ;
 : SÍ  answer_yes  ;  \ Necesario, por el problema del cambio de capitalidad y UTF-8
@@ -8769,7 +9032,6 @@ create command /command chars allot  \ Zona de almacenamiento del comando
 : (wait_for_input)  ( -- a u )  \ Devuelve el comando introducido por el jugador
 	input_color command /command accept  command swap  
 	;
-svariable command_prompt
 : command_prompt$  ( -- a u )  \ Devuelve el presto de entrada de comandos
 	command_prompt count
 	;
@@ -8792,7 +9054,7 @@ section( Entrada de respuestas de tipo «sí o no»)  \ {{{
 : yes|no  ( a u -- n )  \ Evalúa una respuesta a una pregunta del tipo «sí o no»
 	\ a u = Respuesta a evaluar
 	\ n = Resultado (un número negativo para «no» y positivo para «sí»; cero si no se ha respondido ni «sí» ni «no», o si se produjo un error)
-	answer_undefined  only yes/no_vocabulary
+	answer_undefined  only answer_vocabulary
 	['] evaluate catch
 	dup  if  nip nip  then  \ Reajustar la pila si ha habido error
 	dup ?wrong 0=  \ Ejecutar el posible error y preparar su indicador para usarlo en el resultado
@@ -8825,159 +9087,6 @@ svariable question
 	;
 
 \ }}}###########################################################
-section( Fichero de configuración)  \ {{{
-
-0  [if]  \ ......................................
-
-El juego tiene un fichero de configuración en que el
-jugador puede indicar sus preferencias. Este fichero
-es código en Forth y se interpreta directamente,
-pero solo serán reconocidas las palabras creadas
-para la configuración, así como las palabras
-habituales para hacer comentarios de bloques o líneas
-en Forth. Cualquier otra palabra dará error.
-
-El fichero de configuración se lee de nuevo al inicio de
-cada partida.
-
-Pendiente!!!: Hacer un comando que lea el fichero de
-configuración en medio de una partida.
-
-[then]  \ ......................................
-
-s" ayc.ini" sconstant config_file$  \ Nombre del fichero de configuración
-
-also config_vocabulary  definitions
-
-\ Las palabras cuyas definiciones siguen a continuación
-\ se crearán en el vocabulario CONFIG_VOCABULARY y
-\ son las únicas que podrán usarse para configurar el juego
-\ en el fichero de configuración:
-
-: (  ( "texto<cierre de paréntesis>" ; -- ) \ Comentario clásico
-	postpone ( 
-	; immediate
-: \  ( "texto<fin de línea>" ; -- ) \ Comentario de línea
-	postpone \ 
-	; immediate
-' true alias sí
-' false alias no
-: columnas  ( u -- )  \ Cambia el número de columnas
-	1- to max_x
-	;
-: líneas ( u -- )  \ Cambia el número de líneas
-	1- to max_y
-	;
-: varón  ( -- )  \ Indica que el jugador es un varón
-	woman_player? off
-	;
-' varón alias hombre
-' varón alias masculino
-: mujer  ( -- )  \ Indica que el jugador es una mujer
-	woman_player? on
-	;
-' mujer alias femenino
-: comillas  ( f -- )  \ Indica si se usan las comillas castellanas en las citas
-	castilian_quotes? !
-	;
-: espacios_de_indentación  ( u -- )  \ Fija la indentación de los párrafos
-	max_indentation min /indentation !
-	;
-: indentar_primera_línea_de_pantalla  ( f -- )  \ Indica si se indentará también la línea superior de la pantalla, si un párrafo empieza en ella
-	indent_first_line_too? !
-	;
-: borrar_pantalla_para_escenarios  ( f -- )  \ Indica si se borra la pantalla al entrar en un escenario o describirlo
-	location_page? !
-	;
-: borrar_pantalla_para_escenas  ( f -- )  \ Indica si se borra la pantalla tras la pausa de fin de escena
-	scene_page? !
-	;
-: separar_párrafos  ( f -- )  \ Indica si se separan los párrafos con un línea en blanco
-	cr? !
-	;
-
-' black alias negro
-' blue alias azul
-' light_blue alias azul_claro
-' brown alias marrón
-' cyan alias cian
-' light_cyan alias cian_claro
-' green alias verde
-' light_green alias verde_claro
-' gray alias gris
-' dark_gray alias gris_oscuro
-' magenta alias magenta
-' light_magenta alias magenta_claro
-' red alias rojo
-' red alias roja
-' light_red alias rojo_claro
-' light_red alias roja_clara
-' white alias blanco
-' white alias blanca
-' yellow alias amarillo
-' yellow alias amarilla
-
-\ : papel_de_fondo  ( u -- )  background_paper !  ;  \ No implementado!!!
-: pluma_de_créditos  ( u -- )  about_pen !  ;
-: papel_de_créditos  ( u -- )  about_paper !  ;
-: pluma_de_presto_de_comandos  ( u -- )  command_prompt_pen !  ;
-: papel_de_presto_de_comandos  ( u -- )  command_prompt_paper !  ;
-: pluma_de_depuración  ( u -- )  debug_pen !  ;
-: papel_de_depuración  ( u -- )  debug_paper !  ;
-: pluma_de_descripción  ( u -- )  description_pen !  ;
-: papel_de_descripción  ( u -- )  description_paper !  ;
-: pluma_de_error  ( u -- )  error_pen !  ;
-: papel_de_error  ( u -- )  error_paper !  ;
-: pluma_de_entrada  ( u -- )  input_pen !  ;
-: papel_de_entrada  ( u -- )  input_paper !  ;
-: pluma_de_descripción_de_escenario  ( u -- )  location_description_pen !  ;
-: papel_de_descripción_de_escenario  ( u -- )  location_description_paper !  ;
-: pluma_de_nombre_de_escenario  ( u -- )  location_name_pen !  ;
-: papel_de_nombre_de_escenario  ( u -- )  location_name_paper !  ;
-: pluma_de_narración  ( u -- )  narration_pen !  ;
-: papel_de_narración  ( u -- )  narration_paper !  ;
-: pluma_de_presto_de_pausa  ( u -- )  pause_prompt_pen !  ;
-: papel_de_presto_de_pausa  ( u -- )  pause_prompt_paper !  ;
-: pluma_de_pregunta  ( u -- )  question_pen !  ;
-: papel_de_pregunta  ( u -- )  question_paper !  ;
-: pluma_de_presto_de_escena  ( u -- )  scene_prompt_pen !  ;
-: papel_de_presto_de_escena  ( u -- )  scene_prompt_paper !  ;
-: pluma_de_diálogos  ( u -- )  speech_pen !  ;
-: papel_de_diálogos  ( u -- )  speech_paper !  ;
-
-\ Nota!!!: no se puede definir NOTFOUND así porque los números no serían reconocidos:
-\ : notfound  ( a u -- )  2drop  ;
-
-\ Fin de las palabras permitidas en el fichero configuración.
-
-restore_vocabularies
-
-: init_config  ( -- )  \ Inicializa las variables de configuración con sus valores predeterminados
-	s" ..." pause_prompt place
-	s" ..." scene_prompt place
-	s" >" command_prompt place
-	woman_player? off
-	castilian_quotes? on
-	location_page? on
-	cr? off
-	ignore_unknown_words? off
-	4 /indentation !
-	indent_first_line_too? on
-	scene_page? on
-	default_max_x to max_x  \ Número máximo de columna 
-	default_max_y to max_y  \ Número máximo de fila 
-	init_colors  \ Colores predeterminados
-	;
-: read_config  ( -- )  \ Lee el fichero de configuración
-	only config_vocabulary
-	[ config_file$ ] sliteral included
-	restore_vocabularies
-	;
-: get_config  ( -- )  \ Lee el fichero de configuración tras inicializar las variables de configuración
-	init_config read_config
-	;
-
-\ }}}###########################################################
 section( Fin)  \ {{{
 
 : success?  ( -- f )  \ ¿Ha completado con éxito su misión el protagonista?
@@ -8996,7 +9105,7 @@ false  [if]
 	s" ¡Adiós!" narrate
 	;
 : bye_bye  ( -- )  \ Abandona el programa
-	clear_screen .bye bye
+	new_page .bye bye
 	;
 : play_again?$  ( -- a u )  \ Devuelve la pregunta que se hace al jugador tras haber completado con éxito el juego
 	s{ s" ¿Quieres" s" ¿Te animas a" s" ¿Te apetece" }s
@@ -9037,9 +9146,9 @@ false  [if]
 : the_happy_end  ( -- )  \ Final del juego con éxito
 	s" Agotado, das parte en el castillo de tu llegada"
 	s" y de lo que ha pasado." s&
-	narrate  short_pause
+	narrate  narration_break
 	s" Pides audiencia al rey, Uther Pendragon."
-	narrate  end_of_scene
+	narrate  scene_break
 	castilian_quotes? @
 	if  \ Comillas castellanas
 		s" El rey" rquote$ s+ s" , te indica el valido," s+
@@ -9050,19 +9159,19 @@ false  [if]
 		s" ha ordenado que no se lo moleste," s&
 	then
 	s" pues sufre una amarga tristeza." s&
-	speak  short_pause
+	speak  narration_break
 	s" No puedes entenderlo. El rey, tu amigo."
-	narrate  short_pause
+	narrate  narration_break
 	s" Agotado, decepcionado, apesadumbrado,"
 	s" decides ir a dormir a tu casa." s&
 	s" Es lo poco que puedes hacer." s&
-	narrate  short_pause
+	narrate  narration_break
 	s" Te has ganado un buen descanso."
 	narrate
 	;
 : enemy_speech  ( -- )  \ Palabras del general enemigo
 	s" Su general, sonriendo ampliamente, dice:" s&
-	narrate  short_pause
+	narrate  narration_break
 	s{
 	s" Hoy es"
 	s" Hoy parece ser" 
@@ -9082,7 +9191,7 @@ false  [if]
 	;
 : the_end  ( -- )  \ Mensaje final del juego
 	success?  if  the_happy_end  else  the_sad_end  then
-	end_of_scene 
+	scene_break 
 	;
 :action (do_finish)  \ Abandonar el juego
 	restore_vocabularies system_color cr (title) quit
@@ -9118,9 +9227,9 @@ section( Acerca del programa)  \ {{{
 	s" Versión " version$ s& paragraph/
 	;
 : about  ( -- )  \ Muestra información sobre el programa
-	clear_screen about_color
+	new_page about_color
 	program	cr license cr based_on
-	end_of_scene
+	scene_break
 	;
 
 \ }}}###########################################################
@@ -9129,7 +9238,7 @@ section( Introducción)  \ {{{
 : intro_0  ( -- )  \ Muestra la introducción al juego (parte 0)
 	s" El sol despunta de entre la niebla,"
 	s" haciendo humear los tejados de paja." s&
-	narrate  short_pause
+	narrate  narration_break
 	;
 : intro_1  ( -- )  \ Muestra la introducción al juego (parte 1)
 	s" Piensas en"
@@ -9138,7 +9247,7 @@ section( Introducción)  \ {{{
 	s" la orden dada por" s" las órdenes de" }s&
 	s{ s" Uther Pendragon" s" , tu rey" s?+ s" tu rey" }s& \ tmp!!!
 	s" ..." s+
-	narrate  short_pause
+	narrate  narration_break
 	;
 : intro_2  ( -- )  \ Muestra la introducción al juego (parte 2)
 	s{ s" Atacar" s" Arrasar" }s s" una" s&
@@ -9147,14 +9256,14 @@ section( Introducción)  \ {{{
 	s{ s" llena de" s" habitada por" s" repleta de" }s&
 	s" sajones, no te" s&{ s" llena" s" colma" }s&
 	s" de orgullo." s&
-	narrate  short_pause
+	narrate  narration_break
 	;
 : intro_3  ( -- )  \ Muestra la introducción al juego (parte 3)
 	s" Los hombres se" s{ s" ciernen" s" lanzan" }s&
 	s" sobre la aldea, y la destruyen." s&
 	s" No hubo tropas enemigas, ni honor en" s&
 	s{ s" la batalla." s" el combate." }s&
-	narrate  end_of_scene
+	narrate  scene_break
 	;
 : intro_4  ( -- )  \ Muestra la introducción al juego (parte 4)
 	sire,$ s{
@@ -9172,7 +9281,7 @@ section( Introducción)  \ {{{
 	s" das la orden de"
 	s" das las" needed_orders$ s& s" para" s&
 	}s& to_go_back$ s& s" a casa." s&
-	narrate short_pause
+	narrate  narration_break
 	;
 : intro_6  ( -- )  \ Muestra la introducción al juego (parte 6)
 	[false]  [if]  \ Primera versión
@@ -9180,10 +9289,10 @@ section( Introducción)  \ {{{
 	[else]  \ Segunda versión
 		soldiers_steal_spite_of_officers$ period+ 	
 	[then]
-	narrate  end_of_scene
+	narrate  scene_break
 	;
 : intro  ( -- )  \ Muestra la introducción al juego 
-	clear_screen
+	new_page
 	intro_0 intro_1 intro_2 intro_3 intro_4 intro_5 intro_6
 	;
 
@@ -9302,27 +9411,6 @@ errores.
 \ Notas {{{
 
 ------------------------------------------------
-Novedades significativas respecto a la versión en SuperBASIC y a las versiones originales
-
-Todos los objetos citados en las descripciones existen como
-tales (p.e. catre, puente, pared...).
-
-Objetos globales (p.e. cielo, suelo, techo, pared...)
-
-Las direcciones de salida son objetos virtuales, lo que
-permite expresiones como «ve al Norte» o «mira hacia el Sur».
-
-La mayoría de los textos se construye combinando
-aleatoriamente sus componentes y/o eligiendo entre
-alternativas.
-
-Algunas de las descripciones de los escenarios, objetos y
-personajes varían en función de la trama y la situación.
-
-La batalla consta de varias fases.  La condición final de la
-batalla no es un número fijo de pasos sino aleatorio.
-
-------------------------------------------------
 Términos usados en los comentarios del programa
 
 «ente»
@@ -9349,9 +9437,42 @@ Dudas sobre SP-Forth
 
 ...........................
 
-Evitar mensaje «todos tus hombres siguen tus pasos»
-en la aldea, nada más empezar. Usar otra frase
-mientras dura el saqueo.
+Error: los comandos de configuración
+siguen siendo reconocidos en minúsculas.
+Y no evitan que el análisis dé error por falta de
+comandos del juego!
+¿Hacer que anulen todo lo que siga?
+¿O que continúen como si fuera un comando nuevo?
+O mejor: simplemente rellenar ACTION con un xt
+de una acción que no haga nada!
+
+No! Lo que hay que hacer es ejecutar las acciones de
+configuración como el resto de acciones, metiendo su xt en
+ACTION .  Y si después queremos seguir (dependerá de la
+acción de sistema de que se trata) basta poner ACTION a cero
+otra vez. O se puede leer el resto del comando, para
+anularlo!
+
+...........................
+
+Comprobar si el hecho de no usar el número máximo de líneas
+causa problemas con diferentes tamaños de consola.
+
+Los textos son cortos, de modo que no hay riesgo de
+que se pierdan antes poder leerlos, antes de que
+se pida entrada a un comando.
+
+...........................
+
+Hacer un comando que lea el fichero de
+configuración en medio de una partida.
+
+...........................
+
+Evitar mensaje «todos tus hombres siguen tus pasos» en la
+aldea, nada más empezar. Usar otra frase mientras dura el
+saqueo. Reescribir ese texto bien, entre la intro y la
+aldea.
 
 ...........................
 
@@ -9390,23 +9511,6 @@ Añadir «tocar».
 
 ...........................
 
-Para otro proyecto:
-
-Contraejemplo de La Mansión:
-> coge libros
-No creo que tenga sentido cargar con eso
-
-Mejor así:
-> coge libros
-Por un momento tienes la absurda tentación de coger los libros,
-pero la descartas.
-
-Y mejor aún si las sucesivas órdenes iguales no tuvieran
-respuesta (o diferente respuesta de forma gradual). Para eso
-hay que implementar una lista de recuerdo...
-
-...........................
-
 Implementar que «todo» pueda usarse
 con examinar y otros verbos, y se cree una lista
 ordenada aleatoriamente de entes que cumplan
@@ -9415,7 +9519,7 @@ los requisitos.
 ...........................
 
 Hacer que los objetos (y ambrosio) no estén siempre en el
-mismo sitio.
+mismo sitio. ¿Altar? ¿Serpiente?
 
 ...........................
 
@@ -9436,7 +9540,6 @@ Hacer algo así en las tramas del laberinto:
 Respuesta a mirar como en «Pronto»:
 
 Miras, pero no ves eso por aquí. ¿Realmente importa?
-
 
 ...........................
 
@@ -9466,6 +9569,8 @@ Implementar «esperar» («z»)
 ...........................
 
 Hacer más robusto el analizador con:
+
+«todo», «algo»
 
 «ahora»:
 
@@ -9516,62 +9621,11 @@ contemplar en los cálculos de artículo!!!
 Mirar cómo lo solucioné en «La legionela del pisto»: con una
 lista de nombres separada de los datos de entes.
 
-
-
 ...........................
 
-Escribir método para determinar en qué escenarios se
-encuentran los entes globales o virtuales:
-
-¿Lista de escenarios para cada ente?
-
-¿Tabla de bitios como un campo de la ficha (un bitio por
-escenario)?
-
-¿xt de palabra que devuelva el escenario actual? ¿Pero
-cuándo se haría el cálculo?
-
-Más sencillo: Usar la palabra de descripción del escenario
-para «traer» los entes.
-
-Lo mejor: Usar la palabra de trama de escenario!
-Así se hace ya!
-
-...........................
-Solucionar el problema de NOTFOUND (descrito en la
-explicación del intérprete de comandos).
-
-...........................
 ¿Crear un método para dar de alta fácilmente entes
 decorativos? Hay muchos en las descripciones de los
 escenarios.
-
-...........................
-
-Para otro proyecto:
-
-Hacer que se acepten los movimientos a entes de decoración o
-mobiliario, y que se conserve el ente junto al que estamos,
-para ilustrar textos.
-
-Anti-ejemplo sacado de Transilvania Corruption:
-
->ve fregadero
-No es algo donde pueda ir.
-
-...........................
-
-Para otro proyecto:
-
-Crear tramas de escenario separadas: entrar de él, estar en él y
-salir de él.
-
-Hay que distinguir tramas de descripción de escenario (como
-actual, que se activa en la descripción) de tramas de
-entrada, salida o permanencia en escenario...
-
-Haría falta un selector similar a SIGHT para seleccionar el
-caso adecuado en la palabra LOCATION_PLOT
 
 ...........................
 
@@ -9587,15 +9641,10 @@ con un cálculo en lugar de al azar.
 
 ...........................
 
-Crear un mensaje de error más laborado para las acciones que
-precisan objeto directo, con el infinitivo como parámetro:
-«¿Matar por matar?» «Normalmente hay que matar a alguien o
-algo».
-
-...........................
-
-Usar [ y ] para permitir comandos de configuración dentro
-de los comandos del jugador.
+Crear un mensaje de error más elaborado para las acciones
+que precisan objeto directo, con el infinitivo como
+parámetro: «¿Matar por matar?» «Normalmente hay que matar a
+alguien o algo».
 
 ...........................
 
@@ -9622,10 +9671,6 @@ necesario para mostrar un presto de pausa.
 
 ...........................
 
-Poner en fichero de configuración los colores de los textos.
-
-...........................
-
 Implementar opción para tener en cuenta las palabras no
 reconocidas y detener el análisis.
 
@@ -9640,17 +9685,6 @@ Poner todos los textos relativos al protagonista en segunda
 persona.
 
 (Creo que ya está hecho).
-
-...........................
-
-Implementar acciones intermedias automáticas, como quitarse
-una prenda antes de dejarla, y que el mensaje sea correcto:
-«Ulfius se quita la corbata y a continuación la deja».
-
-...........................
-
-Hacer que el color de fondo y de texto cambie en los
-escenarios al aire libre.
 
 ...........................
 
@@ -9674,11 +9708,59 @@ ser detallados (técnicos) o vagos (narrativos) o ambos.
 
 ...........................
 
-Para otro proyecto:
+Hacer que primero se muestre la introducción y después
+los créditos y el menú.
 
+...........................
+
+
+
+...........................
+
+\ }}}##########################################################
+\ Ideas desestimadas para este proyecto {{{
+
+...........................
 Lista de puzles completados (como Transilvania Corruption).
 
 ...........................
+Hacer que el color de fondo y de texto cambie en los
+escenarios al aire libre.
+
+...........................
+Implementar que en las acciones intermedias automáticas,
+como quitarse una prenda antes de dejarla, el mensaje sea
+más natural: «Ulfius se quita la corbata y a continuación la
+deja».
+
+...........................
+Crear tramas de escenario separadas: entrar de él, estar en
+él y salir de él.  Hay que distinguir tramas de descripción
+de escenario (como actual, que se activa en la descripción)
+de tramas de entrada, salida o permanencia en escenario...
+Haría falta un selector similar a SIGHT para seleccionar el
+caso adecuado en la palabra LOCATION_PLOT
+
+...........................
+Hacer que se acepten los movimientos a entes de decoración o
+mobiliario, y que se conserve el ente junto al que estamos,
+para ilustrar textos.
+
+...........................
+
+Contraejemplo de La Mansión:
+> coge libros
+No creo que tenga sentido cargar con eso
+
+Mejor así:
+> coge libros
+Por un momento tienes la absurda tentación de coger los libros,
+pero la descartas.
+
+Y mejor aún si las sucesivas órdenes iguales no tuvieran
+respuesta (o diferente respuesta de forma gradual). Para eso
+hay que implementar una lista de recuerdo...
+
 \ }}}##########################################################
 \ Tareas pendientes: trama y puzles {{{
 
