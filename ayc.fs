@@ -15,7 +15,9 @@ version$ TYPE CR
 \ modify it under the terms of the GNU General Public License
 \ as published by the Free Software Foundation; either version 2
 \ of the License, or (at your option) any later version.
-\ http://gnu.org/licenses/ !!!
+\ http://gnu.org/licenses/
+\ http://gnu.org/licenses/gpl.html
+\ http://www.gnu.org/licenses/gpl-2.0.html
 
 \ «Asalto y castigo» (escrito en SP-Forth) es un programa libre;
 \ puedes distribuirlo y/o modificarlo bajo los términos de
@@ -66,11 +68,11 @@ S" gforth" ENVIRONMENT? DUP
 DUP CONSTANT gforth?
 DUP CONSTANT [gforth?] IMMEDIATE
 0= DUP
-CONSTANT spforth?
-CONSTANT [spforth?] IMMEDIATE
+CONSTANT sp-forth?
+CONSTANT [sp-forth?] IMMEDIATE
 
 gforth?
-[IF]  s" os-type" ENVIRONMENT? s" linux-gnu" COMPARE 0=
+[IF]  s" os-type" ENVIRONMENT? drop s" linux-gnu" COMPARE 0=
 [ELSE]  [DEFINED] WINAPI: 0=
 [THEN]  ( f )  \ ¿Estamos en GNU/Linux?
 DUP CONSTANT gnu/linux?
@@ -89,7 +91,7 @@ CR .( Requisitos)  \ {{{
 \ tanto de sus propios desarrolladores como
 \ contribuciones de usuarios.
 
-spforth? [if]
+sp-forth? [if]
 
 REQUIRE CASE-INS lib/ext/caseins.f  \ Para que el sistema no distinga mayúsculas de minúsculas en las palabras de Forth
 CASE-INS ON  \ Activarlo
@@ -102,11 +104,6 @@ windows?
 [then]
 
 [then]
-
-\ ------------------------------------------------
-\ De la librería de contribuciones de SP-Forth 
-
-\ No se usa!!!
 
 \ ------------------------------------------------
 \ De la librería «Forth Foundation Library»
@@ -143,8 +140,8 @@ s" ffl/dti.fs" included \ Palabras adicionales para manipular el tipo de datos p
 \ hacemos un alias de nombre P" porque necesitaremos
 \ la versión original en un caso especial.
 
-defer p"  immediate
-' s" is p"
+\ defer p"  immediate  ' s" is p"
+: p"  postpone s"  ; immediate
 s" csb2.fs" included  \ Almacén circular de cadenas, con definición de cadenas y operadores de concatenación
 
 0  [if]  \ ......................................
@@ -199,9 +196,10 @@ true value [debug_pause] immediate  \ Indicador: ¿Hacer una pausa en cada punto
 [debug]
 [debug_init] or
 [debug_do_exits] or
+[debug_parsing] or
 [debug_catch] or
 true or  \ !!!
-[if]  startlog  [then]
+sp-forth? and  [if]  startlog  [then]
 
 \ Indicadores para poder elegir alternativas que aún son experimentales
 
@@ -234,6 +232,7 @@ constant /counted_string  \ Longitud máxima de una cadena contada (incluyendo l
 	;
 
 defer main
+sp-forth?  [if]
 : program_filename$  ( -- a u )  \ Devuelve el nombre con que se grabará el juego
 	\ Nota: No se puede usar la versión actual S" (que usa el almacén circular de cadenas)
 	\ sino la original (que usa el PAD ) y cuyo alias está en P" .
@@ -252,6 +251,7 @@ defer main
 	program_filename$ save  
 	\ Pendiente!!! Borrar el fichero objeto
 	;
+[then]
 
 \ }}}###########################################################
 section( Vocabularios de Forth)  \ {{{
@@ -341,12 +341,13 @@ creamos vectores que serán actualizados más adelante en el
 código fuente cuando se defina la palabra con el código que
 deben ejecutar.
 
-La palabra de SP-Forth para crear vectores es VECT pero la
-que usaremos es la estándar en ANS Forth: DEFER . Hacen
-exactamente lo mismo y con la misma sintaxis: crean una
-palabra que no hace nada, pero cuya dirección de ejecución
-podrá ser después cambiada usando la palabra IS de la
-siguiente forma:
+La palabra de SP-Forth para crear vectores es VECT y la
+palabra para actualizarlos es TO (la misma que actualiza los
+valores creados con VALUE ) pero las que usaremos son las
+habituales en ANS Forth: DEFER e IS . Hacen exactamente lo
+mismo: DEFER crea una palabra que no hace
+nada, pero cuya dirección de ejecución podrá ser después
+cambiada usando la palabra IS de la siguiente forma:
 
 defer palabrita  \ Crear el vector
 : usar_palabrita  \ Palabra que usa PALABRITA y que por tanto necesita que esté ya en el diccionario
@@ -486,10 +487,15 @@ variable seed
 
 0  [if]  \ ......................................
 
-Para que las palabras S{ y }S definidas a continuación
-puedan ser anidadas, necesitan una pila propia en la
-que guardar la profundidad actual de la pila en cada
-anidación.
+Para facilitar la selección aleatoria de una cadena entre un
+grupo, crearemos las palabras S{ y }S , que proporcionarán
+un sintaxis fácil de escribir y crearán un código fácil de
+leer. También crearemos variantes que concatenen la
+cadena elegida de diversas maneras.
+
+Pero para que las palabras S{ y }S puedan ser anidadas,
+necesitan una pila propia en la que guardar la profundidad
+actual de la pila en cada anidación.
 
 [then]  \ ......................................
 
@@ -602,7 +608,7 @@ variable dstack>  \ Puntero al elemento superior de la pila (o cero si está vac
 \ }}}###########################################################
 section( Variables)  \ {{{
 
-\ Variables de configuración
+\ Algunas variables de configuración (el resto se crea en sus propias secciones)
 
 variable woman_player?  \ Indica si el jugador es una mujer; se usa para cambiar el género gramatical en algunos mensajes.
 variable castilian_quotes?  \ Indica si se usan comillas castellanas en las citas, en lugar de raya.
@@ -617,7 +623,7 @@ variable battle#  \ Contador de la evolución de la batalla (si aún no ha empez
 variable ambrosio_follows?  \ ¿Ambrosio sigue al protagonista?
 variable talked_to_the_leader?  \ ¿El protagonista ha hablado con el líder?
 variable hacked_the_log?  \ ¿El protagonista ha afilado el tronco?
-variable hold#  \ Contador de cosas llevadas por el protagonista (no usado!!!)
+\ variable hold#  \ Contador de cosas llevadas por el protagonista (no se usa!!!)
 
 : init_plot  ( -- )  \ Inicializa las variables de la trama
 	battle# off
@@ -1078,7 +1084,7 @@ section( Textos aleatorios)  \ {{{
 0  [if]  \ ......................................
 
 Casi todas las palabras de esta sección devuelven una cadena
-calculada al azar. Las restantes son auxiliares.
+calculada al azar. Las restantes palabras son auxiliares.
 
 Por convención, en todo el programa, las palabras que
 devuelven una cadena sin recibir parámetros en la pila
@@ -1498,6 +1504,15 @@ s" de Westmorland" sconstant of_westmorland$
 \ }}}###########################################################
 section( Cadena dinámica para impresión)  \ {{{
 
+0  [if]  \ ......................................
+
+Usamos una cadena dinámica llamada PRINT_STR para guardar
+los párrafos enteros que hay que mostrar en pantalla. En
+esta sección creamos la cadena y palabras útiles para
+manipularla.
+
+[then]  \ ......................................
+
 str-create print_str  \ Cadena dinámica para almacenar el texto antes de imprimirlo justificado
 
 : «»-clear  ( -- )  \ Vacía la cadena dinámica PRINT_STR
@@ -1666,7 +1681,7 @@ Por ello hemos optado por un sistema alternativo.
 
 [then]  \ ......................................
 
-windows?  [if]  \ Sistema original, que funciona en SP-Forth para Windows
+false  [if]  \ Sistema original descartado, que funciona en SP-Forth para Windows
 
 dtm-create deadline  \ Variable para guardar el momento final de las pausas
 
@@ -1692,6 +1707,8 @@ dtm-create deadline  \ Variable para guardar el momento final de las pausas
 	;
 
 [then]
+
+\ Sistema nuevo, con pausas fijas en milisegundos o indefinidas hasta la pulsación de una tecla
 
 variable indent_pause_prompts?  \ ¿Hay que indentar también los prestos?
 : .prompt  ( a u -- )  \ Imprime un presto
@@ -8135,15 +8152,14 @@ el proceso con un error.
 	[debug] [if]  s" Entrando en VALID_PARSING?" debug  [then]  \ Depuración!!!
 
 	case-ins off  \ Activar la distinción de mayúsculas Probarlo!!!
-	ONLY player_vocabulary  \ Dejar solo el diccionario PLAYER_VOCABULARY activo
+	only player_vocabulary  \ Dejar solo el diccionario PLAYER_VOCABULARY activo
 	\ [debug_catch]  [if]  s" En VALID_PARSING? antes de CATCH" debug  [then]  \ Depuración!!!
 	halto" en valid_parsing? antes de preparar CATCH"
-	['] EVALUATE 
-	CASE-INS ON  \ Desactivar la distinción de mayúsculas Probarlo!!!
-
+	['] evaluate 
 	halto" en valid_parsing? antes de CATCH"
 	catch  \ Llamar a EVALUATE a través de CATCH para poder regresar directamente con THROW en caso de error
 	halto" en valid_parsing? después de CATCH"
+	case-ins on  \ Desactivar la distinción de mayúsculas Probarlo!!!
 	\ Pendiente!!! problema aún no resuelto
 	\ Ahora «abre» sin complemento
 	\ nip nip  \ Arreglar la pila, pues CATCH hace que apunte a su posición previa
@@ -8221,13 +8237,13 @@ section( Fichero de configuración)  \ {{{
 
 0  [if]  \ ......................................
 
-El juego tiene un fichero de configuración en que el
-jugador puede indicar sus preferencias. Este fichero
-es código en Forth y se interpreta directamente,
-pero solo serán reconocidas las palabras creadas
-para la configuración, así como las palabras
-habituales para hacer comentarios de bloques o líneas
-en Forth. Cualquier otra palabra dará error.
+El juego tiene un fichero de configuración en que el jugador
+puede indicar sus preferencias. Este fichero es código en
+Forth y se interpreta directamente, pero en él solo serán
+reconocidas las palabras creadas expresamente para la
+configuración, así como las palabras habituales para hacer
+comentarios de bloques o líneas en Forth. Cualquier otra
+palabra dará error.
 
 El fichero de configuración se lee de nuevo al inicio de
 cada partida.
@@ -8510,8 +8526,8 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 	irse váyase
 	irte vete
 	moverme muévame muévome
-	moverse muévase
-	moverte muévete
+	moverse muévase moveos
+	moverte muévete 
 	ve id idos voy vaya
 	}synonyms
 
@@ -8541,13 +8557,23 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 	}synonyms
 
 : mirar  ['] do_look action!  ;
-' mirar synonyms{  m mira mirad miro mire  }synonyms
+' mirar synonyms{
+	m mira mirad miro mire
+	contemplar contempla contemplad contemplo contemple
+	observar observa observad observo observe
+	}synonyms
 
 : mirarse  ['] do_look_yourself action!  ;
 ' mirarse synonyms{
 	mírese miraos
 	mirarte mírate mírote mírete
-	mirarme mírame mírome míreme
+	mirarme mírame miradme mírome míreme
+	contemplarse contemplaos contémplese
+	contemplarte contémplate contémplote contémplete
+	contemplarme contémplame contempladme contémplome contémpleme
+	observarse obsérvese observaos
+	observarte obsérvate obsérvote obsérvete
+	observarme obsérvame observadme obsérvome obsérveme
 	}synonyms
 
 : otear  ['] do_look_to_direction action!  ;
@@ -9437,10 +9463,31 @@ Dudas sobre SP-Forth
 
 ...........................
 
-Error: los comandos de configuración
-siguen siendo reconocidos en minúsculas.
-Y no evitan que el análisis dé error por falta de
-comandos del juego!
+Implementar tres niveles en mirar:
+
+0 = mirar
+1 = examinar
+2 = registrar
+
+¿O hacer que sean acciones efectivas separadas?
+
+...........................
+
+Grave: los comandos no vacíos y sin verbo reconocido
+hacen saltar el sistema.
+
+...........................
+
+Poner de un color diferente, configurable, el presto y el
+texto de las respuestas al sistema (proguntas sí/no).
+
+...........................
+
+Los comandos de configuración no evitan que el análisis dé
+error por falta de comandos del juego!
+
+Esto es fácil de arreglar:
+
 ¿Hacer que anulen todo lo que siga?
 ¿O que continúen como si fuera un comando nuevo?
 O mejor: simplemente rellenar ACTION con un xt
@@ -9742,11 +9789,15 @@ Haría falta un selector similar a SIGHT para seleccionar el
 caso adecuado en la palabra LOCATION_PLOT
 
 ...........................
+
 Hacer que se acepten los movimientos a entes de decoración o
-mobiliario, y que se conserve el ente junto al que estamos,
-para ilustrar textos.
+mobiliario, o a otros entes presentes, y que se conserve el
+ente junto al que estamos, para ilustrar con ello los
+textos en algunos casos.
 
 ...........................
+
+Mensajes de error integrados en la narración.
 
 Contraejemplo de La Mansión:
 > coge libros
