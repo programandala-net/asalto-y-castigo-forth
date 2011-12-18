@@ -8,7 +8,7 @@ CR .( Asalto y castigo )  \ {{{
 \ Copyright (C) 2011 Marcos Cruz (programandala.net)
 
 ONLY FORTH DEFINITIONS
-: version$  ( -- a u )  S" A-01-201112160000"  ;
+: version$  ( -- a u )  S" A-01-201112180502"  ;
 version$ TYPE CR
 
 \ 'Asalto y castigo' (written in SP-Forth) is free software; you can redistribute it and/or
@@ -98,9 +98,9 @@ CASE-INS ON  \ Activarlo
 require ansi-file lib/include/ansi-file.f  \ Para que el sistema sea lo más compatible posible con el estándar ANS Forth de 1994
 \ require random lib/ext/rnd.f  \ Generador de números aleatorios
 
-windows?
-[if]  require key-termios lib/posix/key.f  \ Palabra KEY 
-[else]  require key-termios key.f  \ Palabra KEY (copia modificada del fichero original debido a un problema con la ruta de una librería)
+gnu/linux?  [if]
+\ require key-termios lib/posix/key.f  \ Palabra KEY 
+require key-termios key.f  \ Palabra KEY (copia modificada del fichero original debido a un problema con la ruta de una librería)
 [then]
 
 [then]
@@ -140,8 +140,7 @@ s" ffl/dti.fs" included \ Palabras adicionales para manipular el tipo de datos p
 \ hacemos un alias de nombre P" porque necesitaremos
 \ la versión original en un caso especial.
 
-\ defer p"  immediate  ' s" is p"
-: p"  postpone s"  ; immediate
+: p"  postpone s"  ;  immediate
 s" csb2.fs" included  \ Almacén circular de cadenas, con definición de cadenas y operadores de concatenación
 
 0  [if]  \ ......................................
@@ -190,6 +189,7 @@ false value [debug_init] immediate  \ Indicador: ¿Modo de depuración para la i
 false value [debug_parsing] immediate  \ Indicador: ¿Modo de depuración para el analizador?
 false value [debug_do_exits] immediate  \ Indicador: ¿Depurar la acción DO_EXITS ?
 false value [debug_catch] immediate  \ Indicador: ¿Depurar CATCH y THROW ?
+true value [debug_save] immediate  \ Indicador: ¿Depurar la grabación de partidas?
 true value [debug_info] immediate  \ Indicador: ¿Mostrar info de depuración sobre el presto de comandos? 
 true value [debug_pause] immediate  \ Indicador: ¿Hacer una pausa en cada punto de depuración?
 
@@ -198,6 +198,7 @@ true value [debug_pause] immediate  \ Indicador: ¿Hacer una pausa en cada punto
 [debug_do_exits] or
 [debug_parsing] or
 [debug_catch] or
+[debug_save] or
 true or  \ !!!
 sp-forth? and  [if]  startlog  [then]
 
@@ -269,6 +270,7 @@ vocabulary menu_vocabulary  \ Vocabulario para las palabras del menú \ No se us
 vocabulary player_vocabulary  \ Vocabulario para las palabras de la aventura en sí (los comandos del jugador)
 vocabulary answer_vocabulary  \ Vocabulario para las respuestas a preguntas de «sí» o «no»
 vocabulary config_vocabulary  \ Vocabulario para las palabras de configuración del juego
+vocabulary restore_vocabulary  \ Vocabulario para las palabras de restauración de una partida del juego \ No se usa!!!
 
 \ }}}###########################################################
 section( Palabras genéricas)  \ {{{
@@ -290,10 +292,10 @@ section( Palabras genéricas)  \ {{{
 : svariable  ( "name" ; -- )  \ Crea una variable de cadena
 	create  /counted_string chars allot align
 	;
-: place  ( a1 u1 a2 -- )  \ Guarda una cadena en una variable de cadena
+: s!  ( a1 u1 a2 -- )  \ Guarda una cadena en una variable de cadena
 	swap truncate_length swap
 	2dup c!  char+ swap chars cmove
-	; 
+	;
 : (alias)  ( xt a u -- )  \ Crea un alias de una palabra
 	\ xt = Dirección de ejecución de la palabra de la que hay que crear el alias
 	\ a u = Nombre del alias
@@ -995,7 +997,7 @@ section( Depuración)  \ {{{
 	;
 
 include halto2.fs  \ Herramienta adicional para poner puntos de comprobación
-false to halto?
+true to halto?
 
 \ }}}###########################################################
 section( Manipulación de textos)  \ {{{
@@ -1058,6 +1060,9 @@ str-create tmp_str  \ Cadena dinámica de texto temporal para usos variados
 	dup 'csb swap 2dup 2>r  rot fill  2r>
 	;
 
+: space+  ( a1 u1 -- a2 u2 )  \ Añade un espacio a una cadena
+	s"  " s+
+	;
 : period+  ( a1 u1 -- a2 u2 )  \ Añade un punto final a una cadena
 	s" ." s+
 	;
@@ -1890,30 +1895,30 @@ los que contienen códigos de error terminan «_error#».
 
 0 \ Valor inicial de desplazamiento para el primer campo
 cell offset: ~name_str  \ Dirección de una cadena dinámica que contendrá el nombre del ente
-cell offset: ~personal_name?  \ Indicador: ¿el nombre del ente es un nombre propio?
-cell offset: ~feminine_name?  \ Indicador: ¿el género gramatical del nombre es femenino?
-cell offset: ~plural_name?  \ Indicador: ¿el nombre es plural?
-cell offset: ~no_article?  \ Indicador: ¿el nombre no debe llevar artículo?
-cell offset: ~definite_article?  \ Indicador: ¿el artículo debe ser siempre el artículo definido?
+cell offset: ~has_personal_name?  \ Indicador: ¿el nombre del ente es un nombre propio?
+cell offset: ~has_feminine_name?  \ Indicador: ¿el género gramatical del nombre es femenino?
+cell offset: ~has_plural_name?  \ Indicador: ¿el nombre es plural?
+cell offset: ~has_no_article?  \ Indicador: ¿el nombre no debe llevar artículo?
+cell offset: ~has_definite_article?  \ Indicador: ¿el artículo debe ser siempre el artículo definido?
 cell offset: ~description_xt  \ Dirección de ejecución de la palabra que describe el ente
 cell offset: ~init_xt  \ Dirección de ejecución de la palabra que inicializa las propiedades de un ente (experimental!!!)
-cell offset: ~character?  \ Indicador: ¿el ente es un personaje?
+cell offset: ~is_character?  \ Indicador: ¿el ente es un personaje?
 cell offset: ~conversations  \ Contador para personajes: número de conversaciones tenidas con el protagonista
-cell offset: ~decoration?  \ Indicador: ¿el ente forma parte de la decoración de su localización?
+cell offset: ~is_decoration?  \ Indicador: ¿el ente forma parte de la decoración de su localización?
 cell offset: ~take_error#  \ Identificador del error adecuado al intentar tomar el ente (cero si no hay error); se usa para casos especiales; los errores apuntados por este campo no reciben parámetros salvo en WHAT
 cell offset: ~break_error#  \ Identificador del error adecuado al intentar romper el ente (cero si no hay error); se usa para casos especiales; los errores apuntados por este campo no reciben parámetros salvo en WHAT
-cell offset: ~global_outside?  \ Indicador ¿el ente es global (común) en los escenarios al aire libre?
-cell offset: ~global_inside?  \ Indicador ¿el ente es global (común) en los escenarios interiores? 
-cell offset: ~owned?  \ Indicador: ¿el ente pertenece al protagonista? 
-cell offset: ~cloth?  \ Indicador: ¿el ente es una prenda que puede ser llevada como puesta?
-cell offset: ~worn?  \ Indicador: ¿el ente, que es una prenda, está puesto? 
-cell offset: ~light?  \ Indicador: ¿el ente es una fuente de luz que puede ser encendida?
-cell offset: ~lit?  \ Indicador: ¿el ente, que es una fuente de luz que puede ser encendida, está encendido?
-cell offset: ~vegetal?  \ Indicador: ¿es vegetal?
-cell offset: ~animal?  \ Indicador: ¿es animal? 
+cell offset: ~is_global_outside?  \ Indicador ¿el ente es global (común) en los escenarios al aire libre?
+cell offset: ~is_global_inside?  \ Indicador ¿el ente es global (común) en los escenarios interiores? 
+cell offset: ~is_owned?  \ Indicador: ¿el ente pertenece al protagonista? 
+cell offset: ~is_cloth?  \ Indicador: ¿el ente es una prenda que puede ser llevada como puesta?
+cell offset: ~is_worn?  \ Indicador: ¿el ente, que es una prenda, está puesto? 
+cell offset: ~is_light?  \ Indicador: ¿el ente es una fuente de luz que puede ser encendida?
+cell offset: ~is_lit?  \ Indicador: ¿el ente, que es una fuente de luz que puede ser encendida, está encendido?
+cell offset: ~is_vegetal?  \ Indicador: ¿es vegetal?
+cell offset: ~is_animal?  \ Indicador: ¿es animal? 
 cell offset: ~human?  \ Indicador: ¿es humano? 
-cell offset: ~open?  \ Indicador: ¿está abierto? 
-cell offset: ~location?  \ Indicador: ¿es un escenario? 
+cell offset: ~is_open?  \ Indicador: ¿está abierto? 
+cell offset: ~is_location?  \ Indicador: ¿es un escenario? 
 cell offset: ~location  \ Identificador del ente en que está localizado (sea escenario, contenedor, personaje o «limbo»)
 cell offset: ~previous_location  \ Ídem para el ente que fue la localización antes del actual 
 cell offset: ~location_plot_xt  \ Dirección de ejecución de la palabra que se ocupa de la trama del escenario
@@ -1930,11 +1935,11 @@ cell offset: ~in_exit  \ Ente de destino hacia dentro
 cell offset: ~direction  \ Desplazamiento del campo de dirección al que corresponde el ente (solo se usa en los entes que son direcciones)
 
 [false]  [if]  \ Campos omitidos porque aún no se usan!!!:
-cell offset: ~lock?  \ Indicador: ¿está cerrado con llave? 
-cell offset: ~openable?  \ Indicador: ¿es abrible? 
-cell offset: ~lockable?  \ Indicador: ¿es cerrable con llave? 
+cell offset: ~is_lock?  \ Indicador: ¿está cerrado con llave? 
+cell offset: ~is_openable?  \ Indicador: ¿es abrible? 
+cell offset: ~is_lockable?  \ Indicador: ¿es cerrable con llave? 
 cell offset: ~desambiguation_xt  \ Dirección de ejecución de la palabra que desambigua e identifica el ente
-cell offset: ~container?  \ Indicador: ¿es un contenedor?
+cell offset: ~is_container?  \ Indicador: ¿es un contenedor?
 cell offset: ~stamina  \ Energía de los entes vivos
 [then]
 
@@ -1963,7 +1968,7 @@ frecuentes con los entes.
 [then]  \ ......................................
 
 \ ------------------------------------------------
-\ Interfaz para los campos de dirección
+\ Herramientas para los campos de dirección
 
 ' ~north_exit alias ~first_exit  \ Primera salida definida en la ficha
 ' ~in_exit alias ~last_exit  \ Última salida definida en la ficha
@@ -1983,6 +1988,70 @@ frecuentes con los entes.
 last_exit> cell+ first_exit> - constant /exits  \ Espacio en octetos ocupado por los campos de salidas
 /exits cell / constant #exits  \ Número de salidas
 
+0 constant no_exit  \ Marcador para direcciones sin salida en un ente dirección
+: exit?  ( a -- f )  \ ¿Está abierta una dirección de salida de un ente escenario?
+	\ a = Contenido de un campo de salida de un ente (que será el ente de destino, o cero)
+	no_exit <>
+	;
+
+\ ------------------------------------------------
+\ Interfaz básica para leer y modificar los campos
+
+0  [if]  \ ......................................
+
+Las palabras que siguen permiten hacer las operaciones
+básicas de obtención y modificación del contenido de los
+campos más usados.
+
+Por conveniencia, en el caso de algunos de los campos
+buleanos creamos también palabras para la propiedad
+contraria.  Por ejemplo, en las fichas existe el campo
+~IS_OPEN? para indicar si un ente está abierto, pero creamos
+las palabras necesarias para examinar y modificar tanto la
+propiedad de «cerrado» como la de «abierto». Esto ayuda a
+escribir posteriormente el código efectivo (pues no hace
+falta recordar si la propiedad real y por tanto el campo de
+la ficha del ente era «abierto» o «cerrado») y hace el
+código más conciso y legible.
+
+[then]  \ ......................................
+
+\ Obtener el contenido de los campos
+
+: break_error#  ( a -- u )  ~break_error# @  ;
+: conversations  ( a -- u )  ~conversations @  ;
+: description_xt  ( a -- xt )  ~description_xt @  ;
+: direction  ( a -- u )  ~direction @  ;
+: familiar  ( a -- u )  ~familiar @  ;
+: has_definite_article?  ( a -- f )  ~has_definite_article? @  ;
+: has_feminine_name?  ( a -- f )  ~has_feminine_name? @  ;
+: has_masculine_name?  ( a -- f )  has_feminine_name? 0=  ;
+: has_no_article?  ( a -- f )  ~has_no_article? @  ;
+: has_personal_name?  ( a -- f )  ~has_personal_name? @  ;
+: has_plural_name?  ( a -- f )  ~has_plural_name? @  ;
+: has_singular_name?  ( a -- f )  has_plural_name? 0=  ;
+: init_xt  ( a -- xt )  ~init_xt @  ;
+: is_animal?  ( a -- f )  ~is_animal? @  ;
+: is_character?  ( a -- f )  ~is_character? @  ;
+: is_closed?  ( a -- f )  is_open? 0=  ;
+: is_cloth?  ( a -- f )  ~is_cloth? @  ;
+: is_decoration?  ( a -- f )  ~is_decoration? @  ;
+: is_global_inside?  ( a -- f )  ~is_global_inside? @  ;
+: is_global_outside?  ( a -- f )  ~is_global_outside? @  ;
+: is_human?  ( a -- f )  ~human? @  ;
+: is_light?  ( a -- f )  ~is_light? @  ;
+: is_lit?  ( a -- f )  ~is_lit? @  ;
+: is_location?  ( a -- f )  ~is_location? @  ;
+: is_open?  ( a -- f )  ~is_open? @  ;
+: is_owned?  ( a -- f )  ~is_owned? @  ;
+: is_vegetal?  ( a -- f )  ~is_vegetal? @  ;
+: is_worn?  ( a -- f )  ~is_worn? @  ;
+: location  ( a1 -- a2 )  ~location @  ;
+: location_plot_xt  ( a -- xt )  ~location_plot_xt @  ;
+: previous_location  ( a1 -- a2 )  ~previous_location @  ;
+: take_error#  ( a -- u )  ~take_error# @  ;
+: visits  ( a -- u )  ~visits @  ;
+
 : north_exit  ( a1 -- a2 )  ~north_exit @  ;
 : south_exit  ( a1 -- a2 )  ~south_exit @  ;
 : east_exit  ( a1 -- a2 )  ~east_exit @  ;
@@ -1992,183 +2061,28 @@ last_exit> cell+ first_exit> - constant /exits  \ Espacio en octetos ocupado por
 : out_exit  ( a1 -- a2 )  ~out_exit @  ;
 : in_exit  ( a1 -- a2 )  ~in_exit @  ;
 
-0 constant no_exit  \ Marcador para direcciones sin salida en un ente dirección
-: exit?  ( a -- f )  \ ¿Está abierta una dirección de salida de un ente escenario?
-	\ a = Contenido de un campo de salida de un ente (que será el ente de destino, o cero)
-	no_exit <>
-	;
-: has_north_exit?  ( a -- f )  \ ¿Tiene un ente salida por el Norte?
-	north_exit exit?
-	;
-: has_east_exit?  ( a -- f )  \ ¿Tiene un ente salida por el Este?
-	east_exit exit?
-	;
+\ Modificar el contenido de los campos
 
-\ ------------------------------------------------
-\ Interfaz para leer y modificar algunos campos frecuentes
-
-0  [if]  \ ......................................
-
-Las palabras que siguen permiten hacer las operaciones
-básicas de obtención y modificación del contenido de los
-campos más usados.
-
-Por conveniencia, en el caso de los campos buleanos creamos
-palabras también para la propiedad contraria.  Por ejemplo,
-en las fichas existe el campo ~OPEN? para indicar si un ente
-está abierto, pero creamos las palabras necesarias para
-examinar y modificar tanto la propiedad de «cerrado» como la
-de «abierto». Esto ayuda a escribir posteriormente el código
-efectivo (pues no hace falta recordar si la propiedad real y
-por tanto el campo de la ficha del ente era «abierto» o
-«cerrado») y hace el código más conciso y legible.
-
-[then]  \ ......................................
-
-: is_open?  ( a -- f )  \ ¿Está abierto un ente?
-	~open? @
-	;
-: is_open  ( a -- )  \ Marca un ente como abierto
-	~open? on
-	;
-: is_closed?  ( a -- f )  \ ¿Está cerrado un ente?
-	is_open? 0=
-	;
-: is_closed  ( a -- )  \ Marca un ente como cerrado
-	~open? off
-	;
-: has_feminine_name?  ( a -- f )  \ ¿El género gramatical del nombre de un ente es femenino?
-	~feminine_name? @
-	;
-: has_feminine_name  ( a -- )  \ Marca como femenino el género gramatical del nombre de un ente
-	~feminine_name? on
-	;
-: has_masculine_name?  ( a -- f )  \ ¿El género gramatical del nombre de un ente es femenino?
-	has_feminine_name? 0=
-	;
-: has_masculine_name  ( a -- )  \ Marca como masculino el género gramatical del nombre de un ente
-	~feminine_name? off
-	;
-: has_plural_name?  ( a -- f )  \ Indicador: ¿el nombre de un ente es plural?
-	~plural_name? @
-	;
-: has_plural_name  ( a -- )  \ Marca como plural el nombre de un ente
-	~plural_name? on
-	;
-: has_singular_name?  ( a -- f )  \ Indicador: ¿el nombre de un ente es singular?
-	has_plural_name? 0=
-	;
-: is_global_outside?  ( a -- f )  \ ¿Es un ente global (común) en los escenarios al aire libre?
-	~global_outside? @
-	;
-: is_global_outside  ( a -- )  \ ¿Marcar un ente como global (común) en los escenarios al aire libre
-	~global_outside? on
-	;
-: is_global_inside?  ( a -- f )  \ ¿Es un ente es global (común) en los escenarios interiores? 
-	~global_inside? @
-	;
-: is_global_inside  ( a -- )  \ Marcar un ente como global (común) en los escenarios interiores
-	~global_inside? on
-	;
-: is_owned?  ( a -- f )  \ ¿Pertenece un ente al protagonista? 
-	~owned? @
-	;
-: is_owned  ( a -- f )  \ Marcar un ente como perteneciente al protagonista
-	~owned? on
-	;
-: is_cloth?  ( a -- f )  \ ¿Es un ente una prenda que puede ser llevada como puesta?
-	~cloth? @
-	;
-: is_cloth  ( a -- )  \ Marca un ente como prenda que puede ser llevada como puesta
-	~cloth? on
-	;
-: is_worn?  ( a -- f )  \ ¿Un ente, que es una prenda, está puesto por quien lo tiene? 
-	~worn? @
-	;
-: is_worn  ( a -- )  \ Marca un ente, que es una prenda, como que está puesto por quien lo tiene
-	~worn? on
-	;
-: is_light?  ( a -- f )  \ ¿Es un ente una fuente de luz que puede ser encendida?
-	~light? @
-	;
-: is_lit?  ( a -- f )  \ ¿Un ente, que es una fuente de luz que puede ser encendida, está encendido?
-	~lit? @
-	;
-: is_vegetal?  ( a -- f )  \ ¿Es un ente un vegetal?
-	~vegetal? @
-	;
-: is_animal?  ( a -- f )  \ ¿Es un ente un animal? 
-	~animal? @
-	;
-: is_human?  ( a -- f )  \ ¿Es un ente un humano? 
-	~human? @
-	;
-: is_human  ( a -- )  \ Marcar un ente como humano
-	~human? on
-	;
-: is_character?  ( a -- f )  \ ¿Es un ente un personaje? 
-	~character? @
-	;
-: is_character  ( a -- )  \ Marcar un ente como personaje
-	~character? on
-	;
-: is_location?  ( a -- f )  \ ¿Es un ente un escenario? 
-	~location? @
-	;
-: is_location  ( a -- )  \ Marcar un ente como escenario
-	~location? on
-	;
-: is_familiar?  ( a -- f )  \ ¿Un ente es familiar al protagonista? 
-	~familiar @ 0>
-	;
-: more_familiar  ( a -- )  \ Aumenta el grado de familiaridad de un ente con el protagonista
-	~familiar (++)
-	;
-: is_visited?  ( a -- f )  \ ¿Un ente escenario ha sido ya visitado anteriormente por el protagonista? 
-	~visits @ 0>
-	;
-: is_not_visited?  ( a -- f )  \ ¿Un ente escenario no ha sido visitado anteriormente por el protagonista? 
-	~visits @ 0=
-	;
-: one_more_visit  ( a -- )  \ Añade una visita a un ente escenario
-	~visits (++)
-	;
-: has_definite_article?  ( a -- f )  \ ¿El artículo de un ente debe ser siempre el artículo definido?
-	~definite_article? @
-	;
-: has_definite_article  ( a -- )  \ Marca un ente para que su nombre lleve siempre artículo definido
-	~definite_article? on
-	;
-: has_no_article?  ( a -- f )  \ ¿El nombre de un ente no debe llevar artículo?
-	~no_article? @
-	;
-: has_no_article  ( a -- )  \ Marca un ente para que su nombre no lleve artículo
-	~no_article? on
-	;
-: has_personal_name?  ( a -- f )  \ ¿El nombre de un ente es un nombre propio?
-	~personal_name? @
-	;
-: has_personal_name  ( a -- )  \ Marca un ente para indicar que su nombre es un nombre propio
-	~personal_name? on
-	;
-: is_decoration?  \ ¿Un ente forma parte de la decoración de su localización?
-	~decoration? @
-	;
-: is_decoration  ( a -- )  \ Marca un ente como parte de la decoración de su localización
-	~decoration? on
-	;
-: conversations  ( a -- u )  \ Devuelve el número de conversaciones mantenidas con un ente
-	~conversations @
-	;
-: conversations?  ( a -- f )  \ ¿Ha habido alguna conversación con el ente?
-	conversations 0<>
-	;
-: no_conversations?  ( a -- f )  \ ¿No ha habido alguna conversación con el ente?
-	conversations 0=
-	;
-: one_more_conversation  ( a -- u )  \ Incrementa el número de conversaciones mantenidas con un ente
-	~conversations (++)
-	;
+: conversations++  ( a -- )  ~conversations (++)  ;
+: familiar++  ( a -- )  ~familiar (++)  ;
+: has_definite_article  ( a -- )  ~has_definite_article? on  ;
+: has_feminine_name  ( a -- )  ~has_feminine_name? on  ;
+: has_masculine_name  ( a -- )  ~has_feminine_name? off  ;
+: has_no_article  ( a -- )  ~has_no_article? on  ;
+: has_personal_name  ( a -- )  ~has_personal_name? on  ;
+: has_plural_name  ( a -- )  ~has_plural_name? on  ;
+: is_character  ( a -- )  ~is_character? on  ;
+: is_closed  ( a -- )  ~is_open? off  ;
+: is_cloth  ( a -- )  ~is_cloth? on  ;
+: is_decoration  ( a -- )  ~is_decoration? on  ;
+: is_global_inside  ( a -- )  ~is_global_inside? on  ;
+: is_global_outside  ( a -- )  ~is_global_outside? on  ;
+: is_human  ( a -- )  ~human? on  ;
+: is_location  ( a -- )  ~is_location? on  ;
+: is_open  ( a -- )  ~is_open? on  ;
+: is_owned  ( a -- f )  ~is_owned? on  ;
+: is_worn  ( a -- )  ~is_worn? on  ;
+: visits++  ( a -- )  ~visits (++)  ;
 
 \ ------------------------------------------------
 \ Campos calculados o seudo-campos
@@ -2180,20 +2094,23 @@ una capa adicional de abstracción y simplificar el código.
 
 Pendiente!!! Hay que unificar el criterio de los nombres de
 estas palabras, y sacar de aquí las que se refieran a campos
-básicos.
+básicos. 
 
 [then]  \ ......................................
+
+: is_direction?  ( a -- f )  direction 0<>  ;
+: is_familiar?  ( a -- f )  familiar 0>  ;
+: is_visited?  ( a -- f )  visits 0>  ;
+: is_not_visited?  ( a -- f )  visits 0=  ;
+: conversations?  ( a -- f )  conversations 0<>  ;
+: no_conversations?  ( a -- f )  conversations 0=  ;
+: has_north_exit?  ( a -- f )  north_exit exit?  ;
+: has_east_exit?  ( a -- f )  east_exit exit?  ;
 
 : is_living_being?  ( a -- f )  \ ¿El ente es un ser vivo (aunque esté muerto)?
 	dup is_vegetal?
 	over is_animal? or
 	swap is_human? or
-	;
-: location  ( a1 -- a2 )  \ Devuelve el ente que es la localización de otro
-	~location @
-	;
-: previous_location  ( a1 -- a2 )  \ Devuelve el ente que fue la localización anterior de otro
-	~previous_location @
 	;
 : is_there  ( a1 a2 -- )  \ Hace que un ente sea la localización de otro
 	\ a1 = Ente que será la localización de a2
@@ -2214,9 +2131,6 @@ básicos.
 	\ a1 = Ente que actúa de localización
 	\ a2 = Ente cuya localización se comprueba
 	previous_location =
-	;
-: is_direction?  ( a -- f )  \ ¿Es el ente un ente dirección? 
-	~direction @ 0<>
 	;
 : is_global?  ( a -- f )  \ ¿Es el ente un ente global?
 	dup is_global_outside?
@@ -2252,7 +2166,7 @@ básicos.
 	~location protagonist% swap !
 	;
 : is_worn_by_me?  ( a -- )  \ ¿El protagonista lleva puesto el ente indicado?
-	dup is_hold?  swap ~worn? @  and
+	dup is_hold?  swap is_worn?  and
 	;
 : is_known?  ( a -- f )  \ ¿El protagonista ya conoce el ente?
 	dup is_owned?  \ ¿Es propiedad del protagonista?
@@ -2779,7 +2693,7 @@ false value sight  \ Guarda el ente dirección al que se mira en un escenario (o
 : ;description  ( -- )  \ Termina la definición de una palabra de descripción de un ente
 	postpone [;description]  \ Compilar la palabra [;DESCRIPTION] en la palabra creada, para que se ejecute cuando sea llamada
 	postpone ;
-	; immediate
+	;  immediate
 : (describe)  ( a -- )  \ Ejecuta la palabra de descripción de un ente
 	~description_xt @ execute
 	;
@@ -2993,9 +2907,9 @@ distinguirlos como escenarios; e indicar a qué otros entes
 escenarios conducen sus salidas.
 
 La primera operación se hace guardando un valor buleano
-«cierto» en el campo ~LOCATION? del ente.  Por ejemplo:
+«cierto» en el campo ~IS_LOCATION? del ente.  Por ejemplo:
 
-	cave% ~location? on
+	cave% ~is_location? on
 
 O bien mediante la palabra creada para ello en la interfaz
 básica de campos:
@@ -3580,7 +3494,7 @@ soldiers% :attributes
 	s" soldados" self% name!
 	self% has_plural_name
 	self% is_human
-	self% more_familiar
+	self% familiar++
 	self% is_decoration
 	\ self% has_definite_article  \ Mejor implementar que tenga posesivo!!!...
 	self% is_owned  \ ...aunque quizá esto baste!!!
@@ -3809,7 +3723,7 @@ rocks% :description
 	;description
 snake% :attributes
 	s" serpiente" self% fname!
-	self% ~animal? on
+	self% ~is_animal? on
 	self% ~take_error# dangerous_error# swap !
 	location_43% self% is_there
 	;attributes
@@ -3858,8 +3772,8 @@ thread% :description
 	;description
 torch% :attributes
 	s" antorcha" self% fname!
-	self% ~light? on
-	self% ~lit? off
+	self% ~is_light? on
+	self% ~is_lit? off
 	;attributes
 torch% :description
 	\ Inacabado!!! 
@@ -5202,7 +5116,7 @@ location_51% :description
 
 cave% :attributes
 	s" cueva" self% fname!
-	self% ~global_inside? on
+	self% ~is_global_inside? on
 	;attributes
 cave% :description
 	\ Provisional!!!
@@ -5211,7 +5125,7 @@ cave% :description
 	;description
 ceiling% :attributes
 	s" techo" self% name!
-	self% ~global_inside? on
+	self% ~is_global_inside? on
 	;attributes
 ceiling% :description
 	\ Provisional!!!
@@ -5220,7 +5134,7 @@ ceiling% :description
 	;description
 clouds% :attributes
 	s" nubes" self% fnames!
-	self% ~global_outside? on
+	self% ~is_global_outside? on
 	;attributes
 clouds% :description
 	\ Pendiente!!!:
@@ -5233,8 +5147,8 @@ clouds% :description
 	;description
 floor% :attributes
 	s" suelo" self% name!
-	self% ~global_inside? on
-	self% ~global_outside? on
+	self% ~is_global_inside? on
+	self% ~is_global_outside? on
 	;attributes
 floor% :description
 	\ Provisional!!!
@@ -5248,7 +5162,7 @@ floor% :description
 	;description
 sky% :attributes
 	s" cielo" self% name!
-	self% ~global_outside? on
+	self% ~is_global_outside? on
 	;attributes
 sky% :description
 	\ Provisional!!!
@@ -5753,7 +5667,7 @@ variable silent_well_done?  silent_well_done? off
 	s" Ya" rot direct_pronoun s& you_carry$ s& with_you$ s&
 	;
 : you_already_have_it  ( a -- )  \ Informa de que el protagonista ya tiene un ente
-	dup ~familiar @ over ~owned? or   if
+	dup ~familiar @ over ~is_owned? or   if
 		['] you_already_have_it_(0)$
 		['] you_already_have_it_(1)$
 		2 choose execute
@@ -5870,7 +5784,7 @@ variable #elements  \ Total de los elementos de una lista
 	\ a1 u1 = Cadena con el nombre del ente
 	\ a2 = Ente
 	\ a3 u3 = Nombre del ente con, si es necesario, el indicador de que se trata de una prenda puesta
-	dup  ~worn? @  if  (worn)$ s&  else  drop  then
+	dup  is_worn?  if  (worn)$ s&  else  drop  then
 	;
 : (content_list)  ( a -- )  \ Añade a la lista en la cadena dinámica PRINT_STR el separador y el nombre de un ente
 	#elements @ #listed @  list_separator
@@ -5928,7 +5842,7 @@ section( Herramientas para las tramas asociadas a lugares)  \ {{{
 	;
 : leave_location  ( -- )  \ Tareas previas a abandonar el escenario actual
 	my_location ?dup  if
-		dup one_more_visit
+		dup visits++
 		protagonist% was_there
 	then
 	;
@@ -5938,7 +5852,7 @@ section( Herramientas para las tramas asociadas a lugares)  \ {{{
 	dup my_location!
 	dup describe
 	dup location_plot 
-	more_familiar  .present
+	familiar++  .present
 	;
 
 \ }}}###########################################################
@@ -6102,7 +6016,7 @@ section( Trama global)  \ {{{
 
 : (lock_found)  ( -- )  \ Encontrar el candado (al mirar la puerta o al intentar abrirla)
 	door% ~location @ lock% is_there
-	lock% more_familiar
+	lock% familiar++
 	;  ' (lock_found) is lock_found
 
 \ ------------------------------------------------
@@ -6641,12 +6555,10 @@ section( Errores del intérprete de comandos)  \ {{{
 	s{ s" el" s" ningún" }s&
 	;
 : too_many_actions  ( -- )  \ Informa de que se ha producido un error porque hay dos verbos en el comando
-	halto" x1"
 	s{ there_are$ s" dos verbos" s&
 	there_is$ s" más de un verbo" s&
 	there_are$ s" al menos dos verbos" s&
 	}s  language_error
-	halto" x2"
 	;
 ' too_many_actions constant (too_many_actions_error#)
 ' (too_many_actions_error#) is too_many_actions_error#
@@ -6763,9 +6675,9 @@ condicionales anidadas.
 	;
 : main_complement{required}  ( -- )  \ Provoca un error si no hay complemento directo
 	main_complement @
-	halto" main_complement{required} 1"
+	[false] ?halto" main_complement{required} 1"
 	0= no_main_complement_error# and throw
-	halto" main_complement{required} 2"
+	[false] ?halto" main_complement{required} 2"
 	;
 : {hold}  ( a -- )  \ Provoca un error si un ente no está en inventario
 	dup what !
@@ -6838,24 +6750,24 @@ condicionales anidadas.
 	main_complement @ ?{here}
 	;
 : {accessible}  ( a -- )  \ Provoca un error si un ente no está accessible
-	halto" {accessible} 1"
+	[false] ?halto" {accessible} 1"
 	dup what !
 	is_not_accessible?
-	halto" {accessible} 1a"
+	[false] ?halto" {accessible} 1a"
 	cannot_see_what_error# and
-	halto" {accessible} 1b"
+	[false] ?halto" {accessible} 1b"
 	throw
-	halto" {accessible} 2"
+	[false] ?halto" {accessible} 2"
 	;
 : ?{accessible}  ( a | 0 -- )  \ Provoca un error si un supuesto ente lo es y no está accessible
-	halto" ?{accessible} 1"
+	[false] ?halto" ?{accessible} 1"
 	?dup  if  {accessible}  then
-	halto" ?{accessible} 1"
+	[false] ?halto" ?{accessible} 1"
 	;
 : main_complement{accessible}  ( -- )  \ Provoca un error si el complemento directo existe y no está accessible
-	halto" main_complement{accessible} 1"
+	[false] ?halto" main_complement{accessible} 1"
 	main_complement @ ?{accessible}
-	halto" main_complement{accessible} 2"
+	[false] ?halto" main_complement{accessible} 2"
 	;
 : {taken}  ( a -- )  \ Provoca un error si un ente no puede ser tomado
 	\ Nota: los errores apuntados por el campo ~TAKE_ERROR# no reciben parámetros salvo en WHAT
@@ -6891,19 +6803,19 @@ condicionales anidadas.
 	main_complement @ ?{looked}
 	;
 : {living}  ( a -- )  \ Provoca un error si un ente no es un ser vivo
-	halto" {living} 1"
+	[false] ?halto" {living} 1"
 	is_living_being? 0= nonsense_error# and throw
-	halto" {living} 2"
+	[false] ?halto" {living} 2"
 	;
 : ?{living}  ( a | 0 -- )  \ Provoca un error si un supuesto ente lo es y no es un ser vivo
-	halto" ?{living} 1"
+	[false] ?halto" ?{living} 1"
 	?dup  if  {living}  then
-	halto" ?{living} 2"
+	[false] ?halto" ?{living} 2"
 	;
 : main_complement{living}  ( -- )  \ Provoca un error si el complemento directo existe y no es un ser vivo
-	halto" main_complement{living} 1"
+	[false] ?halto" main_complement{living} 1"
 	main_complement @ ?{living}
-	halto" main_complement{living} 2"
+	[false] ?halto" main_complement{living} 2"
 	;
 : {needed}  ( a -- )  \ Provoca un error si un ente no está en inventario, pues es necesario
 	dup what !
@@ -7025,27 +6937,27 @@ subsection( Mirar, examinar y registrar)  \ {{{
 : (do_look)  ( a -- )  \ Mira un ente
 	dup describe
 	dup is_location?  if  .present  then
-	more_familiar 
+	familiar++ 
 	;
-:action do_look  \  Acción de mirar
+:action do_look  ( -- )  \  Acción de mirar
 	main_complement @ ?dup 0=  if  my_location  then
 	dup {looked}  (do_look)
 	;action
-:action do_look_yourself  \  Acción de mirarse
+:action do_look_yourself  ( -- )  \  Acción de mirarse
 	main_complement @ ?dup 0=  if  protagonist%  then
 	(do_look)
 	;action
 \ Pendiente!!! traducir «otear»
-:action do_look_to_direction  \  Acción de otear
+:action do_look_to_direction  ( -- )  \  Acción de otear
 	main_complement{required}
 	main_complement{direction}
 	main_complement @ (do_look)
 	;action
-:action do_examine  \ Acción de examinar
+:action do_examine  ( -- )  \ Acción de examinar
 	\ Provisional!!!
 	do_look
 	;action
-:action do_search  \ Acción de registrar
+:action do_search  ( -- )  \ Acción de registrar
 	\ Provisional!!!
 	do_look
 	;action
@@ -7114,14 +7026,14 @@ false  [if]  \ Primera versión: las salidas se listan siempre en el mismo orden
 	cell  +loop 
 	[debug_do_exits]  [if]  cr .stack  [then]  \ Depuración!!!
 	;
-:action (do_exits)  \ Lista las salidas posibles de la localización del protagonista
+:action (do_exits)  ( -- )  \ Lista las salidas posibles de la localización del protagonista
 	«»-clear  \ Borrar la cadena dinámica de impresión, que servirá para guardar la lista de salidas.
 	#listed off
 	my_location dup free_exits #free_exits !
 	last_exit> 1+ first_exit>  do
-\		[debug_do_exits]  ?halto" do_exits 1"  \ Depuración!!!
+\		[debug_do_exits]  ?[false] ?halto" do_exits 1"  \ Depuración!!!
 		dup i + @
-\		[debug_do_exits]  ?halto" do_exits 2"  \ Depuración!!!
+\		[debug_do_exits]  ?[false] ?halto" do_exits 2"  \ Depuración!!!
 		if  i (do_exit)  then
 	cell  +loop  drop
 	.exits
@@ -7142,7 +7054,7 @@ false  [if]  \ Primera versión: las salidas se listan siempre en el mismo orden
 	depth r> -
 	[debug_do_exits]  [if]  cr .stack  [then]  \ Depuración!!!
 	;
-:action do_exits  \ Lista las salidas posibles de la localización del protagonista
+:action do_exits  ( -- )  \ Lista las salidas posibles de la localización del protagonista
 	«»-clear  \ Borrar la cadena dinámica de impresión, que servirá para guardar la lista de salidas.
 	#listed off
 	my_location free_exits
@@ -7158,7 +7070,7 @@ subsection( Ponerse y quitarse prendas)  \ {{{
 : (do_put_on)  ( a -- )  \ Ponerse una prenda
 	is_worn  well_done
 	;
-:action do_put_on  \ Acción de ponerse una prenda
+:action do_put_on  ( -- )  \ Acción de ponerse una prenda
 	\ Pendiente!!! Hacer que tome la prenda si no la tiene
 	main_complement{required}
 	main_complement{cloth}
@@ -7167,9 +7079,9 @@ subsection( Ponerse y quitarse prendas)  \ {{{
 	main_complement @ (do_put_on)
 	;action
 : (do_take_off)  ( a -- )  \ Quitarse una prenda
-	~worn? off  well_done
+	~is_worn? off  well_done
 	;
-:action do_take_off  \ Acción de quitarse una prenda
+:action do_take_off  ( -- )  \ Acción de quitarse una prenda
 	main_complement{required}
 	main_complement{worn}
 	main_complement @ (do_take_off)
@@ -7216,9 +7128,9 @@ subsection( Tomar y dejar)  \ {{{
 \ 	nonsense
 \ 	;
 : (do_take)  ( a -- )  \ Toma un ente
-	dup is_hold more_familiar well_done
+	dup is_hold familiar++ well_done
 	;
-:action do_take  \ Acción de coger
+:action do_take  ( -- )  \ Acción de coger
 	main_complement{required}
 	main_complement{not_hold}
 	main_complement{here}
@@ -7226,14 +7138,14 @@ subsection( Tomar y dejar)  \ {{{
 	main_complement @ (do_take)
 	;action
 : (do_drop)  ( a -- )  \ Deja un ente 
-	dup ~worn? off  is_here  well_done
+	dup ~is_worn? off  is_here  well_done
 	;
-:action do_drop  \ Acción de dejar
+:action do_drop  ( -- )  \ Acción de dejar
 	main_complement{required}
 	main_complement{hold}
 	main_complement @ (do_drop)
 	;action
-:action do_take|do_eat  \ Acción de desambiguación
+:action do_take|do_eat  ( -- )  \ Acción de desambiguación
 \ Pendiente!!!
 	do_take
 	;action
@@ -7246,7 +7158,7 @@ subsection( Cerrar y abrir)  \ {{{
 \ de estados de puerta y candado.
 
 : (do_close)  ( a -- )  \ Cerrar un ente
-	~open? off
+	~is_open? off
 	;
 : close_the_door  ( -- )  \ Cerrar la puerta, si es posible
 	door% {open}
@@ -7265,7 +7177,7 @@ subsection( Cerrar y abrir)  \ {{{
 		nonsense
 	endcase
 	;
-:action do_close  \ Acción de cerrar
+:action do_close  ( -- )  \ Acción de cerrar
 	main_complement{required}
 	main_complement{accessible}
 	main_complement @ close_it
@@ -7301,7 +7213,7 @@ subsection( Cerrar y abrir)  \ {{{
 		nonsense
 	endcase
 	;
-:action do_open  \ Acción de abrir
+:action do_open  ( -- )  \ Acción de abrir
 	s" do_open" halto  \ Depuración!!!
 	main_complement{required}
 	main_complement{accessible}
@@ -7315,7 +7227,7 @@ subsection( Cerrar y abrir)  \ {{{
 		nonsense
 	endcase
 	;
-:action do_lock  \ Acción de candar
+:action do_lock  ( -- )  \ Acción de candar
 	main_complement{required}
 	main_complement{accessible}
 	main_complement{unlocked}
@@ -7357,14 +7269,14 @@ subsection( Agredir)  \ {{{
 		do_not_worry
 	endcase
 	;
-:action do_attack  \ Acción de atacar
+:action do_attack  ( -- )  \ Acción de atacar
 	main_complement{required}
 	main_complement{accessible}
 	main_complement{living} \ Pendiente!!! También es posible atacar otras cosas, como la ciudad u otros lugares, o el enemigo!!!
 	tool_complement{hold}
 	main_complement @ (do_attack)
 	;action
-:action do_fear  \ Acción de asustar
+:action do_fear  ( -- )  \ Acción de asustar
 	\ Pendiente!!! Distinguir de las demás en grado o requisitos
 	main_complement{required}
 	main_complement{accessible}
@@ -7395,18 +7307,18 @@ subsection( Agredir)  \ {{{
 		do_not_worry
 	endcase
 	;
-:action do_kill  \ Acción de matar
-	halto" do_kill 1"
+:action do_kill  ( -- )  \ Acción de matar
+	[false] ?halto" do_kill 1"
 	main_complement{required}
-	halto" do_kill 2"
+	[false] ?halto" do_kill 2"
 	main_complement{accessible}
-	halto" do_kill 3"
+	[false] ?halto" do_kill 3"
 	main_complement{living}  \ Pendiente!!! También es posible matar otras cosas, como el enemigo!!!
-	halto" do_kill 4"
+	[false] ?halto" do_kill 4"
 	tool_complement{hold}
-	halto" do_kill 5"
+	[false] ?halto" do_kill 5"
 	main_complement @ (do_kill)
-	halto" do_kill 6"
+	[false] ?halto" do_kill 6"
 	;action
 : break_the_cloak  ( -- )  \ Romper la capa
 	;
@@ -7417,14 +7329,14 @@ subsection( Agredir)  \ {{{
 		do_not_worry
 	endcase
 	;
-:action do_break  \ Acción de romper
+:action do_break  ( -- )  \ Acción de romper
 	main_complement{required}
 	main_complement{accessible}
 	main_complement{broken}
 	tool_complement{hold}
 	main_complement @ (do_break)
 	;action
-:action do_hit  \ Acción de golpear
+:action do_hit  ( -- )  \ Acción de golpear
 	s" golpear"  main_complement+is_nonsense
 	;action
 : can_be_sharpened?  ( a -- f )  \ ¿Puede un ente ser afilado?
@@ -7489,7 +7401,7 @@ subsection( Agredir)  \ {{{
 		log%  of  sharpen_the_log  endof
 	endcase
 	;
-:action do_sharpen  \ Acción de afilar
+:action do_sharpen  ( -- )  \ Acción de afilar
 	main_complement{required}
 	main_complement{accessible}
 	main_complement @ can_be_sharpened?
@@ -7533,7 +7445,7 @@ subsection( Movimiento)  \ {{{
 	\ Inacabado!!!
 	s" Ir sin rumbo...?" narrate
 	;
-:action do_go  \ Acción de ir
+:action do_go  ( -- )  \ Acción de ir
 	[debug]  [if]  s" Al entrar en DO_GO" debug  [then]  \ Depuración!!!
 	main_complement @ ?dup
 	if  do_go_if_possible
@@ -7541,52 +7453,52 @@ subsection( Movimiento)  \ {{{
 	then
 	[debug]  [if]  s" Al salir de DO_GO" debug  [then]  \ Depuración!!!
 	;action
-:action do_go_north  \ Acción de ir al Norte
+:action do_go_north  ( -- )  \ Acción de ir al Norte
 	main_complement{forbidden}
 	north% do_go_if_possible
 	;action
-:action do_go_south  \ Acción de ir al Sur
+:action do_go_south  ( -- )  \ Acción de ir al Sur
 	[debug_catch]  [if]  s" Al entrar en DO_GO_SOUTH" debug  [then]  \ Depuración!!!
 	main_complement{forbidden}
 	south% do_go_if_possible
 	[debug_catch]  [if]  s" Al salir de DO_GO_SOUTH" debug  [then]  \ Depuración!!!
 	;action
-:action do_go_east  \ Acción de ir al Este
+:action do_go_east  ( -- )  \ Acción de ir al Este
 	main_complement{forbidden}
 	east% do_go_if_possible
 	;action
-:action do_go_west  \ Acción de ir al Oeste
+:action do_go_west  ( -- )  \ Acción de ir al Oeste
 	main_complement{forbidden}
 	west% do_go_if_possible
 	;action
-:action do_go_up  \ Acción de ir hacia arriba
+:action do_go_up  ( -- )  \ Acción de ir hacia arriba
 	main_complement{forbidden}
 	up% do_go_if_possible
 	;action
-:action do_go_down  \ Acción de ir hacia abajo
+:action do_go_down  ( -- )  \ Acción de ir hacia abajo
 	main_complement{forbidden}
 	down% do_go_if_possible
 	;action
-:action do_go_out  \ Acción de ir hacia fuera
+:action do_go_out  ( -- )  \ Acción de ir hacia fuera
 	main_complement{forbidden}
 	s" voy fuera" narrate \ tmp!!!
 	;action
-:action do_go_in  \ Acción de ir hacia dentro
+:action do_go_in  ( -- )  \ Acción de ir hacia dentro
 	main_complement{forbidden}
 	s" voy dentro" narrate \ tmp!!!
 	;action
-:action do_go_back  \ Acción de ir hacia atrás
+:action do_go_back  ( -- )  \ Acción de ir hacia atrás
 	main_complement{forbidden}
 	s" voy atrás" narrate \ tmp!!!
 	;action
-:action do_go_ahead  \ Acción de ir hacia delante
+:action do_go_ahead  ( -- )  \ Acción de ir hacia delante
 	main_complement{forbidden}
 	s" voy alante" narrate \ tmp!!!
 	;action
 
 \ }}}---------------------------------------------
 subsection( Partir [desambiguación])  \ {{{
-:action do_go|do_break  \ Acción de partir (desambiguar: romper o marchar)
+:action do_go|do_break  ( -- )  \ Acción de partir (desambiguar: romper o marchar)
 	main_complement @ 0=
 	if
 		tool_complement @
@@ -7673,7 +7585,7 @@ subsection( Nadar)  \ {{{
 	else  0$
 	then  swiming$ s&
 	;
-:action do_swim  \ Acción de nadar
+:action do_swim  ( -- )  \ Acción de nadar
 	my_location location_11% =  if
 		clear_screen_for_location
 		you_swim$ narrate narration_break
@@ -7693,7 +7605,7 @@ subsection( Escalar)  \ {{{
 	else  drop s" [no está aquí]" narrate
 	then
 	;
-:action do_climb  \ Acción de escalar
+:action do_climb  ( -- )  \ Acción de escalar
 	\ Inacabado!!!
 	main_complement @ ?dup
 	if  do_climb_if_possible
@@ -7725,7 +7637,7 @@ subsection( Inventario)  \ {{{
 	else  ^only_$ you_are_carrying$ s& 
 	then
 	;
-:action do_inventory  \ Acción de hacer inventario
+:action do_inventory  ( -- )  \ Acción de hacer inventario
 	protagonist% content_list  \ Hace la lista en la cadena dinámica PRINT_STR
 	#listed @ case
 		0 of  you_are_carrying_nothing$ 2swap s& endof
@@ -7737,14 +7649,14 @@ subsection( Inventario)  \ {{{
 \ }}}---------------------------------------------
 subsection( Hacer)  \ {{{
 
-:action do_make  \ Acción de hacer (fabricar)
+:action do_make  ( -- )  \ Acción de hacer (fabricar)
 	main_complement @
 	if  nonsense
 	else  do_not_worry
 	then
 	;action
 
-:action do_do  \ Acción de hacer (genérica)
+:action do_do  ( -- )  \ Acción de hacer (genérica)
 	main_complement @ inventory% =
 	if  do_inventory
 	else do_make
@@ -7844,7 +7756,7 @@ subsection( Hablar y presentarse)  \ {{{
 	go_in_peace  the_refugees_let_you_go  
 	;
 : talked_to_the_leader  ( -- )  \ Aumentar el contador de conversaciones con el jefe de los refugiados
-	leader% one_more_conversation
+	leader% conversations++
 	;
 : we_are_refugees  ( -- )  \ Somos refugiados
 	s" Somos refugiados de la gran guerra."
@@ -7882,7 +7794,7 @@ subsection( Hablar y presentarse)  \ {{{
 \ Conversaciones con Ambrosio
 
 : talked_to_ambrosio  ( -- )  \ Aumentar el contador de conversaciones con Ambrosio
-	ambrosio% one_more_conversation
+	ambrosio% conversations++
 	;
 : (conversation_0_with_ambrosio)  ( -- )  \ Primera conversación con Ambrosio
 	s" Hola, buen hombre." speak
@@ -8023,13 +7935,13 @@ subsection( Hablar y presentarse)  \ {{{
 	else  talk_to_yourself
 	then
 	;
-:action do_speak  \ Acción de hablar
+:action do_speak  ( -- )  \ Acción de hablar
 	[debug]  [if]  s" En DO_SPEAK" debug  [then]  \ Depuración!!!
 	main_complement @ ?dup 0=  \ Si no hay complemento...
 	if  whom  \ ...buscar el más probable
 	then  (do_speak)
 	;action
-:action do_introduce_yourself  \ Acción de presentarse a alguien
+:action do_introduce_yourself  ( -- )  \ Acción de presentarse a alguien
 	main_complement @ ?dup 0=  \ Si no hay complemento...
 	if  unknown_whom  \ ...buscar el (desconocido) más probable
 	then  (do_speak)
@@ -8076,13 +7988,136 @@ svariable filename
 \	false to gui?  \ Desactivar el modo gráfico (no está claro en el manual)
 	['] reenter to <main>  \ Actualizar la palabra que se ejecutará al arrancar
 \	file_name$ save  new_page
-	file_name$ filename place filename count save  
+	file_name$ filename s! filename count save  
 	;
-:action do_save_the_game  \ Acción de salvar el juego
+:action do_save_the_game  ( -- )  \ Acción de salvar el juego
 	main_complement{forbidden}
 	(do_save_the_game)
 	;action
 [then]
+
+svariable game_file_name  \ Nombre del fichero en que se graba la partida
+variable game_file_id  \ Identificador del fichero en que se graba la partida
+: game_file_name$  ( -- a u )  \ Devuelve el nombre del fichero en que se graba la partida
+	game_file_name count
+	;
+: close_game_file  ( -- )  \ Cierra el fichero en que se grabó la partida
+	game_file_id @ close-file abort" Close file error."  \ mensaje tmp!!!
+	;
+: create_game_file  ( a u -- )  \ Crea un fichero para guardar una partida (sobreescribiendo otro que tuviera el mismo nombre)
+	\ a u = Nombre del fichero
+	r/w create-file abort" Create file error."  \ mensaje tmp!!!
+	game_file_id !
+	;
+: read_game_file  ( a u -- )  \ Lee el fichero de configuración
+	\ Pendiente!!! Comprobar la existencia del fichero y atrapar errores al leerlo.
+	only restore_vocabulary
+	included
+	restore_vocabularies
+	;
+: >file/  ( a u -- )  \ Escribe una línea en el fichero en que se está grabando la partida
+	game_file_id @ write-line abort" Write file error"  \ mensaje tmp!!!
+	;
+: cr>file  ( a u -- )  \ Escribe un final de línea en el fichero en que se está grabando la partida
+	s" " >file/
+	;
+: >file  ( a u -- )  \ Escribe una cadena en el fichero en que se está grabando la partida
+	space+
+	game_file_id @ write-file abort" Write file error"  \ mensaje tmp!!!
+	;
+also  game_vocabulary  definitions
+: restore_entity  ( u -- )
+	;
+: string>file  ( a u -- )
+	s| s"| 2swap s& s| "| s+ >file
+	;
+: flag_name  ( f -- a u )
+	if  s" true"  else  s" false"  then
+	;
+: f>file  ( f -- )
+	flag_name >file
+	;
+: n>string  ( n -- a u )
+	s>d swap over dabs
+	<# #s rot sign #> >csb
+	;
+: u>string ( u -- a u )
+	s>d <# #s #> >csb
+	;
+: n>file  ( n -- )
+	n>string >file
+	;
+restore_vocabularies
+: save_entity  ( u -- )
+	#>entity >r
+	r@ name string>file
+	r@ has_personal_name? f>file
+	r@ has_feminine_name? f>file
+	r@ has_plural_name? f>file
+	r@ has_no_article? f>file
+	r@ has_definite_article? f>file
+	r@ description_xt n>file
+	r@ init_xt n>file
+	r@ is_character? f>file
+	r@ conversations n>file
+	r@ is_decoration? f>file
+	r@ take_error# n>file
+	r@ break_error# n>file
+	r@ is_global_outside? f>file
+	r@ is_global_inside? f>file
+	r@ is_owned? f>file
+	r@ is_cloth? f>file
+	r@ is_worn? f>file
+	r@ is_light? f>file
+	r@ is_lit? f>file
+	r@ is_vegetal? f>file
+	r@ is_animal? f>file
+	r@ is_human? f>file
+	r@ is_open? f>file
+	r@ is_location? f>file
+	r@ location n>file
+	r@ previous_location n>file
+	r@ location_plot_xt n>file
+	r@ visits n>file
+	r@ familiar n>file
+	r@ north_exit n>file
+	r@ south_exit n>file
+	r@ east_exit n>file
+	r@ west_exit n>file
+	r@ up_exit n>file
+	r@ down_exit n>file
+	r@ out_exit n>file
+	r@ in_exit n>file
+	r> direction n>file
+	s" restore_entity" >file/
+	;
+: save_entities  ( -- )
+	#entities 0  do
+		i save_entity 
+	loop
+	;
+: save_flag  ( a u f -- )
+	;
+: save_config
+	;
+: save_plot
+	;
+: write_game_file  ( -- )  \ Escribe el fichero en que se graba la partida
+	s" \ Datos de restauración de una partida de «Asalto y castigo»" >file/  \ Prueba!!!
+	s" \ Entes" >file/
+	save_entities
+	s" \ Configuración" >file/
+	save_config
+	s" \ Trama" >file/
+	save_plot
+	;
+: (do_save_the_game)  ( a u -- )  \ Salva la partida
+	create_game_file write_game_file close_game_file
+	;
+:action do_save_the_game  ( a u -- )  \ Acción de salvar la partida
+	\ main_complement{forbidden}
+	(do_save_the_game)
+	;action
 
 \ }}}
 \ }}}###########################################################
@@ -8093,9 +8128,14 @@ section( Intérprete de comandos)  \ {{{
 Gracias al uso del propio intérprete de Forth como
 intérprete de comandos del juego, más de la mitad del
 trabajo ya está hecha por anticipado. Para ello
-basta crear las palabras del vocabulario juego como
+basta crear las palabras del vocabulario del juego como
 palabras propias de Forth y hacer que Forth interprete
-directamente la entrada del jugador.
+directamente la entrada del jugador. Creando las palabras
+en un vocabulario de Forth específico para ellas,
+y haciendo que sea el único vocabulario activo en
+el momento de la interpretación, solo las palabras del
+juego serán reconocidas, no las del programa ni las del
+sistema Forth.
 
 Sin embargo hay una consideración importante: Al pasarle
 directamente al intérprete de Forth el texto del comando
@@ -8154,20 +8194,20 @@ el proceso con un error.
 	case-ins off  \ Activar la distinción de mayúsculas Probarlo!!!
 	only player_vocabulary  \ Dejar solo el diccionario PLAYER_VOCABULARY activo
 	\ [debug_catch]  [if]  s" En VALID_PARSING? antes de CATCH" debug  [then]  \ Depuración!!!
-	halto" en valid_parsing? antes de preparar CATCH"
+	[false] ?halto" en valid_parsing? antes de preparar CATCH"
 	['] evaluate 
-	halto" en valid_parsing? antes de CATCH"
+	[false] ?halto" en valid_parsing? antes de CATCH"
 	catch  \ Llamar a EVALUATE a través de CATCH para poder regresar directamente con THROW en caso de error
-	halto" en valid_parsing? después de CATCH"
+	[false] ?halto" en valid_parsing? después de CATCH"
 	case-ins on  \ Desactivar la distinción de mayúsculas Probarlo!!!
 	\ Pendiente!!! problema aún no resuelto
 	\ Ahora «abre» sin complemento
 	\ nip nip  \ Arreglar la pila, pues CATCH hace que apunte a su posición previa
 	\ [debug_catch]  [if]  s" En VALID_PARSING? después de CATCH" debug  [then]  \ Depuración!!!
 	dup  if  nip nip  then
-	halto" en valid_parsing? tras NIP NIP"
+	[false] ?halto" en valid_parsing? tras NIP NIP"
 	dup ?wrong 0=
-	halto" en valid_parsing? tras ?WRONG"
+	[false] ?halto" en valid_parsing? tras ?WRONG"
 	restore_vocabularies
 	[debug]  [if]  s" Saliendo de VALID_PARSING?" debug  [then]  \ Depuración!!!
 	[debug_catch]  [if]  s" Saliendo de VALID_PARSING?" debug  [then]  \ Depuración!!!
@@ -8194,20 +8234,20 @@ el proceso con un error.
 : second?  ( a1 a2 -- a1 f )  \ ¿La acción o el complemento son los segundos que se encuentran?
 	\ a1 = Acción o complemento recién encontrado
 	\ a2 = Acción o complemento anterior, o cero
-	halto" second? 1"
+	[false] ?halto" second? 1"
 	2dup <> swap 0<> and  \ ¿Hay ya otro anterior y es diferente?
-	halto" second? 2"
+	[false] ?halto" second? 2"
 	;
 : action!  ( a -- )  \ Comprueba y almacena la acción (la dirección de ejecución de su palabra) 
-	halto" action! 1"
+	[false] ?halto" action! 1"
 	action @ second?  \ ¿Había ya una acción?
-	halto" action! 2"
+	[false] ?halto" action! 2"
 	too_many_actions_error# and
-	halto" action! antes de throw"
+	[false] ?halto" action! antes de throw"
 	throw  \ Sí, error
-	halto" action! 2a"
+	[false] ?halto" action! 2a"
 	action !  \ No, guardarla
-	halto" action! 3"
+	[false] ?halto" action! 3"
 	;
 : (complement!)  ( a -- )  \
 	[debug]  [if]  s" En (COMPLEMENT!)" debug  [then]  \ Depuración!!!
@@ -8264,10 +8304,10 @@ also config_vocabulary  definitions
 [false]  [if]  \ En vez de así:
 : (  ( "texto<cierre de paréntesis>" ; -- ) \ Comentario clásico
 	postpone ( 
-	; immediate
+	;  immediate
 : \  ( "texto<fin de línea>" ; -- ) \ Comentario de línea
 	postpone \ 
-	; immediate
+	;  immediate
 [else]  \ Es más sencillo así:
 ' ( alias (  immediate
 ' \ alias \  immediate
@@ -8377,10 +8417,10 @@ restore_vocabularies
 	4 /indentation !
 	indent_first_line_too? on
 	indent_pause_prompts? on
-	s" ..." scroll_prompt place
-	s" ..." narration_prompt place
-	s" ..." scene_prompt place
-	s" >" command_prompt place
+	s" ..." scroll_prompt s!
+	s" ..." narration_prompt s!
+	s" ..." scene_prompt s!
+	s" >" command_prompt s!
 	-1 narration_break_milliseconds !
 	-1 scene_break_milliseconds !
 	scene_page? on
@@ -8389,6 +8429,7 @@ restore_vocabularies
 	init_colors  \ Colores predeterminados
 	;
 : read_config  ( -- )  \ Lee el fichero de configuración
+	\ Pendiente!!! Atrapar errores al leerlo.
 	only config_vocabulary
 	[ config_file$ ] sliteral included
 	restore_vocabularies
@@ -8892,8 +8933,8 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 	CONFIGURA CONFIGURO
 	}synonyms
 : GRABAR  ( "name<space" -- )  \ Graba el estado de la partida en un fichero
-	\ Pendiente!!! 
-	;
+	nextword ['] do_save_the_game action!
+	;  immediate
 ' GRABAR synonyms{
 	GRABA GRABO
 	EXPORTAR EXPORTA EXPORTO
@@ -8935,7 +8976,7 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 \ Comandos para usar durante el desarrollo!!!:
 : forth  (do_finish)  ;
 : bye  bye  ;
-: quit quit  ; 
+: quit  quit  ; 
 
 : notfound  ( a u -- )  \ Tratar una palabra no encontrada
 	\ Esta palabra será ejecutada automáticamente por SP-Forth
@@ -9096,7 +9137,7 @@ svariable question
 : answer  ( a u -- n )  \ Devuelve la respuesta a una pregunta del tipo «sí o no»
 	\ a u = Pregunta
 	\ n = Respuesta: un número negativo para «no» y positivo para «sí»
-	question place
+	question s!
 	begin
 		.question wait_for_input  yes|no ?dup
 	until
@@ -9219,10 +9260,10 @@ false  [if]
 	success?  if  the_happy_end  else  the_sad_end  then
 	scene_break 
 	;
-:action (do_finish)  \ Abandonar el juego
+:action (do_finish)  ( -- )  \ Abandonar el juego
 	restore_vocabularies system_color cr (title) quit
 	;action
-:action do_finish  \ Acción de abandonar el juego
+:action do_finish  ( -- )  \ Acción de abandonar el juego
 	surrender?  if
 		\ retry?$  cr+ no?  if  (do_finish)  then
 		(do_finish)
