@@ -2,13 +2,13 @@
 CR .( Asalto y castigo )  \ {{{
 
 \ Un juego conversacional en castellano, escrito en Forth.
-\ Konversacia hispanlingva ludo, verkita en Forth.
+\ Konversacia hispanlingva ludo, forthe verkita.
 \ A Spanish text adventure, written in Forth.
 
 \ Copyright (C) 2011 Marcos Cruz (programandala.net)
 
 ONLY FORTH DEFINITIONS
-: version$  ( -- a u )  S" A-02-201112300031"  ;
+: version$  ( -- a u )  S" A-02-201112310100"  ;
 version$ TYPE CR
 
 \ 'Asalto y castigo' (written in Forth) is free software; you can redistribute it and/or
@@ -42,11 +42,11 @@ Juegos conversacionales: http://caad.es
 
 Forth: http://forth.org
 SP-Forth: http://spf.sf.net
-Gforth:
-lina: 
+Gforth: http://www.jwdt.com/~paysan/gforth.html
+lina: http://home.hccnet.nl/a.w.m.van.der.horst/ciforth.html
 bigFORTH:
 
-Otros proyectos del autor: http://programanadala.net
+Otros proyectos del autor: http://programandala.net
 
 )
 
@@ -58,43 +58,48 @@ Otros proyectos del autor: http://programanadala.net
 
 \ La lista de tareas pendientes está al final de este fichero.
 
-0  [IF]  \ ......................................
+\ Notación de la pila (incompleta!!!):
 
-Notación de la pila (incompleta!!!)
+(
 
 a     = dirección de memoria
-b     = octeto (valor ocho bitios)
+b     = octeto, valor ocho bitios
 c     = carácter
-f     = indicador lógico (cero significa «falso»; otro valor significa «cierto»)
-ff    = indicador de Forth (0=«falso»; -1=«cierto»)
+cfa   = dirección del campo de código de una palabra, notación de Forth clásico análoga a xt en ANS Forth
+f     = indicador lógico: cero significa «falso»; otro valor significa «cierto»
+ff    = indicador puro de Forth: 0=«falso»; -1=«cierto»
 u     = número de 32 bitios sin signo
 n     = número de 32 bitios con signo
 +n    = número de 32 bitios positivo
--n    = número de 32 bitios positivo
-a u   = zona de memoria, generalmente una cadena de texto (dirección y longitud)
-xt    = dirección de ejecución de una palabra
+-n    = número de 32 bitios negativo
+a u   = dirección y longitud de una zona de memoria, generalmente una cadena de texto
+xt    = dirección de ejecución de una palabra, notación de ANS Forth análoga a cfa en Forth clásico
 x     = valor sin determinar 32 bitios
 true  = -1
 false = 0
 
-[THEN]  \ ......................................
+)
 
 \ }}}###########################################################
 CR .( Identificación del sistema)  \ {{{
 
-0  [IF]  \ ......................................
+(
 
 A continuación creamos varias constantes [con versiones
 inmediatas de cada una, para ser usadas como indicadores de
 compilación condicional] que indican el sistema Forth y el
 sistema operativo en el que funciona el juego.
 
-El soporte para Gforth no está completado todavía.
+El soporte para Gforth y bigFORTH no está completado todavía.
+SP-Forth y lina son los sistemas prioritarios porque
+pueden crear ejecutables.
 
-[THEN]  \ ......................................
+)
 
-: check  ( n -- )  \ Para poner puntos de comprobación de la pila
-	cr . .s ." ..." key drop
+: check  ( n -- )
+	\ Depuración!!! Provisional!!!
+	\ Muestra un número y la pila y espera una tecla
+	CR . .S ." ..." KEY DROP
 	;
 
 \ Sistema Forth
@@ -120,7 +125,7 @@ CONSTANT [lina?] IMMEDIATE
 
 sp-forth? gforth? OR bigforth? OR lina? OR 0=
 [IF]
-CR .( El programa no ha sido adaptado a este sistema Forth.)
+CR .( El programa no está adaptado a este sistema Forth.)
 CR .( Probablemente se producirán errores fatales durante la compilación.)
 \ CR .( Pulsa una tecla para continuar.)  KEY DROP
 [THEN]
@@ -134,7 +139,7 @@ CR .( Más de un sistema Forth ha sido reconocido.)
 CR .( La compilación es interrumpida.) ABORT
 [THEN]
 
-gforth? bigforth? or lina? or
+gforth? bigforth? or
 [IF]
 CR .( El programa aún no está plenamente adaptado a este sistema Forth.)
 CR .( La compilación podría detenerse con errores.)
@@ -246,7 +251,7 @@ lina? [IF]
 
 (
 
-El fichero lina_extension.fs que cargaremos a continuación
+El fichero extend.fs que cargaremos a continuación
 está creado a medida para ampliar lina con todas las
 herramientas necesarias. Aunque se supone que ya ha sido
 incluido en el arranque del sistema [pues para haber
@@ -257,7 +262,7 @@ permite cargar este programa desde un lina casi desnudo.
 
 )
 
-S" lina_extension.fs" INCLUDED
+S" extend.fs" INCLUDED
 
 (
 
@@ -270,7 +275,7 @@ utilice esas palabras en minúsculas.
 
 )
 
-S" lina_cicc.fs" INCLUDED
+S" ltk/cicc.fs" INCLUDED
 
 \ Algunas equivalencias:
 
@@ -280,7 +285,7 @@ S" lina_cicc.fs" INCLUDED
 : \eof ( -- ) \ Ignora el resto del fichero
 	\ Nota: esta palabra en SP-Forth es nativa (está definida en ensamblador).
 	\ Esta es una definición equivalente para lina:
-	SRC 1 CELLS + @ IN !
+	true ?leave-block
 	;
 
 (
@@ -295,6 +300,7 @@ http://programandala.net/es.programa.lina_toolkit
 
 \ ------------------------------------------------
 \ La librería «Forth Foundation Library»
+\ (versión 0.8.0)
 \ http://code.google.com/p/ffl/
 
 (
@@ -349,14 +355,14 @@ lina?
 
 \ Nota:
 \ No es posible usar un solo INCLUDED para ambos casos,
-\ colacado tras el [THEN] , como sería más elegante,
+\ colocado tras el [THEN] , como sería más elegante,
 \ porque en algunos Forth la cadena creada con S" es guardada en
 \ el PAD u otra zona de almacenamiento temporal, zona que puede
 \ ser machacada por el funcionamiento de [IF] y [ELSE] , que
 \ leen cada palabra del código fuente y la guardan en el mismo
 \ sitio.
 
-0  [IF]  \ ......................................
+(
 
 La palabra SAVE de SP-Forth, que crea un ejecutable
 del sistema, no funciona bien cuando se ha cargado csb2.
@@ -369,7 +375,7 @@ espacio del diccionario de Forth.
 
 Para más detalles, veáse el código fuente del programa csb2.
 
-[THEN]  \ ......................................
+)
 
 false  [IF]  \ Solución descartada
 
@@ -436,7 +442,7 @@ constant /counted_string  \ Longitud máxima de una cadena contada (incluyendo l
 : .s?  ( -- )  \ Imprime el contenido de la pila si no está vacía
 	depth
 	[lina?]  [if]  1 >  [then]  \ Al parecer lina mantiene un valor en la pila mientra interpreta ficheros
-	if  cr ." Pila: " .s cr  key drop
+	if  cr ." Pila: " .s cr  key drop 
 	then
 	;
 : section(  ( "text<bracket>" -- )  \ Notación para los títulos de sección en el código fuente
@@ -582,7 +588,7 @@ section( Palabras genéricas)  \ {{{
 	\ Palabra tomada de la librería de contribuciones de SP-Forth (~nn/lib/enum.f)
 	dup constant 1+
 	;
-: drops  ( x1..xn n -- )  \ Elimina n celdas de la pila
+: drops  ( x1 ... xn n -- )  \ Elimina n celdas de la pila
 	0  do  drop  loop
 	;
 : truncate_length  ( u1 -- u1 | u2 )  \ Recorta la longitud de una cadena si es demasiado larga
@@ -591,7 +597,7 @@ section( Palabras genéricas)  \ {{{
 : sconstant  (  a1 u "name" -- )  \ Crea una constante de cadena
 	[lina?]  [IF]
 		\ Nota!!!:
-		\ Lina en principio no necesita almacenar la cadena en la constante,
+		\ En principio lina no necesita almacenar la cadena en la constante,
 		\ porque ya la guarda en el espacio del diccionario al crearla con S" .
 		\ No obstante la definición siguiente no funcionará
 		\ si la cadena recibida está por algún motivo en un lugar temporal:
@@ -693,7 +699,7 @@ sp-forth?  [IF]
 \ }}}###########################################################
 section( Vectores)  \ {{{
 
-0  [IF]  \ ......................................
+(
 
 Algunas palabras se necesitan, como parte de la definición
 de otras palabras, antes de haber sido escritas.  Esto
@@ -710,12 +716,16 @@ código fuente cuando se defina la palabra con el código que
 deben ejecutar.
 
 La palabra de SP-Forth para crear vectores es VECT y la
-palabra para actualizarlos es TO (la misma que actualiza los
-valores creados con VALUE ) pero las que usaremos son las
+palabra para actualizarlos es TO , la misma que actualiza los
+valores creados con VALUE , pero las que usaremos son las
 habituales en ANS Forth: DEFER e IS . Hacen exactamente lo
 mismo: DEFER crea una palabra que no hace
 nada, pero cuya dirección de ejecución podrá ser después
-cambiada usando la palabra IS de la siguiente forma:
+cambiada usando la palabra IS como en el siguiente ejemplo:
+
+)
+
+false  [IF]  \ Ejemplo de código
 
 defer palabrita  \ Crear el vector
 : usar_palabrita  \ Palabra que usa PALABRITA y que por tanto necesita que esté ya en el diccionario
@@ -731,7 +741,7 @@ defer palabrita  \ Crear el vector
 \ Ahora tanto PALABRITA como USAR_PALABRITA
 \ harán lo mismo que (PALABRITA) .
 
-[THEN]  \ ......................................
+[THEN]  \ Fin del ejemplo
 
 defer protagonist%  \ Ente protagonista
 defer do_exits  \ Acción de listar las salidas
@@ -739,7 +749,7 @@ defer do_exits  \ Acción de listar las salidas
 \ }}}###########################################################
 section( Códigos de error)  \ {{{
 
-0  [IF]  \ ......................................
+(
 
 En el estándar ANS Forth los códigos de error de -1 a -255
 están reservados para el propio estándar; el resto de
@@ -750,47 +760,58 @@ adelante puede usarlos libremente cada programa.
 En este programa usamos como códigos de error las
 direcciones de ejecución de las palabras que muestran los
 errores.  En Forth, la dirección de ejecución de una palabra
-se llama tradicionalmente «code offset: address» («cfa» en
-notación de la pila). Pero el estándar ANS Forth de 1994, el
+se llama tradicionalmente «code field address», o «cfa» en
+notación de la pila. Pero el estándar ANS Forth de 1994, el
 más extendido en la actualidad, utiliza el término
-«execution token» («xt» en la notación de la pila), pues en
+«execution token», o «xt» en la notación de la pila, pues en
 algunos sistemas Forth no es una dirección de memoria sino
 un código interno. En este programa lo llamamos «dirección
 de ejecución» pero en la notación de pila lo representamos
-como «xt».
+bien como «xt» o como «cfa» dependiendo del sistema Forth
+del que se trate: SP-Forth o lina respectivamente.
 
-En cualquier caso es lo mismo en cualquier sistema Forth: es
-el valor que devuelven las palabras ' y ['] y que sirve de
-parámetro a EXECUTE .
+En cualquier caso se trata de lo mismo: es el valor que
+devuelven las palabras ' y ['] y que sirve de parámetro a
+EXECUTE .
 
-Ejemplo:
+)
+
+false  [IF]  \ Ejemplo de código:
 
 	: palabrita  ." ¡Hola mundo!"  ;
 	variable palabrita_xt
 	' palabrita palabrita_xt !
 	palabrita_xt @ execute
 
+[THEN]  \ Fin del ejemplo
+
+(
+
 Como se ve, usar como códigos de error las direcciones de
 ejecución de las palabras de error tiene la ventaja de que
 no hace falta ningún mecanismo adicional para encontrar las
 palabras de error a partir de sus códigos de error
-correspondientes (como podría ser una estructura CASE o una
-tabla): basta poner el código de error en la pila y llamar a
+correspondientes, como podría ser una estructura CASE o una
+tabla: basta poner el código de error en la pila y llamar a
 EXECUTE .
 
 Dado que algunos los códigos de error se necesitan antes de
-haber sido creadas las palabras de error (por ejemplo
-durante la creación de los entes), los creamos aquí por
+haber sido creadas las palabras de error, por ejemplo
+durante la creación de los entes, los creamos aquí por
 adelantado como vectores y los actualizaremos
 posteriormente, cuando se definan las palabras de error,
 exactamente como se muestra en este ejemplo:
+
+)
+
+false  [IF]  \ Ejemplo de código:
 
 	defer la_cagaste_error#
 	: la_cagaste  ." ¡La cagaste!"  ;
 	' la_cagaste constant (la_cagaste_error#)
 	' (la_cagaste_error#) is la_cagaste_error#
 
-[THEN]  \ ......................................
+[THEN]  \ Fin del ejemplo
 
 \ false constant no_error# \ No se usa!!!
 
@@ -870,7 +891,7 @@ include random.fs
 variable seed
 hex 10450405 decimal constant generator
 : rnd  ( -- n )  seed @ generator um* drop 1+ dup seed !  ;
-: random  ( n -- 0..n-1 )  rnd um* nip  ;
+: random  ( n -- 0 ... n-1 )  rnd um* nip  ;
 \ ...................... Fin del código tomado de Gforth
 
 : randomize  ( -- )  \ Reinicia la semilla de generación de números aleatorios
@@ -881,18 +902,18 @@ hex 10450405 decimal constant generator
 
 \ Elegir un elemento al azar de la pila
 
-: choose  ( x1..xn n -- xn' )  \ Devuelve un elemento de la pila elegido al azar entre los n superiores y borra el resto
+: choose  ( x1 ... xn n -- xn' )  \ Devuelve un elemento de la pila elegido al azar entre los n superiores y borra el resto
 	dup >r random pick r> swap >r drops r>
 	;
-: dchoose  ( d1..dn n -- dn' )  \ Devuelve un elemento doble de la pila elegido al azar entre los n superiores y borra el resto
-	dup >r random 2*  ( d1..dn n' -- ) ( r: n )
-	dup 1+ pick swap 2 + pick swap  ( d1..dn dn' -- ) ( r: n )
+: dchoose  ( d1 ... dn n -- dn' )  \ Devuelve un elemento doble de la pila elegido al azar entre los n superiores y borra el resto
+	dup >r random 2*  ( d1 ... dn n' -- ) ( r: n )
+	dup 1+ pick swap 2 + pick swap  ( d1 ... dn dn' -- ) ( r: n )
 	r> rot rot 2>r  2* drops  2r>
 	;
 
 \ Elegir una cadena al azar entre varias
 
-0  [IF]  \ ......................................
+(
 
 Para facilitar la selección aleatoria de una cadena entre un
 grupo, crearemos las palabras S{ y }S , que proporcionarán
@@ -904,7 +925,7 @@ Pero para que las palabras S{ y }S puedan ser anidadas,
 necesitan una pila propia en la que guardar la profundidad
 actual de la pila en cada anidación.
 
-[THEN]  \ ......................................
+)
 
 ' dchoose alias schoose  \ Alias de DCHOOSE para usar con cadenas de texto (solo por estética)
 
@@ -1003,8 +1024,8 @@ variable dstack>  \ Puntero al elemento superior de la pila (o cero si está vac
 \ Desordenar al azar varios elementos de la pila
 
 0 value unsort#
-: unsort  ( x1..xu u -- x1'..xu' )  \ Desordena un número de elementos de la pila
-	\ x1..xu = Elementos a desordenar
+: unsort  ( x1 ... xu u -- x1'..xu' )  \ Desordena un número de elementos de la pila
+	\ x1 ... xu = Elementos a desordenar
 	\ u = Número de elementos de la pila que hay que desordenar 
 	\ x1'..xu' = Los mismos elementos, desordenados
 	dup to unsort# 0  do
@@ -1045,14 +1066,11 @@ section( Pantalla)  \ {{{
 \ ------------------------------------------------
 subsection( Variables y constantes)  \ {{{
 
-79 constant default_max_x
-24 constant default_max_y
-default_max_x value max_x  \ Número máximo de columna (80 columnas)
-default_max_y value max_y  \ Número máximo de fila (25 filas)
-
-\ No se usa!!!
-variable cursor_x  \ Columna actual del cursor
-variable cursor_y  \ Fila actual del cursor
+false constant [old_cursor] immediate  \ ¿Usar el antiguo sistema de seguimiento del cursor?
+[old_cursor]  [IF]
+	variable cursor_x  \ Columna actual del cursor
+	variable cursor_y  \ Fila actual del cursor
+[THEN]
 
 \ Parámetros SGR (Select Graphic Rendition)
 \ que no están incluidos en el módulo trm de Forth Foundation library.
@@ -1082,7 +1100,8 @@ variable cursor_y  \ Fila actual del cursor
 
 \ }}}---------------------------------------------
 subsection( Colores)  \ {{{
-0  [IF]  \ ......................................
+
+(
 
 Notas sobre las pruebas realizadas en Debian
 con el módulo trm de Forth Foundation Library:
@@ -1094,7 +1113,7 @@ TRM.FOREGROUND-WHITE pone un blanco apagado diferente al predeterminado.
 Referencia:
 http://en.wikipedia.org/wiki/ANSI_escape_code
 
-[THEN]  \ ......................................
+)
 
 trm.foreground-black-high trm.foreground-black -
 constant +lighter  \ Diferencia entre los dos niveles de brillo
@@ -1168,7 +1187,7 @@ variable narration_prompt_paper
 
 : init_colors  ( -- )  \ Asigna los colores predeterminados
 	[defined] background_paper [IF]
-		black background_paper !  \ Experimental!!!
+		magenta background_paper !  \ Experimental!!!
 	[THEN] 
 	dark_gray about_pen !
 	black about_paper !
@@ -1181,7 +1200,7 @@ variable narration_prompt_paper
 	light_red error_pen !
 	black error_paper !
 	light_cyan input_pen !
-	black input_paper !
+	magenta input_paper !  \ Provisional!!!
 	green location_description_pen !
 	black location_description_paper !
 	black location_name_pen !
@@ -1310,12 +1329,17 @@ subsection( Otros atributos)  \ {{{
 \ }}}---------------------------------------------
 subsection( Cursor)  \ {{{
 
+[old_cursor]  [IF]
 : cursor!  ( u1 u2 -- )  \ Actualiza las variables del cursor en columna u1 y fila u2
 	cursor_y !  cursor_x !
 	;
 : init_cursor  ( -- )  \ Pone a cero las variables del cursor
 	0 dup cursor!
 	;
+[ELSE]
+: cursor!  ( u1 u2 -- )  2drop  ;
+: init_cursor  ( -- )  ;
+[THEN]
 : at-xy  ( u1 u2 -- )  \ Sitúa el cursor en columna u1 y fila u2
 	2dup trm+move-cursor cursor!
 	;
@@ -1324,19 +1348,71 @@ subsection( Cursor)  \ {{{
 	;
 
 \ }}}---------------------------------------------
+subsection( Terminal ANSI)  \ {{{
+
+\ Las siguientes palabras están adaptadas de:
+
+\ ansi.4th
+\ ANSI Terminal words for kForth
+\ Copyright (c) 1999--2004 Krishna Myneni
+\ Creative Consulting for Research and Education
+\ This software is provided under the terms of the GNU
+\ General Public License.
+
+(
+
+No tienen equivalente en el módulo trm de Forth
+Foundation Library. Están modificadas para usar
+palabras del módulo trm y así evitar duplicidades.
+
+)
+
+: read_cdnumber  ( c -- n )  \ Lee del teclado un numéro decimal terminado en un carácter
+	>r 0
+	begin   key dup r@ <>
+	while   swap 10 * swap [char] 0 - +
+	repeat  r> 2drop
+	;
+: at-xy?  ( -- x y )  \ Devuelve la posición actual del cursor
+	[char] [ trm+do-esc1 ." 6n"
+	key key 2drop  \ Descartar los caracteres: <esc> [
+	[char] ; read_cdnumber
+	[char] R read_cdnumber
+	1- swap 1-
+	;
+: last_row  ( -- n )  \ Devuelve el número de la última fila de la pantalla
+	trm+save-cursor
+	0 -1 at-xy  at-xy? nip
+	trm+restore-cursor
+	;
+: rows  ( -- n )  \ Devuelve las filas de la pantalla
+	last_row 1+
+	;
+: last_col  ( -- n )  \ Devuelve el número de la última columna de la pantalla
+	trm+save-cursor
+	-1 0 at-xy  at-xy? drop
+	trm+restore-cursor
+	;  
+: cols  ( -- n )  \ Devuelve el número de columnas de la pantalla
+	last_col 1+
+	;
+: reset_scrolling  ( -- )  \ Desactiva la definición de zona de pantalla
+	[char] r trm+do-csi0
+	;
+
+\ }}}---------------------------------------------
 subsection( Borrado de pantalla)  \ {{{
 
 true  [IF]  \ Experimental!!!
 : color_background  ( -- )  \ Colorea el fondo de la pantalla
-	\ No se usa!!! No implementado!!!
 	\ No sirve de mucho colorear la pantalla, porque la edición de textos
 	\ utiliza el color de fondo predeterminado del sistema, el negro,
 	\ cuando se borra el texto que está siendo escrito.
 	\ No se ha comprabado si en Windows ocurre lo mismo.
 	background_paper @ paper
 	trm+set-default-attributes  \ Fijar los atributos actuales como predeterminados, lo que no resuelve el problema!!!
-	home  max_y 0  do
-		i  if  cr  then  max_x 1+  spaces
+	home  rows 0  do
+		i  if  cr  then  cols  spaces
 	loop
 	;
 [THEN]
@@ -1390,7 +1466,9 @@ section( Depuración)  \ {{{
 	." Espacio para cadenas:" csb ?
 	;
 : .cursor  ( -- )  \ Imprime las coordenadas del cursor
-	." Cursor:" cursor_x ? cursor_y ?
+	[old_cursor]  [IF]
+		." Cursor:" cursor_x ? cursor_y ?
+	[THEN]
 	;
 : .system_status  ( -- )  \ Muestra el estado del sistema
 	( .csb ) .stack ( .cursor )
@@ -1519,7 +1597,7 @@ s" " sconstant 0$  \ Cadena de longitud cero
 \ }}}###########################################################
 section( Textos aleatorios)  \ {{{
 
-0  [IF]  \ ......................................
+(
 
 Casi todas las palabras de esta sección devuelven una cadena
 calculada al azar. Las restantes palabras son auxiliares.
@@ -1529,7 +1607,7 @@ devuelven una cadena sin recibir parámetros en la pila
 tienen el signo «$» al final de su nombre.  También por
 tanto las constantes de cadena creadas con SCONSTANT .
 
-[THEN]  \ ......................................
+)
 
 : old_man$  ( -- a u )  \ Devuelve una forma de llamar al líder de los refugiados
 	s{ s" hombre" s" viejo" s" anciano" }s
@@ -1942,14 +2020,14 @@ s" de Westmorland" sconstant of_westmorland$
 \ }}}###########################################################
 section( Cadena dinámica para impresión)  \ {{{
 
-0  [IF]  \ ......................................
+(
 
 Usamos una cadena dinámica llamada PRINT_STR para guardar
 los párrafos enteros que hay que mostrar en pantalla. En
 esta sección creamos la cadena y palabras útiles para
 manipularla.
 
-[THEN]  \ ......................................
+)
 
 str-create print_str  \ Cadena dinámica para almacenar el texto antes de imprimirlo justificado
 
@@ -2028,8 +2106,12 @@ svariable scroll_prompt  \ Guardará el presto de pausa
 \ }}}---------------------------------------------
 subsection( Impresión de párrafos ajustados)  \ {{{
 
+last_col value max_x  \ Número máximo de columna 
+last_row value max_y  \ Número máximo de fila (25 filas)
+
 variable /indentation  \ Longitud de la indentación de cada párrafo
 8 constant max_indentation
+[old_cursor]  [IF]
 : line++  ( -- )  \ Incrementa el número de línea, si se puede
 	\ No se usa!!!
 	\ Versión para no pasar del máximo:
@@ -2042,14 +2124,19 @@ variable /indentation  \ Longitud de la indentación de cada párrafo
 	cursor_y @ 1+ dup max_y < and  0 swap at-xy
 	;
 : cr+  ( -- )  \ Hace un salto de línea y actualiza el cursor
-	cr cursor_y ++ cursor_x off
+	cr  cursor_y ++ cursor_x off 
 	;
+[ELSE] ' cr alias cr+
+[THEN]
 : ?cr  ( u -- )  \ Hace un salto de línea si hace falta
 	\ u = Longitud en caracteres del párrafo que ha sido imprimido
 	0> cr? @ and  if  cr+  then
 	;
 : not_first_line?  ( -- ff )  \ ¿La línea de pantalla donde se imprimirá es la primera?
-	cursor_y @ 0>
+	[old_cursor]
+	[IF]    cursor_y @
+	[ELSE]  at-xy? nip
+	[THEN]  0>
 	;
 variable indent_first_line_too?  \ ¿Se indentará también la línea superior de la pantalla, si un párrafo empieza en ella?
 : indentation?  ( -- ff )  \ ¿Indentar la línea actual?
@@ -2106,7 +2193,7 @@ variable indent_first_line_too?  \ ¿Se indentará también la línea superior d
 \ }}}---------------------------------------------
 subsection( Pausas y prestos en la narración)  \ {{{
 
-0  [IF]  \ ......................................
+(
 
 En SP-Forth para Linux, la palabra KEY? de ANS Forth
 devuelve siempre cero porque aún no está completamente
@@ -2117,7 +2204,10 @@ pulsación de teclas.
 
 Por ello hemos optado por un sistema alternativo.
 
-[THEN]  \ ......................................
+Pendiente!!! combinar ambos sistemas para
+Windows SP-Forth y para lina.
+
+)
 
 false  [IF]  \ Sistema original descartado, que funciona en SP-Forth para Windows
 
@@ -2248,7 +2338,7 @@ s" »" sconstant rquote$  \ Comilla castellana de cierre
 \ }}}###########################################################
 section( Definición de la ficha de un ente)  \ {{{
 
-0  [IF]  \ ......................................
+(
 
 Denominamos «ente» a cualquier componente del mundo virtual
 del juego que es manipulable por el programa.  «Entes» por
@@ -2269,20 +2359,20 @@ reciben en la pila, apuntando así a la dirección de memoria
 que contiene el campo correspondiente. 
 
 La palabra provista por SP-Forth para crear campos de
-estructuras de datos es -- (dos guiones); para usar este
-nombre de palabra para otro uso (decrementar variables), en
+estructuras de datos es -- [dos guiones]; para usar este
+nombre de palabra para otro uso [decrementar variables], en
 este programa se ha creado un alias para la palabra -- con
-el nombre de OFFSET: (tomado de las utilidades ToolBelt de
-Will Baden, de 2003), aunque el nombre habitual en la
+el nombre de OFFSET: [tomado de las utilidades ToolBelt de
+Will Baden, de 2003], aunque el nombre habitual en la
 mayoría de las implementaciones es FIELD .
 
 El funcionamiento de OFFSET: es muy sencillo. Toma de la
 pila dos valores: el inferior es el desplazamiento en
-octetos desde el inicio del «registro» (que en este programa
-denominamos «ficha»); el superior es el número de octetos
+octetos desde el inicio del «registro», que en este programa
+denominamos «ficha»; el superior es el número de octetos
 necesarios para almacenar el campo a crear. Con ellos crea
-una palabra nueva (cuyo nombre es tomado del flujo de
-entrada, es decir, es la siguiente palabra en la línea) que
+una palabra nueva [cuyo nombre es tomado del flujo de
+entrada, es decir, es la siguiente palabra en la línea] que
 será el identificador del campo de datos; esta palabra, al
 ser creada, guardará en su propio campo de datos el
 desplazamiento del campo de datos desde el inicio de la
@@ -2299,7 +2389,7 @@ este inconveniente se podría escribir fácilmente un conjunto
 de palabras que actuara como capa superior de abstracción
 para manipular los campos de datos, escondiendo las
 interioridades de cómo se guarda efectivamente cada dato en
-la ficha (en un bitio, en un octeto, o en varios).
+la ficha [en un bitio, en un octeto, o en varios].
 
 No obstante, dado que la cantidad de datos es pequeña y la
 memoria disponible no es un condicionante, y con el objetivo
@@ -2313,18 +2403,18 @@ Forth de 8 o 16 bitios una celda equivale a un valor de 16
 bitios; en los sistemas Forth de 32 bitios, como SP-Forth,
 una celda equivale a un valor de 32 bitios.
 
-El contenido de un campo puede representar un número (con o
-sin signo), un indicador buleano o una dirección de memoria
-(de una cadena de texto, de una palabra de Forth, de la
-ficha de otro ente, de otra estructura de datos...).
+El contenido de un campo puede representar un número con o
+sin signo, un indicador buleano o una dirección de memoria
+[de una cadena de texto, de una palabra de Forth, de la
+ficha de otro ente, de otra estructura de datos...].
 
 Para facilitar la legibilidad, los nombres de los campos
-empiezan con el signo de tilde («~»); los que contienen
-datos buleanos terminan con una interrogación («?»);  los
-que contienen direcciones de ejecución terminan con «_xt»;
-los que contienen códigos de error terminan «_error#».
+empiezan con el signo de tilde, «~»; los que contienen datos
+buleanos terminan con una interrogación, «?»;  los que
+contienen direcciones de ejecución terminan con «_xt»; los
+que contienen códigos de error terminan con «_error#».
 
-[THEN]  \ .......................................
+)
 
 0 \ Valor inicial de desplazamiento para el primer campo
 cell offset: ~name_str  \ Dirección de una cadena dinámica que contendrá el nombre del ente
@@ -2381,7 +2471,7 @@ constant /entity  \ Tamaño de cada ficha
 \ }}}###########################################################
 section( Interfaz de campos)  \ {{{
 
-0  [IF]  \ ......................................
+(
 	
 Las palabras de esta sección facilitan la tarea de
 interactuar con los campos de las fichas, evitando repetir
@@ -2398,7 +2488,7 @@ calculado.
 Otras actúan como procedimientos para realizar operaciones
 frecuentes con los entes.
 
-[THEN]  \ ......................................
+)
 
 \ ------------------------------------------------
 \ Herramientas para los campos de dirección
@@ -2430,13 +2520,13 @@ last_exit> cell+ first_exit> - constant /exits  \ Espacio en octetos ocupado por
 \ ------------------------------------------------
 \ Interfaz básica para leer y modificar los campos
 
-0  [IF]  \ ......................................
+(
 
 Las palabras que siguen permiten hacer las operaciones
 básicas de obtención y modificación del contenido de los
 campos. 
 
-[THEN]  \ ......................................
+)
 
 \ Obtener el contenido de los campos
 
@@ -2505,7 +2595,7 @@ campos.
 \ ------------------------------------------------
 \ Campos calculados o seudo-campos
 
-0  [IF]  \ ......................................
+(
 
 Los seudo-campos devuelven un cálculo. Sirven para añadir
 una capa adicional de abstracción y simplificar el código.
@@ -2516,16 +2606,16 @@ contraria.  Por ejemplo, en las fichas existe el campo
 ~IS_OPEN? para indicar si un ente está abierto, pero creamos
 las palabras necesarias para examinar y modificar tanto la
 propiedad de «cerrado» como la de «abierto». Esto ayuda a
-escribir posteriormente el código efectivo (pues no hace
+escribir posteriormente el código efectivo [pues no hace
 falta recordar si la propiedad real y por tanto el campo de
-la ficha del ente era «abierto» o «cerrado») y hace el
+la ficha del ente era «abierto» o «cerrado»] y hace el
 código más conciso y legible.
 
 Pendiente!!! Hay que unificar el criterio de los nombres de
 estas palabras, y sacar de aquí las que se refieran a campos
 básicos. 
 
-[THEN]  \ ......................................
+)
 
 : is_direction?  ( a -- ff )  direction 0<>  ;
 : is_familiar?  ( a -- ff )  familiar 0>  ;
@@ -2648,24 +2738,24 @@ básicos.
 \ ------------------------------------------------
 \ Herramientas de artículos y pronombres
 
-0  [IF]  \ ......................................
+(
 
 La selección del artículo adecuado para el nombre de un ente
 tiene su complicación. Depende por supuesto del número y
 género gramatical del nombre, pero también de la relación
-con el protagonista (distinción entre artículos definidos e
-indefinidos) y de la naturaleza del ente (cosa o personaje).
+con el protagonista [distinción entre artículos definidos e
+indefinidos] y de la naturaleza del ente [cosa o personaje].
 
 Por conveniencia, consideramos como artículos ciertas
-palabras que son adjetivos (como «esta», «ninguna»...), pues
+palabras que son adjetivos [como «esta», «ninguna»...], pues
 en la práctica para el programa su manejo es idéntico: se
 usan para preceder a los nombres bajo ciertas condiciones.
 
 En este mismo apartado definimos palabras para calcular
-los pronombres de objeto indirecto (le/s) y de objeto
-directo (la/s, lo/s), así como terminaciones habituales.
+los pronombres de objeto indirecto [le/s] y de objeto
+directo [la/s, lo/s], así como terminaciones habituales.
 
-[THEN]  \ ......................................
+)
 
 create 'articles  \ Tabla de artículos
 	\ Indefinidos:
@@ -2810,21 +2900,21 @@ create 'articles  \ Tabla de artículos
 \ ------------------------------------------------
 \ Interfaz para los nombres de los entes
 
-0  [IF]  \ ......................................
+(
 
 Como ya se explicó, el nombre de cada ente se guarda en una
-cadena dinámica (que se crea en la memoria con ALLOCATE , no
-en el espacio del diccionario del sistema).  El manejo de
+cadena dinámica [que se crea en la memoria con ALLOCATE , no
+en el espacio del diccionario del sistema].  El manejo de
 estas cadenas dinámicas se hace con el módulo
 correspondiente de Forth Foundation Library.
 
 En la ficha del ente se guarda solo la dirección de la
-cadena dinámica (en el campo ~NAME_STR ).  Por ello hacen
+cadena dinámica, en el campo ~NAME_STR .  Por ello hacen
 falta palabras que hagan de interfaz para gestionar los
 nombres de ente de forma análoga a como se hace con el resto
 de datos de su ficha.
 
-[THEN]  \ ......................................
+)
 
 : name!  ( a u a1 -- )  \ Guarda el nombre de un ente
 	\ a u = Nombre
@@ -2920,11 +3010,11 @@ de datos de su ficha.
 \ }}}###########################################################
 section( Algunas cadenas calculadas y operaciones con ellas)  \ {{{
 
-0  [IF]  \ ......................................
+(
 
 Nota!!!: ¿Mover a otra sección?
 
-[THEN]  \ ......................................
+)
 
 : «open»|«closed»  ( a -- a1 u1 )  \ Devuelve «abierto/a/s» a «cerrado/a/s» según corresponda a un ente
 	dup is_open?  if  s" abiert"  else  s" cerrad"  then
@@ -2946,7 +3036,7 @@ Nota!!!: ¿Mover a otra sección?
 \ }}}###########################################################
 section( Operaciones elementales con entes)  \ {{{
 
-0  [IF]  \ ......................................
+(
 
 Algunas operaciones sencillas relacionadas con la trama.
 
@@ -2954,7 +3044,7 @@ Alguna es necesario crearla como vector porque se usa en las
 descripciones de los entes o en las acciones, antes de
 definir la trama.
 
-[THEN]  \ ......................................
+)
 
 defer lock_found  \ Encontrar el candado; la definición está en (LOCK_FOUND)
 
@@ -2976,19 +3066,19 @@ defer lock_found  \ Encontrar el candado; la definición está en (LOCK_FOUND)
 \ }}}###########################################################
 section( Herramientas para crear las fichas de la base de datos)  \ {{{
 
-0  [IF]  \ ......................................
+(
 
 No es posible reservar el espacio necesario para las fichas
-hasta saber cuántas necesitaremos (a menos que usáramos una
+hasta saber cuántas necesitaremos [a menos que usáramos una
 estructura un poco más sofisticada con fichas separadas pero
-enlazadas entre sí, muy habitual también y fácil de crear).
-Por ello la palabra 'ENTITIES (que devuelve la dirección de
-la base de datos) se crea como un vector, para asignarle
+enlazadas entre sí, muy habitual también y fácil de crear].
+Por ello la palabra 'ENTITIES [que devuelve la dirección de
+la base de datos] se crea como un vector, para asignarle
 posteriormente su dirección de ejecución.  Esto permite
 crear un nuevo ente fácilmente, sin necesidad de asignar
 previamente el número de fichas a una constante.
 
-[THEN]  \ ......................................
+)
 
 defer 'entities  \ Dirección de los entes; vector que después será redirigido a la palabra real
 0 value #entities  \ Contador de entes, que se actualizará según se vayan creando
@@ -3105,7 +3195,7 @@ gforth?  [IF]
 \ }}}###########################################################
 section( Herramientas para crear las descripciones)  \ {{{
 
-0  [IF]  \ ......................................
+(
 
 No almacenamos las descripciones en la base de datos junto
 con el resto de atributos de los entes, sino que para cada
@@ -3120,11 +3210,9 @@ campo ~DESCRIPTION_XT , es la dirección de ejecución de la
 palabra que imprime su descripción.
 
 Por tanto, para describir un ente basta tomar de su ficha el
-contenido de ~DESCRIPTION_XT , y llamar a EXECUTE (véase más
-abajo la definición de la palabra (DESCRIBE) , que es la que
-hace la tarea).
+contenido de ~DESCRIPTION_XT , y llamar a EXECUTE .
 
-[THEN]  \ ......................................
+)
 
 false value sight  \ Guarda el ente dirección al que se mira en un escenario (o el propio ente escenario); se usa en las palabras de descripción de escenarios
 : [:description]  ( a -- )  \ Operacionas previas a la ejecución de la descripción de un ente
@@ -3211,7 +3299,7 @@ gforth?  [IF]
 \ }}}###########################################################
 section( Identificadores de entes)  \ {{{
 
-0  [IF]  \ ......................................
+(
 
 Cada ente es identificado mediante una palabra. Los
 identificadores de entes se crean con la palabra ENTITY: .
@@ -3234,7 +3322,7 @@ El orden en que se definan los restantes identificadores es
 irrelevante.  Si están agrupados por tipos y en orden
 alfabético es solo por claridad. 
 
-[THEN]  \ ......................................
+)
 
 entity: ulfius%
 ' ulfius% is protagonist%  \ Actualizar el vector que apunta al ente protagonista
@@ -3368,7 +3456,7 @@ section( Herramientas para crear conexiones entre escenarios)  \ {{{
 \ de los entes dirección.
 \ Se podría solucionar con vectores, más adelante.
 
-0  [IF]  \ ......................................
+(
 
 Para crear el mapa hay que hacer dos operaciones con los
 entes escenario: marcarlos como tales, para poder
@@ -3398,7 +3486,7 @@ No obstante, para hacer más fácil este segundo paso, hemos
 creado unas palabras que proporcionan una sintaxis específica,
 como mostraremos a continuación.
 
-[THEN]  \ ......................................
+)
 
 0  [IF]  \ Inacabado!!!
 
@@ -3424,7 +3512,7 @@ out% ,
 
 [THEN]
 
-0  [IF]  \ ......................................
+(
 
 Necesitamos una tabla que nos permita traducir esto:
 
@@ -3434,7 +3522,7 @@ de salida en la ficha de un ente.
 SALIDA: El identificador del ente dirección al que se
 refiere esa salida.
 
-[THEN]  \ ......................................
+)
 
 create exits_table  \ Tabla de traducción de salidas
 #exits cells allot  \ Reservar espacio para tantas celdas como salidas
@@ -3477,21 +3565,20 @@ in% in_exit> exits_table!
 	;
 [THEN]
 
-0  [IF]  \ ......................................
+(
 
 A continuación definimos palabras para proporcionar la
-siguiente sintaxis (primero origen y después destino en la
-pila, como es convención en Forth):
+siguiente sintaxis [primero origen y después destino en la
+pila, como es convención en Forth]:
 
-	cave% path% s-->  \ Hacer que la salida sur de CAVE% conduzca a PATH% (pero sin afectar al sentido contrario)
-	path% cave% n-->  \ Hacer que la salida norte de PATH% conduzca a CAVE% (pero sin afectar al sentido contrario)
+	cave% path% s-->  \ Hacer que la salida sur de CAVE% conduzca a PATH% pero sin afectar al sentido contrario
+	path% cave% n-->  \ Hacer que la salida norte de PATH% conduzca a CAVE% pero sin afectar al sentido contrario
 
 O en un solo paso:
 
-	cave% path% s<-->  \ Hacer que la salida sur de CAVE% conduzca a PATH% (y al contrario: la salida norte de PATH% conducirá a CAVE_E)
+	cave% path% s<-->  \ Hacer que la salida sur de CAVE% conduzca a PATH% y al contrario: la salida norte de PATH% conducirá a CAVE_E
 
-
-[THEN]  \ ......................................
+)
 
 : -->  ( a1 a2 u -- )  \ Comunica el ente a1 con el ente a2 mediante la salida indicada por el desplazamiento u
 	\ a1 = Ente origen de la conexión
@@ -3554,17 +3641,17 @@ O en un solo paso:
 	2dup i-->  swap o-->
 	;
 
-0  [IF]  \ ......................................
+(
 
 Por último, definimos dos palabras para hacer
 todas las asignaciones de salidas en un solo paso. 
 
-[THEN]  \ ......................................
+)
 
 \ Múltiples conexiones a la vez
 
-: exits!  ( a1..a8 a0 -- )  \ Asigna todas las salidas de un ente escenario
-	\ a1..a8 = Entes escenario de salida (o cero) en el orden habitual: norte, sur, este, oeste, arriba, abajo, dentro, fuera
+: exits!  ( a1 ... a8 a0 -- )  \ Asigna todas las salidas de un ente escenario
+	\ a1 ... a8 = Entes escenario de salida (o cero) en el orden habitual: norte, sur, este, oeste, arriba, abajo, dentro, fuera
 	\ a0 = Ente escenario cuyas salidas hay que modificar
 	>r
 	r@ ~out_exit !
@@ -3579,8 +3666,8 @@ todas las asignaciones de salidas en un solo paso.
 
 \ Una palabra final para hacer todas las operaciones en un solo paso
 
-: init_location  ( a1..a8 a0 -- )  \ Marca un ente como escenario y le asigna todas las salidas. 
-	\ a1..a8 = Entes escenario de salida (o cero) en el orden habitual: norte, sur, este, oeste, arriba, abajo, dentro, fuera
+: init_location  ( a1 ... a8 a0 -- )  \ Marca un ente como escenario y le asigna todas las salidas. 
+	\ a1 ... a8 = Entes escenario de salida (o cero) en el orden habitual: norte, sur, este, oeste, arriba, abajo, dentro, fuera
 	\ a0 = Ente escenario cuyas salidas hay que modificar
 	dup is_location exits!
 	;
@@ -3588,14 +3675,14 @@ todas las asignaciones de salidas en un solo paso.
 \ }}}###########################################################
 section( Recursos para las descripciones de entes)  \ {{{
 
-0  [IF]  \ ......................................
+(
 
 Las palabras de esta sección se usan para 
 construir las descripciones de los entes.
 Cuando su uso se vuelve más genérico, se mueven
 a la sección de textos calculados.
 
-[THEN]  \ ......................................
+)
 
 \ ------------------------------------------------
 \ Albergue de los refugiados
@@ -3847,17 +3934,17 @@ create 'cave_descriptions  \ Tabla para contener las direcciones de las palabras
 \ EXITS_CAVE_DESCRIPTION para la descripción principal
 \ CAVE_EXIT_DESCRIPTION$ para la descripción de cada salida
 
-: unsort_cave_exits  ( a1..an u -- a1'..an' u )  \ Desordena los entes dirección que son las salidas de la cueva
+: unsort_cave_exits  ( a1 ... an u -- a1'..an' u )  \ Desordena los entes dirección que son las salidas de la cueva
 	\ u = Número de elementos de la pila que hay que desordenar
 	dup >r unsort r>
 	;
-: (exits_cave_description)  ( a1..an u -- a2 u2 )  \ Ejecuta (según el número de salidas) la palabra  que devuelve la descripción principal de un tramo de cueva
-	\ a1..an = Entes de dirección correspondientes a las salidas
+: (exits_cave_description)  ( a1 ... an u -- a2 u2 )  \ Ejecuta (según el número de salidas) la palabra  que devuelve la descripción principal de un tramo de cueva
+	\ a1 ... an = Entes de dirección correspondientes a las salidas
 	\ u = Número de entes de dirección suministrados
 	1- cells 'cave_descriptions + perform
 	;
-: exits_cave_description  ( a1..an u -- a2 u2 )  \ Devuelve la descripción principal de un tramo de cueva
-	\ a1..an = Entes de dirección correspondientes a las salidas
+: exits_cave_description  ( a1 ... an u -- a2 u2 )  \ Devuelve la descripción principal de un tramo de cueva
+	\ a1 ... an = Entes de dirección correspondientes a las salidas
 	\ u = Número de entes de dirección suministrados
 	unsort_cave_exits  (exits_cave_description) period+
 	main_cave_exits_are$ 2swap s&  \ Añadir el encabezado
@@ -4267,11 +4354,11 @@ waterfall% :description
 
 \ Entes escenario
 
-0  [IF]  \ ......................................
+(
 
 Las palabras que describen entes escenario reciben en SIGHT
-(variable que está creada con VALUE y por tanto devuelve su
-valor como si fuera una constante) un identificador de ente.
+[variable que está creada con VALUE y por tanto devuelve su
+valor como si fuera una constante] un identificador de ente.
 Puede ser el mismo ente escenario o un ente de dirección.
 Esto permite describir lo que hay más allá de cada escenario
 en cualquier dirección.
@@ -4280,7 +4367,7 @@ en cualquier dirección.
 implementado poco a poco. Las estructuras CASE ya están
 puestas.
 
-[THEN]  \ ......................................
+)
 
 location_01% :attributes
 	s" aldea sajona" self% fname!
@@ -6840,15 +6927,15 @@ here swap - cell / constant battle_phases  \ Fases de la batalla
 \ ------------------------------------------------
 \ Ambrosio nos sigue
 
-0  [IF]  \ ......................................
+(
 
-Pondiente!!!:
+Pendiente!!!:
 
 Confirmar la función de la llave aquí. En el código original
 solo se distingue que sea manipulable o no, lo que es
 diferente a que esté accesible.
 
-[THEN]  \ ......................................
+)
 
 : ambrosio_must_follow?  ( -- )  \ ¿Ambrosio tiene que estar siguiéndonos?
 	ambrosio% not_vanished?  key% is_accessible? and
@@ -6873,7 +6960,7 @@ diferente a que esté accesible.
 \ }}}###########################################################
 section( Descripciones especiales)  \ {{{
 
-0  [IF]  \ ......................................
+(
 
 Esta sección contiene palabras que muestran descripciones
 que necesitan un tratamiento especial porque hacen
@@ -6883,7 +6970,7 @@ En lugar de crear vectores para las palabras que estas
 descripciones utilizan, es más sencillo crearlos para las
 descripciones y definirlas aquí, a continuación de la trama.
 
-[THEN]  \ ......................................
+)
 
 : officers_forbid_to_steal$  ( -- )  \ Devuelve una variante de «Tus oficiales detienen el saqueo»
 	s{ s" los" s" tus" }s s" oficiales" s&
@@ -7105,15 +7192,15 @@ variable last_masculine_plural_complement
 \ }}}---------------------------------------------
 subsection( Herramientas para la creación de acciones)  \ {{{
 
-0  [IF]  \ ......................................
+(
 
 Los nombres de las acciones empiezan por el prefijo «do_»
-(algunas palabras secundarias de las acciones 
-también usan el mismo prefijo).
+[algunas palabras secundarias de las acciones 
+también usan el mismo prefijo].
 
 Pendiente!!! explicación sobre la sintaxis
 
-[THEN]  \ ......................................
+)
 
 : action:  ( "name" -- )  \ Crear un identificador de acción
 	\ "name" = nombre del identificador de la acción, en el flujo de entrada
@@ -7138,7 +7225,7 @@ gforth?  [IF]
 \ }}}---------------------------------------------
 subsection( Comprobación de los requisitos de las acciones)  \ {{{
 
-0  [IF]  \ ......................................
+(
 
 En las siguientes palabras usamos las llaves en sus nombres
 como una notación, para hacer más legible y más fácil de
@@ -7152,7 +7239,7 @@ Este sistema de filtros y errores permite simplificar el
 código de las acciones porque ahorra muchas estructuras
 condicionales anidadas.
 
-[THEN]  \ ......................................
+)
 
 : main_complement{forbidden} \ Provoca un error si hay complemento directo
 	main_complement @
@@ -7328,8 +7415,7 @@ condicionales anidadas.
 \ }}}###########################################################
 section( Acciones)  \ {{{
 
-
-0  [IF]  \ ......................................
+(
 
 Para crear una acción, primero es necesario crear su
 identificador con la palabra ACTION: , que funciona de forma
@@ -7341,7 +7427,7 @@ correspondiente. Ejemplo de la sintaxis:
 ACTION: identificador
 
 :ACTION identificador
-	( definición de la acción )
+	\ definición de la acción
 	;ACTION
 
 Todos los identificadores deben ser creados antes de las
@@ -7349,7 +7435,7 @@ definiciones, pues su objetivo es posibilitar que las
 acciones se llamen unas a otras sin importar el orden en que
 estén definidas en el código fuente.
 
-[THEN]  \ ......................................
+)
 
 \ ------------------------------------------------
 subsection( Identificadores)  \ {{{
@@ -7528,9 +7614,9 @@ false  [IF]  \ Primera versión: las salidas se listan siempre en el mismo orden
 [ELSE]  \ Segunda versión: las salidas se muestran cada vez en orden aleatorio
 
 0 value this_location  \ Guardará el ente del que queremos calcular las salidas libres (para simplificar el manejo de la pila en el bucle)
-: free_exits  ( a0 -- a1..au u )  \ Devuelve el número de salidas posibles de un ente
+: free_exits  ( a0 -- a1 ... au u )  \ Devuelve el número de salidas posibles de un ente
 	\ a0 = Ente
-	\ a1..au = Entes de salida del ente a0
+	\ a1 ... au = Entes de salida del ente a0
 	\ u = número de entes de salida del ente a0
 	[debug_do_exits]  [IF]  cr ." free_exits" cr .stack  [THEN]  \ Depuración!!!
 	to this_location  depth >r
@@ -8436,19 +8522,19 @@ subsection( Hablar y presentarse)  \ {{{
 \ }}}---------------------------------------------
 subsection( Guardar el juego)  \ {{{
 
-0  [IF]  \ ......................................
+(
 
 Parece que SP-Forth tiene problemas para crear un ejecutable
-con el estado del juego. (Los detalles del problema están en
+con el estado del juego. Los detalles del problema están en
 el historial de desarrollo y en la definición de la palabra
-que crea el ejecutable principal, en la sección Meta).
+que crea el ejecutable principal, en la sección Meta.
 
 Para guardar el estado de la partida usaremos una solución
 alternativa: ficheros de texto que reproduzcan el código
 Forth necesario para restaurarlas. Esto ocupará menos y es
 más transportable entre plataformas.
 
-[THEN]  \ ......................................
+)
 
 0 [IF] \ Inacabado!!! Pendiente!!!
 : n>s  ( u -- a1 u1 )  \ Convierte un número en una cadena (con dos dígitos como mínimo)
@@ -8518,8 +8604,8 @@ restore_vocabulary  definitions
 lina? 0=  [IF]  immediate  [THEN]
 ' true alias true
 ' false alias false
-: load_entity  ( x0..xn a -- )  \ Restaura los datos de un ente
-	\ x0..xn = Datos del ente, en orden inverso a como los crea la palabra SAVE_ENTITY .
+: load_entity  ( x0 ... xn a -- )  \ Restaura los datos de un ente
+	\ x0 ... xn = Datos del ente, en orden inverso a como los crea la palabra SAVE_ENTITY .
 	\ a = Ente.
 	>r
 	r@ ~direction !
@@ -8702,7 +8788,7 @@ restore_vocabularies
 \ }}}###########################################################
 section( Intérprete de comandos)  \ {{{
 
-0  [IF]  \ ......................................
+(
 
 Gracias al uso del propio intérprete de Forth como
 intérprete de comandos del juego, más de la mitad del
@@ -8719,8 +8805,8 @@ sistema Forth.
 Sin embargo hay una consideración importante: Al pasarle
 directamente al intérprete de Forth el texto del comando
 escrito por el jugador, Forth ejecutará las palabras que
-reconozca (las no reconocidas las ignorará, gracias a una
-útil peculiaridad de SP-Forth) en el orden en que estén
+reconozca [las no reconocidas las ignorará, gracias a una
+útil peculiaridad de SP-Forth] en el orden en que estén
 escritas en la frase.  Esto quiere decir que, al contrario
 de lo que ocurre con otros métodos, no podremos tener una
 visión global del comando del jugador: ni de cuántas
@@ -8736,12 +8822,12 @@ Sin embargo, hemos optado por dejar a Forth hacer su trabajo
 hasta el final, pues nos parece más sencillo y eficaz: las
 palabras reconocidas en el comando del jugador se ejecutarán
 pues en el orden en que fueron escritas. Cada una
-actualizará el elemento del comando que represente (verbo o
-complemento) tras comprobar si ya ha habido una palabra
+actualizará el elemento del comando que represente, verbo o
+complemento, tras comprobar si ya ha habido una palabra
 previa que realice la misma función y en su caso deteniendo
 el proceso con un error.
 
-[THEN]  \ ......................................
+)
 
 : init_parsing  ( -- )  \ Preparativos previos al análisis
 	action off
@@ -8874,7 +8960,7 @@ subsection( x1)
 \ }}}###########################################################
 section( Fichero de configuración)  \ {{{
 
-0  [IF]  \ ......................................
+(
 
 El juego tiene un fichero de configuración en que el jugador
 puede indicar sus preferencias. Este fichero es código en
@@ -8887,7 +8973,7 @@ palabra dará error.
 El fichero de configuración se lee de nuevo al inicio de
 cada partida.
 
-[THEN]  \ ......................................
+)
 
 lina? [IF]  s" ayc/ayc.ini"  [THEN]
 \ Nota: lina no necesita pasar la cadena al almacén circular,
@@ -9034,8 +9120,8 @@ restore_vocabularies
 	-1 narration_break_milliseconds !
 	-1 scene_break_milliseconds !
 	scene_page? on
-	default_max_x to max_x  \ Número máximo de columna 
-	default_max_y to max_y  \ Número máximo de fila 
+	last_col to max_x  \ Número máximo de columna 
+	last_row to max_y  \ Número máximo de fila 
 	init_colors  \ Colores predeterminados
 	;
 : read_config  ( -- )  \ Lee el fichero de configuración
@@ -9044,11 +9130,9 @@ restore_vocabularies
 	[IF]    postpone only 
 	[ELSE]  only 
 	[THEN]  config_vocabulary
-	config_file$
-	2dup type cr order key drop  \ Depuración!!!
-	['] included catch  ( x1 x2 n )
+	config_file$ ['] included catch  ( x1 x2 n | 0 )
+	if  2drop  then  \ Provisional!!!
 	restore_vocabularies
-	?dup  if  throw  then  2drop
 	;
 : get_config  ( -- )  \ Lee el fichero de configuración tras inicializar las variables de configuración
 	init_config read_config
@@ -9057,7 +9141,7 @@ restore_vocabularies
 \ }}}###########################################################
 section( Herramientas para crear el vocabulario del juego)  \ {{{
 
-0  [IF]  \ ......................................
+(
 
 El vocabulario del juego está implementado como un
 vocabulario de Forth, creado con el nombre de
@@ -9071,7 +9155,7 @@ cada palabra que contenga el texto.
 Pero hace falta algo más. Hay que evitar que el intérprete
 de Forth dé error cuando encuentre en la frase del jugador
 palabras desconocidas.  En lugar de añadir un sistema de
-caza de errores en Forth (con las palabras CATCH y THROW ),
+caza de errores en Forth con las palabras CATCH y THROW ,
 usaremos una opción más fácil: la palabra NOTFOUND .
 
 La palabra NOTFOUND es una característica específica de
@@ -9079,17 +9163,17 @@ SP-Forth que simplifica el trabajo de usar el intérprete de
 Forth como intérprete para otros usos, en este caso para
 nuestro juego.  El intérprete de SP-Forth, cuando no
 encuentra una palabra en los vocabularios activos, y antes
-de intentar convertirla en un número en la base actual (que
-es el procedimiento habitual en Forth), busca una palabra
+de intentar convertirla en un número en la base actual, que
+es el procedimiento habitual en Forth, busca una palabra
 llamada NOTFOUND en los mismos vocabularios activos y si la
 encuentra la ejecuta, pasándole como parámetro en la pila
 una cadena con el nombre de la palabra desconocida.
 
 Por tanto, creando en nuestro vocabulario del juego una
-palabra llamada NOTFOUND que no haga nada (salvo borrar de
-la pila el parámetro que recibe) lograremos que durante la
-interpretación del comando del jugador (con la palabra
-EVALUATE ) todas las palabras no reconocidas sean ignoradas.
+palabra llamada NOTFOUND que no haga nada, salvo borrar de
+la pila el parámetro que recibe, lograremos que durante la
+interpretación del comando del jugador con la palabra
+EVALUATE todas las palabras no reconocidas sean ignoradas.
 Para que esto funcione hace falta una cosa más: el único
 vocabulario activo en el momento de ejecutar EVALUATE debe
 ser el del juego; así las palabras de otros vocabularios
@@ -9099,12 +9183,12 @@ restaurar el vocabulario principal del sistema, que se llama
 FORTH , y el vocabulario propio del programa.
 
 Para evitar que el sistema se cuelgue en el improbable caso
-de que el jugador escriba la palabra NOTFOUND en el comando
-(pues se intentaría borrar dos elementos de la pila estando
-ésta vacía), basta comprobar la profundidad de la pila antes
+de que el jugador escriba la palabra NOTFOUND en el comando,
+pues se intentaría borrar dos elementos de la pila estando
+ésta vacía, basta comprobar la profundidad de la pila antes
 de borrar la cadena recibida.
 
-[THEN]  \ ......................................
+)
 
 : parse_synonym  ( -- a u )  \ Devuelve el siguiente sinónimo de la lista
 	begin  parse-name dup 0=
@@ -9119,13 +9203,13 @@ sp-forth? lina? or  [IF]
 : another_synonym?  ( -- a u ff )  \ Toma la siguiente palabra en el flujo de entrada y comprueba si es el final de la lista de sinónimos
 	parse_synonym 2dup (another_synonym?)
 	;
-: synonyms{  (  xt "name#0..name#n synonyms" -- )  \ Crea uno o varios sinónimos de una palabra
+: synonyms{  (  xt "name#0" ... "name#n" "synonyms" -- )  \ Crea uno o varios sinónimos de una palabra
 	\ xt = Dirección de ejecución de la palabra a clonar
 	begin  dup another_synonym? ( xt xt a u ff )
 	while  (alias)
 	repeat  2drop 2drop
 	;
-: immediate_synonyms{  (  xt "name#0..name#n }synonyms" -- )  \ Crea uno o varios sinónimos inmediatos de una palabra
+: immediate_synonyms{  (  xt "name#0" ... "name#n" "}synonyms" -- )  \ Crea uno o varios sinónimos inmediatos de una palabra
 	\ xt = Dirección de ejecución de la palabra a clonar
 	begin  dup another_synonym?  ( xt xt a u ff )
 	while  (alias)  immediate
@@ -9137,13 +9221,13 @@ gforth?  [IF]  \ Inacabado!!!
 	save-input parse_synonym 2>r restore_input
 	2r> (another_synonym?)
 	;
-: synonyms{  (  xt "name#0..name#n }synonyms" -- )  \ Crea uno o varios sinónimos de una palabra
+: synonyms{  (  xt "name#0" ... "name#n" "}synonyms" -- )  \ Crea uno o varios sinónimos de una palabra
 	\ xt = Dirección de ejecución de la palabra a clonar
 	begin  dup another_synonym? ( xt xt ff )
 	while  alias
 	repeat  2drop 
 	;
-: immediate_synonyms{  (  xt "name#0..name#n }synonyms" -- )  \ Crea uno o varios sinónimos inmediatos de una palabra
+: immediate_synonyms{  (  xt "name#0" ... "name#n" "}synonyms" -- )  \ Crea uno o varios sinónimos inmediatos de una palabra
 	\ xt = Dirección de ejecución de la palabra a clonar
 	begin  dup another_synonym?  ( xt xt ff )
 	while  alias  immediate
@@ -9153,12 +9237,12 @@ gforth?  [IF]  \ Inacabado!!!
 
 \ Resolución de ambigüedades
 
-0  [IF]  \ ......................................
+(
 
 Algunos nombres del vocabulario del jugador pueden referirse
 a varios entes. Por ejemplo, «hombre» puede referirse al
-jefe de los refugiados o a Ambrosio (especialmente antes de
-que Ulfius hable con él por primera vez y sepa su nombre).
+jefe de los refugiados o a Ambrosio, especialmente antes de
+que Ulfius hable con él por primera vez y sepa su nombre.
 
 Otras palabras, como «ambrosio», solo deben ser reconocidas
 cuando se cumplen ciertas condiciones.
@@ -9175,7 +9259,7 @@ efecto que si la palabra problemática no existiera en el
 comando del jugador. Esto provocará después el error
 adecuado.
 
-[THEN]  \ ......................................
+)
 
 : (man) ( -- a | false )  \ Devuelve el ente adecuado a la palabra «hombre» y sus sinónimos (o FALSE si la ambigüedad no puede ser resuelta)
 	leader% is_here?  if
@@ -9653,27 +9737,27 @@ restore_vocabularies
 \ }}}###########################################################
 section( Vocabulario para entradas «sí» o «no»)  \ {{{
 
-0  [IF]  \ ......................................
+(
 
 Para los casos en que el programa hace una pregunta que debe
 ser respondida con «sí» o «no», usamos un truco análogo al
 del vocabulario del juego: creamos un vocabulario específico
-con palabras cuyos nombres sean las posibles respuestas
-(«sí», «no», «s» y «n»).  Estas palabras actualizarán una
+con palabras cuyos nombres sean las posibles respuestas:
+«sí», «no», «s» y «n».  Estas palabras actualizarán una
 variable,  con cuyo valor el programa sabrá si se ha
 producido una respuesta válida o no y cuál es.
 
 En principio, si el jugador introdujera varias respuestas
-válidas la última sería la que tendría efecto (por ejemplo,
+válidas la última sería la que tendría efecto. Por ejemplo,
 la respuesta «sí sí sí sí sí no» sería considerada negativa.
 Para dotar al método de una chispa de inteligencia, las
 respuestas no cambian el valor de la variable sino que lo
 incrementan o decrementan. Así el mayor número de respuestas
 afirmativas o negativas decide el resultado; y si la
-cantidad es la misma (por ejemplo, «sí sí no no») el
+cantidad es la misma, como por ejemplo en «sí sí no no», el
 resultado será el mismo que si no se hubiera escrito nada.
 
-[THEN]  \ ......................................
+)
 
 variable #answer  \ Su valor será 0 si no ha habido respuesta válida; negativo para «no»; y positivo para «sí»
 : answer_undefined  ( -- )  \ Inicializa la variable antes de hacer la pregunta
@@ -9748,14 +9832,15 @@ restore_vocabularies
 \ }}}###########################################################
 section( Entrada de comandos)  \ {{{
 
-0  [IF]  \ ......................................
+(
 
 Para la entrada de comandos se usa la palabra de Forth
 ACCEPT , que permite limitar el número máximo de caracteres
-que serán aceptados (aunque por desgracia permite escribir
-más y después trunca la cadena).
+que serán aceptados. Por desgracia ACCEPT permite escribir
+más y después trunca la cadena, por lo sería mejor escribir
+una alternativa.
 
-[THEN]  \ ......................................
+)
 
 \ Pendiente!!! calcular según el ancho de pantalla, la longitud del presto, si hay o no un salto de línea tras el presto, y la indentación...
 80 constant /command  \ Longitud máxima de un comando
@@ -10065,6 +10150,9 @@ section( Principal)  \ {{{
 	bye_bye
 	;
 ' (main) is main
+
+lina? 0=  [IF]  also  [THEN]
+forth definitions
 ' main alias ayc
 ' main alias go
 
@@ -10073,19 +10161,23 @@ section( Principal)  \ {{{
 	." Datos preparados."
 	;
 
+\ only forth
+
 \ i0 cr  \ Para depuración!!!
-\ main
+\ ayc
 
 \ }}}###########################################################
 section( Pruebas)  \ {{{
 
-0  [IF]  \ ......................................
+(
 
 Esta sección contiene código para probar el programa
 sin interactuar con el juego, para detectar mejor posibles
 errores.
 
-[THEN]  \ ......................................
+)
+
+true  [IF]
 
 : check_stack1  ( -- )  \ Provoca un error -3 («stack overflow») si la pila no tiene solo un elemento
 	depth 1 <> -3 and throw
@@ -10139,6 +10231,10 @@ errores.
 		i test_battle_phase
 	loop
 	;
+
+[THEN]
+
+only forth
 
 \eof  \ Final del programa; el resto del fichero es ignorado 
 
@@ -10587,6 +10683,4 @@ puesta.
 \ Tareas pendientes: código fuente {{{
 
 }}}
-0  [IF]  \ ......................................
-[THEN]  \ ......................................
 
