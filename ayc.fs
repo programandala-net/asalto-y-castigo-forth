@@ -8,7 +8,7 @@ CR .( Asalto y castigo )  \ {{{
 \ Copyright (C) 2011,2012 Marcos Cruz (programandala.net)
 
 ONLY FORTH DEFINITIONS
-: version$  ( -- a u )  S" A-03-201201301550"  ;
+: version$  ( -- a u )  S" A-03-201201302035"  ;
 version$ TYPE CR
 
 \ 'Asalto y castigo' (written in Forth) is free software;
@@ -94,6 +94,10 @@ x     = valor sin determinar 32 bitios
 xt    = identificador de ejecución de una palabra,
         notación de ANS Forth análoga a «cfa» en Forth clásico
 
+Como es costumbre, los diferentes elementos del mismo tipo
+se distinguirán con un sufijo, casi siempre un dígito,
+o bien un apóstrofo, según los casos.
+
 )
 
 \ }}} ##########################################################
@@ -104,15 +108,26 @@ CR .( Identificación del sistema)  \ {{{
 A continuación creamos varias constantes [con versiones
 inmediatas de cada una, para ser usadas como indicadores de
 compilación condicional] que indican el sistema Forth y el
-sistema operativo en el que funciona el juego.
+sistema operativo en el que funciona el juego. Esto permite
+tomar decisiones en tiempo de compilación o ejecución para
+ajustarse a las peculiaridades y necesidades de cada sistema
+Forth.
 
-El soporte para bigFORTH apenas está iniciado.  SP-Forth y
-lina son los sistemas prioritarios porque pueden crear
-ejecutables, pero Gforth ofrece más seguridad en el manejo
-de la entrada de comandos y la pantalla.
+El programa se empezó a escribir para SP-Forth y más tarde
+[versión A-02] también para lina, pues ambos sistemas
+permiten crear crear ejecutables para Linux y Windows.  La
+versión A-03 fue la primera que funcionó también en Gforth,
+sistema más robusto que los dos anteriores y que ofrece más
+seguridad en el manejo de la entrada de comandos y la
+pantalla. Desde la versión A-03 el desarrollo se centró en
+Gforth, intentando mantener la compatibilidad con SP-Forth y
+lina.
 
-No está decidido si el código seguirá siendo adaptado a
-varios sistemas o se escribirá solo para uno de ellos.
+El soporte para bigFORTH apenas está iniciado.
+
+Aún no está decidido si el código seguirá siendo escrito
+para poder funcionar varios sistemas Forth o se escribirá
+solo para uno de ellos.
 
 )
 
@@ -122,7 +137,7 @@ varios sistemas o se escribirá solo para uno de ellos.
   CR . .S ." ..." KEY DROP
   ;
 
-\ Sistema Forth
+\ Averiguar el sistema Forth
 
 [defined] SPF-INI
 DUP CONSTANT sp-forth?
@@ -143,11 +158,10 @@ S" name" ENVIRONMENT? DUP
 DUP CONSTANT lina?
 CONSTANT [lina?] IMMEDIATE
 
-sp-forth? gforth? OR bigforth? OR lina? OR 0=
-[IF]
-CR .( El programa no está adaptado a este sistema Forth.)
-CR .( Probablemente se producirán errores fatales durante la compilación.)
-\ CR .( Pulsa una tecla para continuar.)  KEY DROP
+sp-forth? gforth? OR lina? OR 0=  [IF]
+  CR .( El programa no está adaptado a este sistema Forth.)
+  CR .( Probablemente se producirán errores fatales durante la compilación.)
+  \ CR .( Pulsa una tecla para continuar.)  KEY DROP
 [THEN]
 
 sp-forth? ABS
@@ -155,21 +169,21 @@ gforth? ABS +
 bigforth? ABS + 
 lina? ABS + 1 >
 [IF]
-CR .( Más de un sistema Forth ha sido reconocido.)
-CR .( La compilación es interrumpida.) ABORT
+  CR .( Más de un sistema Forth ha sido reconocido.)
+  CR .( La compilación es interrumpida.) ABORT
 [THEN]
 
-gforth? bigforth? or
+false  \ bigforth? 
 [IF]
-CR .( El programa aún no está plenamente adaptado a este sistema Forth.)
-CR .( La compilación podría detenerse con errores.)
-\ CR .( Pulsa una tecla para continuar.)  KEY DROP
+  CR .( El programa aún no está plenamente adaptado a este sistema Forth.)
+  CR .( La compilación podría detenerse con errores.)
+  \ CR .( Pulsa una tecla para continuar.)  KEY DROP
 [THEN]
 
-\ Sistema operativo
+\ Averiguar el sistema operativo
 
 gforth?  [IF]
-s" os-type" ENVIRONMENT? drop s" linux-gnu" COMPARE 0=
+  s" os-type" ENVIRONMENT? drop s" linux-gnu" COMPARE 0=
 [THEN]
 sp-forth?  [IF]  [DEFINED] WINAPI: 0=  [THEN]
 bigforth?  [IF]  TRUE  [THEN]  \ Provisional!!!
@@ -329,6 +343,7 @@ http://programandala.net/es.programa.lina_toolkit
 
 gforth? [IF]
 
+\ Pendiente!!!
 \ Añadir el directorio del juego a la ruta de búsqueda,
 \ para que sea encontrado su fichero de configuración.
 \ fpath path+ s" ~/forth/ayc/"
@@ -3274,7 +3289,7 @@ direcciones.  Esto unifica y simplifica los cálculos.
 
 : hs,  ( a u -- a1 )
   \ Compila una cadena en el diccionario
-  \ y devuelve su dirección
+  \ y devuelve su dirección.
   here rot rot s,
   ;
 
@@ -3733,14 +3748,17 @@ defer 'entities  \ Dirección de los entes; vector que después será redirigido
 : [:attributes]  ( a -- )
   \ Inicia la definición de propiedades de un ente.
   \ Esta palabra se ejecuta cada vez que hay que restaurar los datos del ente,
-  \ y antes de la definición de atributos contenida en la palabra correspondiente al ente.
-  \ El identificador del ente está en la pila porque se compiló con LITERAL cuando se creó la palabra de atributos.
-  dup to self%  \ Actualizar el puntero al ente, usado para aligerar la sintaxis
+  \ y antes de la definición de atributos contenida en la palabra
+  \ correspondiente al ente.
+  \ El identificador del ente está en la pila porque se compiló con LITERAL
+  \ cuando se creó la palabra de atributos.
+  dup to self%  \ Actualizar el puntero al ente
   dup :name_str  \ Crear una cadena dinámica para el campo ~NAME_STR
   setup_entity
   ;
 : default_description  ( -- )
-  \ Descripción predeterminada de los entes para los que no se ha creado una palabra propia de descripción.
+  \ Descripción predeterminada de los entes
+  \ para los que no se ha creado una palabra propia de descripción.
   ^is_normal$ paragraph
   ;
 : (:attributes)  ( a xt -- )
@@ -3782,7 +3800,7 @@ gforth?  [IF]
   \ Restaura la ficha de un ente a su estado original.
   [debug_init]  [IF]  s" Inicio de INIT_ENTITY" debug dup entity># cr ." Entity=" .  [THEN]
   ~init_xt @ 
-  [debug_init]  [IF]  s" Antes de EXECUTE" debug [THEN]
+  [debug_init]  [IF]  s" Antes de EXECUTE" debug  [THEN]
   execute 
   [debug_init]  [IF]  s" Final de INIT_ENTITY" debug  [THEN]
   ;
@@ -4194,12 +4212,19 @@ A continuación definimos palabras para proporcionar la
 siguiente sintaxis [primero origen y después destino en la
 pila, como es convención en Forth]:
 
-  cave% path% s-->  \ Hacer que la salida sur de CAVE% conduzca a PATH% pero sin afectar al sentido contrario
-  path% cave% n-->  \ Hacer que la salida norte de PATH% conduzca a CAVE% pero sin afectar al sentido contrario
+  \ Hacer que la salida sur de CAVE% conduzca a PATH%
+  \ pero sin afectar al sentido contrario:
+  cave% path% s--> 
+ 
+  \ Hacer que la salida norte de PATH% conduzca a CAVE%
+  \ pero sin afectar al sentido contrario:
+  path% cave% n-->
 
 O en un solo paso:
 
-  cave% path% s<-->  \ Hacer que la salida sur de CAVE% conduzca a PATH% y al contrario: la salida norte de PATH% conducirá a CAVE_E
+  \ Hacer que la salida sur de CAVE% conduzca a PATH%
+  \ y al contrario: la salida norte de PATH% conducirá a CAVE_E :
+  cave% path% s<-->
 
 )
 
@@ -4872,7 +4897,24 @@ fallen_away% :attributes
   location_09% self% is_there
   ;attributes
 fallen_away% :description
-  s" Muchas, inalcanzables rocas, apiladas una sobre otra."
+  s{
+    s" Muchas," s" Muchísimas," s" Numerosas,"
+    s" Un gran número de" s" Una gran cantidad de"
+    s" Un muro de" s" Una pared de"
+  }s
+  s{ s" inalcanzables" s" inaccesibles" }s&
+  s{ s" y enormes" s" y pesadas" s" y grandes" }s?&
+  s" rocas," s& s{ s" apiladas" s" amontonadas" }s&
+  s{
+    s" una sobre otra"
+    s" unas sobre otras"
+    s" una encima de otra"
+    s" unas encima de otras"
+    s" la una encima de la otra"
+    s" las unas encima de las otras"
+    s" la una sobre la otra"
+    s" las unas sobre las otras"
+  }s& period+
   paragraph
   ;description
 flags% :attributes
@@ -5350,10 +5392,13 @@ location_11% :description
   \ Crear ente!!! estancia y aguas
   sight  case
   self%  of
-    s" Una gran estancia alberga un lago"
-    s" de profundas e iridiscentes aguas," s&
-    s" debido a la luz exterior." s&
-    s" No hay otra salida que el Este." s&
+    s" Una" s{ s" gran" s" amplia" }s&
+    s" estancia alberga un lago" s&
+    s{ s" de profundas e iridiscentes aguas,"
+    s" de aguas tan profundas como iridiscentes," }s&
+    s" debido a la luz" s&{ s" que procede del" }s?&
+    s" exterior. No hay" s&{ s" otra" s" más" }s&
+    s" salida que el Este." s&
     paragraph
     endof
   east%  of
@@ -10121,7 +10166,7 @@ lina? [IF]  s" ayc/ayc.ini"  [THEN]
 \ En los demás Forth hay que hacerlo, porque crean la cadena en PAD
 \ y el funcionamiento del siguiente [IF] o [ELSE] la machacaría.
 sp-forth? [IF]  s" ~programandala.net/ayc/ayc.ini" >csb  [THEN]
-gforth? [IF]  s" ~/forth/ayc/ayc.ini" >csb  [THEN]
+gforth? [IF]  s" ~/forth/ayc/ayc.ini" >csb  [THEN]  \ Provisional!!! Debería encontrarlo en el directorio del programa, ¿pero cómo?
 bigforth? [IF]  s" ayc.ini" >csb  [THEN]
 sconstant config_file$  \ Fichero de configuración
 
@@ -10719,11 +10764,18 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 : trozo  piece% complement!  ;
 ' trozo synonyms{  pedazo retal  }synonyms
 : harapo  rags% complement!  ;
-: rocas  rocks% complement!  ;
+: rocas 
+  location_09% am_i_there?
+  if  fallen_away%  else  rocks%  then  complement!
+  ;
+' rocas synonyms{  piedras pedruscos  }synonyms
 : serpiente  snake% complement!  ;
-' serpiente synonyms{  reptil ofidio culebra  }synonyms
-: piedra stone% complement!  ;
-' piedra synonyms{  pedrusco  }synonyms
+' serpiente synonyms{  reptil ofidio culebra animal bicho  }synonyms
+: piedra
+  stone% is_accessible?
+  if  stone% complement!  else  piedras  then
+  ;
+' piedra synonyms{  roca pedrusco  }synonyms
 : espada  sword% complement!  ;
 ' espada synonyms{  tizona arma  }synonyms
 \ "arma" es femenina pero usa artículo "él", contemplar en los cálculos de artículo!!!
@@ -11601,22 +11653,15 @@ Dudas sobre SP-Forth
 
 2012-01-30:
 
-Error descubierto. >ARTICLE no devuelve la dirección
-correcta en Gforth. El resultado es que los artículos no se
-calculan correctamente. Puede verse el efecto en el listado
-mostrado por el comando inventario.
-
-Cada artículo en realidad ocupa diez octetos en la tabla
-(porque S, guarda la longitud de la cadena),
-no nueve como se supone en los cálculos.
-Pero S, funciona igual en lina y en Gforth.
+El nuevo sistema de artículos no funciona bien en lina.
+Es SP-Forth no está probado.
 
 ...........................
 
+2011-12:
+
 Hacer que Gforth encuentre ayc.ini en su ruta de búsqueda
 de forma trasparente.
-
-Gforth no obedece la configuración del fichero ini.
 
 SP-Forth ahora no encuentra el programa para compilarlo!
 
@@ -11637,15 +11682,23 @@ Implementar tres niveles en mirar:
 
 ...........................
 
+2011-12:
+
 Grave: los comandos no vacíos y sin verbo reconocido
 hacen saltar el sistema.
 
+2012-01-30: No pasa en Gforth.
+
 ...........................
+
+2011-12:
 
 Poner de un color diferente, configurable, el presto y el
-texto de las respuestas al sistema (proguntas sí/no).
+texto de las respuestas al sistema (preguntas sí/no).
 
 ...........................
+
+2011-12:
 
 Los comandos de configuración no evitan que el análisis dé
 error por falta de comandos del juego!
@@ -11666,6 +11719,8 @@ anularlo!
 
 ...........................
 
+2011-12:
+
 Comprobar si el hecho de no usar el número máximo de líneas
 causa problemas con diferentes tamaños de consola.
 
@@ -11675,10 +11730,14 @@ se pida entrada a un comando.
 
 ...........................
 
+2011-12:
+
 Hacer un comando que lea el fichero de
 configuración en medio de una partida.
 
 ...........................
+
+2011-12:
 
 Evitar mensaje «todos tus hombres siguen tus pasos» en la
 aldea, nada más empezar. Usar otra frase mientras dura el
@@ -11687,15 +11746,21 @@ aldea.
 
 ...........................
 
+2011-12:
+
 Implementar transcripción en fichero
 
 ...........................
+
+2011-12:
 
 Anotar que ha habido palabras no reconocidas, para variar el error en lugar de actuar como si faltaran.
 p.e. mirar / mirar xxx.
 
 
 ...........................
+
+2011-12:
 
 Hacer más naturales los mensajes que dicen
 que no hay nada de interés en la dirección indicada,
@@ -11707,14 +11772,20 @@ miras a tus pies...
 
 ...........................
 
+2011-12:
+
 Añadir variante:
 «No observas nada digno de mención al mirar hacia el Este».
 
 ...........................
 
+2011-12:
+
 Añadir «tocar».
 
 ...........................
+
+2011-12:
 
 Implementar que «todo» pueda usarse
 con examinar y otros verbos, y se cree una lista
@@ -11723,10 +11794,14 @@ los requisitos.
 
 ...........................
 
+2011-12:
+
 Hacer que los objetos (y ambrosio) no estén siempre en el
 mismo sitio. ¿Altar? ¿Serpiente?
 
 ...........................
+
+2011-12:
 
 
 Hacer algo así en las tramas del laberinto:
@@ -11742,26 +11817,36 @@ Hacer algo así en las tramas del laberinto:
 
 ...........................
 
+2011-12:
+
 Respuesta a mirar como en «Pronto»:
 
 Miras, pero no ves eso por aquí. ¿Realmente importa?
 
 ...........................
 
+2011-12:
+
 Crear ente «enemigo» con el término ambiguo «sajones» (por
 los sajones muertos en la aldea.
 
 ...........................
+
+2011-12:
 
 Crear ente (sub)oficiales, con descripción complementaria a
 la de los soldados.
 
 ...........................
 
+2011-12:
+
 Crear ente «general» para el general enemigo, con
 descripción durante la batalla, dependiendo de la fase.
 
 ...........................
+
+2011-12:
 
 Implementar «describir», sinónimo de examinar para entes
 presentes pero que funciona con entes no presentes ya
@@ -11769,9 +11854,13 @@ conocidos!
 
 ...........................
 
+2011-12:
+
 Implementar «esperar» («z»)
 
 ...........................
+
+2011-12:
 
 Hacer más robusto el analizador con:
 
@@ -11795,6 +11884,8 @@ Es muy bonita.
 
 ...........................
 
+2011-12:
+
 Hace que «examinar» sin más examine todo.
 
 ¿Y también «coger» y otros?
@@ -11806,12 +11897,16 @@ si hay varias, error.
 
 ...........................
 
+2011-12:
+
 Error nuevo para no coger las cosas de la casa de Ambrosio:
 Es mejor dejar las cosas de Ambrosio donde están.
 
 Añadir a la ficha con su xt.
 
 ...........................
+
+2011-12:
 
 Solucionar el eterno problema de los sinónimos que no tienen
 el mismo género o número...
@@ -11828,16 +11923,22 @@ lista de nombres separada de los datos de entes.
 
 ...........................
 
+2011-12:
+
 ¿Crear un método para dar de alta fácilmente entes
 decorativos? Hay muchos en las descripciones de los
 escenarios.
 
 ...........................
 
+2011-12:
+
 Hacer que no salga el presto de pausa si las pausas son
 cero.
 
 ...........................
+
+2011-12:
 
 Hacer variantes de CHOOSE y DCHOOSE para elegir un elemento
 con un cálculo en lugar de al azar. 
@@ -11846,12 +11947,16 @@ con un cálculo en lugar de al azar.
 
 ...........................
 
+2011-12:
+
 Crear un mensaje de error más elaborado para las acciones
 que precisan objeto directo, con el infinitivo como
 parámetro: «¿Matar por matar?» «Normalmente hay que matar a
 alguien o algo».
 
 ...........................
+
+2011-12:
 
 Implementar pronombres. Para empezar, que la forma «mírate»
 sea compatible con «mírate la capa». Para esto habría que
@@ -11861,30 +11966,42 @@ complemento directo del otro tipo.
 
 ...........................
 
+2011-12:
+
 Limitar los usos de PRINT_STR a la impresión. Renombrarla.
 Crear otra cadena dinámica para los usos genéricos con «+ y
 palabras similares.
 
 ...........................
 
+2011-12:
+
 Comprobar los usos de TMP_STR .
 
 ...........................
+
+2011-12:
 
 Poner en fichero de configuración el número de líneas
 necesario para mostrar un presto de pausa.
 
 ...........................
 
+2011-12:
+
 Implementar opción para tener en cuenta las palabras no
 reconocidas y detener el análisis.
 
 ...........................
 
+2011-12:
+
 Poner en fichero de configuración si las palabras no
 reconocidas deben interrumpir el análisis.
 
 ...........................
+
+2011-12:
 
 Poner todos los textos relativos al protagonista en segunda 
 persona.
@@ -11893,32 +12010,38 @@ persona.
 
 ...........................
 
+2011-12:
+
 Añadir las salidas hacia fuera y dentro. Y atrás. Y
 adelante. Y seguir.
 
 ...........................
+
+2011-12:
 
 Implementar el recuerdo de la dirección del último
 movimiento.
 
 ...........................
 
+2011-12:
+
 Hacer que «salir», si no hay dirección de salida en el ente,
 calcule la dirección con la del último movimiento.
 
 ...........................
+
+2011-12:
 
 Añadir a la configuración si los errores lingüísticos deben
 ser detallados (técnicos) o vagos (narrativos) o ambos.
 
 ...........................
 
+2011-12:
+
 Hacer que primero se muestre la introducción y después
 los créditos y el menú.
-
-...........................
-
-
 
 ...........................
 
@@ -11926,22 +12049,25 @@ los créditos y el menú.
 \ Ideas desestimadas para este proyecto {{{
 
 ...........................
-Lista de puzles completados (como Transilvania Corruption).
+Lista de puzles completados.
 
 ...........................
+
 Hacer que el color de fondo y de texto cambie en los
 escenarios al aire libre.
 
 ...........................
+
 Implementar que en las acciones intermedias automáticas,
 como quitarse una prenda antes de dejarla, el mensaje sea
 más natural: «Ulfius se quita la corbata y a continuación la
 deja».
 
 ...........................
+
 Crear tramas de escenario separadas: entrar de él, estar en
 él y salir de él.  Hay que distinguir tramas de descripción
-de escenario (como actual, que se activa en la descripción)
+de escenario (como la actual, que se activa en la descripción)
 de tramas de entrada, salida o permanencia en escenario...
 Haría falta un selector similar a SIGHT para seleccionar el
 caso adecuado en la palabra LOCATION_PLOT
