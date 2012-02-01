@@ -8,7 +8,7 @@ CR .( Asalto y castigo )  \ {{{
 \ Copyright (C) 2011,2012 Marcos Cruz (programandala.net)
 
 ONLY FORTH DEFINITIONS
-: version$  ( -- a u )  S" A-03-201201302035"  ;
+: version$  ( -- a u )  S" A-03-201202011510"  ;
 version$ TYPE CR
 
 \ 'Asalto y castigo' (written in Forth) is free software;
@@ -118,10 +118,9 @@ El programa se empezó a escribir para SP-Forth y más tarde
 permiten crear crear ejecutables para Linux y Windows.  La
 versión A-03 fue la primera que funcionó también en Gforth,
 sistema más robusto que los dos anteriores y que ofrece más
-seguridad en el manejo de la entrada de comandos y la
-pantalla. Desde la versión A-03 el desarrollo se centró en
-Gforth, intentando mantener la compatibilidad con SP-Forth y
-lina.
+seguridad en el manejo de la consola y la pantalla. Desde la
+versión A-03 el desarrollo se centró en Gforth, intentando
+mantener la compatibilidad con SP-Forth y lina.
 
 El soporte para bigFORTH apenas está iniciado.
 
@@ -479,6 +478,7 @@ csb_set  \ Inicializar el almacén
 false value [debug] immediate  \ ¿Depuración global?
 false value [debug_init] immediate  \ ¿Depurar la inicialización?
 false value [debug_parsing] immediate  \ ¿Depurar el analizador?
+false value [debug_filing] immediate  \ ¿Depurar operaciones de ficheros? 
 false value [debug_do_exits] immediate  \ ¿Depurar la acción DO_EXITS ?
 false value [debug_catch] immediate  \ ¿Depurar CATCH y THROW ?
 false value [debug_save] immediate  \ ¿Depurar la grabación de partidas?
@@ -489,6 +489,7 @@ false value [debug_pause] immediate  \ ¿Hacer pausa en puntos de depuración?
 [debug_init] or
 [debug_do_exits] or
 [debug_parsing] or
+[debug_filing] or
 [debug_catch] or
 [debug_save] or
 true or  \ !!!
@@ -598,18 +599,9 @@ inmediata y que llame a la original:
 
 [THEN]
 
-\ Creamos los vocabularios que necesitaremos en el programa
-
 \ Vocabulario principal del programa (no de la aventura)
-gforth?  [IF]
-  \ Gforth necesita su propio método
-  \ para crear un vocabulario sensible a mayúsculas.
-  \ Borrador!!!
-  table value (game_vocabulary)
-  : game_vocabulary  ( -- )  (game_vocabulary) >order  ;
-[ELSE]
-  vocabulary game_vocabulary
-[THEN]
+
+vocabulary game_vocabulary
 
 : restore_vocabularies  ( -- )
   \ Restaura los vocabularios a su orden habitual.
@@ -625,10 +617,19 @@ gforth?  [IF]
   ;
 restore_vocabularies
 
-\ Vocabularios
+\ Demás vocabularios
 
 vocabulary menu_vocabulary  \ palabras del menú \ Aún no se usa!!!
-vocabulary player_vocabulary  \ palabras del juego en sí (comandos del jugador)
+\ Vocabulario del jugador 
+gforth?  [IF]
+  \ Gforth necesita su propio método
+  \ para crear un vocabulario sensible a mayúsculas,
+  \ con la palabra TABLE :
+  table value (player_vocabulary)
+  : player_vocabulary  ( -- )  (player_vocabulary) >order  ;
+[ELSE]
+  vocabulary player_vocabulary
+[THEN]
 vocabulary answer_vocabulary  \ respuestas a preguntas de «sí» o «no»
 vocabulary config_vocabulary  \ palabras de configuración del juego
 vocabulary restore_vocabulary  \ palabras de restauración de una partida 
@@ -9743,13 +9744,16 @@ restore_vocabulary  definitions
 lina? 0=  [IF]  immediate  [THEN]
 ' true alias true
 ' false alias false
-: load_entity  ( x0 ... xn a -- )
+' s" alias s"
+: load_entity  ( x0 ... xn u -- )
   \ Restaura los datos de un ente.
   \ x0 ... xn = Datos del ente, en orden inverso a como los crea la palabra SAVE_ENTITY .
-  \ a = Ente.
-  >r
+  \ u = Número ordinal del ente.
+  #>entity >r
+  \ cr .s  \ Depuración!!!
   r@ ~direction !
   r@ ~in_exit !
+  \ cr ." ~in_exit" cr .s  \ Depuración!!!
   r@ ~out_exit !
   r@ ~down_exit !
   r@ ~up_exit !
@@ -9786,12 +9790,13 @@ lina? 0=  [IF]  immediate  [THEN]
   r@ ~has_plural_name? !
   r@ ~has_feminine_name? !
   r@ ~has_personal_name? !
+  \ 2dup cr type .s  \ depuración!!!
   r> name!
   ;
 restore_vocabularies
 : string>file  ( a u -- )
   \ Crea una cadena en el fichero de la partida.
-  s| s"| 2swap s& s| "| s+ >file
+  s| s" | 2swap s+ s| "| s+ >file
   ;
 : f>string  ( ff -- a u )
   \ Convierte un indicador binario en su nombre de constante.
@@ -9829,7 +9834,8 @@ restore_vocabularies
   ;
 : save_entity  ( u -- )
   \ Guarda en el fichero de la partida los datos de un ente.
-  #>entity >r
+  \ u = Número ordinal del ente.
+  dup #>entity >r
   r@ name string>file
   r@ has_personal_name? f>file
   r@ has_feminine_name? f>file
@@ -9868,28 +9874,35 @@ restore_vocabularies
   r@ down_exit n>file
   r@ out_exit n>file
   r@ in_exit n>file
-  r@ direction n>file
-  r> n>file s" restore_entity" >file/  \ Añadir el número de ente y la palabra que hará la restauración
+  r> direction n>file
+  n>file  \ Número ordinal del ente
+  s" load_entity" >file/  \ Palabra que hará la restauración del ente
   ;
 : save_entities  ( -- )
-  \ Guarda todos los entes en el fichero de la partida.
+  \ Guarda los entes en el fichero de la partida.
+  s" \ Entes" >file/
   #entities 0  do  i save_entity  loop
   ;
 : save_flag  ( a u ff -- )
+  \ Guarda un indicador en el fichero de la partida.
+  \ Pendiente!!!
   ;
 : save_config
+  \ Guarda los valores de configuración en el fichero de la partida.
+  \ Pendiente!!!
+  s" \ Configuración" >file/
   ;
 : save_plot
+  \ Guarda el estado de la trama en el fichero de la partida.
+  \ Pendiente!!!
+  s" \ Trama" >file/
   ;
 : write_game_file  ( -- )
   \ Escribe el fichero en que se graba la partida.
   s" \ Datos de restauración de una partida de «Asalto y castigo»" >file/
   s" \ Fichero creado en" yyyy-mm-dd_hh:mm:ss$ s& >file/
-  s" \ Entes" >file/
   save_entities
-  s" \ Configuración" >file/
   save_config
-  s" \ Trama" >file/
   save_plot
   ;
 : fs+  ( a u -- a' u' )
@@ -9907,37 +9920,45 @@ restore_vocabularies
   ;action
 :action do_load_the_game  ( a u -- )
   \ Acción de salvar la partida.
-  \ Pendiente!!! No funciona
+  \ Pendiente!!! No funciona bien
   \ main_complement{forbidden}
   [lina?]
   [IF]    postpone only restore_vocabulary 
   [ELSE]  only restore_vocabulary
   [THEN]
-  [debug_parsing] ?halto" in do_load_the_game before save-input"
+  [debug_filing] ?halto" in do_load_the_game before save-input"
   \ included  \ !!! el sistema estalla
   \ 2drop  \ !!! sin error
   \ cr type  \ !!! sin error  
   2>r save-input 2r>
-  [debug_parsing] ?halto" in do_load_the_game before fs+"
+  [debug_filing] ?halto" in do_load_the_game before fs+"
   fs+
-  [debug_parsing] ?halto" in do_load_the_game before included"
-  ['] included 
-  [debug_parsing] ?halto" in do_load_the_game before catch"
+  [debug_filing] ?halto" in do_load_the_game before included"
+[false] [IF]
+  read_game_file
+[ELSE]
+  ['] read_game_file
+  [debug_filing] ?halto" in do_load_the_game before catch"
   catch  
-  [debug_parsing] ?halto" in do_load_the_game after catch"
+  [debug_filing] ?halto" in do_load_the_game after catch"
   restore_vocabularies
-  [debug_parsing] ?halto" in do_load_the_game before if"
+  [debug_filing] ?halto" in do_load_the_game before if"
   ?dup  if
     ( a u u2 ) nip nip
     case  \ tmp!!!
       2  of  s" Fichero no encontrado." narrate  endof
       s" Error al intentar leer el fichero." narrate
     endcase
-    [debug_parsing] ?halto" in do_load_the_game after endcase"
+    [debug_filing] ?halto" in do_load_the_game after endcase"
   then
-  [debug_parsing] ?halto" in do_load_the_game after then"
+[THEN]
+  [debug_filing] ?halto" in do_load_the_game after then"
   restore-input
-  [debug_parsing] ?halto" in do_load_the_game at the end" 
+  if
+    \ tmp!!!
+    s" Error al intentar restaurar la entrada tras leer el fichero." narrate
+  then
+  [debug_filing] ?halto" in do_load_the_game at the end" 
   ;action
 
 \ }}}
@@ -10473,7 +10494,7 @@ gforth?  [IF]
   ;
 [THEN]
 
-\ Resolución de ambigüedades
+\ Resolución de entes ambiguos
 
 (
 
@@ -10500,37 +10521,69 @@ adecuado.
 )
 
 : (man) ( -- a | false )
-  \ Devuelve el ente adecuado a la palabra «hombre» y sus sinónimos (o FALSE si la ambigüedad no puede ser resuelta).
-  leader% is_here?  if
-    \ El jefe de los refugiados tiene preferencia si está presente
-    leader%  
-  else
-    \ Si Ulfius no ha hablado con Ambrosio (y por tanto aún no sabe su nombre), la palabra se refiere a Ambrosio:
-\ antiguo!!!
-\   ambrosio% ~conversations @ 0= abs ambrosio% *
-    ambrosio% dup no_conversations? and
-  then
+  \ Devuelve el ente adecuado a la palabra «hombre» y sus sinónimos
+  \ (o FALSE si la ambigüedad no puede ser resuelta).
+  \ Puede referirse al líder de los refugiados (si está presente),
+  \ a Ambrosio (si está presente),
+  \ o a los soldados (durante la marcha o la batalla).
+  true  case 
+    leader% is_here?  of  leader%  endof
+    ambrosio% is_here?  of  ambrosio%  endof
+    pass_still_open? battle? or  of  soldiers%  endof
+    false swap
+  endcase
+  ;
+: (men)  ( -- a | false )
+  \ Devuelve el ente adecuado a la palabra «hombres» y sus sinónimos
+  \ (o FALSE si la ambigüedad no puede ser resuelta).
+  \ Puede referirse a los soldados o a los refugiados.
+  true  case
+    pass_still_open? battle? or  of  soldiers%  endof
+    location_28% am_i_there? location_29% am_i_there? or  of  refugees%  endof
+    false swap
+  endcase
   ;
 : (ambrosio) ( -- a | false )
-  \ Devuelve el ente adecuado a la palabra «ambrosio» (o FALSE si la ambigüedad no puede ser resuelta).
-  \ La palabra «Ambrosio» es válida solo si el protagonista ha hablado con Ambrosio:
+  \ Devuelve el ente adecuado a la palabra «ambrosio»
+  \ (o FALSE si la ambigüedad no puede ser resuelta).
+  \ La palabra «Ambrosio» es válida únicamente si
+  \ el protagonista ha hablado con Ambrosio.
   ambrosio% dup conversations? and
   ;
 
 : (cave) ( -- a | false )
-  \ Devuelve el ente adecuado a la palabra «cueva» (o FALSE si la ambigüedad no puede ser resuelta).
+  \ Devuelve el ente adecuado a la palabra «cueva»
+  \ (o FALSE si la ambigüedad no puede ser resuelta).
   \ Inacabado!!!
   cave%
+  ;
+: (stone) ( -- a )
+  \ Devuelve el ente adecuado a la palabra «piedra».
+  \ Puede referise, en orden preferente,
+  \ a la piedra, a la esmeralda o a las rocas.
+  true case
+    stone% is_accessible?  of  stone%  endof
+    emerald% is_accessible?  of  emerald%  endof
+    rocks% swap
+  endcase
+  ;
+: (somebody) ( -- a | false )
+  \ Devuelve el ente adecuado a la palabra «alguien».
+  \ (o FALSE si la ambigüedad no puede ser resuelta).
+  \ Puede referirse a los soldados, a los refugiados
+  \ o a ambrosio.
+  true  case
+    pass_still_open? battle? or  of  soldiers%  endof
+    location_28% am_i_there? location_29% am_i_there? or  of  refugees%  endof
+    ambrosio% is_here?  of  ambrosio%  endof
+    false swap
+  endcase
   ;
 
 \ }}} ##########################################################
 section( Vocabulario del juego)  \ {{{
 
 also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY para crear en él las nuevas palabras
-
-\ Pendiente!!! Añadir formas verbales en primera persona
-\ Pendiente!!! Desambiguar formas verbales que son también nombres.
-\ Pendiente!!! Añadir verbos en tercera persona (póngase, vaya, suba)
 
 : ir ['] do_go action!  ;
 ' ir synonyms{
@@ -10708,7 +10761,10 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 : ambrosio  (ambrosio) complement!  ;
 : hombre  (man) complement!  ;
 ' hombre synonyms{  señor tipo individuo persona  }synonyms
-\ Ambigüedad!!!: jefe de los enemigos durante la batalla
+: hombres  (men) complement!  ;
+' hombres synonyms{ gente personas }synonyms
+\ Ambigüedad!!!:
+\ «jefe» podría ser también el jefe de los enemigos durante la batalla:
 : jefe  leader% complement!  ;
 ' jefe synonyms{
   líder refugiado viejo anciano abuelo
@@ -10717,6 +10773,8 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 ' soldados synonyms{
   guerreros luchadores combatientes camaradas
   compañeros oficiales suboficiales militares
+  guerrero luchador combatiente camarada
+  compañero oficial suboficial militar
   }synonyms
 : refugiados  refugees% complement!  ;
 ' refugiados synonyms{
@@ -10732,7 +10790,7 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
   bebé bebés beba bebas bebito bebitos bebita bebitas
   pobres desgraciados desafortunados
   desgraciadas desafortunadas
-  muchedumbre multitud
+  muchedumbre multitud masa
   }synonyms  
 : altar  altar% complement!  ;
 : arco  arch% complement!  ;
@@ -10747,17 +10805,19 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 \ pendiente!!! piedra_preciosa brillante
 : derrumbe fallen_away% complement!  ;
 : banderas  flags% complement!  ;
-' banderas synonyms{  pendones enseñas  }synonyms
+' banderas synonyms{
+    bandera pendones enseñas pendón enseña
+  }synonyms
 \ pendiente!!! estandartes, otro género
 : pedernal  flint% complement!  ;
 : ídolo  idol% complement!  ;
-' ídolo synonyms{  ojo agujero  }synonyms
+' ídolo synonyms{  ojo orificio agujero  }synonyms
+\ pendiente!!! separar los sinónimos de ídolo
 : llave  key% complement!  ;
 : lago  lake% complement!  ;
-' lago synonyms{  laguna agua  }synonyms  \ diferente género!!!
+' lago synonyms{  laguna agua estanque  }synonyms  \ diferente género!!!
 : candado  lock% complement!  ;
 ' candado synonyms{  cerrojo  }synonyms
-\ Ambigüedad!!!: cierre
 : tronco  log% complement!  ;
 ' tronco synonyms{  leño madero  }synonyms
 \ pendiente!!! madera
@@ -10765,17 +10825,15 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 ' trozo synonyms{  pedazo retal  }synonyms
 : harapo  rags% complement!  ;
 : rocas 
+  \ Este término puede referise a las rocas o al derrumbe.
   location_09% am_i_there?
   if  fallen_away%  else  rocks%  then  complement!
   ;
 ' rocas synonyms{  piedras pedruscos  }synonyms
+: piedra  (stone) complement!  ;
+' piedra synonyms{  roca pedrusco  }synonyms
 : serpiente  snake% complement!  ;
 ' serpiente synonyms{  reptil ofidio culebra animal bicho  }synonyms
-: piedra
-  stone% is_accessible?
-  if  stone% complement!  else  piedras  then
-  ;
-' piedra synonyms{  roca pedrusco  }synonyms
 : espada  sword% complement!  ;
 ' espada synonyms{  tizona arma  }synonyms
 \ "arma" es femenina pero usa artículo "él", contemplar en los cálculos de artículo!!!
@@ -10791,6 +10849,7 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 : mesa  table% complement!  ;
 ' mesa synonyms{  mesita pupitre  }synonyms
 : puente  bridge% complement!  ;
+: alguien  (somebody) complement!  ;
 
 : n  ['] do_go_north north% action|complement!  ;
 ' n synonyms{  norte septentrión  }synonyms
@@ -10870,6 +10929,7 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 ' nubes synonyms{  nube estratocúmulo estratocúmulos cirro cirros  }synonyms
 : suelo  floor% complement!  ;
 ' suelo synonyms{  suelos tierra firme  }synonyms
+\ «piso» ambiguo!!!
 : cielo  sky% complement!  ;
 ' cielo synonyms{  cielos firmamento  }synonyms
 : techo  ceiling% complement!  ;
@@ -10885,21 +10945,8 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 
 \ Términos ambiguos
 
-: cierre
-  action @  if  candado  else  cerrar  then
-  ;
-: parte 
-  action @  if  trozo  else  partir  then
-  ;
-: hombres
-  true  case
-    pass_still_open?  of  soldados  endof
-    battle?  of  soldados  endof
-    location_28% am_i_there?  of  refugiados  endof
-    location_29% am_i_there?  of  refugiados  endof
-  endcase
-  ;
-' hombres synonyms{ gente personas }synonyms
+: cierre  action @  if  candado  else  cerrar  then  ;
+: parte  action @  if  trozo  else  partir  then  ;
 
 \ Comandos del sistema
 
