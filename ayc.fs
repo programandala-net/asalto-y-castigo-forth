@@ -8,7 +8,7 @@ CR .( Asalto y castigo )  \ {{{
 \ Copyright (C) 2011,2012 Marcos Cruz (programandala.net)
 
 ONLY FORTH DEFINITIONS
-: version$  ( -- a u )  S" A-03-201202011510"  ;
+: version$  ( -- a u )  S" A-03-201202022050"  ;
 version$ TYPE CR
 
 \ 'Asalto y castigo' (written in Forth) is free software;
@@ -926,9 +926,11 @@ defer is_not_here_what_error#
 defer no_main_complement_error# 
 defer no_verb_error#
 defer nonsense_error#
+defer repeated_preposition_error#
 defer too_many_actions_error#
 defer too_many_complements_error#
 defer unexpected_main_complement_error# 
+defer unresolved_preposition_error# 
 defer what_is_already_closed_error#
 defer what_is_already_open_error#
 defer you_already_have_it_error#
@@ -2372,6 +2374,48 @@ str-create print_str  \ Cadena dinámica para almacenar el texto antes de imprim
   dup «»bl+?  if  bl «c+  then  «+ 
   ;
 
+
+\ }}} ##########################################################
+section( Herramientas para sonido)  \ {{{
+
+(
+
+Las herramientas para proveer de sonido al juego están
+apenas esbozadas aquí y de momento solo para Gforth.
+
+La idea consiste en utilizar un reproductor externo que
+acepte comandos y no muestre interfaz, como mocp para
+GNU/Linux, que es el que usamos en las pruebas. Los comandos
+para la consola del sistema operativo se pasan con la
+palabra SYSTEM de Gforth.
+
+)
+
+gforth?  [IF]
+
+: clear_sound_track  ( -- )
+  \ Limpia la lista de sonidos. 
+  s" mocp --clear" system
+  ;
+: add_sound_track  ( a u -- )
+  \ Añade un fichero de sonido a la lista de sonidos. 
+  s" mocp --add" 2swap s& system
+  ;
+: play_sound_track  ( -- )
+  \ Inicia la reproducción de la lista de sonidos. 
+  s" mocp --play" system
+  ;
+: stop_sound_track  ( -- )
+  \ Detiene la reproducción de la lista de sonidos. 
+  s" mocp --stop" system
+  ;
+: next_sound_track  ( -- )
+  \ Salta al siguiente elemento de la lista de sonidos. 
+  s" mocp --forward" system
+  ;
+
+[THEN]
+
 \ }}} ##########################################################
 section( Impresión de textos)  \ {{{
 
@@ -3698,26 +3742,31 @@ defer 'entities  \ Dirección de los entes; vector que después será redirigido
 0 value #entities  \ Contador de entes, que se actualizará según se vayan creando
 
 : #>entity  ( u -- a )
-  \ Devuelve la dirección de la ficha de un ente a partir de su número ordinal (el número del primer ente es el cero).
+  \ Devuelve la dirección de la ficha de un ente a partir de su número ordinal
+  \ (el número del primer ente es el cero).
   /entity * 'entities +
   ;
 : entity>#  ( a -- u )
-  \ Devuelve el número ordinal de un ente (el primero es el cero) a partir de la dirección de su ficha .
+  \ Devuelve el número ordinal de un ente (el primero es el cero)
+  \ a partir de la dirección de su ficha.
   'entities - /entity /
   ;
-: entity:  ( "name" -- ) \ Crea un nuevo identificador de ente, que devolverá la dirección de su ficha
+: entity:  ( "name" -- )
+  \ Crea un nuevo identificador de ente,
+  \ que devolverá la dirección de su ficha.
   create
     #entities ,  \ Guardar la cuenta en el cuerpo de la palabra recién creada
     #entities 1+ to #entities  \ Actualizar el contador
-  does>  ( pfa -- a )  \ Cuando la constante sea llamada tendrá su pfa en la pila
-    @ #>entity  \ Cuando el identificador se ejecute, devolverá la dirección de su ficha
+  does>  ( pfa -- a )
+    @ #>entity  \ El identificador devolverá la dirección de su ficha
   ;
 : erase_entity  ( a -- )
   \ Rellena con ceros la ficha de un ente.
   /entity erase
   ;
 : backup_entity  ( a -- x1 x2 x3 x4 )
-  \ Respalda los datos de un ente que se crearon durante la compilación del código y deben preservarse.
+  \ Respalda los datos de un ente
+  \ que se crearon durante la compilación del código y deben preservarse.
   >r
   r@ ~name_str @
   r@ ~init_xt @
@@ -3725,7 +3774,8 @@ defer 'entities  \ Dirección de los entes; vector que después será redirigido
   r> ~description_xt @ 
   ;
 : restore_entity  ( x1 x2 x3 x4 a -- )
-  \ Restaura los datos de un ente que se crearon durante la compilación del código y deben preservarse.
+  \ Restaura los datos de un ente
+  \ que se crearon durante la compilación del código y deben preservarse.
   >r
   r@ ~description_xt !
   r@ ~location_plot_xt !
@@ -4080,7 +4130,7 @@ entity: enemy%
 
 #entities /entity * constant /entities  \ Espacio necesario para guardar todas las fichas, en octetos
 create ('entities) /entities allot  \ Reservar el espacio en el diccionario
-' ('entities) is 'entities  \ Actualizar el vector que apunta a dicho espacio
+' ('entities) is 'entities
 'entities /entities erase  \ Llenar la zona con ceros, para mayor seguridad
 
 \ }}} ##########################################################
@@ -6561,10 +6611,11 @@ in% :attributes
 section( Errores de las acciones)  \ {{{
 
 variable action  \ Código de la acción del comando
-variable main_complement  \ Código del complemento principal del comando (generalmente es el complemento directo)
-variable tool_complement  \ Código del complemento instrumental del comando  \ No utilizado!!!
-variable other_complement  \ Código del complemento indirecto o preposicional del comando \ No utilizado!!!
+variable main_complement  \ Ente complemento principal del comando (generalmente es el complemento directo)
+variable tool_complement  \ Ente complemento instrumental del comando  \ No utilizado!!!
+variable other_complement  \ Ente complemento indirecto o preposicional del comando \ No utilizado!!!
 variable what  \ Ente que ha provocado un error y puede ser citado en el mensaje de error correspondiente
+variable current_preposition  \ Código de la (seudo)preposición abierta, o cero
 
 : known_entity_is_not_here$  ( a -- a1 u1 )
   \  Devuelve mensaje de que un ente conocido no está presente.
@@ -8095,6 +8146,21 @@ section( Errores del intérprete de comandos)  \ {{{
   ;
 ' unexpected_main_complement constant (unexpected_main_complement_error#)
 ' (unexpected_main_complement_error#) is unexpected_main_complement_error# 
+: unresolved_preposition  ( -- )
+  \ Informa de que se ha producido un error por presencia de una (seudo)preposición inesperada en el comando.
+  there_is$ s" una (seudo)preposición sin completar" s&
+  language_error
+  ;
+' unresolved_preposition constant (unresolved_preposition_error#)
+' (unresolved_preposition_error#) is unresolved_preposition_error# 
+: repeated_preposition  ( -- )
+  \ Informa de que se ha producido un error por
+  \ la repetición de una (seudo)preposición.
+  there_is$ s" una (seudo)preposición repetida" s&
+  language_error
+  ;
+' repeated_preposition constant (repeated_preposition_error#)
+' (repeated_preposition_error#) is repeated_preposition_error# 
 
 : ?wrong  ( xt | 0 -- )
   \ Informa, si es preciso, de un error en el comando.
@@ -8511,9 +8577,9 @@ subsection( Mirar, examinar y registrar)  \ {{{
   main_complement @ ?dup 0=  if  protagonist%  then
   (do_look)
   ;action
-\ Pendiente!!! traducir «otear»
 :action do_look_to_direction  ( -- )
   \  Acción de otear.
+  \ Pendiente!!! traducir «otear» en el nombre de la palabra
   main_complement{required}
   main_complement{direction}
   main_complement @ (do_look)
@@ -8588,7 +8654,10 @@ variable #free_exits  \ Contador de las salidas posibles
   [debug_do_exits]  [IF]  cr .stack  [THEN]  \ Depuración!!!
   ;
 
-false  [IF]  \ Primera versión: las salidas se listan siempre en el mismo orden (en el que están definidas en las fichas)
+false  [IF]  \ Primera versión
+
+\ las salidas se listan siempre en el mismo orden en el que
+\ están definidas en las fichas.
 
 : free_exits  ( a -- u )
   \ Devuelve el número de salidas posibles de un ente.
@@ -8614,7 +8683,9 @@ false  [IF]  \ Primera versión: las salidas se listan siempre en el mismo orden
   .exits
   ;action
 
-[ELSE]  \ Segunda versión: las salidas se muestran cada vez en orden aleatorio
+[ELSE]  \ Segunda versión
+
+\ las salidas se muestran cada vez en orden aleatorio.
 
 0 value this_location  \ Guardará el ente del que queremos calcular las salidas libres (para simplificar el manejo de la pila en el bucle)
 : free_exits  ( a0 -- a1 ... au u )
@@ -8630,7 +8701,7 @@ false  [IF]  \ Primera versión: las salidas se listan siempre en el mismo orden
   depth r> -
   [debug_do_exits]  [IF]  cr .stack  [THEN]  \ Depuración!!!
   ;
-:action do_exits  ( -- )
+:action (do_exits)  ( -- )
   \ Lista las salidas posibles de la localización del protagonista.
   «»-clear  \ Borrar la cadena dinámica de impresión, que servirá para guardar la lista de salidas.
   #listed off
@@ -8713,7 +8784,7 @@ subsection( Tomar y dejar)  \ {{{
   dup is_hold familiar++ well_done
   ;
 :action do_take  ( -- )
-  \ Acción de coger.
+  \ Toma un ente.
   main_complement{required}
   main_complement{not_hold}
   main_complement{here}
@@ -8721,7 +8792,7 @@ subsection( Tomar y dejar)  \ {{{
   main_complement @ (do_take)
   ;action
 : (do_drop)  ( a -- )
-  \ Deja un ente .
+  \ Deja un ente.
   dup ~is_worn? off  is_here  well_done
   ;
 :action do_drop  ( -- )
@@ -8732,7 +8803,7 @@ subsection( Tomar y dejar)  \ {{{
   ;action
 :action do_take|do_eat  ( -- )
   \ Acción de desambiguación.
-\ Pendiente!!!
+  \ Pendiente!!!
   do_take
   ;action
 
@@ -8755,6 +8826,7 @@ subsection( Cerrar y abrir)  \ {{{
   ;
 : close_the_lock  ( -- )
   \ Cerrar el candado, si es posible.
+  \ Pendiente!!! No cerrarlo si la puerta está abierta.
   lock% {open}
   key% {hold}
   lock% (do_close)  well_done
@@ -8818,11 +8890,13 @@ subsection( Cerrar y abrir)  \ {{{
   main_complement @ open_it
   ;action
 0 [IF]  \ Pendiente!!!
-: open_it  ( a -- )
+: lock_the_door
+  ;
+: lock_it  ( a -- )
   \ Abrir un ente, si es posible.
   case
-    door%  of  open_the_door  endof
-    lock%  of  open_the_lock  endof
+    door%  of  close_the_lock  endof
+    lock%  of  close_the_lock  endof
     nonsense
   endcase
   ;
@@ -9752,22 +9826,24 @@ lina? 0=  [IF]  immediate  [THEN]
   #>entity >r
   \ cr .s  \ Depuración!!!
   r@ ~direction !
-  r@ ~in_exit !
-  \ cr ." ~in_exit" cr .s  \ Depuración!!!
-  r@ ~out_exit !
-  r@ ~down_exit !
-  r@ ~up_exit !
-  r@ ~west_exit !
-  r@ ~east_exit !
-  r@ ~south_exit !
-  r@ ~north_exit !
+  \ cr ." ~direction"  \ Depuración!!!
+  #>entity r@ ~in_exit !
+  \ cr ." ~in_exit"  \ Depuración!!!
+  #>entity r@ ~out_exit !
+  #>entity r@ ~down_exit !
+  #>entity r@ ~up_exit !
+  #>entity r@ ~west_exit !
+  #>entity r@ ~east_exit !
+  #>entity r@ ~south_exit !
+  #>entity r@ ~north_exit !
   r@ ~familiar !
   r@ ~visits !
-  r@ ~location_plot_xt !
-  r@ ~previous_location !
-  r@ ~location !
+  \ cr ." ~visits"  \ Depuración!!!
+  #>entity r@ ~previous_location !
+  #>entity r@ ~location !
   r@ ~is_location? !
   r@ ~is_open? !
+  \ cr ." ~is_open?" \ Depuración!!!
   r@ ~is_human? !
   r@ ~is_animal? !
   r@ ~is_vegetal? !
@@ -9778,15 +9854,12 @@ lina? 0=  [IF]  immediate  [THEN]
   r@ ~is_owned? !
   r@ ~is_global_indoor? !
   r@ ~is_global_outdoor? !
-  r@ ~break_error# !
-  r@ ~take_error# !
   r@ ~is_decoration? !
   r@ ~conversations !
   r@ ~is_character? !
-  r@ ~init_xt !
-  r@ ~description_xt !
   r@ ~has_definite_article? !
   r@ ~has_no_article? !
+  \ cr ." ~has_no_article?"
   r@ ~has_plural_name? !
   r@ ~has_feminine_name? !
   r@ ~has_personal_name? !
@@ -9832,6 +9905,15 @@ restore_vocabularies
   \ Crea un número con signo en el fichero de la partida.
   n>string >file
   ;
+: entity>file  ( a -- )
+  \ Crea la referencia a un ente en el fichero de la partida.
+  \ a = Ente (dirección de su ficha)
+  \ Esta palabra es necesaria porque no es posible guardar y restaurar
+  \ las direcciones de ficha de los entes, pues variarán con cada
+  \ sesión de juego. Hay que guardar los números ordinales de las
+  \ fichas y con ellos calcular sus direcciones durante la restauración.
+  entity># n>file
+  ;
 : save_entity  ( u -- )
   \ Guarda en el fichero de la partida los datos de un ente.
   \ u = Número ordinal del ente.
@@ -9842,13 +9924,9 @@ restore_vocabularies
   r@ has_plural_name? f>file
   r@ has_no_article? f>file
   r@ has_definite_article? f>file
-  r@ description_xt n>file
-  r@ init_xt n>file
   r@ is_character? f>file
   r@ conversations n>file
   r@ is_decoration? f>file
-  r@ take_error# n>file
-  r@ break_error# n>file
   r@ is_global_outdoor? f>file
   r@ is_global_indoor? f>file
   r@ is_owned? f>file
@@ -9861,19 +9939,18 @@ restore_vocabularies
   r@ is_human? f>file
   r@ is_open? f>file
   r@ is_location? f>file
-  r@ location n>file
-  r@ previous_location n>file
-  r@ location_plot_xt n>file
+  r@ location entity>file
+  r@ previous_location entity>file
   r@ visits n>file
   r@ familiar n>file
-  r@ north_exit n>file
-  r@ south_exit n>file
-  r@ east_exit n>file
-  r@ west_exit n>file
-  r@ up_exit n>file
-  r@ down_exit n>file
-  r@ out_exit n>file
-  r@ in_exit n>file
+  r@ north_exit entity>file
+  r@ south_exit entity>file
+  r@ east_exit entity>file
+  r@ west_exit entity>file
+  r@ up_exit entity>file
+  r@ down_exit entity>file
+  r@ out_exit entity>file
+  r@ in_exit entity>file
   r> direction n>file
   n>file  \ Número ordinal del ente
   s" load_entity" >file/  \ Palabra que hará la restauración del ente
@@ -9900,6 +9977,7 @@ restore_vocabularies
 : write_game_file  ( -- )
   \ Escribe el fichero en que se graba la partida.
   s" \ Datos de restauración de una partida de «Asalto y castigo»" >file/
+  s" \ (http://pragramandala.net/es.programa.asalto_y_castigo.forth)" >file/
   s" \ Fichero creado en" yyyy-mm-dd_hh:mm:ss$ s& >file/
   save_entities
   save_config
@@ -9918,6 +9996,11 @@ restore_vocabularies
   \ main_complement{forbidden}
   (do_save_the_game)
   ;action
+: continue_the_loaded_game
+  \ Continúa el juego en el punto que se acaba de restaurar.
+  scene_break page
+  my_location describe_location 
+  ;
 :action do_load_the_game  ( a u -- )
   \ Acción de salvar la partida.
   \ Pendiente!!! No funciona bien
@@ -9934,7 +10017,7 @@ restore_vocabularies
   [debug_filing] ?halto" in do_load_the_game before fs+"
   fs+
   [debug_filing] ?halto" in do_load_the_game before included"
-[false] [IF]
+[false] [IF]  \ Depuración!!!
   read_game_file
 [ELSE]
   ['] read_game_file
@@ -9959,6 +10042,7 @@ restore_vocabularies
     s" Error al intentar restaurar la entrada tras leer el fichero." narrate
   then
   [debug_filing] ?halto" in do_load_the_game at the end" 
+  continue_the_loaded_game
   ;action
 
 \ }}}
@@ -9982,13 +10066,13 @@ sistema Forth.
 Sin embargo hay una consideración importante: Al pasarle
 directamente al intérprete de Forth el texto del comando
 escrito por el jugador, Forth ejecutará las palabras que
-reconozca [las no reconocidas las ignorará, gracias a una
-útil peculiaridad de SP-Forth] en el orden en que estén
-escritas en la frase.  Esto quiere decir que, al contrario
-de lo que ocurre con otros métodos, no podremos tener una
-visión global del comando del jugador: ni de cuántas
-palabras consta ni, en principio, qué viene a continuación
-de la palabra que está siendo interpretada en cada momento.
+reconozca [haremos que las no reconocidas las ignore] en el
+orden en que estén escritas en la frase.  Esto quiere decir
+que, al contrario de lo que ocurre con otros métodos, no
+podremos tener una visión global del comando del jugador: ni
+de cuántas palabras consta ni, en principio, qué viene a
+continuación de la palabra que está siendo interpretada en
+cada momento.
 
 Una solución sería que cada palabra del jugador guardara un
 identificador unívoco en la pila o en una tabla, y
@@ -9996,22 +10080,88 @@ posteriormente interpretáramos el resultado de una forma
 convencional.
 
 Sin embargo, hemos optado por dejar a Forth hacer su trabajo
-hasta el final, pues nos parece más sencillo y eficaz: las
-palabras reconocidas en el comando del jugador se ejecutarán
-pues en el orden en que fueron escritas. Cada una
-actualizará el elemento del comando que represente, verbo o
-complemento, tras comprobar si ya ha habido una palabra
-previa que realice la misma función y en su caso deteniendo
-el proceso con un error.
+hasta el final, pues nos parece más sencillo y eficaz
+[también es más propio del espíritu de Forth usar su
+intérprete como intérprete de la aplicación en lugar de
+programar un intérprete adicional específico].  Las palabras
+reconocidas en el comando del jugador se ejecutarán pues en
+el orden en que fueron escritas. Cada una actualizará el
+elemento del comando que represente, verbo o complemento,
+tras comprobar si ya ha habido una palabra previa que
+realice la misma función y en su caso deteniendo el proceso
+con un error.
 
 )
+
+\ Constantes para los identificadores de (seudo)preposiciones:
+1  \ Valor del primer identificador
+enum «a»_preposition
+enum «contra»_preposition
+enum «con»_preposition
+enum «de»_preposition
+enum «en»_preposition
+enum «hacia»_preposition
+enum «para»_preposition
+enum «por»_preposition
+enum «usando»_preposition
+( u1 ) \ Número de (seudo)preposiciones +1
+1- dup constant prepositions#  \ Número de (seudo)preposiciones
+cells dup constant /prepositions  \ Octetos de la tabla PREPOSITIONAL_COMPLEMENTS
+( u2 )
+
+\ Tabla para guardar los entes correspondientes a las
+\ (seudo)preposiciones encontradas:
+create prepositional_complements  cells allot
+
+(
+
+Las [seudo]preposiciones permitidas en el juego pueden
+tener usos diferentes, y algunos de ellos dependen del
+ente al que se refieran, por lo que su análisis hay que
+hacerlo en varios niveles.
+
+Los identificadores creados arriba se refieren a
+[seudo]preposiciones del vocabulario de juego [por ejemplo,
+«a», «con»...] o a sus sinónimos, no a sus posibles usos
+finales como complementos [por ejemplo, destino de
+movimiento, objeto indirecto, herramienta, compañía...]. Por
+ejemplo, el identificador «A»_PREPOSITION se usa para
+indicar [en la tabla] que se ha encontrado la preposición
+«a» [o su sinónimo «al»], pero el significado efectivo [por
+ejemplo, indicar una dirección o un objeto indirecto, en
+este caso] se calculará en una etapa posterior.
+
+)
+
+: erase_prepositional_complements  ( -- )
+  \ Borra la tabla de complementos (seudo)preposicionales.
+  prepositional_complements /prepositions erase
+  ;
+: prepositional_complement  ( u -- a )
+  \ Devuelve la dirección de un elemento de la tabla
+  \ de complementos (seudo)preposicionales.
+  \ u = Identificador de la preposición
+  \ a = Dirección en la tabla de complementos (seudo)preposicionales
+  1- prepositional_complements +
+  ;
+: current_prepositional_complement  ( -- a )
+  \ Devuelve la dirección del elemento de la tabla
+  \ de complementos (seudo)preposicionales
+  \ correspondiente a la (seudo)preposición abierta.
+  \ a = Dirección en la tabla de complementos (seudo)preposicionales
+  current_preposition @ prepositional_complement
+  ;
 
 : init_parsing  ( -- )
   \ Preparativos previos al análisis.
   action off
   main_complement off
+  tool_complement off
+  other_complement off
+  current_preposition off
+  erase_prepositional_complements
   ;
-subsection( x1...)
+
 : (execute_action)  ( xt -- )
   \ Ejecuta la acción del comando.
   [debug_catch] [debug_parsing] [or] ?halto" En (EXECUTE_ACTION) antes de CATCH"  \ Depuración!!!
@@ -10020,7 +10170,7 @@ subsection( x1...)
   ?wrong
   [debug_catch] [debug_parsing] [or] ?halto" En (EXECUTE_ACTION) después de ?WRONG"  \ Depuración!!!
   ;
-subsection( x1 execute_action:)
+
 : execute_action  ( -- )
   \ Ejecuta la acción del comando, si existe.
   [debug_catch] [debug_parsing] [or] ?halto" En EXECUTE_ACTION"  \ Depuración!!!
@@ -10029,7 +10179,7 @@ subsection( x1 execute_action:)
   if  (execute_action)  else  no_verb_error# ?wrong  then
   [debug_catch] [debug_parsing] [or] ?halto" Al final de EXECUTE_ACTION"  \ Depuración!!!
   ;
-subsection( x1 valid_parsing?:)
+
 : ignore_case  ( -- )
   \ Hace el intérprete insensible a mayúsculas.
   [sp-forth?]  [IF]  case-ins on  [THEN]
@@ -10102,7 +10252,7 @@ subsection( x1 valid_parsing?:)
   last_feminine_plural_complement !
   last_masculine_plural_complement !
   ;
-subsection( x1 obbey:)
+
 : obbey  ( a u -- )
   \ Evalúa un comando con el vocabulario del juego.
   [debug_parsing] ?halto" Al entrar en OBBEY"  \ Depuración!!!
@@ -10113,7 +10263,7 @@ subsection( x1 obbey:)
   then
   [debug_parsing] ?halto" Al final de OBBEY"  \ Depuración!!!
   ; 
-subsection( x1 second?:)
+
 : second?  ( a1 a2 -- a1 ff )
   \ ¿La acción o el complemento son los segundos que se encuentran?
   \ a1 = Acción o complemento recién encontrado
@@ -10123,7 +10273,8 @@ subsection( x1 second?:)
   [debug_parsing] ?halto" second? 2"
   ;
 : action!  ( a -- )
-  \ Comprueba y almacena la acción (la dirección de ejecución de su palabra) .
+  \ Comprueba y almacena la acción.
+  \ a = Dirección de ejecución de la palabra de la acción
   [debug_parsing] ?halto" action! 1"
   action @ second?  \ ¿Había ya una acción?
   [debug_parsing] ?halto" action! 2"
@@ -10134,30 +10285,47 @@ subsection( x1 second?:)
   action !  \ No, guardarla
   [debug_parsing] ?halto" action! 3"
   ;
-: preposition!  ( a -- )
-  \ Pendiente!!!
+: preposition!  ( u -- )
+  \ Almacena una (seudo)preposición recién hallada en la frase.
+  \ u = Identificador de la preposición
+  current_preposition @ 0<>  \ ¿Hay ya una (seudo)preposición abierta?
+  unresolved_preposition_error# and throw  \ Si es así, error
+  current_preposition !
   ;
-: (complement!)  ( a -- )
-  \ Almacena un complemento (la dirección de la ficha de su ente).
+: prepositional_complement!  ( a -- )
+  \ Almacena un complemento (seudo)preposicional.
+  \ a = Identificador de ente 
+  [debug_parsing] ?halto" prepositional_complement! 1"
+  current_prepositional_complement @ second?  \ ¿Se había usado ya esta preposición con otro complemento?
+  repeated_preposition_error# and throw  \ Si es así, error
+  current_prepositional_complement !
+  current_preposition off  \ Cerrar la preposición
+  [debug_parsing] ?halto" prepositional_complement! 2"
+  ;
+: main_complement!  ( a -- )
+  \ Almacena el complemento principal.
+  \ a = Identificador de ente 
   [debug_parsing] ?halto" En (COMPLEMENT!)"  \ Depuración!!!
-  other_complement @ second?  \ ¿Había ya un complemento secundario?
-  if  too_many_complements_error# throw  \ Sí, error
-  else  other_complement !  \ No, guardarlo
-  then
+  main_complement @ second?  \ ¿Había ya un complemento principal?
+  too_many_complements_error# and throw  \ Si es así, error
+  main_complement !
   ;
 : complement!  ( a -- )
-  \ Comprueba y almacena un complemento (la dirección de la ficha de su ente).
+  \ Comprueba y almacena un complemento.
+  \ a = Identificador de ente 
   [debug_parsing] ?halto" En COMPLEMENT!"  \ Depuración!!!
-  main_complement @ second?  \ ¿Había ya complemento directo?
-  if  (complement!)
-  else  main_complement !
+  current_preposition @  \ ¿Hay una (seudo)preposición abierta?
+  if  prepositional_complement!  \ Sí: complemento (seudo)preposicional
+  else  main_complement!  \ No: complemento principal
   then
   ;
 : action|complement!  ( a1 a2 -- )
-  \ Comprueba y almacena un posible complemento o una posible acción, significados ambos de la misma palabra.
-  \ a1 = Identificador de acción
+  \ Comprueba y almacena un complemento o una acción,
+  \ ambos posibles significados de la misma palabra.
+  \ a1 = Dirección de ejecución de la palabra de la acción
   \ a2 = Identificador de ente
-  action @  \ ¿Había ya una acción reconocida?
+  action @  \ ¿Hay ya una acción reconocida...
+  current_preposition @ or  \ ...o bien una (seudo)preposición abierta?
   if  nip complement!  \ Sí: lo tomamos como complemento
   else  drop action!  \ No: lo tomamos como acción
   then
@@ -10498,13 +10666,13 @@ gforth?  [IF]
 
 (
 
-Algunos nombres del vocabulario del jugador pueden referirse
-a varios entes. Por ejemplo, «hombre» puede referirse al
-jefe de los refugiados o a Ambrosio, especialmente antes de
-que Ulfius hable con él por primera vez y sepa su nombre.
-
-Otras palabras, como «ambrosio», solo deben ser reconocidas
-cuando se cumplen ciertas condiciones.
+Algunos términos del vocabulario del jugador pueden
+referirse a varios entes. Por ejemplo, «hombre» puede
+referirse al jefe de los refugiados o a Ambrosio,
+especialmente antes de que Ulfius hable con él por primera
+vez y sepa su nombre.  Otra palabra, como «ambrosio», solo
+debe ser reconocida cuando Ambrosio ya se ha presentado
+y ha dicho su nombre.
 
 Para estos casos creamos palabras que devuelven el ente
 adecuado en función de las circunstancias.  Serán llamadas
@@ -10514,9 +10682,17 @@ jugador.
 Si la ambigüedad no puede ser resuelta, o si la palabra
 ambigua no debe ser reconocida en las circunstancias de
 juego actuales, se devolverá un FALSE , que tendrá el mismo
-efecto que si la palabra problemática no existiera en el
+efecto que si la palabra ambigua no existiera en el
 comando del jugador. Esto provocará después el error
 adecuado.
+
+Las acciones ambiguas, como por ejemplo «partir» [que puede
+significar «marchar» o «romper»] no pueden ser resueltas de
+esta manera, pues antes es necesario que que todos los
+términos de la frase hayan sido evaluados. Por ello se
+tratan como si fueran acciones como las demás, pero que al
+ejecutarse resolverán la ambigüedad y llamarán a la acción
+adecuada.
 
 )
 
@@ -10937,6 +11113,44 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 ' cueva synonyms{  caverna gruta  }synonyms
 : enemigo  enemy% complement!  ;
 ' enemigo synonyms{ enemigos sajón sajones }synonyms
+: todo ;  \ pendiente!!!
+
+\ Preposiciones y seudopreposiciones
+
+: con
+  \ Uso: Herramienta, compañía
+  «con»_preposition preposition!
+  ;
+: usando
+  \ Uso: Herramienta
+  «usando»_preposition preposition!
+  ;
+' usando synonyms{ mediante }synonyms
+: a
+  \ Uso: Destino de movimiento, objeto indirecto
+  «a»_preposition preposition!
+  ;
+' a synonyms{ al }synonyms
+: de
+  \ Uso: Origen de movimiento, propiedad
+  «de»_preposition preposition!
+  ;
+: hacia
+  \ Uso: Destino de movimiento
+  «hacia»_preposition preposition!
+  ;
+: contra
+  \ Uso: Destino de lanzamiento
+  «contra»_preposition preposition!
+  ;
+: para
+  \ Uso: Destino de movimiento, destino de lanzamiento
+  «para»_preposition preposition!
+  ;
+: por
+  \ Uso: Destino de movimiento 
+  «por»_preposition preposition!
+  ;
 
 \ Meta
 
