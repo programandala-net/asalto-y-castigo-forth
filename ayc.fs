@@ -8,7 +8,7 @@ CR .( Asalto y castigo )  \ {{{
 \ Copyright (C) 2011,2012 Marcos Cruz (programandala.net)
 
 ONLY FORTH DEFINITIONS
-: version$  ( -- a u )  S" A-03-201202022050"  ;
+: version$  ( -- a u )  S" A-03-201202050230"  ;
 version$ TYPE CR
 
 \ 'Asalto y castigo' (written in Forth) is free software;
@@ -787,6 +787,11 @@ sp-forth?  [IF]
   dup @ 1+ ?dup
   if  swap !  else  drop  then
   ;
+: different?  ( x1 x2 x1 -- ff )
+  \ ¿Es x2 distinto de x1, y es x1 distinto de cero?
+  \ Este cálculo se usa en dos lugares del programa.
+  <> swap 0<> and
+  ;
 
 : .forth  ( -- )
   \ Imprime el nombre del sistema Forth.
@@ -926,10 +931,13 @@ defer is_not_here_what_error#
 defer no_main_complement_error# 
 defer no_verb_error#
 defer nonsense_error#
+defer not_allowed_main_complement_error# 
 defer repeated_preposition_error#
 defer too_many_actions_error#
 defer too_many_complements_error#
 defer unexpected_main_complement_error# 
+defer unnecessary_tool_error#
+defer unnecessary_tool_for_that_error#
 defer unresolved_preposition_error# 
 defer what_is_already_closed_error#
 defer what_is_already_open_error#
@@ -1194,6 +1202,7 @@ variable location_page?  \ ¿Borrar la pantalla antes de entrar en un escenario 
 variable cr?  \ ¿Separar los párrafos con una línea en blanco?
 variable ignore_unknown_words?  \ ¿Ignorar las palabras desconocidas?  \ No se usa todavía!!!
 variable scene_page?  \ ¿Borrar la pantalla después de la pausa de los cambios de escena?
+variable verbose_language_errors?  \ ¿Errores lingüísticos detallados?
  
 \ Variables de la trama
 
@@ -1650,19 +1659,17 @@ section( Depuración)  \ {{{
   \ No se usa!!!
   \ ff = Indicador de error
   \ a u = Mensaje de error
-  rot if  ." Error fatal: " type cr bye
-  else  2drop 
-  then
+  rot  if  ." Error fatal: " type cr bye  else  2drop  then
   ;
 : .stack  ( -- )
   \ Imprime el estado de la pila.
   [false]  [IF]  \ versión antigua!!!
-  ." Pila" depth
-  if  ." :" .s ." ( " depth . ." )"
-  else  ."  vacía."
-  then
+    ." Pila" depth
+    if  ." :" .s ." ( " depth . ." )"
+    else  ."  vacía."
+    then
   [ELSE]  \ nueva versión
-  depth  if  cr ." Pila: " .s cr  then
+    depth  if  cr ." Pila: " .s cr  then
   [THEN]
   ;
 : .csb  ( -- )
@@ -2925,10 +2932,14 @@ frecuentes con los entes.
 0 ~out_exit constant out_exit>
 0 ~in_exit constant in_exit>
 
-last_exit> cell+ first_exit> - constant /exits  \ Espacio en octetos ocupado por los campos de salidas
-/exits cell / constant #exits  \ Número de salidas
+\ Espacio en octetos ocupado por los campos de salidas:
+last_exit> cell+ first_exit> - constant /exits
+\ Número de salidas:
+/exits cell / constant #exits 
 
-0 constant no_exit  \ Marcador para direcciones sin salida en un ente dirección
+\ Marcador para direcciones sin salida en un ente dirección:
+0 constant no_exit
+
 : exit?  ( a -- ff )
   \ ¿Está abierta una dirección de salida de un ente escenario?
   \ a = Contenido de un campo de salida de un ente (que será el ente de destino, o cero)
@@ -6611,11 +6622,24 @@ in% :attributes
 section( Errores de las acciones)  \ {{{
 
 variable action  \ Código de la acción del comando
-variable main_complement  \ Ente complemento principal del comando (generalmente es el complemento directo)
-variable tool_complement  \ Ente complemento instrumental del comando  \ No utilizado!!!
-variable other_complement  \ Ente complemento indirecto o preposicional del comando \ No utilizado!!!
-variable what  \ Ente que ha provocado un error y puede ser citado en el mensaje de error correspondiente
-variable current_preposition  \ Código de la (seudo)preposición abierta, o cero
+
+\ Entes complemento:
+variable main_complement  \ Principal (complemento directo o destino)
+variable secondary_complement  \ Secundario (complemento indirecto, destino u origen)
+defer tool_complement  \ Herramienta
+false  [IF]  \ Descartado!!! Pendiente!!!
+variable tool_complement  \ Herramienta 
+variable to_complement  \ Destino \ No utilizado!!!
+variable from_complement  \ Origen \ No utilizado!!!
+variable into_complement  \ Destino dentro \ No utilizado!!!
+[THEN]
+
+\ Ente que ha provocado un error
+\ y puede ser citado en el mensaje de error correspondiente:
+variable what
+
+\ Código de la (seudo)preposición abierta, o cero:
+variable current_preposition
 
 : known_entity_is_not_here$  ( a -- a1 u1 )
   \  Devuelve mensaje de que un ente conocido no está presente.
@@ -6716,7 +6740,8 @@ variable current_preposition  \ Código de la (seudo)preposición abierta, o cer
   s{ 0$ 0$ s" intentar" }s
   ;
 : nonsense$  ( -- a u )
-  \ Devuelve una variante de «no tiene sentido», que formará parte de mensajes personalizados por cada acción.
+  \ Devuelve una variante de «no tiene sentido»,
+  \ que formará parte de mensajes personalizados por cada acción.
   \ Pendiente!!! Quitar las variantes que no sean adecuadas a todos los casos
   s{
   s" es ilógico"
@@ -6732,7 +6757,9 @@ variable current_preposition  \ Código de la (seudo)preposición abierta, o cer
   }s
   ;
 : ^nonsense$  ( -- a u )
-  \ Devuelve una variante de «No tiene sentido» (con la primera letra en mayúsculas) que formará parte de mensajes personalizados por cada acción.
+  \ Devuelve una variante de «No tiene sentido»
+  \ (con la primera letra en mayúsculas)
+  \ que formará parte de mensajes personalizados por cada acción.
   nonsense$ ^uppercase
   ;
 : x_is_nonsense$  ( a1 u1 -- a2 u2 )
@@ -6746,8 +6773,10 @@ variable current_preposition  \ Código de la (seudo)preposición abierta, o cer
   \ Devuelve una variante de «No tiene sentido x».
   ^nonsense$ try$ s& 2swap s& 
   ;
-: is_nonsense  ( a u -- ) \ Informa de que una acción dada no tiene sentido
-  \ a u = Acción que no tiene sentido; es un verbo en infinitivo, un sustantivo o una cadena vacía
+: is_nonsense  ( a u -- )
+  \ Informa de que una acción dada no tiene sentido.
+  \ a u = Acción que no tiene sentido;
+  \       es un verbo en infinitivo, un sustantivo o una cadena vacía
   ['] x_is_nonsense$
   ['] it_is_nonsense_x$ 
   2 choose execute  period+ narrate
@@ -6795,7 +6824,8 @@ variable current_preposition  \ Código de la (seudo)preposición abierta, o cer
   ^dangerous$ try$ s& 2swap s& 
   ;
 : is_dangerous  ( a u -- )
-  \ Informa de una acción dada (en infinitivo) no tiene sentido.
+  \ Informa de que una acción dada (en infinitivo)
+  \ no tiene sentido.
   \ a u = Acción que no tiene sentido, en infinitivo, o una cadena vacía
   ['] x_is_dangerous$
   ['] it_is_dangerous_x$ 
@@ -6815,7 +6845,8 @@ variable current_preposition  \ Código de la (seudo)preposición abierta, o cer
   ?dup  if  full_name s&  then
   ;
 : +is_nonsense  ( a u a1 -- )
-  \ Informa de una acción dada (en infinitivo) ejecutada sobre un ente no tiene sentido.
+  \ Informa de que una acción dada (en infinitivo)
+  \ ejecutada sobre un ente no tiene sentido.
   \ a u = Acción en infinitivo
   \ a1 = Ente al que se refiere la acción y cuyo objeto directo es (o cero)
   ?dup
@@ -6823,11 +6854,19 @@ variable current_preposition  \ Código de la (seudo)preposición abierta, o cer
   else  2drop nonsense
   then
   ;
-: main_complement+is_nonsense  ( a u -- ) \ Informa de una acción dada (en infinitivo), que hay que completar con el nombre del complemento directo, no tiene sentido
+: main_complement+is_nonsense  ( a u -- )
+  \ Informa de que una acción dada (en infinitivo),
+  \ que hay que completar con el nombre del complemento principal,
+  \ no tiene sentido.
+  \ a u = Acción que no tiene sentido, en infinitivo
   main_complement @ +is_nonsense
   ;
-: other_complement+is_nonsense  ( a u -- ) \ Informa de una acción dada (en infinitivo), que hay que completar con el nombre del complemento auxiliar, no tiene sentido
-  other_complement @ +is_nonsense
+: secondary_complement+is_nonsense  ( a u -- )
+  \ Informa de que una acción dada (en infinitivo),
+  \ que hay que completar con el nombre del complemento secundario,
+  \ no tiene sentido.
+  \ a u = Acción que no tiene sentido, en infinitivo
+  secondary_complement @ +is_nonsense
   ;
 : no_reason_for$  ( -- a u )
   \ Devuelve una variante de «no hay motivo para».
@@ -6908,6 +6947,28 @@ variable silent_well_done?  silent_well_done? off
   ['] (do_not_worry_1)$ 2 choose execute
   now_$ s&  period+ narrate
   ;
+
+: unnecessary_tool_for_that  ( a1 u1 a2 -- )
+  \ Informa de que un ente es innecesario como herramienta
+  \ para ejecutar una acción.
+  \ a1 u1 = Acción (una frase con verbo en infinitivo)
+  \ a2 = Ente innecesario
+  \ Inacabado!!!
+  full_name s" No necesitas" 2swap s& s" para" s& 2swap s&
+  period+ narrate
+  ;
+' unnecessary_tool_for_that constant (unnecessary_tool_for_that_error#)
+' (unnecessary_tool_for_that_error#) is unnecessary_tool_for_that_error#
+: unnecessary_tool  ( a -- )
+  \ Informa de que un ente es innecesario como herramienta
+  \ para ejecutar una acción sin especificar.
+  \ a = Ente innecesario
+  \ Inacabado!!!
+  full_name s" No necesitas" 2swap s& s" para eso" s&
+  period+ narrate
+  ;
+' unnecessary_tool constant (unnecessary_tool_error#)
+' (unnecessary_tool_error#) is unnecessary_tool_error#
 
 0  [IF]  \ Error «no tiene nada especial», aún en desarrollo!!!
 
@@ -8082,13 +8143,29 @@ section( Errores del intérprete de comandos)  \ {{{
   \ Devuelve mensaje de acompañamiento para los errores lingüísticos, con la primera letra mayúscula.
   error_comment$ ^uppercase
   ;
-: language_error  ( a u -- )
-  \ Combina un mensaje de error con un comentario común e informa de él.
-  \ Pendiente!!! Hacer que use coma o punto y coma, al azar
+: verbose_language_error  ( a u -- )
+  \ Muestra un mensaje detallado sobre un error lingüístico,
+  \ combinándolo con una frase común.
+  \ a u = Mensaje de error detallado
+  \ Inacabado!!! Hacer que use coma o punto y coma, al azar
   in_the_sentence$ s&  3 random
   if  ^uppercase period+ ^error_comment$
   else  ^error_comment$ comma+ 2swap
   then  period+ s&  report
+  ;
+: short_language_error  ( -- )
+  \ Muestra un mensaje breve y genérico sobre un error lingüístico.
+  \ Inacabado!!!
+  s" Frase incorrecta" period+ report
+  ;
+: language_error  ( a u -- )
+  \ Muestra un mensaje sobre un error lingüístico,
+  \ detallado o breve según la configuración.
+  \ a u = Mensaje de error detallado
+  verbose_language_errors? @
+  if  verbose_language_error
+  else  2drop short_language_error
+  then
   ;
 : there_are$  ( -- a u )
   \ Devuelve una variante de «hay» para sujeto plural, comienzo de varios errores.
@@ -8113,15 +8190,16 @@ section( Errores del intérprete de comandos)  \ {{{
 ' too_many_actions constant (too_many_actions_error#)
 ' (too_many_actions_error#) is too_many_actions_error#
 : too_many_complements  ( -- )
-  \ Informa de que se ha producido un error porque hay dos complementos en el comando.
+  \ Informa de que se ha producido un error
+  \ porque hay dos complementos secundarios en el comando.
   \ Provisional!!!
   s{
   there_are$
-  s" dos complementos indirectos o preposicionales" s&
+  s" dos complementos secundarios" s&
   there_is$
-  s" más de un complemento indirecto o preposicional" s&
+  s" más de un complemento secundario" s&
   there_are$
-  s" al menos dos complementos indirectos o preposicionales" s&
+  s" al menos dos complementos secundarios" s&
   }s  language_error
   ;
 ' too_many_complements constant (too_many_complements_error#)
@@ -8133,22 +8211,33 @@ section( Errores del intérprete de comandos)  \ {{{
 ' no_verb constant (no_verb_error#)
 ' (no_verb_error#) is no_verb_error#
 : no_main_complement  ( -- )
-  \ Informa de que se ha producido un error por falta de complemento directo en el comando.
-  there_is_no$ s" complemento directo" s& language_error
+  \ Informa de que se ha producido un error por falta de complemento principal en el comando.
+  there_is_no$ s" complemento principal" s& language_error
   ;
 ' no_main_complement constant (no_main_complement_error#)
 ' (no_main_complement_error#) is no_main_complement_error# 
 : unexpected_main_complement  ( -- )
-  \ Informa de que se ha producido un error por presencia de complemento directo en el comando.
-  there_is$ s" un complemento directo" s&
+  \ Informa de que se ha producido un error
+  \ por la presencia de complemento principal en el comando.
+  there_is$ s" un complemento principal" s&
   s" pero el verbo no puede llevarlo" s&
   language_error
   ;
 ' unexpected_main_complement constant (unexpected_main_complement_error#)
 ' (unexpected_main_complement_error#) is unexpected_main_complement_error# 
+: not_allowed_main_complement  ( -- )
+  \ Informa de que se ha producido un error
+  \ por la presencia de un complemento principal en el comando
+  \ que no está permitido.
+  there_is$ s" un complemento principal no permitido con esta acción" s&
+  language_error
+  ;
+' not_allowed_main_complement constant (not_allowed_main_complement_error#)
+' (not_allowed_main_complement_error#) is not_allowed_main_complement_error# 
 : unresolved_preposition  ( -- )
-  \ Informa de que se ha producido un error por presencia de una (seudo)preposición inesperada en el comando.
-  there_is$ s" una (seudo)preposición sin completar" s&
+  \ Informa de que se ha producido un error
+  \ porque un complemento (seudo)preposicional quedó incompleto.
+  there_is$ s" un complemento (seudo)preposicional sin completar" s&
   language_error
   ;
 ' unresolved_preposition constant (unresolved_preposition_error#)
@@ -8251,16 +8340,36 @@ condicionales anidadas.
 
 )
 
-: main_complement{forbidden} \ Provoca un error si hay complemento directo
+: main_complement{forbidden}
+  \ Provoca un error si hay complemento principal.
   main_complement @
   0<> unexpected_main_complement_error# and throw
   ;
 : main_complement{required}  ( -- )
-  \ Provoca un error si no hay complemento directo.
+  \ Provoca un error si no hay complemento principal.
   main_complement @
   [false] ?halto" main_complement{required} 1"
   0= no_main_complement_error# and throw
   [false] ?halto" main_complement{required} 2"
+  ;
+: main_complement{this_only}  ( a -- )
+  \ Provoca un error si hay complemento principal y no es el indicado.
+  \ a = Ente que será aceptado como complemento
+  main_complement @ swap over different?
+  not_allowed_main_complement_error# and throw
+  ;
+: tool_complement{unnecessary}  ( a u -- )
+  \ Provoca un error si hay un complemento instrumental.
+  \ a u = Acción para la que sobra el complemento (una frase con verbo en infinitivo)
+  tool_complement @ ?dup
+  if  unnecessary_tool  else  2drop  then
+  ;
+: tool_complement{unnecessary_for_that}  ( a u -- )
+  \ Provoca un error si hay un complemento instrumental.
+  \ a u = Acción para la que sobra el complemento
+  \       (una frase con verbo en infinitivo)
+  tool_complement @ ?dup
+  if  unnecessary_tool_for_that  else  2drop  then
   ;
 : {hold}  ( a -- )
   \ Provoca un error si un ente no está en inventario.
@@ -8272,7 +8381,7 @@ condicionales anidadas.
   ?dup  if  {hold}  then
   ;
 : main_complement{hold}  ( -- )
-  \ Provoca un error si el complemento directo existe y no está en inventario.
+  \ Provoca un error si el complemento principal existe y no está en inventario.
   main_complement @ ?{hold}
   ;
 : tool_complement{hold}  ( -- )
@@ -8289,7 +8398,7 @@ condicionales anidadas.
   ?dup  if  {not_hold}  then
   ;
 : main_complement{not_hold}  ( -- )
-  \ Provoca un error si el complemento directo existe y está en inventario.
+  \ Provoca un error si el complemento principal existe y está en inventario.
   main_complement @ ?{not_hold}
   ;
 : {worn}  ( a -- )
@@ -8302,7 +8411,7 @@ condicionales anidadas.
   ?dup  if  {worn}  then
   ;
 : main_complement{worn}  ( -- )
-  \ Provoca un error si el complemento directo existe y no lo llevamos puesto.
+  \ Provoca un error si el complemento principal existe y no lo llevamos puesto.
   main_complement @ ?{worn}
   ;
 : {open}  ( a -- )
@@ -8325,7 +8434,7 @@ condicionales anidadas.
   ?dup  if  {not_worn}  then
   ;
 : main_complement{not_worn}  ( -- )
-  \ Provoca un error si el complemento directo existe y lo llevamos puesto.
+  \ Provoca un error si el complemento principal existe y lo llevamos puesto.
   main_complement @ ?{not_worn}
   ;
 : {cloth}  ( a -- )
@@ -8337,7 +8446,7 @@ condicionales anidadas.
   ?dup  if  {cloth}  then
   ;
 : main_complement{cloth}  ( -- )
-  \ Provoca un error si el complemento directo existe y no se puede llevar puesto.
+  \ Provoca un error si el complemento principal existe y no se puede llevar puesto.
   main_complement @ ?{cloth}
   ;
 : {here}  ( a -- )
@@ -8350,7 +8459,7 @@ condicionales anidadas.
   ?dup  if  {here}  then
   ;
 : main_complement{here}  ( -- )
-  \ Provoca un error si el complemento directo existe y no está presente.
+  \ Provoca un error si el complemento principal existe y no está presente.
   main_complement @ ?{here}
   ;
 : {accessible}  ( a -- )
@@ -8371,7 +8480,7 @@ condicionales anidadas.
   [false] ?halto" ?{accessible} 1"
   ;
 : main_complement{accessible}  ( -- )
-  \ Provoca un error si el complemento directo existe y no está accessible.
+  \ Provoca un error si el complemento principal existe y no está accessible.
   [false] ?halto" main_complement{accessible} 1"
   main_complement @ ?{accessible}
   [false] ?halto" main_complement{accessible} 2"
@@ -8388,7 +8497,7 @@ condicionales anidadas.
   ?dup  if  {taken}  then
   ;
 : main_complement{taken}  ( -- )
-  \ Provoca un error si el complemento directo existe y no puede ser tomado.
+  \ Provoca un error si el complemento principal existe y no puede ser tomado.
   main_complement @ ?{taken}
   ;
 : {broken}  ( a -- )
@@ -8401,7 +8510,7 @@ condicionales anidadas.
   ?dup  if  {broken}  then
   ;
 : main_complement{broken}  ( -- )
-  \ Provoca un error si el complemento directo existe y no puede ser roto.
+  \ Provoca un error si el complemento principal existe y no puede ser roto.
   main_complement @ ?{broken}
   ;
 : {looked}  ( a -- )
@@ -8415,7 +8524,7 @@ condicionales anidadas.
   ?dup  if  {looked}  then
   ;
 : main_complement{looked}  ( -- )
-  \ Provoca un error si el complemento directo existe y no puede ser mirado.
+  \ Provoca un error si el complemento principal existe y no puede ser mirado.
   main_complement @ ?{looked}
   ;
 : {living}  ( a -- )
@@ -8431,7 +8540,7 @@ condicionales anidadas.
   [false] ?halto" ?{living} 2"
   ;
 : main_complement{living}  ( -- )
-  \ Provoca un error si el complemento directo existe y no es un ser vivo.
+  \ Provoca un error si el complemento principal existe y no es un ser vivo.
   [false] ?halto" main_complement{living} 1"
   main_complement @ ?{living}
   [false] ?halto" main_complement{living} 2"
@@ -8446,7 +8555,7 @@ condicionales anidadas.
   ?dup  if  {needed}  then
   ;
 : main_complement{needed}  ( -- )
-  \ Provoca un error si el complemento directo existe y no está en inventario, pues lo necesitamos.
+  \ Provoca un error si el complemento principal existe y no está en inventario, pues lo necesitamos.
   main_complement @ ?{needed}
   ;
 : {direction}  ( a -- )
@@ -8459,7 +8568,7 @@ condicionales anidadas.
   ?dup  if  {direction}  then
   ;
 : main_complement{direction}  ( -- )
-  \ Provoca un error si el complemento directo existe y no es una dirección.
+  \ Provoca un error si el complemento principal existe y no es una dirección.
   main_complement @ ?{direction}
   ;
 
@@ -8541,7 +8650,7 @@ subsection( Herramientas)  \ {{{
 
 : whom  ( -- a | 0 )
   \ Devuelve un ente personaje al que probablemente se refiera un comando.
-  \ Se usa para averiguar el objeto de algunas acciones cuando el jugador no lo especifica
+  \ Se usa para averiguar el objeto de algunas acciones cuando el jugador no lo especifica.
   true case
     ambrosio% is_here?  of  ambrosio%  endof
     leader% is_here?  of  leader%  endof
@@ -8656,7 +8765,7 @@ variable #free_exits  \ Contador de las salidas posibles
 
 false  [IF]  \ Primera versión
 
-\ las salidas se listan siempre en el mismo orden en el que
+\ Las salidas se listan siempre en el mismo orden en el que
 \ están definidas en las fichas.
 
 : free_exits  ( a -- u )
@@ -8685,7 +8794,7 @@ false  [IF]  \ Primera versión
 
 [ELSE]  \ Segunda versión
 
-\ las salidas se muestran cada vez en orden aleatorio.
+\ Las salidas se muestran cada vez en orden aleatorio.
 
 0 value this_location  \ Guardará el ente del que queremos calcular las salidas libres (para simplificar el manejo de la pila en el bucle)
 : free_exits  ( a0 -- a1 ... au u )
@@ -9138,8 +9247,9 @@ subsection( Movimiento)  \ {{{
   \ Comprueba si el movimiento es posible y lo efectúa.
   \ a = Ente supuestamente de tipo dirección
   [debug]  [IF]  s" Al entrar en DO_GO_IF_POSSIBLE" debug  [THEN]  \ Depuración!!!
-  dup ~direction @ ?dup  if  \ ¿El ente es una dirección?
-    my_location + @ ?dup
+  tool_complement{unnecessary} 
+  dup direction ?dup  if  \ ¿El ente es una dirección?
+    my_location + @ ?dup  \ ¿Tiene mi escenario salida en esa dirección?
     if  nip enter  else  impossible_move  then
   else  drop nonsense
   then
@@ -9153,6 +9263,7 @@ subsection( Movimiento)  \ {{{
 :action do_go  ( -- )
   \ Acción de ir.
   [debug]  [IF]  s" Al entrar en DO_GO" debug  [THEN]  \ Depuración!!!
+  tool_complement{unnecessary} 
   main_complement @ ?dup
   if  do_go_if_possible
   else  simply_do_go
@@ -9161,55 +9272,57 @@ subsection( Movimiento)  \ {{{
   ;action
 :action do_go_north  ( -- )
   \ Acción de ir al Norte.
-  main_complement{forbidden}
+  north% main_complement{this_only}
   north% do_go_if_possible
   ;action
 :action do_go_south  ( -- )
   \ Acción de ir al Sur.
   [debug_catch]  [IF]  s" Al entrar en DO_GO_SOUTH" debug  [THEN]  \ Depuración!!!
-  main_complement{forbidden}
+  south% main_complement{this_only}
   south% do_go_if_possible
   [debug_catch]  [IF]  s" Al salir de DO_GO_SOUTH" debug  [THEN]  \ Depuración!!!
   ;action
 :action do_go_east  ( -- )
   \ Acción de ir al Este.
-  main_complement{forbidden}
+  east% main_complement{this_only}
   east% do_go_if_possible
   ;action
 :action do_go_west  ( -- )
   \ Acción de ir al Oeste.
-  main_complement{forbidden}
+  west% main_complement{this_only}
   west% do_go_if_possible
   ;action
 :action do_go_up  ( -- )
   \ Acción de ir hacia arriba.
-  main_complement{forbidden}
+  up% main_complement{this_only}
   up% do_go_if_possible
   ;action
 :action do_go_down  ( -- )
   \ Acción de ir hacia abajo.
-  main_complement{forbidden}
+  down% main_complement{this_only}
   down% do_go_if_possible
   ;action
 :action do_go_out  ( -- )
   \ Acción de ir hacia fuera.
-  main_complement{forbidden}
+  out% main_complement{this_only}
   s" voy fuera" narrate \ tmp!!!
   ;action
 :action do_go_in  ( -- )
   \ Acción de ir hacia dentro.
-  main_complement{forbidden}
+  in% main_complement{this_only}
   s" voy dentro" narrate \ tmp!!!
   ;action
 :action do_go_back  ( -- )
   \ Acción de ir hacia atrás.
+  \ Pendiente!!!
   main_complement{forbidden}
-  s" voy atrás" narrate \ tmp!!!
+  s" [voy atrás]" narrate \ tmp!!!
   ;action
 :action do_go_ahead  ( -- )
   \ Acción de ir hacia delante.
+  \ Pendiente!!!
   main_complement{forbidden}
-  s" voy alante" narrate \ tmp!!!
+  s" [voy alante]" narrate \ tmp!!!
   ;action
 
 \ }}}---------------------------------------------
@@ -9743,7 +9856,9 @@ más transportable entre plataformas.
   s>d <# # #s #> >csb
   ;
 : n>s+  ( u a1 u1 -- a2 u2 )
-  \ Añade a una cadena un número tras convertirlo en cadena.
+  \ Añade un número a una cadena tras convertirlo en cadena.
+  \ u = Número
+  \ a1 u1 = Cadena original
   rot n>s s+
   ;
 : yyyymmddhhmmss$  ( -- a u )
@@ -9786,13 +9901,15 @@ variable game_file_id  \ Identificador del fichero en que se graba la partida
   game_file_id @ close-file abort" Close file error."  \ mensaje tmp!!!
   ;
 : create_game_file  ( a u -- )
-  \ Crea un fichero para guardar una partida (sobreescribiendo otro que tuviera el mismo nombre).
+  \ Crea un fichero para grabar una partida
+  \ (sobreescribiendo otro que tuviera el mismo nombre).
   \ a u = Nombre del fichero
   r/w create-file abort" Create file error."  \ mensaje tmp!!!
   game_file_id !
   ;
 : read_game_file  ( a u -- )
   \ Lee el fichero de configuración.
+  \ a u = Nombre del fichero
   \ Pendiente!!! Comprobar la existencia del fichero y atrapar errores al leerlo.
   [lina?]
   [IF]    postpone only restore_vocabulary
@@ -9800,15 +9917,15 @@ variable game_file_id  \ Identificador del fichero en que se graba la partida
   [THEN]  included  restore_vocabularies
   ;
 : >file/  ( a u -- )
-  \ Escribe una línea en el fichero en que se está grabando la partida.
+  \ Escribe una línea en el fichero de la partida.
   game_file_id @ write-line abort" Write file error"  \ mensaje tmp!!!
   ;
-: cr>file  ( a u -- )
-  \ Escribe un final de línea en el fichero en que se está grabando la partida.
+: cr>file  ( -- )
+  \ Escribe un final de línea en el fichero de la partida.
   s" " >file/
   ;
 : >file  ( a u -- )
-  \ Escribe una cadena en el fichero en que se está grabando la partida.
+  \ Escribe una cadena en el fichero de la partida.
   space+
   game_file_id @ write-file abort" Write file error"  \ mensaje tmp!!!
   ;
@@ -9826,9 +9943,7 @@ lina? 0=  [IF]  immediate  [THEN]
   #>entity >r
   \ cr .s  \ Depuración!!!
   r@ ~direction !
-  \ cr ." ~direction"  \ Depuración!!!
   #>entity r@ ~in_exit !
-  \ cr ." ~in_exit"  \ Depuración!!!
   #>entity r@ ~out_exit !
   #>entity r@ ~down_exit !
   #>entity r@ ~up_exit !
@@ -9838,12 +9953,10 @@ lina? 0=  [IF]  immediate  [THEN]
   #>entity r@ ~north_exit !
   r@ ~familiar !
   r@ ~visits !
-  \ cr ." ~visits"  \ Depuración!!!
   #>entity r@ ~previous_location !
   #>entity r@ ~location !
   r@ ~is_location? !
   r@ ~is_open? !
-  \ cr ." ~is_open?" \ Depuración!!!
   r@ ~is_human? !
   r@ ~is_animal? !
   r@ ~is_vegetal? !
@@ -9859,7 +9972,6 @@ lina? 0=  [IF]  immediate  [THEN]
   r@ ~is_character? !
   r@ ~has_definite_article? !
   r@ ~has_no_article? !
-  \ cr ." ~has_no_article?"
   r@ ~has_plural_name? !
   r@ ~has_feminine_name? !
   r@ ~has_personal_name? !
@@ -9868,7 +9980,7 @@ lina? 0=  [IF]  immediate  [THEN]
   ;
 restore_vocabularies
 : string>file  ( a u -- )
-  \ Crea una cadena en el fichero de la partida.
+  \ Escribe una cadena en el fichero de la partida.
   s| s" | 2swap s+ s| "| s+ >file
   ;
 : f>string  ( ff -- a u )
@@ -9876,7 +9988,7 @@ restore_vocabularies
   if  s" true"  else  s" false"  then
   ;
 : f>file  ( ff -- )
-  \ Crea un indicador binario en el fichero de la partida.
+  \ Escribe un indicador binario en el fichero de la partida.
   f>string >file
   ;
 : n>string  ( n -- a u )
@@ -9902,11 +10014,11 @@ restore_vocabularies
   00>s+ colon+ 00>s+ colon+ 00>s+
   ;
 : n>file  ( n -- )
-  \ Crea un número con signo en el fichero de la partida.
+  \ Escribe un número con signo en el fichero de la partida.
   n>string >file
   ;
 : entity>file  ( a -- )
-  \ Crea la referencia a un ente en el fichero de la partida.
+  \ Escribe la referencia a un ente en el fichero de la partida.
   \ a = Ente (dirección de su ficha)
   \ Esta palabra es necesaria porque no es posible guardar y restaurar
   \ las direcciones de ficha de los entes, pues variarán con cada
@@ -9915,7 +10027,7 @@ restore_vocabularies
   entity># n>file
   ;
 : save_entity  ( u -- )
-  \ Guarda en el fichero de la partida los datos de un ente.
+  \ Escribe los datos de un ente en el fichero de la partida.
   \ u = Número ordinal del ente.
   dup #>entity >r
   r@ name string>file
@@ -9955,33 +10067,38 @@ restore_vocabularies
   n>file  \ Número ordinal del ente
   s" load_entity" >file/  \ Palabra que hará la restauración del ente
   ;
+: rule>file  ( -- )
+  \ Escribe una línea de separación en el fichero de la partida.
+  s" \ ----------------------------------------------------" >file/
+  ;
 : save_entities  ( -- )
-  \ Guarda los entes en el fichero de la partida.
-  s" \ Entes" >file/
+  \ Escribe los datos de los entes en el fichero de la partida.
+  rule>file s" \ Entes" >file/
   #entities 0  do  i save_entity  loop
   ;
 : save_flag  ( a u ff -- )
-  \ Guarda un indicador en el fichero de la partida.
+  \ Escribe un indicador en el fichero de la partida.
   \ Pendiente!!!
   ;
 : save_config
-  \ Guarda los valores de configuración en el fichero de la partida.
+  \ Escribe los valores de configuración en el fichero de la partida.
   \ Pendiente!!!
-  s" \ Configuración" >file/
+  rule>file s" \ Configuración" >file/
   ;
 : save_plot
-  \ Guarda el estado de la trama en el fichero de la partida.
+  \ Escribe el estado de la trama en el fichero de la partida.
   \ Pendiente!!!
-  s" \ Trama" >file/
+  rule>file s" \ Trama" >file/
   ;
-: write_game_file  ( -- )
-  \ Escribe el fichero en que se graba la partida.
+: file_header  ( -- )
+  \ Escribe la cabecera del fichero de la partida.
   s" \ Datos de restauración de una partida de «Asalto y castigo»" >file/
   s" \ (http://pragramandala.net/es.programa.asalto_y_castigo.forth)" >file/
   s" \ Fichero creado en" yyyy-mm-dd_hh:mm:ss$ s& >file/
-  save_entities
-  save_config
-  save_plot
+  ;
+: write_game_file  ( -- )
+  \ Escribe el contenido del fichero de la partida.
+  file_header save_entities save_config save_plot
   ;
 : fs+  ( a u -- a' u' )
   \ Añade la extensión .fs a un nombre de fichero.
@@ -10095,22 +10212,22 @@ con un error.
 
 \ Constantes para los identificadores de (seudo)preposiciones:
 1  \ Valor del primer identificador
+enum «con»_preposition
+false  [IF]  \ Descartado!!!
 enum «a»_preposition
 enum «contra»_preposition
-enum «con»_preposition
 enum «de»_preposition
 enum «en»_preposition
 enum «hacia»_preposition
 enum «para»_preposition
 enum «por»_preposition
-enum «usando»_preposition
+[THEN]
 ( u1 ) \ Número de (seudo)preposiciones +1
 1- dup constant prepositions#  \ Número de (seudo)preposiciones
-cells dup constant /prepositions  \ Octetos de la tabla PREPOSITIONAL_COMPLEMENTS
+cells dup constant /prepositions  \ Octetos necesarios para guardarlas
 ( u2 )
 
-\ Tabla para guardar los entes correspondientes a las
-\ (seudo)preposiciones encontradas:
+\ Tabla de complementos (seudo)preposicionales:
 create prepositional_complements  cells allot
 
 (
@@ -10119,6 +10236,11 @@ Las [seudo]preposiciones permitidas en el juego pueden
 tener usos diferentes, y algunos de ellos dependen del
 ente al que se refieran, por lo que su análisis hay que
 hacerlo en varios niveles.
+
+Decimos «[seudo]preposiciones» porque algunos de los
+términos usados como preposiciones no lo son [como por
+ejemplo «usando», que es una forma verbal] pero se usan como
+si lo fueran.
 
 Los identificadores creados arriba se refieren a
 [seudo]preposiciones del vocabulario de juego [por ejemplo,
@@ -10130,6 +10252,14 @@ indicar [en la tabla] que se ha encontrado la preposición
 «a» [o su sinónimo «al»], pero el significado efectivo [por
 ejemplo, indicar una dirección o un objeto indirecto, en
 este caso] se calculará en una etapa posterior.
+
+Cada elemento de la tabla de complementos
+[seudo]preposicionales representa una [seudo]preposición
+[incluidos evidentemente sus sinónimos]; será apuntado pues
+por un identificador de [seudo]preposición y contendrá el
+identificador del ente que haya sido usado en el comando con
+dicha [seudo]preposición, o bien cero si la
+[seudo]preposición no ha sido utilizada hasta el momento.
 
 )
 
@@ -10151,15 +10281,35 @@ este caso] se calculará en una etapa posterior.
   \ a = Dirección en la tabla de complementos (seudo)preposicionales
   current_preposition @ prepositional_complement
   ;
-
+: (tool_complement)  ( -- a )
+  \ Devuelve la dirección del elemento de la tabla
+  \ de complementos (seudo)preposicionales
+  \ correspondiente al complemento instrumental
+  \ (complemento que puede ser cero si no existe).
+  «con»_preposition prepositional_complement
+  ;
+' (tool_complement) is tool_complement
+: prepositions_off  ( -- )
+  \ Inicializa las preposiciones.
+  erase_prepositional_complements
+  current_preposition off
+  ;
+: complements_off  ( -- )
+  \ Inicializa los complementos.
+  main_complement off
+  secondary_complement off
+  [false]  [IF]  \ Descartado!!!
+  tool_complement off
+  to_complement off
+  into_complement off
+  from_complement off
+  [THEN]
+  prepositions_off
+  ;
 : init_parsing  ( -- )
   \ Preparativos previos al análisis.
   action off
-  main_complement off
-  tool_complement off
-  other_complement off
-  current_preposition off
-  erase_prepositional_complements
+  complements_off
   ;
 
 : (execute_action)  ( xt -- )
@@ -10170,7 +10320,6 @@ este caso] se calculará en una etapa posterior.
   ?wrong
   [debug_catch] [debug_parsing] [or] ?halto" En (EXECUTE_ACTION) después de ?WRONG"  \ Depuración!!!
   ;
-
 : execute_action  ( -- )
   \ Ejecuta la acción del comando, si existe.
   [debug_catch] [debug_parsing] [or] ?halto" En EXECUTE_ACTION"  \ Depuración!!!
@@ -10179,6 +10328,20 @@ este caso] se calculará en una etapa posterior.
   if  (execute_action)  else  no_verb_error# ?wrong  then
   [debug_catch] [debug_parsing] [or] ?halto" Al final de EXECUTE_ACTION"  \ Depuración!!!
   ;
+
+(
+
+En SP-Forth y lina hay que activar y desactivar la
+sensibilidad a mayúsculas, porque en los comandos del
+jugador las palabras en mayúsculas son órdenes de
+configuración y de sistema, mientras que las palabras
+en minúsculas son las propias del juego en sí.
+
+En Gforth no hay que hacer nada porque el vocabulario
+del jugador está creado con una palabra propia de Gforth
+que implica la sensibilidad a mayúsculas.
+
+)
 
 : ignore_case  ( -- )
   \ Hace el intérprete insensible a mayúsculas.
@@ -10190,6 +10353,58 @@ este caso] se calculará en una etapa posterior.
   [sp-forth?]  [IF]  case-ins off  [THEN]
   [lina?]  [IF]  case-sensitive  [THEN]
   ;
+
+(
+
+Para que el intérprete de Forth ignore las palabras no
+reconocidas, SP-Forth tiene un mecanismo interno: antes de
+intentar convertirlas en un número en la base actual, como
+es el funcionamiento clásico de un intérprete de Forth,
+busca en los vocabularios activos una palabra llamada
+NOTFOUND y si la encuentra la ejecuta, pasándole en la pila
+el nombre de la palabra desconocida. 
+
+En este programa se usa dos veces este recurso, por lo
+que hemos definido una palabra que define el funcionamiento
+de NOTFOUND en ambos casos:
+
+)
+
+sp-forth?  [IF]
+: (notfound)  ( a u | -- )
+  \ Tratar una palabra no encontrada durante la interpretación.
+  \ a u = Palabra no encontrada
+
+  \ Esta palabra define el funcionamiento de las dos
+  \ definiciones de NOTFOUND , que será ejecutada
+  \ automáticamente por SP-Forth tras no encontrar cualquier
+  \ palabra en el vocabulario activo.
+
+  \ En el improbable caso de que la propia palabra NOTFOUND hubiera sido escrita
+  \ por el jugador, sería ejecutada directamente pero no recibiría
+  \ el parámetro. Por eso hay que comprobar la profundidad de la pila
+  \ antes de borrar el parámetro.
+
+  [debug_parsing] ?halto" En (notfound)"  \ depuración!!!
+  depth 2 >=  if  2drop  then
+  ;
+[THEN]
+
+
+(
+
+lina y Gforth no disponen de un recurso similar a NOTFOUND
+de SP-Forth y por ello necesitan una palabra que emule el
+funcionamiento de la palabra estándar EVALUATE pero que
+ignore las palabras no reconocidas.
+
+Escribimos a continuación la palabra EVALUATE_COMMAND para
+lina y Gforth. Ambas versiones son diferentes porque las
+operaciones necesarias son de bajo nivel y dependen de las
+interioridades de cada sistema Forth.
+
+)
+
 [lina?]  [IF]
 : evaluate_command  ( a u -- )
   \ Analiza el comando, ejecutando las palabras reconocidas que contenga.
@@ -10212,34 +10427,48 @@ este caso] se calculará en una etapa posterior.
   ['] (evaluate_command) execute-parsing
   ;
 [THEN]
+
+: a_preposition_is_open?  ( -- ff )
+  \ ¿Hay un complemento (seudo)preposicional abierto?
+  current_preposition @ 0<>
+  ;
+: no_parsing_error_left?  ( -- ff )
+  \ ¿No quedó algún error pendiente tras el análisis?
+  \ Comprueba si quedó un complemento (seudo)preposicional
+  \ incompleto, algo que no puede detectarse en el análisis
+  \ principal.
+  \ ff = ¿No quedó error pendiente tras el análisis?
+  \      (true=ningún error pendiente; false=algún error pendiente)
+  a_preposition_is_open? dup
+  unresolved_preposition_error# and ?wrong  0=
+  ;
 : valid_parsing?  ( a u -- ff )
   \ Evalúa un comando con el vocabulario del juego.
   \ a u = Comando
   \ ff = ¿El comando se analizó sin error?
+  -punctuation 
   [debug_parsing] ?halto" Entrando en VALID_PARSING?"  \ Depuración!!!
-
-  don't_ignore_case 
   \ Dejar solo el diccionario PLAYER_VOCABULARY activo
   [lina?]
-  [IF]    postpone only player_vocabulary
-  [ELSE]  only player_vocabulary
-  [THEN]
-  \ [debug_catch]  [IF]  s" En VALID_PARSING? antes de CATCH" debug  [THEN]  \ Depuración!!!
-  [debug_parsing] ?halto" en valid_parsing? antes de preparar CATCH"
+  [IF]    postpone only 
+  [ELSE]  only 
+  [THEN]  player_vocabulary
+  \ [debug_catch]  [IF]  s" En VALID_PARSING? antes de preparar CATCH" debug  [THEN]  \ Depuración!!!
+  don't_ignore_case 
+  [debug_parsing] ?halto" en valid_parsing? antes de preparar CATCH"  \ Depuración!!!
   [sp-forth?] 
-  [IF]    ['] evaluate  \ SP-Forth puede usar la palabra estándar EVALUATE para el análisis
-  [ELSE]  ['] evaluate_command  \ Los demás necesitan una palabra a medida 
-  [THEN]
-  [debug_parsing] ?halto" en valid_parsing? antes de CATCH"
-  catch  \ Llamar a la palabra de análisis a través de CATCH para poder regresar directamente con THROW en caso de error
-  [debug_parsing] ?halto" en valid_parsing? después de CATCH"
+  [IF]    ['] evaluate  \ SP-Forth puede usar la palabra estándar EVALUATE 
+  [ELSE]  ['] evaluate_command  \ Los demás necesitan una palabra a medida
+  [THEN]  catch
+  [debug_parsing] ?halto" en valid_parsing? después de CATCH"  \ Depuración!!!
   ignore_case
-  [debug_parsing] ?halto" en valid_parsing? antes de NIP NIP"
+  [debug_parsing] ?halto" en valid_parsing? antes de NIP NIP"  \ Depuración!!!
   dup  if  nip nip  then  \ Arreglar la pila, pues CATCH hace que apunte a su posición previa
   [debug_parsing] ?halto" en valid_parsing? tras NIP NIP"
   dup ?wrong 0=
   [debug_parsing] ?halto" en valid_parsing? tras ?WRONG"
   restore_vocabularies
+  no_parsing_error_left? and
   [debug_parsing] ?halto" Saliendo de VALID_PARSING?"  \ Depuración!!!
   ;
 : save_command_elements  ( -- )
@@ -10264,12 +10493,13 @@ este caso] se calculará en una etapa posterior.
   [debug_parsing] ?halto" Al final de OBBEY"  \ Depuración!!!
   ; 
 
-: second?  ( a1 a2 -- a1 ff )
+: second?  ( x1 x2 -- x1 ff )
   \ ¿La acción o el complemento son los segundos que se encuentran?
-  \ a1 = Acción o complemento recién encontrado
-  \ a2 = Acción o complemento anterior, o cero
+  \ Los dos valores representan una acción (xt) o un ente (a).
+  \ x1 = Acción o complemento recién encontrado
+  \ x2 = Acción o complemento anterior, o cero
   [debug_parsing] ?halto" second? 1"
-  2dup <> swap 0<> and  \ ¿Hay ya otro anterior y es diferente?
+  2dup different?  \ ¿Hay ya otro anterior y es diferente?
   [debug_parsing] ?halto" second? 2"
   ;
 : action!  ( a -- )
@@ -10288,7 +10518,7 @@ este caso] se calculará en una etapa posterior.
 : preposition!  ( u -- )
   \ Almacena una (seudo)preposición recién hallada en la frase.
   \ u = Identificador de la preposición
-  current_preposition @ 0<>  \ ¿Hay ya una (seudo)preposición abierta?
+  a_preposition_is_open?
   unresolved_preposition_error# and throw  \ Si es así, error
   current_preposition !
   ;
@@ -10302,6 +10532,13 @@ este caso] se calculará en una etapa posterior.
   current_preposition off  \ Cerrar la preposición
   [debug_parsing] ?halto" prepositional_complement! 2"
   ;
+: secondary_complement!  ( a -- )
+  \ Almacena el complemento secundario. 
+  \ a = Identificador de ente 
+  secondary_complement @ second?  \ ¿Había ya un complemento secundario? 
+  too_many_complements_error# and throw  \ Si es así, error
+  secondary_complement !
+  ;
 : main_complement!  ( a -- )
   \ Almacena el complemento principal.
   \ a = Identificador de ente 
@@ -10310,13 +10547,21 @@ este caso] se calculará en una etapa posterior.
   too_many_complements_error# and throw  \ Si es así, error
   main_complement !
   ;
+: non_prepositional_complement!  ( a -- )
+  \ Almacena un complemento principal o secundario. 
+  \ a = Identificador de ente 
+  main_complement @
+  if  secondary_complement!
+  else  main_complement!
+  then
+  ;
 : complement!  ( a -- )
   \ Comprueba y almacena un complemento.
   \ a = Identificador de ente 
   [debug_parsing] ?halto" En COMPLEMENT!"  \ Depuración!!!
   current_preposition @  \ ¿Hay una (seudo)preposición abierta?
   if  prepositional_complement!  \ Sí: complemento (seudo)preposicional
-  else  main_complement!  \ No: complemento principal
+  else  non_prepositional_complement!  \ No: complemento principal o secundario
   then
   ;
 : action|complement!  ( a1 a2 -- )
@@ -10497,8 +10742,14 @@ false  [IF]  \ Antiguo!!! Se tomará el tamaño actual de la consola.
 : presto_de_narración  ( a u -- )  narration_prompt s!  ;
 : presto_de_fin_de_escena  ( a u -- )  scene_prompt s!  ;
 : presto_de_comando  ( a u -- )  command_prompt s!  ;
-: espacio_tras_presto_de_comando  ( f -- )  space_after_command_prompt? !  ;
-: nueva_línea_tras_presto_de_comando  ( f -- )  cr_after_command_prompt? !  ;
+: espacio_tras_presto_de_comando  ( ff -- )  space_after_command_prompt? !  ;
+: nueva_línea_tras_presto_de_comando  ( ff -- )  cr_after_command_prompt? !  ;
+
+: mensajes_de_error_lingüístico_detallados  ( ff -- )
+  \ Indica si se mostrarán errores lingüísticos detallados
+  \ (o bien breves y genéricos).
+  verbose_language_errors? !
+  ;
 
 \ Fin de las palabras permitidas en el fichero configuración.
 
@@ -10531,6 +10782,7 @@ restore_vocabularies
   last_col to max_x  \ Número máximo de columna 
   last_row to max_y  \ Número máximo de fila 
   [THEN]
+  verbose_language_errors? on
   init_prompts  init_colors
   ;
 : read_config_error  ( -- )
@@ -11115,17 +11367,14 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 ' enemigo synonyms{ enemigos sajón sajones }synonyms
 : todo ;  \ pendiente!!!
 
-\ Preposiciones y seudopreposiciones
+\ (Seudo)preposiciones 
 
 : con
-  \ Uso: Herramienta, compañía
+  \ Uso: Herramienta
   «con»_preposition preposition!
   ;
-: usando
-  \ Uso: Herramienta
-  «usando»_preposition preposition!
-  ;
-' usando synonyms{ mediante }synonyms
+' con synonyms{ usando empleando utilizando mediante }synonyms
+false [IF]  \ Descartado!!! Pendiente!!!
 : a
   \ Uso: Destino de movimiento, objeto indirecto
   «a»_preposition preposition!
@@ -11136,7 +11385,7 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
   «de»_preposition preposition!
   ;
 : hacia
-  \ Uso: Destino de movimiento
+  \ Uso: Destino de movimiento, destino de lanzamiento
   «hacia»_preposition preposition!
   ;
 : contra
@@ -11151,6 +11400,7 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
   \ Uso: Destino de movimiento 
   «por»_preposition preposition!
   ;
+[THEN]
 
 \ Meta
 
@@ -11228,7 +11478,7 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
   AYUDAR AYUDITA AYUDAS
   INSTRUCCIONES MANUAL GUÍA MAPA PLANO MENÚ
   PISTA PISTAS
-  SOCORRO AUXILIO
+  SOCORRO AUXILIO FAVOR
   }synonyms
 
 \ Comandos para usar durante el desarrollo!!!:
@@ -11237,14 +11487,7 @@ also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY pa
 : quit  quit  ; 
 
 sp-forth?  [IF]
-: NOTFOUND  ( a u -- )
-  \ Tratar una palabra no encontrada.
-  \ Esta palabra será ejecutada automáticamente por SP-Forth
-  \ tras no encontrar en el vocabulario una palabra del comando
-  \ del jugador.
-  [debug_parsing] ?halto" en notfound"  \ depuración!!!
-  depth 2 >=  if  2drop  then   \ Borrarla
-  ;
+: NOTFOUND  ( a u | -- )  (notfound)  ;
 [THEN]
 
 restore_vocabularies
@@ -11354,7 +11597,7 @@ also answer_vocabulary definitions  \ Las palabras que siguen se crearán en dic
 
 sp-forth?  [IF]
 \ Pendiente!!!: ¿hacer que no se acepte ninguna otra palabra:
-: NOTFOUND  ( a u -- )  depth 2 >=  if  2drop  then  ;
+: NOTFOUND  ( a u | -- )  (notfound)  ;
 [THEN]
 
 restore_vocabularies
@@ -11387,9 +11630,11 @@ svariable command  \ Zona de almacenamiento del comando
   \ Restar uno si tras el presto va no va salto de línea pero sí un espacio:
   cr_after_command_prompt? @ 0= space_after_command_prompt? @ and abs -
   ;
-: (wait_for_input)  ( -- a u )
-  \ Devuelve el comando introducido por el jugador.
-  input_color command /command accept  command swap  
+: wait_for_input  ( -- a u )
+  \ Espera y devuelve el comando introducido por el jugador.
+  input_color  command /command accept
+  [gforth?]  [IF]  cr  [THEN]
+  command swap  str+strip  \ Eliminar espacios laterales
   ;
 : .command_prompt  ( -- )
   \ Imprime un presto para la entrada de comandos.
@@ -11405,15 +11650,10 @@ svariable command  \ Zona de almacenamiento del comando
     then
   then
   ;
-: wait_for_input  ( -- a u )
-  \ Imprime un presto y devuelve el comando introducido por el jugador.
-  .command_prompt (wait_for_input)
-  [gforth?]  [IF]  cr  [THEN]
-  ;
 : listen  ( -- a u )
-  \ Espera y devuelve el comando introducido por el jugador, formateado.
+  \ Imprime un presto y devuelve el comando introducido por el jugador.
   [debug_info]  [IF]  0$ debug  [THEN]  \ Depuración!!!
-  wait_for_input  -punctuation
+  .command_prompt wait_for_input
   [debug]  [IF]  cr cr ." <<<" 2dup type ." >>>" cr cr  [THEN]  \ Depuración!!!
   ; 
 
@@ -11426,10 +11666,13 @@ section( Entrada de respuestas de tipo «sí o no»)  \ {{{
   \ n = Resultado (un número negativo para «no» y positivo para «sí»; cero si no se ha respondido ni «sí» ni «no», o si se produjo un error)
   answer_undefined
   [lina?]
-  [IF]    postpone only answer_vocabulary
-  [ELSE]  only answer_vocabulary
-  [THEN]
-  ['] evaluate catch
+  [IF]    postpone only 
+  [ELSE]  only 
+  [THEN]  answer_vocabulary
+  [sp-forth?] 
+  [IF]    ['] evaluate  \ SP-Forth puede usar la palabra estándar EVALUATE 
+  [ELSE]  ['] evaluate_command  \ Los demás necesitan una palabra a medida
+  [THEN]  catch
   dup  if  nip nip  then  \ Reajustar la pila si ha habido error
   dup ?wrong 0=  \ Ejecutar el posible error y preparar su indicador para usarlo en el resultado
   #answer @ 0= two_options_only_error# and ?wrong  \ Ejecutar error si la respuesta fue irreconocible
@@ -11447,7 +11690,7 @@ svariable question
   \ n = Respuesta: un número negativo para «no» y positivo para «sí»
   question s!
   begin
-    .question wait_for_input  yes|no ?dup
+    .question listen  yes|no ?dup
   until
   ;
 : yes?  ( a u -- ff )
@@ -11648,12 +11891,19 @@ section( Acerca del programa)  \ {{{
 \ }}} ##########################################################
 section( Introducción)  \ {{{
 
+: sun$  ( -- a u )
+  s{ s" sol" s" astro rey" }s
+  ;
 : intro_0  ( -- )
   \ Muestra la introducción al juego (parte 0).
-  s{ s" El sol despunta"
-  s" Los rayos del sol despuntan" }s
-  s" de entre la niebla," s&
-  s" haciendo humear los tejados de paja." s&
+  s{
+  s{ s" El " s" La luz del" }s sun$ s&
+    s{ s" despunta de entre" s" penetra en" s" atraviesa" s" corta" }s&
+  s" Los rayos del" sun$ s&
+    s{ s" despuntan de entre" s" penetran en" s" atraviesan" s" cortan" }s&
+  }s
+  s" la" s& s" densa" s?& s" niebla," s&
+  s" haciendo humear los" s& s" pobres" s?& s" tejados de paja." s&
   narrate  narration_break
   ;
 : intro_1  ( -- )
@@ -11668,9 +11918,9 @@ section( Introducción)  \ {{{
   ;
 : intro_2  ( -- )
   \ Muestra la introducción al juego (parte 2).
-  s{ s" Atacar" s" Arrasar" }s s" una" s&
+  s{ s" Atacar" s" Arrasar" s" Destruir" }s s" una" s&
   s" aldea" s{ s" tranquila" s" pacífica" }s r2swap s& s&
-  s" , aunque" s+ s{ s" sea una" s" esté" }s&
+  s" , aunque" s+ s{ s" se trate de una" s" sea una" s" esté" }s&
   s{ s" llena de" s" habitada por" s" repleta de" }s&
   s" sajones, no te" s&{ s" llena" s" colma" }s&
   s" de orgullo." s&
@@ -11678,8 +11928,8 @@ section( Introducción)  \ {{{
   ;
 : intro_3  ( -- )
   \ Muestra la introducción al juego (parte 3).
-  s" Los hombres se" s{ s" ciernen" s" lanzan" }s&
-  s" sobre la aldea, y la destruyen." s&
+  s" Los hombres se" s{ s" ciernen" s" lanzan" s" arrojan" }s&
+  s" sobre la aldea, y la" s& s{ s" destruyen." s" arrasan" }s&
   s" No hubo tropas enemigas, ni honor en" s&
   s{ s" la batalla." s" el combate." s" la lucha." }s&
   narrate  scene_break
@@ -11907,8 +12157,99 @@ Dudas sobre SP-Forth
 
 ¿Cómo saber si estoy en SP-Forth o en otro Forth?
 
+------------------------------------------------
+Esbozo de acciones y (seudo)preposiciones
+
+a, al
+con, usando...
+de
+
+
+do_attack
+
+atacar
+atacar H
+atacar O
+atacar a H
+atacar a H con O
+
+do_break
+
+romper O
+romper O1 con O2
+
+do_climb
+
+escalar
+escalar O
+escalar O1 con O2
+
+do_close:
+
+cerrar
+cerrar O
+cerrar O1 con O2
+
+do_do:
+
+hacer?
+
+do_drop:
+
+soltar O
+soltar O1 con O2
+
+do_examine:
+
+(do_exits):
+
+salidas
+
+do_fear  
+do_finish
+do_go
+do_go_ahead
+do_go_back
+do_go_down
+do_go_east
+do_go_in
+do_go_north
+do_go|do_break
+do_go_out
+do_go_south
+do_go_up
+do_go_west
+do_hit
+do_introduce_yourself
+do_inventory
+do_kill
+do_load_the_game
+do_look
+do_look_to_direction
+do_look_yourself
+do_make
+do_open
+do_put_on
+do_save_the_game
+do_search
+do_sharpen
+do_speak
+do_swim
+do_take
+do_take|do_eat 
+do_take_off
+
 \ }}} ########################################################## 
 \ Tareas pendientes: programación {{{
+
+2012-01-03:
+
+Tras el análisis, detectar:
+
+Preposición sin cerrar.
+
+Preposición con artículo (al, del) que no concuerde en
+género y número con su ente.
 
 ...........................
 
@@ -12221,9 +12562,9 @@ alguien o algo».
 
 Implementar pronombres. Para empezar, que la forma «mírate»
 sea compatible con «mírate la capa». Para esto habría que
-distiguir dos variantes de complemento directo, y que al
+distiguir dos variantes de complemento principal, y que al
 asignar cualquiera de ellas se compruebe si había ya otro
-complemento directo del otro tipo.
+complemento principal del otro tipo.
 
 ...........................
 
