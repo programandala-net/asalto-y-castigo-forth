@@ -8,7 +8,7 @@ CR .( Asalto y castigo )  \ {{{
 \ Copyright (C) 2011,2012 Marcos Cruz (programandala.net)
 
 ONLY FORTH DEFINITIONS
-: version$  ( -- a u )  S" A-03-201202080130"  ;
+: version$  ( -- a u )  S" A-03-201202082236"  ;
 version$ TYPE CR
 
 \ 'Asalto y castigo' (written in Forth) is free software;
@@ -436,7 +436,7 @@ crear antes un alias para S" .
 
 No obstante, un problema similar ocurría al crear las imágenes
 del sistema en Gforth: no funcionaban porque en ellas
-solo se guarda el espacio del diccinario, no la memoria
+solo se guarda el espacio del diccionario, no la memoria
 reservada, con lo cual las cadenas creadas en tiempo
 de compilación apuntaban a direcciones inaccesibles en
 tiempo de ejecución. Por ello el almacén circular de
@@ -458,9 +458,7 @@ free_csb  dictionary_csb  2048 allocate_csb
     true ?leave-block
   [THEN]
   [gforth?]  [IF]  \ Definición equivalente para Gforth:
-    source-id  if
-      begin  refill 0=  until 
-    then
+    source-id  if  begin  refill 0=  until  then
   [THEN]
   ;
 : [or]  ( x1 x2 -- x3 )  or  ;  immediate
@@ -1833,10 +1831,10 @@ section( Textos aleatorios)  \ {{{
 Casi todas las palabras de esta sección devuelven una cadena
 calculada al azar. Las restantes palabras son auxiliares.
 
-Por convención, en todo el programa, las palabras que
-devuelven una cadena sin recibir parámetros en la pila
-tienen el signo «$» al final de su nombre.  También por
-tanto las constantes de cadena creadas con SCONSTANT .
+Por convención, en el programa las palabras que devuelven
+una cadena sin recibir parámetros en la pila tienen el signo
+«$» al final de su nombre.  También por tanto las constantes
+de cadena creadas con SCONSTANT .
 
 )
 
@@ -1891,11 +1889,13 @@ tanto las constantes de cadena creadas con SCONSTANT .
   s{ s" Tan solo" s" Solo" s" Solamente" s" Únicamente" }s
   ;
 : only_$  ( -- a u )
-  \ Devuelve una variante de «solamente» o una cadena vacía.
+  \ Devuelve una variante de «solamente»
+  \ o una cadena vacía.
   only$ s?
   ;
 : ^only_$  ( -- a u )
-  \ Devuelve una variante de «Solamente» (con la primera mayúscula) o u una cadena vacía.
+  \ Devuelve una variante de «Solamente» (con la primera mayúscula)
+  \ o u una cadena vacía.
   ^only$ s?
   ;
 : again$  ( -- a u )
@@ -2004,9 +2004,9 @@ tanto las constantes de cadena creadas con SCONSTANT .
 : of_your_ex_cloak$  ( -- a u )
   \ Devuelve un texto común a las descripciones de los restos de la capa.
   s{ 0$ s" que queda" s" que quedó" }s s" de" s&
-  s{ s" lo" s" la" }s& s{ s" que antes" s" que" }s&
+  s{ s" lo" s" la" }s& s" que" s& s" antes" s?&
   s{ s" era" s" fue" s" fuera" }s&
-  s{ s" tu" s" la" }s& s" oscura" s?&
+  s{ s" tu" s" la" }s& s{ s" negra" s" oscura" }s?&
   s" capa" s& s" de lana" s?& period+
   ;
 : though$  ( -- a u )
@@ -2221,6 +2221,7 @@ s" de Westmorland" sconstant of_westmorland$
   ;
 : gets_wider$  ( -- a u )
   \ Devuelve una variante de «se ensancha».
+  \ Pendiente!!! confirmar «anchea»
   s{
   s" se" s{ s" anchea" s" ensancha" s" va ensanchando"
   s" va haciendo más ancho" s" hace más ancho"
@@ -2515,7 +2516,8 @@ variable indent_first_line_too?  \ ¿Se indentará también la línea superior d
   not_first_line? indent_first_line_too? @ or
   ;
 : indentation+  ( -- )
-  \ Añade indentación ficticia (con un carácter distinto del espacio) a la cadena dinámica PRINT_STR, si la línea del cursor no es la primera.
+  \ Añade indentación ficticia (con un carácter distinto del espacio)
+  \ a la cadena dinámica PRINT_STR , si la línea del cursor no es la primera.
   indentation?  if
     [char] X /indentation @ char>string «+
   then
@@ -2560,7 +2562,8 @@ variable indent_first_line_too?  \ ¿Se indentará también la línea superior d
   print_str str-set (paragraph)
   ;
 : paragraph  ( a u -- )
-  \ Imprime una cadena ajustándose al ancho de la pantalla; y una separación posterior si hace falta.
+  \ Imprime una cadena ajustándose al ancho de la pantalla;
+  \ y una separación posterior si hace falta.
   dup >r  paragraph/ r> ?cr
   ;
 : report  ( a u -- )
@@ -3058,9 +3061,7 @@ básicos.
 
 : is_living_being?  ( a -- ff )
   \ ¿El ente es un ser vivo (aunque esté muerto)?
-  dup is_vegetal?
-  over is_animal? or
-  swap is_human? or
+  dup is_vegetal?  over is_animal? or  swap is_human? or
   ;
 : is_there  ( a1 a2 -- )
   \ Hace que un ente sea la localización de otro.
@@ -5084,7 +5085,7 @@ rags% :attributes
   ;attributes
 rags% :description
   s" Un" s{ s" retal" s" pedazo" s" trozo" }s&
-  s{ s" un poco" s" algo" }?s& s" grande" s&
+  s{ s" un poco" s" algo" }s?& s" grande" s&
   of_your_ex_cloak$ s&
   paragraph
   ;description
@@ -10946,8 +10947,9 @@ de borrar la cadena recibida.
 
 : parse_synonym  ( -- a u )
   \ Devuelve el siguiente sinónimo de la lista.
-  begin  parse-name dup 0=
-  while  2drop refill 0= abort" Error en el código fuente: lista de sinónimos incompleta"
+  begin   parse-name dup 0=
+  while   2drop refill 0=
+          abort" Error en el código fuente: lista de sinónimos incompleta"
   repeat
   \ 2dup ." sinónimo: " type space \ Depuración!!!
   ;
@@ -10957,10 +10959,11 @@ de borrar la cadena recibida.
   ;
 gforth?  [IF]
 : another_synonym?  ( -- a u ff )
-  \ Toma la siguiente palabra en el flujo de entrada y comprueba si es el final de la lista de sinónimos.
+  \ Toma la siguiente palabra en el flujo de entrada
+  \ y comprueba si es el final de la lista de sinónimos.
   parse_synonym 2dup (another_synonym?)
   ;
-: synonyms{  (  xt "name#0" ... "name#n" "synonyms" -- )
+: synonyms{  (  xt "name#0" ... "name#n" "}synonyms" -- )
   \ Crea uno o varios sinónimos de una palabra.
   \ xt = Dirección de ejecución de la palabra a clonar
   begin  dup another_synonym? ( xt xt a u ff )
@@ -11697,8 +11700,8 @@ section( Entrada de comandos)  \ {{{
 Para la entrada de comandos se usa la palabra de Forth
 ACCEPT , que permite limitar el número máximo de caracteres
 que serán aceptados. Por desgracia ACCEPT permite escribir
-más y después trunca la cadena, por lo sería mejor escribir
-una alternativa.
+más y después trunca la cadena, por lo que sería mejor
+escribir una alternativa.
 
 )
 
@@ -12082,21 +12085,16 @@ section( Principal)  \ {{{
   ;
 : game  ( -- )
   \ Bucle de la partida.
-  begin
-    plot  listen obbey
-  game_over? until
+  begin  plot listen obbey  game_over?  until
   ;
 : main  ( -- )
   \ Bucle principal del juego.
   init/once
-  begin
-    init/game game the_end
-  enough? until
+  begin  init/game game the_end  enough?  until
   bye_bye
   ;
 
-lina? 0=  [IF]  also  [THEN]
-forth definitions
+lina? 0=  [IF]  also  [THEN]  forth definitions
 ' main alias ayc
 ' main alias go
 
@@ -12222,10 +12220,7 @@ true  [IF]
 
 only forth
 
-false  [IF]  \ Provisional!!! \eof da problemas con gforthmi
-
 \eof  \ Ignora el resto del fichero, que se usa para notas
-
 
 \ }}} ########################################################## 
 \ Notas {{{
@@ -12830,5 +12825,4 @@ Recortar las líneas para que no sobrepasen los 80 caractere.
 
 }}}
 
-[THEN]
 
