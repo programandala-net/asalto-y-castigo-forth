@@ -7,7 +7,7 @@ CR .( Asalto y castigo )  \ {{{
 \ Copyright (C) 2011,2012 Marcos Cruz (programandala.net)
 
 ONLY FORTH DEFINITIONS
-: version$  ( -- a u )  S" A-04-2012042800"  ;
+: version$  ( -- a u )  S" A-04-2012042900"  ;
 version$ TYPE CR
 
 \ 'Asalto y castigo' (written in Forth) is free software;
@@ -112,8 +112,8 @@ temáticamente en módulos independientes.  Cada módulo de la
 librería tiene por nombre una abreviatura de tres letras y
 sus palabras comienzan por esas mismas tres letras.  Por
 ejemplo: los nombres de las palabras proporcionadas por el
-módulo «str» empiezan por «str», como STR-CREATE o
-STR+COLUMNS o STR.VERSION .
+módulo «str» empiezan por «str», como 'str-create' o
+'str+columns' o 'str.version'.
 
 )
 
@@ -152,6 +152,16 @@ s" random_strings.fs" required
 s" halto2.fs" required
 false to halto?
 
+\ Palabras de uso común
+
+: enum  (  n "name" -- n+1 )  dup constant 1+  ;
+: ++  ( a -- )  1 swap +!  ;
+: --  ( a -- )  -1 swap +!  ;
+
+\ Palabras diversas
+
+: wait  key drop  ;
+
 \ }}} ##########################################################
 \ Meta \ {{{
 
@@ -167,8 +177,8 @@ false value [debug] immediate  \ ¿Depuración global?
 false value [debug_init] immediate  \ ¿Depurar la inicialización?
 false value [debug_parsing] immediate  \ ¿Depurar el analizador?
 false value [debug_filing] immediate  \ ¿Depurar operaciones de ficheros? 
-false value [debug_do_exits] immediate  \ ¿Depurar la acción DO_EXITS ?
-false value [debug_catch] immediate  \ ¿Depurar CATCH y THROW ?
+false value [debug_do_exits] immediate  \ ¿Depurar la acción 'do_exits'?
+false value [debug_catch] immediate  \ ¿Depurar 'catch' y 'throw'?
 false value [debug_save] immediate  \ ¿Depurar la grabación de partidas?
 true value [debug_info] immediate  \ ¿Mostrar info sobre el presto de comandos? 
 false value [debug_pause] immediate  \ ¿Hacer pausa en puntos de depuración?
@@ -194,7 +204,7 @@ constant /counted_string  \ Longitud máxima de una cadena contada
 : .s?
   \ Imprime el contenido de la pila si no está vacía.
   depth
-  if  depth_warning .s cr  key drop 
+  if  depth_warning .s cr  wait 
   then
   ;
 : section(  ( "text<bracket>" -- )
@@ -220,8 +230,8 @@ vocabulary game_vocabulary
 : restore_vocabularies
   \ Restaura los vocabularios a su orden habitual.
   \ En lina los vocabularios son inmediatos
-  \ (aunque por alguna razón los creados con VOCABULARY
-  \ no reciben ese tratamiento de POSTPONE ), y además al ejecutarse
+  \ (aunque por alguna razón los creados con 'vocabulary'
+  \ no reciben ese tratamiento de 'postpone'), y además al ejecutarse
   \ no sustituyen al primero en el orden, sino que se añaden al orden.
   \ Por ello lina necesita aquí un tratamiento especial:
   only forth also game_vocabulary definitions
@@ -235,7 +245,7 @@ vocabulary menu_vocabulary  \ palabras del menú \ Aún no se usa!!!
 
 \ Gforth necesita su propio método
 \ para crear un vocabulario sensible a mayúsculas,
-\ con la palabra TABLE :
+\ con la palabra 'table':
 table value (player_vocabulary)
 \ : player_vocabulary  (player_vocabulary) >order  ;  \ Versión antigua!!!
 : player_vocabulary
@@ -254,11 +264,6 @@ section( Palabras genéricas)  \ {{{
 true constant [true]  immediate
 false constant [false]  immediate
 
-: enum  (  n "name" -- n+1 )
-  \ Crea una constante como parte de una lista.
-  \ Palabra de uso común.
-  dup constant 1+
-  ;
 : truncate_length  ( u1 -- u1 | u2 )
   \ Recorta la longitud de una cadena si es demasiado larga.
   /counted_string chars min 
@@ -283,24 +288,15 @@ false constant [false]  immediate
   \ xt = Dirección de ejecución de la palabra de la que hay que crear el alias
   \ a u = Nombre del alias
   \ Para definir esta palabra se ha examinado la definición
-  \ de CREATE en Gforth; probablemente hay otra forma
+  \ de 'create' en Gforth; probablemente hay otra forma
   \ más directa de crear una palabra a partir de 
   \ de un xt y una cadena con su nombre.
   name-too-short? header, reveal dovar: cfa, ,
   does> perform
   ;
 
-: ++  ( a -- )
-  \ Incrementa el contenido de una dirección de memoria.
-  1 swap +!
-  ;
-: --  ( a -- )
-  \ Decrementa el contenido de una dirección de memoria.
-  -1 swap +!
-  ;
 : (++)  ( a -- )
   \ Incrementa el contenido de una dirección, si es posible.
-  \ Nota:
   \ En la práctica el límite es inalcanzable
   \ (pues es un número de 32 bitios),
   \ pero así queda mejor hecho.
@@ -331,11 +327,12 @@ variable bit#  \ Contador de máscara de bitio para los campos buleanos.
 : bitfield:  ( u1 "name" -- u1 )
   \ Crea un campo de bitio en el próximo campo de celda.
   \ u1 = Desplazamiento (respecto al inicio de la ficha) del próximo campo de celda que se creará
-  \ u2 = Máscara del bitio
-  \ a = Dirección de la ficha de datos.
-  \ a' = Dirección del campo en que está definido el bitio en la ficha de datos.
   create  bit#? over 2, bit+
-  does>  ( a pfa -- u2 a' )  2@ rot +
+  does>  ( a pfa -- u2 a' )
+    \ a = Dirección de la ficha de datos
+    \ u2 = Máscara del bitio
+    \ a' = Dirección del campo en que está definido el bitio en la ficha de datos.
+    2@ rot +
   ;
 : bit@  ( u a -- ff )
   \ Devuelve el contenido de un campo de bitio.
@@ -384,19 +381,19 @@ como en el siguiente ejemplo:
 false  [if]  \ Ejemplo de código
 
 defer palabrita  \ Crear el vector
-: usar_palabrita  \ Palabra que usa PALABRITA y que por tanto necesita que esté ya en el diccionario
-  \ La compilación no da error, porque PALABRITA existe en el diccionario, pues ha sido creada por DEFER ,
-  \ pero la ejecución posterior no haría nada porque el vector PALABRITA no ha sido actualizado.
+: usar_palabrita  \ Palabra que usa 'palabrita' y que por tanto necesita que esté ya en el diccionario
+  \ La compilación no da error, porque 'palabrita' existe en el diccionario, pues ha sido creada por 'defer',
+  \ pero la ejecución posterior no haría nada porque el vector 'palabrita' no ha sido actualizado.
   palabrita 
   ;
 : (palabrita)
-  \ Definición de lo que tiene que hacer PALABRITA.
+  \ Definición de lo que tiene que hacer 'palabrita'.
   ." ¡Hola mundo, soy palabrita!"
   ;
-\ Tomar la dirección de ejecución de (PALABRITA) y ponérsela al vector PALABRITA :
+\ Tomar la dirección de ejecución de '(palabrita)' y ponérsela al vector 'palabrita':
 ' (palabrita) is palabrita
-\ Ahora tanto PALABRITA como USAR_PALABRITA
-\ harán lo mismo que (PALABRITA) .
+\ Ahora tanto 'palabrita' como 'usar_palabrita'
+\ harán lo mismo que '(palabrita)'.
 
 [then]  \ Fin del ejemplo
 
@@ -445,12 +442,12 @@ false  [if]  \ Ejemplo de código:
 (
 
 Como se ve, usar como códigos de error las direcciones de
-ejecución de las palabras de error tiene la ventaja de que
-no hace falta ningún mecanismo adicional para encontrar las
+ejecución de las palabras de error tiene la ventaja de que no
+hace falta ningún mecanismo adicional para encontrar las
 palabras de error a partir de sus códigos de error
-correspondientes, como podría ser una estructura CASE o una
+correspondientes, como podría ser una estructura 'case' o una
 tabla: basta poner el código de error en la pila y llamar a
-EXECUTE .
+'execute'.
 
 Dado que algunos los códigos de error se necesitan antes de
 haber sido creadas las palabras de error, por ejemplo
@@ -536,14 +533,12 @@ section( Generador de números aleatorios; herramientas de azar)  \ {{{
 : (both)  ( a1 u1 a2 u2 -- a1 u1 a3 u3 a2 u2 | a2 u2 a3 u3 a1 u1 )
   \ Devuelve las dos cadenas recibidas, en cualquier orden,
   \ y separadas en la pila por la cadena «y».
-  \ Sacar de aquí!!! Debe ir en la aplicación!!!
   rnd2swap s" y" 2swap
   ;
 : both  ( a1 u1 a2 u2 -- a3 u3 )
   \ Devuelve dos cadenas unidas en cualquier orden por «y».
   \ Ejemplo: si los parámetros fueran «espesa» y «fría»,
   \ los dos resultados posibles serían: «fría y espesa» y «espesa y fría».
-  \ Sacar de aquí!!! Debe ir en la aplicación!!!
   (both) bs& bs&
   ;
 : both&  ( a0 u0 a1 u1 a2 u2 -- a3 u3 )
@@ -585,18 +580,24 @@ variable verbose_language_errors?  \ ¿Errores lingüísticos detallados?
  
 \ Variables de la trama
 
-variable battle#  \ Contador de la evolución de la batalla (si aún no ha empezado, es cero)
 variable ambrosio_follows?  \ ¿Ambrosio sigue al protagonista?
-variable talked_to_the_leader?  \ ¿El protagonista ha hablado con el líder?
+variable battle#  \ Contador de la evolución de la batalla (si aún no ha empezado, es cero)
+variable climbed_the_fallen_away?  \ ¿El protagonista ha intentado escalar el derrumbe?
 variable hacked_the_log?  \ ¿El protagonista ha afilado el tronco?
+variable stone_forbidden?  \ ¿El protagonista ha intentado pasar con la piedra?
+variable sword_forbidden?  \ ¿El protagonista ha intentado pasar con la espada?
+variable talked_to_the_leader?  \ ¿El protagonista ha hablado con el líder?
 \ variable hold#  \ Contador de cosas llevadas por el protagonista (no se usa!!!)
 
 : init_plot
   \ Inicializa las variables de la trama.
-  battle# off
   ambrosio_follows? off
-  talked_to_the_leader? off
+  battle# off
+  climbed_the_fallen_away? off
   hacked_the_log? off
+  stone_forbidden? off
+  sword_forbidden? off
+  talked_to_the_leader? off
   ;
 
 \ }}} ##########################################################
@@ -675,9 +676,8 @@ constant +lighter  \ Diferencia entre los dos niveles de brillo
 : white  ( -- u )  gray lighter  ;
 : yellow  ( -- u )  brown lighter  ;
 
-: color  ( u -- )  1 sgr  ;
-: paper  ( u -- )  10 + color  ;
-: ink  ( u -- )  color  ;
+: ink ( u -- )  1 sgr  ;
+: paper  ( u -- )  10 + ink  ;
 : colors  ( u1 u2 -- )
   \ Pone los colores de papel y tinta.
   \ u1 = Color de papel
@@ -695,7 +695,7 @@ subsection( Colores utilizados)  \ {{{
 
 \ Variables para guardar cada color de papel y de tinta
 
-\ variable background_paper  \ Experimental!!!
+variable background_paper  \ Experimental!!!
 variable about_ink
 variable about_paper
 variable command_prompt_ink
@@ -885,7 +885,7 @@ true  [if]  \ Pendiente!!!
 [then]
 : italic  ( ff -- )
   \ Activa o desactiva la cursiva.
-  \ Nota: tiene el mismo efecto que INVERSE .
+  \ Nota: tiene el mismo efecto que 'inverse'.
   if  trm.italic-on  else  trm.italic-off  then  1 sgr
   ;
 
@@ -958,7 +958,7 @@ palabras del módulo trm y así evitar duplicidades.
 : at-max-xy
   \ Sitúa el cursor en los mayores valores posibles de x e y.
   \ El mayor valor posible es -1 interpretado sin signo;
-  \ usamos -2 porque la palabra AT-XY en Gforth incrementa los valores.
+  \ usamos -2 porque la palabra 'at-xy' en Gforth incrementa los valores.
   -2 dup at-xy
   ;
 : last_row  ( -- u )
@@ -1078,7 +1078,7 @@ section( Depuración)  \ {{{
   ;
 : debug_pause
   \ Pausa tras mostrar la información de depuración.
-  [debug_pause]  [if]  depth  if  key drop  then  [then]
+  [debug_pause]  [if]  depth  if  wait  then  [then]
   ;
 : debug  ( a u -- )
   \ Punto de chequeo: imprime un mensaje y muestra el estado del sistema.
@@ -1131,11 +1131,11 @@ str-create tmp_str  \ Cadena dinámica de texto temporal para usos variados
   loop
   ;
 : tmp_str!  ( a u -- )
-  \ Guarda una cadena en la cadena dinámica TMP_STR .
+  \ Guarda una cadena en la cadena dinámica 'tmp_str'.
   tmp_str str-set
   ;
 : tmp_str@  ( -- a u )
-  \ Devuelve el contenido de cadena dinámica TMP_STR .
+  \ Devuelve el contenido de cadena dinámica 'tmp_str'.
   tmp_str str-get
   ;
 : sreplace  ( a1 u1 a2 u2 a3 u3 -- a4 u4 )
@@ -1225,7 +1225,7 @@ calculada al azar. Las restantes palabras son auxiliares.
 Por convención, en el programa las palabras que devuelven
 una cadena sin recibir parámetros en la pila tienen el signo
 «$» al final de su nombre.  También por tanto las constantes
-de cadena creadas con SCONSTANT .
+de cadena creadas con 'sconstant'.
 
 )
 
@@ -1258,8 +1258,8 @@ de cadena creadas con SCONSTANT .
   s{ 0$ s" ahora" s" en este momento" s" en estos momentos" }s
   ;
 : now_$  ( -- a u )
-  \ Devuelve el resultado de NOW$ o una cadena vacía.
-  \ Sirve como versión de NOW$ con mayor probabilidad devolver una cadena vacía.
+  \ Devuelve el resultado de 'now$' o una cadena vacía.
+  \ Sirve como versión de 'now$' con mayor probabilidad devolver una cadena vacía.
   now$ s?
   ;
 : here$  ( -- a u )
@@ -1267,7 +1267,7 @@ de cadena creadas con SCONSTANT .
   s{ 0$ s" en este lugar" s" por aquí" s" aquí" }s
   ;
 : now|here$  ( -- a u )
-  \ Devuelve el resultado de NOW$ o el de HERE$ .
+  \ Devuelve el resultado de 'now$' o el de 'here$'.
   s{ now$ here$ }s
   ;
 : only$  ( -- a u )
@@ -1400,8 +1400,14 @@ de cadena creadas con SCONSTANT .
   s{ s" tu" s" la" }s& s{ s" negra" s" oscura" }s?&
   s" capa" s& s" de lana" s?& period+
   ;
+: but$  ( -- a u )
+  s{ s" pero" s" mas" }s  
+  ;
+: ^but$  ( -- a u )
+  but$ ^uppercase
+  ;
 : though$  ( -- a u )
-  s{ s" si bien" s" pero" s" aunque" }s
+  s{ s" si bien" but$ s" aunque" }s
   ;
 : place$  ( -- a u )
   s{ s" sitio" s" lugar" }s
@@ -1517,10 +1523,11 @@ de cadena creadas con SCONSTANT .
   ;
 : rimarkable$  ( -- a u )
   \ Devuelve una variante de «destacable».
-  s{ s" de especial" s" de particular"
-  s" de peculiar" s" destacable" 
-  s" especial" s" peculiar"
-  s" que llame la atención" s" que destacar" }s
+  s{ s" destacable" s" que destacar"
+  s" especial" s" de especial"
+  s" de particular"
+  s" peculiar" s" de peculiar" 
+  s" que llame la atención" }s
   ;
 : has_nothing$  ( -- a u )
   s" no tiene nada"
@@ -1708,16 +1715,24 @@ s" de Westmorland" sconstant of_westmorland$
   s" un" narrow_cave_pass$ s&
   ;
 : but|and$  ( -- a u )
-  s{ s" y" s" pero" }s
+  s{ s" y" but$ }s
   ;
 ' but|and$ alias and|but$
+: ^but|and$  ( -- a u )
+  but|and$ ^uppercase
+  ;
+' ^but|and$ alias ^and|but$
+: rocks$  ( -- a u )
+  s{ s" piedras" s" rocas" }s
+  ;
+
 
 \ }}} ##########################################################
 section( Cadena dinámica para impresión)  \ {{{
 
 (
 
-Usamos una cadena dinámica llamada PRINT_STR para guardar
+Usamos una cadena dinámica llamada 'print_str' para guardar
 los párrafos enteros que hay que mostrar en pantalla. En
 esta sección creamos la cadena y palabras útiles para
 manipularla.
@@ -1727,44 +1742,44 @@ manipularla.
 str-create print_str  \ Cadena dinámica para almacenar el texto antes de imprimirlo justificado
 
 : «»-clear
-  \ Vacía la cadena dinámica PRINT_STR.
+  \ Vacía la cadena dinámica 'print_str'.
   print_str str-clear
   ;
 : «»!  ( a u -- )
-  \ Guarda una cadena en la cadena dinámica PRINT_STR.
+  \ Guarda una cadena en la cadena dinámica 'print_str'.
   print_str str-set
   ;
 : «»@  ( -- a u )
-  \ Devuelve el contenido de la cadena dinámica PRINT_STR.
+  \ Devuelve el contenido de la cadena dinámica 'print_str'.
   print_str str-get
   ;
 : «+  ( a u -- )
-  \ Añade una cadena al principio de la cadena dinámica PRINT_STR.
+  \ Añade una cadena al principio de la cadena dinámica 'print_str'.
   print_str str-prepend-string
   ;
 : »+  ( a u -- )
-  \ Añade una cadena al final de la cadena dinámica PRINT_STR.
+  \ Añade una cadena al final de la cadena dinámica 'print_str'.
   print_str str-append-string
   ;
 : «c+  ( c -- )
-  \ Añade un carácter al principio de la cadena dinámica PRINT_STR.
+  \ Añade un carácter al principio de la cadena dinámica 'print_str'.
   print_str str-prepend-char
   ;
 : »c+  ( c -- )
-  \ Añade un carácter al final de la cadena dinámica PRINT_STR.
+  \ Añade un carácter al final de la cadena dinámica 'print_str'.
   print_str str-append-char
   ;
 : «»bl+?  ( u -- ff )
-  \ ¿Se debe añadir un espacio al concatenar una cadena a la cadena dinámica PRINT_STR ?
-  \ u = Longitud de la cadena que se pretende unir a la cadena dinámica PRINT_STR
+  \ ¿Se debe añadir un espacio al concatenar una cadena a la cadena dinámica 'print_str'?
+  \ u = Longitud de la cadena que se pretende unir a la cadena dinámica 'print_str'
   0<> print_str str-length@ 0<> and
   ;
 : »&  ( a u -- )
-  \ Añade una cadena al final de la cadena dinámica TXT, con un espacio de separación.
+  \ Añade una cadena al final de la cadena dinámica 'print_str', con un espacio de separación.
   dup «»bl+?  if  bl »c+  then  »+
   ;
 : «&  ( a u -- )
-  \ Añade una cadena al principio de la cadena dinámica TXT, con un espacio de separación.
+  \ Añade una cadena al principio de la cadena dinámica 'print_str', con un espacio de separación.
   dup «»bl+?  if  bl «c+  then  «+ 
   ;
 
@@ -1842,7 +1857,7 @@ svariable scroll_prompt  \ Guardará el presto de pausa
 : scroll_prompt?  ( u -- ff )
   \ ¿Se necesita imprimir un presto para la línea actual?
   \ u = Línea actual del párrafo que se está imprimiendo
-  \ Si el valor de SCROLL es «verdadero», se devuelve «falso»;
+  \ Si el valor de 'scroll' es «verdadero», se devuelve «falso»;
   \ si no, se comprueban las otras condiciones.
   \ ." L#" dup . ." /" #lines @ . \ Depuración!!!
   scroll @  if  drop false  else  (scroll_prompt?)  then
@@ -1910,7 +1925,7 @@ variable indent_first_line_too?  \ ¿Se indentará también la línea superior d
   ;
 : indentation+
   \ Añade indentación ficticia (con un carácter distinto del espacio)
-  \ a la cadena dinámica PRINT_STR , si la línea del cursor no es la primera.
+  \ a la cadena dinámica 'print_str', si la línea del cursor no es la primera.
   indentation?  if
     [char] X /indentation @ char>string «+
   then
@@ -1951,9 +1966,9 @@ variable indent_first_line_too?  \ ¿Se indentará también la línea superior d
   0  ?do  cr type i .scroll_prompt?  loop
   ;
 : (paragraph)
-  \ Imprime la cadena dinámica PRINT_STR ajustándose al ancho de la pantalla.
+  \ Imprime la cadena dinámica 'print_str' ajustándose al ancho de la pantalla.
   indentation+  \ Añade indentación ficticia
-  print_str str-get cols str+columns  \ Divide la cadena dinámica PRINT_STR en tantas líneas como haga falta
+  print_str str-get cols str+columns  \ Divide la cadena dinámica 'print_str' en tantas líneas como haga falta
   [debug]  [if]  s" En (PARAGRAPH)" debug  [then]  \ Depuración!!!
   >r indentation> r>  \ Prepara la indentación efectiva de la primera línea
   .lines  \ Imprime las líneas
@@ -1983,7 +1998,7 @@ variable indent_first_line_too?  \ ¿Se indentará también la línea superior d
   \ a partir de la posición actual del cursor, sabiendo
   \ el espacio disponible en la línea actual
   \ y que al menos la primera palabra del texto cabe en ese espacio.
-  \ a1 u1 = Cadena de texto a imprimir (copiada en la cadena dinámica PRINT_STR )
+  \ a1 u1 = Cadena de texto a imprimir (copiada en la cadena dinámica 'print_str')
   \ u2 = Caracteres libres en la línea actual de la pantalla
   \ Inacabado!!!
   str+columns  \ Divide la cadena en líneas del ancho disponible
@@ -2002,7 +2017,7 @@ variable indent_first_line_too?  \ ¿Se indentará también la línea superior d
   \ a partir de la posición actual del cursor, sabiendo
   \ el espacio disponible en la línea actual
   \ y la longitud de la primera palabra del texto.
-  \ a1 u1 = Cadena de texto a imprimir (copiada en la cadena dinámica PRINT_STR )
+  \ a1 u1 = Cadena de texto a imprimir (copiada en la cadena dinámica 'print_str')
   \ u2 = Caracteres libres en la línea actual de la pantalla
   \ u3 = Longitud de la primera palabra de la cadena de texto
   \ Inacabado!!!
@@ -2012,7 +2027,7 @@ variable indent_first_line_too?  \ ¿Se indentará también la línea superior d
   \ Imprime una cadena ajustándose al ancho de la pantalla,
   \ a partir de la posición actual del cursor.
   \ Inacabado!!!
-  2dup print_str str-set  \ Copia la cadena en la cadena dinámica PRINT_STR
+  2dup print_str str-set  \ Copia la cadena en la cadena dinámica 'print_str'
   cols col - 1- dup 0 >  \ ¿Queda espacio en la línea actual?
   if    print_str str_first_word_length (text)
   else  drop paragraph/
@@ -2130,10 +2145,11 @@ s" »" sconstant rquote$  \ Comilla castellana de cierre
 : str-with-rquote-only?  ( a -- ff )
   \ ¿Hay en una cadena dinámica una comilla castellana de cierre pero no una de apertura?
   >r rquote$ 0 r@ str-find -1 >  \ ¿Hay una comilla de cierre en la cita?
-  lquote$ 0 r> str-find -1 = And  \ ¿Y además falta la comilla de apertura? 
+  lquote$ 0 r> str-find -1 = and  \ ¿Y además falta la comilla de apertura? 
   ;
 : str-with-period?  ( a -- ff )
-  \ ¿Termina una cadena dinámica con un punto? .
+  \ ¿Termina una cadena dinámica con un punto?
+  \ Fallo!!! no se pone punto tras puntos suspensivos. Corregir!!! Pendiente!!!
   dup str-get-last-char [char] . =  \ ¿El último carácter es un punto?
   swap str-get-last-but-one-char [char] . <> and  \ ¿Y además el penúltimo no lo es? (para descartar que se trate de puntos suspensivos)
   ;
@@ -2149,11 +2165,19 @@ s" »" sconstant rquote$  \ Comilla castellana de cierre
   \ Encierra una cadena dinámica entre comillas castellanas.
   dup str-append-quote str-prepend-quote
   ;
+false  [if]  \ Obsoleto!!!
 : str-add-quotes-period  ( a -- )
   \ Encierra una cadena dinámica (que termina en punto) entre comillas castellanas
   dup str-pop-char drop  \ Eliminar el último carácter, el punto
   dup str-add-quotes  \ Añadir las comillas
   s" ." rot str-append-string  \ Añadir de nuevo el punto 
+  ;
+[then]
+: (quotes+)
+  \ Añade comillas castellanas a una cita de un diálogo en la cadena dinámica 'tmp_str'.
+  tmp_str dup str-with-period?  \ ¿Termina con un punto?
+  if    dup str-pop-char drop  \ Eliminarlo
+  then  dup str-add-quotes s" ." rot str-append-string
   ;
 : quotes+  ( a1 u1 -- a2 u2 )
   \ Añade comillas castellanas a una cita de un diálogo.
@@ -2161,10 +2185,7 @@ s" »" sconstant rquote$  \ Comilla castellana de cierre
   if  \ Es una cita con aclaración final
     tmp_str str-prepend-quote  \ Añadir la comilla de apertura
   else  \ Es una cita sin aclaración, o con aclaración en medio
-    tmp_str str-with-period?  \ ¿Termina con un punto?
-    if  tmp_str str-add-quotes-period  
-    else  tmp_str str-add-quotes
-    then
+    (quotes+)
   then  tmp_str@
   ;
 : dash+  ( a1 u1 -- a2 u2 )
@@ -2257,8 +2278,8 @@ cell +field ~conversations  \ Contador para personajes: número de conversacione
 cell +field ~visits  \ Contador de visitas del protagonista a cada ente escenario (se incrementa al abandonar el escenario)
 
 \ Errores específicos
-cell +field ~break_error#  \ Identificador del error adecuado al intentar romper el ente (cero si no hay error); se usa para casos especiales; los errores apuntados por este campo no reciben parámetros salvo en WHAT
-cell +field ~take_error#  \ Identificador del error adecuado al intentar tomar el ente (cero si no hay error); se usa para casos especiales; los errores apuntados por este campo no reciben parámetros salvo en WHAT
+cell +field ~break_error#  \ Identificador del error adecuado al intentar romper el ente (cero si no hay error); se usa para casos especiales; los errores apuntados por este campo no reciben parámetros salvo en 'what'
+cell +field ~take_error#  \ Identificador del error adecuado al intentar tomar el ente (cero si no hay error); se usa para casos especiales; los errores apuntados por este campo no reciben parámetros salvo en 'what'
 
 \ Entes relacionados
 cell +field ~location  \ Identificador del ente en que está localizado (sea escenario, contenedor, personaje o «limbo»)
@@ -2412,7 +2433,6 @@ campos.
 : name_str  ( a1 -- a2 )  ~name_str @  ;
 : times_open  ( a -- u )  ~times_open @  ;
 : owner  ( a1 -- a2 )  ~owner @  ;
-: belongs_to_protagonist?  ( a -- ff )  owner protagonist% =  ;
 : is_vegetal?  ( a -- ff )  ~is_vegetal? bit@  ;
 : is_worn?  ( a -- ff )  ~is_worn? bit@  ;
 : location  ( a1 -- a2 )  ~location @  ;
@@ -2456,11 +2476,6 @@ campos.
 : is_open  ( a -- )  ~is_open? bit_on  ;
 : is_closed  ( a -- )  ~is_open? bit_off  ;
 : times_open++  ( a -- )  ~times_open (++)  ;
-: belongs_to_protagonist  ( a -- ff )  ~owner protagonist% swap !  ;
-: owns?  ( a1 a2 -- ff )  owner =  ;
-: belongs?  ( a1 a2 -- ff )  swap owns?  ;
-: owns  ( a1 a2 -- )  ~owner !  ;
-: belongs  ( a1 a2 -- )  swap owns  ;
 : is_worn  ( a -- )  ~is_worn? bit_on  ;
 : is_not_worn  ( a -- )  ~is_worn? bit_off  ;
 : visits++  ( a -- )  ~visits (++)  ;
@@ -2498,6 +2513,14 @@ básicos.
 : no_conversations?  ( a -- ff )  conversations 0=  ;
 : has_north_exit?  ( a -- ff )  north_exit exit?  ;
 : has_east_exit?  ( a -- ff )  east_exit exit?  ;
+
+: owns?  ( a1 a2 -- ff )  owner =  ;
+: belongs?  ( a1 a2 -- ff )  swap owns?  ;
+: owns  ( a1 a2 -- )  ~owner !  ;
+: belongs  ( a1 a2 -- )  swap owns  ;
+
+: belongs_to_protagonist?  ( a -- ff )  owner protagonist% =  ;
+: belongs_to_protagonist  ( a -- )  ~owner protagonist% swap !  ;
 
 : is_living_being?  ( a -- ff )
   \ ¿El ente es un ser vivo (aunque esté muerto)?
@@ -2634,7 +2657,7 @@ básicos.
 : can_be_taken?  ( a -- ff )
   \ ¿El ente puede ser tomado?
   \ Se usa como norma general, para aquellos entes
-  \ que no tienen un error específico indicado en el campo ~TAKE_ERROR#
+  \ que no tienen un error específico indicado en el campo '~take_error#'
   dup is_decoration?
   over is_human? or
   swap is_character? or 0=
@@ -3050,13 +3073,13 @@ cell constant /article_gender_set  \ De femenino a masculino
 (
 
 Como ya se explicó, el nombre de cada ente se guarda en una
-cadena dinámica [que se crea en la memoria con ALLOCATE , no
+cadena dinámica [que se crea en la memoria con 'allocate', no
 en el espacio del diccionario del sistema].  El manejo de
 estas cadenas dinámicas se hace con el módulo
 correspondiente de Forth Foundation Library.
 
 En la ficha del ente se guarda solo la dirección de la
-cadena dinámica, en el campo ~NAME_STR .  Por ello hacen
+cadena dinámica, en el campo '~name_str'.  Por ello hacen
 falta palabras que hagan de interfaz para gestionar los
 nombres de ente de forma análoga a como se hace con el resto
 de datos de su ficha.
@@ -3150,8 +3173,8 @@ de datos de su ficha.
   ;
 : nonhuman_subjective_negative_name  ( a -- a1 u1 )
   \ Devuelve el nombre subjetivo (negativo) de un ente (no humano), desde el punto de vista del protagonista.
-  \ Nota: En este caso hay que usar NEGATIVE_FULL_NAME antes de S{ y pasar la cadena
-  \ mediante la pila de retorno; de otro modo S{ y }S no pueden calcular bien
+  \ Nota: En este caso hay que usar 'negative_full_name' antes de 's{' y pasar la cadena
+  \ mediante la pila de retorno; de otro modo 's{' y '}s' no pueden calcular bien
   \ el crecimiento de la pila.
   negative_full_name 2>r
   s{
@@ -3237,7 +3260,7 @@ definir la trama.
 
 )
 
-defer lock_found  \ Encontrar el candado; la definición está en (LOCK_FOUND)
+defer lock_found  \ Encontrar el candado; la definición está en '(lock_found)'
 
 0 constant limbo \ Marcador para usar como localización de entes inexistentes
 : vanished?  ( a -- ff )
@@ -3340,10 +3363,10 @@ defer 'entities  \ Dirección de los entes; vector que después será redirigido
   \ Esta palabra se ejecuta cada vez que hay que restaurar los datos del ente,
   \ y antes de la definición de atributos contenida en la palabra
   \ correspondiente al ente.
-  \ El identificador del ente está en la pila porque se compiló con LITERAL
+  \ El identificador del ente está en la pila porque se compiló con 'literal'
   \ cuando se creó la palabra de atributos.
   dup to self%  \ Actualizar el puntero al ente
-  dup :name_str  \ Crear una cadena dinámica para el campo ~NAME_STR
+  dup :name_str  \ Crear una cadena dinámica para el campo '~name_str'
   setup_entity
   ;
 : default_description
@@ -3360,15 +3383,15 @@ defer 'entities  \ Dirección de los entes; vector que después será redirigido
   \ xt = Dirección de ejecución de la palabra recién creada
   over ~init_xt !  \ Conservar la dirección de ejecución en la ficha del ente
   ['] default_description over ~description_xt !  \ Poner la descripción predeterminada
-  postpone literal  \ Compilar el identificador de ente en la palabra de descripción recién creada, para que [:DESCRIPTION] lo guarde en SELF% en tiempo de ejecución
+  postpone literal  \ Compilar el identificador de ente en la palabra de descripción recién creada, para que '[:description]' lo guarde en 'self%' en tiempo de ejecución
   ;
 : :attributes  ( a -- )
   \ Inicia la creación de una palabra sin nombre que definirá las propiedades de un ente.
   :noname  5 roll 5 roll 
   (:attributes)  \ Crear la palabra y hacer las operaciones preliminares
-  postpone [:attributes]  \ Compilar la palabra [:ATTRIBUTES] en la palabra creada, para que se ejecute cuando sea llamada
+  postpone [:attributes]  \ Compilar la palabra '[:attributes]' en la palabra creada, para que se ejecute cuando sea llamada
   \ lina necesita guardar una copia del puntero de la pila tras crear una palabra
-  \ ( lo mismo ocurre después con las definiciones de :DESCRIPTION , :LOCATION_ENTER_PLOT y :ACTION ):
+  \ ( lo mismo ocurre después con las definiciones de ':description', ':location_enter_plot' y ':action'):
   ;
 : ;attributes  ( sys-col -- )  postpone ;  ;  immediate
 : init_entity  ( a -- )
@@ -3402,11 +3425,11 @@ circunstancias, e incluso sustituir en algunos casos al
 código que controla la trama del juego.
 
 Así pues, lo que almacenamos en la ficha del ente, en el
-campo ~DESCRIPTION_XT , es la dirección de ejecución de la
+campo '~description_xt', es la dirección de ejecución de la
 palabra que imprime su descripción.
 
 Por tanto, para describir un ente basta tomar de su ficha el
-contenido de ~DESCRIPTION_XT , y llamar a EXECUTE .
+contenido de '~description_xt', y llamar a 'execute'.
 
 )
 
@@ -3414,7 +3437,7 @@ false value sight  \ Guarda el ente dirección al que se mira en un escenario (o
 : [:description]  ( a -- )
   \ Operacionas previas a la ejecución de la descripción de un ente.
   \ Esta palabra se ejecutará al comienzo de la palabra de descripción.
-  \ El identificador del ente está en la pila porque se compiló con LITERAL cuando se creó la palabra de descripción.
+  \ El identificador del ente está en la pila porque se compiló con 'literal' cuando se creó la palabra de descripción.
   to self%  \ Actualizar el puntero al ente, usado para aligerar la sintaxis
   ;
 : (:description)  ( a xt -- )
@@ -3424,16 +3447,14 @@ false value sight  \ Guarda el ente dirección al que se mira en un escenario (o
   \ que crea su descripción. 
   \ a = Ente para cuya descripción se ha creado una palabra
   \ xt = Dirección de ejecución de la palabra recién creada
-  \ s" en (:DESCRIPTION)" debug  \ Depuración!!!
   over ~description_xt !  \ Conservar la dirección de ejecución en la ficha del ente
-  \ s" en (:DESCRIPTION)" debug  \ Depuración!!!
-  postpone literal  \ Compilar el identificador de ente en la palabra de descripción recién creada, para que [:DESCRIPTION] lo guarde en SELF% en tiempo de ejecución
+  postpone literal  \ Compilar el identificador de ente en la palabra de descripción recién creada, para que '[:description]' lo guarde en 'self%' en tiempo de ejecución
   ;
 : :description  ( a -- )
   \ Inicia la definición de una palabra de descripción para un ente.
   :noname  5 roll 5 roll 
   (:description)  \ Hacer las operaciones preliminares
-  postpone [:description]  \ Compilar la palabra [:DESCRIPTION] en la palabra creada, para que se ejecute cuando sea llamada
+  postpone [:description]  \ Compilar la palabra '[:description]' en la palabra creada, para que se ejecute cuando sea llamada
   ;
 : [;description]
   \ Operaciones finales tras la ejecución de la descripción de un ente.
@@ -3442,7 +3463,7 @@ false value sight  \ Guarda el ente dirección al que se mira en un escenario (o
   ;
 : ;description  ( colon-sys -- )
   \ Termina la definición de una palabra de descripción de un ente.
-  postpone [;description]  \ Compilar la palabra [;DESCRIPTION] en la palabra creada, para que se ejecute cuando sea llamada
+  postpone [;description]  \ Compilar la palabra '[;description]' en la palabra creada, para que se ejecute cuando sea llamada
   postpone ;
   ;  immediate
 : (describe)  ( a -- )
@@ -3471,7 +3492,7 @@ false value sight  \ Guarda el ente dirección al que se mira en un escenario (o
   ;
 : describe_direction  ( a -- )
   \ Describe un ente dirección.
-  to sight  \ Poner el ente dirección en SIGHT
+  to sight  \ Poner el ente dirección en 'sight'
   my_location describe_other  \ Y describir el escenario actual como un ente normal; ahí se hace la distinción
   ;
 : description_type  ( a -- u )
@@ -3643,7 +3664,7 @@ entity: enemy%
 
 \ Tras crear los identificadores de entes
 \ ya conocemos cuántos entes hay
-\ (pues la palabra ENTITY: actualiza el contador #ENTITIES )
+\ (pues la palabra 'entity:' actualiza el contador '#entities')
 \ y por tanto podemos reservar espacio para la base de datos:
 
 #entities /entity * constant /entities  \ Espacio necesario para guardar todas las fichas, en octetos
@@ -3684,8 +3705,8 @@ salida conduzca.  No hace falta ocuparse de las salidas
 impracticables porque ya estarán a cero de forma
 predeterminada.  Por ejemplo: 
 
-  path% cave% ~south_exit !  \ Hacer que la salida sur de CAVE% conduzca a PATH%
-  cave% path% ~north_exit !  \ Hacer que la salida norte de PATH% conduzca a CAVE%
+  path% cave% ~south_exit !  \ Hacer que la salida sur de 'cave%' conduzca a 'path%'
+  cave% path% ~north_exit !  \ Hacer que la salida norte de 'path%' conduzca a 'cave%'
 
 No obstante, para hacer más fácil este segundo paso, hemos
 creado unas palabras que proporcionan una sintaxis específica,
@@ -3781,18 +3802,18 @@ A continuación definimos palabras para proporcionar la
 siguiente sintaxis [primero origen y después destino en la
 pila, como es convención en Forth]:
 
-  \ Hacer que la salida sur de CAVE% conduzca a PATH%
+  \ Hacer que la salida sur de 'cave%' conduzca a 'path%'
   \ pero sin afectar al sentido contrario:
   cave% path% s--> 
  
-  \ Hacer que la salida norte de PATH% conduzca a CAVE%
+  \ Hacer que la salida norte de 'path%' conduzca a 'cave%'
   \ pero sin afectar al sentido contrario:
   path% cave% n-->
 
 O en un solo paso:
 
-  \ Hacer que la salida sur de CAVE% conduzca a PATH%
-  \ y al contrario: la salida norte de PATH% conducirá a CAVE% :
+  \ Hacer que la salida sur de 'cave%' conduzca a 'path%'
+  \ y al contrario: la salida norte de 'path%' conducirá a 'cave%':
   cave% path% s<-->
 
 )
@@ -4040,7 +4061,7 @@ a la sección de textos calculados.
   \ Devuelve una variante de «estrecho tramo de cueva», con el artículo adecuado.
   \ Pendiente!!! Para que un escenario sea conocido, 
   \ hay que incrementar sus visitas al salir de él,
-  \ y tenerlas en cuenta en IS_KNOWN?
+  \ y tenerlas en cuenta en 'is_known?'
   my_location dup is_known?
   if  not_distant_article
   else  undefined_article
@@ -4113,7 +4134,7 @@ false  [if]  \ Código obsoleto!!!
 : cave_exit_separator+  ( a1 u1 -- a2 u2 )
   \ Concatena (sin separación) a una cadena el separador entre las salidas principales y las secundarias.
   s{ s" ," s" ;" s" ..." }s+
-  s{ s" y" 2dup s" aunque" s" pero" }s& s" también" s?&
+  s{ s" y" 2dup s" aunque" but$ }s& s" también" s?&
   ;
 : (paths)_can_be_seen_0$  ( -- a u )
   s{ s" parten" s" surgen" s" nacen" s" salen" }s
@@ -4279,8 +4300,8 @@ create 'cave_descriptions
 ' 4-exit_cave_description ,
 
 \ Interfaz para usar en las descripciones de los escenarios:
-\ EXITS_CAVE_DESCRIPTION para la descripción principal
-\ CAVE_EXIT_DESCRIPTION$ para la descripción de cada salida
+\ 'exits_cave_description' para la descripción principal
+\ 'cave_exit_description$' para la descripción de cada salida
 
 : unsort_cave_exits  ( a1 ... an u -- a1'..an' u )
   \ Desordena los entes dirección que son las salidas de la cueva.
@@ -4667,8 +4688,7 @@ log% :attributes
 log% :description
   s" Es un tronco"
   s{ s" recio," s" resistente," s" fuerte," }s&
-  s" pero" s&
-  s{ s" liviano." s" ligero." }s&
+  but$ s& s{ s" liviano." s" ligero." }s&
   paragraph
   ;description
 piece% :attributes
@@ -5038,7 +5058,7 @@ location_09% :description
   self%  of
     ^the_path$ goes_down$ s& s" hacia la agreste sierra, al Oeste," s&
     s" desde los" s& s" verdes" s" valles" rnd2swap s& s& s" al Este." s&
-    s" Pero un" s{ s" gran" s" enorme" }s?& s" derrumbe" s&
+    ^but$ s& s" un" s&{ s" gran" s" enorme" }s?& s" derrumbe" s&
     (it)_blocks$ s& s" el paso hacia" s&{ s" el Oeste" s" la sierra." }s&
     paragraph
     endof
@@ -6207,7 +6227,7 @@ enemy% :description
 
 \ Entes dirección
 
-\ Los entes dirección guardan en su campo ~DIRECTION
+\ Los entes dirección guardan en su campo '~direction'
 \ el desplazamiento correspodiente al campo de 
 \ dirección que representan 
 \ Esto sirve para reconocerlos como tales entes dirección 
@@ -6314,7 +6334,7 @@ variable current_preposition
 ' is_not_here constant (is_not_here_error#)
 ' (is_not_here_error#) is is_not_here_error#
 : is_not_here_what
-  \  Informa de que el ente WHAT no está presente.
+  \  Informa de que el ente 'what' no está presente.
   what @ is_not_here
   ;
 ' is_not_here_what constant (is_not_here_what_error#)
@@ -6328,7 +6348,7 @@ variable current_preposition
 ' cannot_see constant (cannot_see_error#)
 ' (cannot_see_error#) is cannot_see_error#
 : cannot_see_what
-  \ Informa de que el ente WHAT no puede ser mirado.
+  \ Informa de que el ente 'what' no puede ser mirado.
   what @ cannot_see
   ;
 ' cannot_see_what constant (cannot_see_what_error#)
@@ -6561,7 +6581,7 @@ variable silent_well_done?  \ No se usa todavía!!!
   silent_well_done? off
   ;
 : (do_not_worry_0)$  ( -- a u)
-  \ Primera versión posible del mensaje de DO_NOT_WORRY .
+  \ Primera versión posible del mensaje de 'do_not_worry'.
   s{
   s" Como si no hubiera"
   s" Hay"
@@ -6578,7 +6598,7 @@ variable silent_well_done?  \ No se usa todavía!!!
   }s&
   ;
 : (do_not_worry_1)$  ( -- a u)
-  \ Segunda versión posible del mensaje de DO_NOT_WORRY .
+  \ Segunda versión posible del mensaje de 'do_not_worry'.
   \ Pendiente!!!: Consultar «menester»
   s" Eso no" s{
   s" es importante"
@@ -6679,7 +6699,7 @@ variable silent_well_done?  \ No se usa todavía!!!
 ' you_do_not_have_it constant (you_do_not_have_it_error#)
 ' (you_do_not_have_it_error#) is you_do_not_have_it_error#
 : you_do_not_have_what
-  \ Informa de que el protagonista no tiene el ente WHAT .
+  \ Informa de que el protagonista no tiene el ente 'what'.
   what @ you_do_not_have_it
   ;
 ' you_do_not_have_what constant (you_do_not_have_what_error#)
@@ -6796,7 +6816,7 @@ variable silent_well_done?  \ No se usa todavía!!!
 ' you_already_have_it constant (you_already_have_it_error#)
 ' (you_already_have_it_error#) is you_already_have_it_error#
 : you_already_have_what  ( a -- )
-  \ Informa de que el protagonista ya tiene el ente WHAT .
+  \ Informa de que el protagonista ya tiene el ente 'what'.
   what @ you_already_have_it
   ;
 ' you_already_have_what constant (you_already_have_what_error#)
@@ -6814,7 +6834,7 @@ variable silent_well_done?  \ No se usa todavía!!!
   then
   ;
 : you_do_not_wear_what
-  \ Informa de que el protagonista no lleva puesto el ente WHAT , según lo lleve o no consigo.
+  \ Informa de que el protagonista no lleva puesto el ente 'what', según lo lleve o no consigo.
   what @ you_do_not_wear_it
   ;
 ' you_do_not_wear_what constant (you_do_not_wear_what_error#)
@@ -6825,7 +6845,7 @@ variable silent_well_done?  \ No se usa todavía!!!
   r> full_name s& period+ narrate
   ;
 : you_already_wear_what
-  \ Informa de que el protagonista lleva puesto el ente WHAT .
+  \ Informa de que el protagonista lleva puesto el ente 'what'.
   what @ you_already_wear_it
   ;
 ' you_already_wear_what constant (you_already_wear_what_error#)
@@ -6878,13 +6898,13 @@ variable #elements  \ Total de los elementos de una lista
   then
   ;
 : (list_separator)  ( u1 u2 -- )
-  \ Añade a la cadena dinámica PRINT_STR el separador adecuado («y» o «,») para un elemento de una lista.
+  \ Añade a la cadena dinámica 'print_str' el separador adecuado («y» o «,») para un elemento de una lista.
   \ u1 = Elementos que tiene la lista
   \ u2 = Elementos listados hasta el momento
   1+ =  if  s" y" »&  else  s" ," »+  then
   ;
 : list_separator  ( u1 u2 -- )
-  \ Añade a la cadena dinámica PRINT_STR el separador adecuado (o ninguno) para un elemento de una lista.
+  \ Añade a la cadena dinámica 'print_str' el separador adecuado (o ninguno) para un elemento de una lista.
   \ u1 = Elementos que tiene la lista
   \ u2 = Elementos listados hasta el momento
   ?dup  if  (list_separator)  else  drop  then
@@ -6926,7 +6946,7 @@ variable #elements  \ Total de los elementos de una lista
   dup  is_worn?  if  (worn)$ s&  else  drop  then
   ;
 : (content_list)  ( a -- )
-  \ Añade a la lista en la cadena dinámica PRINT_STR el separador y el nombre de un ente.
+  \ Añade a la lista en la cadena dinámica 'print_str' el separador y el nombre de un ente.
   #elements @ #listed @  list_separator
   dup full_name rot (worn)& »&  #listed ++
   ;
@@ -7579,7 +7599,7 @@ here swap - cell / constant battle_phases  \ Fases de la batalla
 : the_enemy_is_stronger
   \ El enemigo es superior.
   s" En el" narrow(m)$ s& s" paso es posible" s&
-  s{ s" resistir," s" defenderse," }s& s" pero" s&
+  s{ s" resistir," s" defenderse," }s& but$ s&
   s{ s" por desgracia" s" desgraciadamente" }s&
   s{
   s" los sajones son muy superiores en número"
@@ -8062,12 +8082,12 @@ Penúltimo complemento usado:
 : last_but_one_complement  ( - a )
   \ Devuelve la dirección del penúltimo complemento absoluto,
   \ que es también el inicio de la sección «penúltimos»
-  \ de la tabla LAST_COMPLEMENTS .
+  \ de la tabla 'last_complements'.
   last_complement >but_one
   ;
 : (>last_complement)  ( a1 a2 -- a3 )
   \ Apunta a la dirección adecuada para un ente
-  \ en una sección de la tabla LAST_COMPLEMENT ,
+  \ en una sección de la tabla 'last_complement',
   \ bien «últimos» o «penúltimos».
   \ Nota: Hace falta sumar los desplazamientos de ambos géneros
   \ debido a que ambos son respecto al inicio de la tabla.
@@ -8081,12 +8101,12 @@ Penúltimo complemento usado:
   ;
 : >last_complement  ( a1 -- a2 )
   \ Apunta a la dirección adecuada para un ente
-  \ en la sección «últimos» de la tabla LAST_COMPLEMENT .
+  \ en la sección «últimos» de la tabla 'last_complement'.
   last_complement (>last_complement)
   ;
 : >last_but_one_complement  ( a1 -- a2 )
   \ Apunta a la dirección adecuada para un ente
-  \ en la sección «penúltimos» de la tabla LAST_COMPLEMENT .
+  \ en la sección «penúltimos» de la tabla 'last_complement'.
   last_but_one_complement (>last_complement)
   ;
 
@@ -8141,7 +8161,7 @@ modificar el código.  El texto entre las llaves indica la
 condición que se ha de cumplir.
 
 Si la condición no se cumple, se provocará un error con
-THROW que devolverá el flujo al último CATCH .
+THROW que devolverá el flujo al último 'catch'.
 
 Este sistema de filtros y errores permite simplificar el
 código de las acciones porque ahorra muchas estructuras
@@ -8417,7 +8437,7 @@ section( Acciones)  \ {{{
 
 Para crear una acción, primero es necesario crear su
 identificador con la palabra ACTION: , que funciona de forma
-parecida a DEFER . Después hay que definir la palabra de la
+parecida a 'defer'. Después hay que definir la palabra de la
 acción con las palabras previstas para ello, que se ocupan
 de darle al identificador el valor de ejecución
 correspondiente. Ejemplo de la sintaxis:
@@ -8899,7 +8919,7 @@ subsection( Cerrar y abrir)  \ {{{
   s" nos" s{ s" encontraremos" s" veremos" }s& again$ s&
   s" nuestros caminos" s{ s" volverán a cruzarse" s" se cruzarán" }s& again$ s&
   }s& period+ speak
-  s{ s" Y" s" Pero" }s s" , antes de que puedas" s+
+  ^and|but$ s" , antes de que puedas" s+
   s{ s" decir algo" s" corresponderle" s" responderle" s" despedirte" s" de él" s?& }s&
   s" , te das cuenta de que" s+ s" Ambrosio" s?&
   s" , misteriosamente," s?+
@@ -9397,28 +9417,102 @@ subsection( Nadar)  \ {{{
 \ }}}---------------------------------------------
 subsection( Escalar)  \ {{{
 
+: you_try_climbing_the_fallen_away
+  \ Imprime la primera parte del mensaje
+  \ previo al primer intento de escalar el derrumbe.
+  s{ s" Aunque" s" A pesar de que" }s
+  s{  s" parece no haber salida"
+      s" el obstáculo parece insuperable"
+      s" la situación parece desesperada"
+      s" el regreso parece inevitable"
+      s" continuar parece imposible"
+  }s& comma+
+  s{ s" optas por" s" decides" s" tomas la decisión de" }s&
+  s{ s" explorar" s" examinar" }s& s" el" s&
+  s{ s" derrumbe" s" muro de" rocks$ s& }s&
+  s{  s" en compañía de" s" junto con"
+      s" ayudado por" s" acompañado por" 
+  }s&
+  s{ s" algunos" s" varios" }s& s" de tus" s&
+  s{ s" oficiales" soldiers$ }s& s" , con la" s+
+  s{ s" vana" s" pobre" s" débil" }s& s" esperanza" s&
+  s" de" s&
+  s{ s" encontrar" s" hallar" s" descubrir" }s&
+  s{ s" la" s" alguna" }s& s{ s" manera" s" forma" }s& s" de" s&
+  s{  s" escalarlo" s" vencerlo" s" atravesarlo"
+      s" superarlo" s" pasarlo"
+      s{ s" pasar" s" cruzar" }s s" al otro lado" s&
+  }s&  period+ narrate narration_break
+  ;
+: you_can_not_climb_the_fallen_away
+  \ Imprime la segunda parte del mensaje
+  \ previo al primer intento de escalar el derrumbe.
+  ^but$ 
+  s{  s{ s" pronto" s" enseguida" }s s" has de" s&
+      s" no tardas mucho en"
+  }s& s{  
+    s" rendirte ante"
+    s" aceptar"
+    s" resignarte ante"
+  }s& s{
+    s{ s" los hechos" s" la realidad" s" la situación" s" tu suerte" }s
+    s{  s" la voluntad"
+        s{ s" el" s" este" }s s" giro" s&
+        s{ s" el" s" este" }s s" capricho" s&
+        s{ s" la" s" esta" }s s" mudanza" s&
+    }s s" de" s& s" la diosa" s?& s" Fortuna" s&
+  }s& s" ..." s+ narrate narration_break
+  ;
+: do_climb_the_fallen_away_first
+  \ Imprime el mensaje
+  \ previo al primer intento de escalar el derrumbe.
+  you_try_climbing_the_fallen_away
+  you_can_not_climb_the_fallen_away
+  ;
+: climbing_the_fallen_away_is_impossible
+  \ Imprime el mensaje de error de que
+  \ es imposible escalar el derrumbe.
+  s{ s" pasar" s" escalar" s" subir por" }s
+  s{
+    s" el derrumbe" 
+    s{ s" el muro" s" la pared" s" el montón" }s s" de" s& rocks$ s&
+    s" las" rocks$ s&
+  }s& is_impossible
+  ;
 : do_climb_the_fallen_away
+  \ Escalar el derrumbe.
+  climbed_the_fallen_away? @ 0=
+  if  do_climb_the_fallen_away_first  then
+  climbing_the_fallen_away_is_impossible
+  climbed_the_fallen_away? on
+  ;
+: do_climb_this_here_if_possible  ( a -- )
+  \ Escalar el ente indicado, que está presente, si es posible.
+  \ Inacabado!!!
   ;
 : do_climb_if_possible  ( a -- )
   \ Escalar el ente indicado si es posible.
   \ Inacabado!!!
-  dup is_here?  if  dup s" [escalar]" narrate
-  else  drop s" [no está aquí]" narrate
+  dup is_here?  if  dup s" [escalar eso]" narrate
+  else  drop s" [no está aquí eso para escalarlo]" narrate
   then
   ;
 : do_climb_something
+  \ Escalar algo no especificado.
+  \ Inacabado!!!
   location_09% am_i_there?
-  if  fallen_away% do_climb_if_possible exit  then
+  if  do_climb_the_fallen_away exit  then
+  [false]  [if]  \ Inacabado!!! Comprobar otras posibilidades:
   location_08% am_i_there?
   if \ desfiladero
   exit then
-  location_08% am_i_there?
+  location_10% am_i_there?
   if \ gruta de entrada
   exit then
   location_12% am_i_there? 
   if \ salida del paso secreto
   exit then
-  \ Inacabado!!! Comprobar otras posibilidades.
+  [then]
   no_main_complement  
   ;
 :action do_climb
@@ -9460,7 +9554,7 @@ subsection( Inventario)  \ {{{
   ;
 :action do_inventory
   \ Acción de hacer inventario.
-  protagonist% content_list  \ Hace la lista en la cadena dinámica PRINT_STR
+  protagonist% content_list  \ Hace la lista en la cadena dinámica 'print_str'
   #listed @ case
     0 of  you_are_carrying_nothing$ 2swap s& endof
     1 of  you_are_carrying_only$ 2swap s& endof
@@ -9556,7 +9650,7 @@ subsection( Hablar y presentarse)  \ {{{
   s{ s" con" s" llevando" s" portando" s" portador de"
   s" que porte" s" que lleve" }s&
   s{ s" armas" s" un arma" s" una espada" }s&
-  with_him$ s&{ s" debe" s" puede " s" podrá" }s& 
+  with_him$ s&{ s" debe" s" puede" s" podrá" }s& 
   s" pasar." s&  speak
   ;
 : the_leader_talks_about_the_sword
@@ -9575,17 +9669,19 @@ subsection( Hablar y presentarse)  \ {{{
   ;
 : go_in_peace
   \ El líder dice que puedes ir en paz.
-  s" Si vienes en paz, puedes ir en paz." speak
+  s{ s" Si" s" Puesto que" s" Dado que" s" Pues" }s
+  s{ s" vienes" s" llegas" s" has venido" s" has llegado" }s&
+  s" en paz, puedes" s&
+  s{ s" ir" s" marchar" s" continuar" s" tu camino" s?& }s&
+  s" en paz." s& speak
   ;
 : the_refugees_let_you_go
   \ Los refugiados te dejan pasar.
-  s{ s" Todos" s" los refugiados" s?& s" Los refugiados" }s
+  s" todos" s? s" los refugiados" s& ^uppercase
   s" se apartan y" s& s" te" s?&
-  s{ s" permiten" s{ s" el paso" s" pasar" }s&
-  s" dejan"
-  s" libre" s" el" s{ s" paso" s" camino" }s& rnd2swap s& }s&
-  toward_the(m)$ s& s" Este." s&
-  narrate
+  s{  s" permiten" s{ s" el paso" s" pasar" }s&
+      s" dejan" s" libre" s" el" s{ s" paso" s" camino" }s& rnd2swap s& 
+  }s& toward_the(m)$ s& s" Este." s& narrate
   ;
 : the_leader_lets_you_go
   \ El jefe deja marchar al protagonista.
@@ -9599,11 +9695,15 @@ subsection( Hablar y presentarse)  \ {{{
   ;
 : we_are_refugees
   \ Somos refugiados.
-  s" Somos refugiados de la gran guerra."
-  s{
-  s{ ^only$ s" buscamos" s& s" Buscamos" }s
-  s{ ^only$ s" queremos" s& s" Queremos" }s
-  }s&  s{ s" la" s" vivir en" }s& s" paz." s&
+  s" todos" s?
+  s" somos refugiados de la gran guerra." s& ^uppercase
+  only$ s?
+  s{ s" buscamos" s" queremos" s" deseamos" s" anhelamos" }s& ^uppercase s&
+  s{  s" la" s" que haya"
+      s" poder" s? s" vivir en" s&
+      s" una vida en"
+      s" que" s{ s" reine" s" llegue" }s& s" la" s&
+  }s& s" paz." s&
   speak narration_break
   ; 
 : first_conversation_with_the_leader
@@ -9617,10 +9717,12 @@ subsection( Hablar y presentarse)  \ {{{
   true case
     stone% is_accessible?  of
       the_leader_talks_about_the_stone
+      stone_forbidden? on
       a_man_takes_the_stone
     endof
     sword% is_accessible?  of
       the_leader_talks_about_the_sword
+      sword_forbidden? on
     endof
     the_leader_lets_you_go
   endcase
@@ -9751,7 +9853,7 @@ subsection( Hablar y presentarse)  \ {{{
   ;
 : talk_to_ambrosio
   \ Hablar con Ambrosio, si se puede.
-  \ Provisional!!! Esto debería comprobarse en DO_SPEAK o DO_SPEAK_IF_POSSIBLE
+  \ Provisional!!! Esto debería comprobarse en 'do_speak' o 'do_speak_if_possible'.
   ambrosio% is_here?
   if  (talk_to_ambrosio)
   else  ambrosio% is_not_here
@@ -9794,21 +9896,19 @@ subsection( Hablar y presentarse)  \ {{{
   ;
 : (do_speak)  ( a | 0 -- )
   \ Hablar con alguien o solo.
-  if  do_speak_if_possible
-  else  talk_to_yourself
-  then
+  ?dup  if  do_speak_if_possible  else  talk_to_yourself  then
   ;
 :action do_speak
   \ Acción de hablar.
   [debug]  [if]  s" En DO_SPEAK" debug  [then]  \ Depuración!!!
   main_complement @ ?dup 0=  \ Si no hay complemento...
-  if  whom  \ ...buscar el más probable
+  if  whom  \ ...buscar el más probable.
   then  (do_speak)
   ;action
 :action do_introduce_yourself
   \ Acción de presentarse a alguien.
   main_complement @ ?dup 0=  \ Si no hay complemento...
-  if  unknown_whom  \ ...buscar el (desconocido) más probable
+  if  unknown_whom  \ ...buscar el (desconocido) más probable.
   then  (do_speak)
   ;action
 
@@ -9910,7 +10010,7 @@ immediate
 ' s" alias s"
 : load_entity  ( x0 ... xn u -- )
   \ Restaura los datos de un ente.
-  \ x0 ... xn = Datos del ente, en orden inverso a como los crea la palabra SAVE_ENTITY .
+  \ x0 ... xn = Datos del ente, en orden inverso a como los crea la palabra 'save_entity'.
   \ u = Número ordinal del ente.
   #>entity >r
   \ cr .s  \ Depuración!!!
@@ -9933,6 +10033,17 @@ immediate
   r@ ~conversations !
   \ 2dup cr type .s  \ depuración!!!
   r> name!
+  ;
+: load_plot  ( x0 ... xn -- )
+  \ Restaura las variables de la trama.
+  \ Debe hacerse en orden alfabético inverso.
+  talked_to_the_leader? !
+  sword_forbidden? !
+  stone_forbidden? !
+  hacked_the_log? !
+  climbed_the_fallen_away? !
+  battle# !
+  ambrosio_follows? !
   ;
 restore_vocabularies
 : string>file  ( a u -- )
@@ -10011,24 +10122,32 @@ restore_vocabularies
   \ Escribe una línea de separación en el fichero de la partida.
   s" \ ----------------------------------------------------" >file/
   ;
+: section>file  ( a u -- )
+  \ Escribe el título de una sección en el fichero de la partida.
+  cr>file rule>file s" \ " >file >file/ rule>file cr>file
+  ;
 : save_entities
   \ Escribe los datos de los entes en el fichero de la partida.
-  rule>file s" \ Entes" >file/
+  s" Entes" section>file
   #entities 0  do  i save_entity  loop
-  ;
-: save_flag  ( a u ff -- )
-  \ Escribe un indicador en el fichero de la partida.
-  \ Pendiente!!!
   ;
 : save_config
   \ Escribe los valores de configuración en el fichero de la partida.
   \ Pendiente!!!
-  rule>file s" \ Configuración" >file/
+  s" Configuración" section>file
   ;
 : save_plot
-  \ Escribe el estado de la trama en el fichero de la partida.
-  \ Pendiente!!!
-  rule>file s" \ Trama" >file/
+  \ Escribe las variables de la trama en el fichero de la partida.
+  \ Debe hacerse en orden alfabético. 
+  s" Trama" section>file
+  ambrosio_follows? @ f>file
+  battle# @ n>file
+  climbed_the_fallen_away? @ f>file
+  hacked_the_log? @ f>file
+  stone_forbidden? @ f>file
+  sword_forbidden? @ f>file
+  talked_to_the_leader? @ f>file
+  s" load_plot" >file/  \ Palabra que hará la restauración de la trama 
   ;
 : file_header
   \ Escribe la cabecera del fichero de la partida.
@@ -10185,7 +10304,7 @@ Los identificadores creados arriba se refieren a
 «a», «con»...] o a sus sinónimos, no a sus posibles usos
 finales como complementos [por ejemplo, destino de
 movimiento, objeto indirecto, herramienta, compañía...]. Por
-ejemplo, el identificador «A»_PREPOSITION se usa para
+ejemplo, el identificador '«a»_preposition' se usa para
 indicar [en la tabla] que se ha encontrado la preposición
 «a» [o su sinónimo «al»], pero el significado efectivo [por
 ejemplo, indicar una dirección o un objeto indirecto o un
@@ -10318,8 +10437,8 @@ dicha [seudo]preposición, o bien cero si la
 
 : >but_one!  ( a -- )
   \ Copia un complemento de la zona «últimos» a la «penúltimos»
-  \ de la tabla LAST_COMPLEMENT .
-  \ a = Dirección en la zona «últimos» de la tabla LAST_COMPLEMENT .
+  \ de la tabla 'last_complement'.
+  \ a = Dirección en la zona «últimos» de la tabla 'last_complement'.
   dup @ swap >but_one !
   ;
 : shift_last_complement  ( a -- )
@@ -10474,7 +10593,7 @@ variable cr_after_command_prompt?  \ ¿Hacer un salto de línea tras el presto d
 also config_vocabulary  definitions
 
 \ Las palabras cuyas definiciones siguen a continuación
-\ se crearán en el vocabulario CONFIG_VOCABULARY y
+\ se crearán en el vocabulario 'config_vocabulary' y
 \ son las únicas que podrán usarse para configurar el juego
 \ en el fichero de configuración:
 
@@ -10650,10 +10769,8 @@ restore_vocabularies
   init_prompts  init_colors
   ;
 : read_config_error
-  \ Informa de que se ha producido un error
-  \ al leer el fichero de configuración.
   s" Se ha producido un error leyendo el fichero de configuración."
-  report key drop
+  report wait
   ;
 : read_config
   \ Lee el fichero de configuración.
@@ -10677,7 +10794,7 @@ section( Herramientas para crear el vocabulario del juego)  \ {{{
 
 El vocabulario del juego está implementado como un
 vocabulario de Forth, creado con el nombre de
-PLAYER_VOCABULARY .  La idea es muy sencilla: crearemos en
+'player_vocabulary'.  La idea es muy sencilla: crearemos en
 este vocabulario nuevo palabras de Forth cuyos nombres sean
 las palabras españolas que han de ser reconocidas en los
 comandos del jugador. De este modo bastará interpretar la
@@ -10743,7 +10860,7 @@ jugador.
 
 Si la ambigüedad no puede ser resuelta, o si la palabra
 ambigua no debe ser reconocida en las circunstancias de
-juego actuales, se devolverá un FALSE , que tendrá el mismo
+juego actuales, se devolverá un 'false', que tendrá el mismo
 efecto que si la palabra ambigua no existiera en el
 comando del jugador. Esto provocará después el error
 adecuado.
@@ -10775,11 +10892,18 @@ adecuada.
   \ Devuelve el ente adecuado a la palabra «hombres» y sus sinónimos
   \ (o FALSE si la ambigüedad no puede ser resuelta).
   \ Puede referirse a los soldados o a los refugiados.
-  true  case
-    pass_still_open? battle? or  of  soldiers%  endof
-    location_28% am_i_there? location_29% am_i_there? or  of  refugees%  endof
-    false swap
-  endcase
+  [false]  [if] \ Primera versión.
+    true  case
+      pass_still_open? battle? or  of  soldiers%  endof
+      location_28% am_i_there? location_29% am_i_there? or  of  refugees%  endof
+      false swap
+    endcase
+  [else]  \ Segunda versión, lo mismo pero sin 'case':
+    pass_still_open? battle? or
+    if  soldiers% exit  then
+    location_28% am_i_there? location_29% am_i_there? or
+    if  refugees% exit  then
+    false
   ;
 : (ambrosio) ( -- a | false )
   \ Devuelve el ente adecuado a la palabra «ambrosio»
@@ -11415,6 +11539,7 @@ o sustantivos.
   pobres desgraciados desafortunados
   desgraciadas desafortunadas
   muchedumbre multitud masa
+  bandos
   }synonyms  
 : altar  altar% complement!  ;
 : arco  arch% complement!  ;
@@ -11431,8 +11556,11 @@ o sustantivos.
 : banderas  flags% complement!  ;
 ' banderas synonyms{
     bandera pendones enseñas pendón enseña
-  }synonyms
-\ pendiente!!! estandartes, otro género
+    mástil mástiles
+    estandarte estandartes 
+  }synonyms \ pendiente: estandarte, enseña... otro género!!!
+: dragones  flags% is_known?  if  banderas  then  ;
+' dragones synonyms{ dragón }synonyms
 : pedernal  flint% complement!  ;
 : ídolo  idol% complement!  ;
 ' ídolo synonyms{  ojo orificio agujero  }synonyms
@@ -11821,7 +11949,7 @@ section( Entrada de comandos)  \ {{{
 (
 
 Para la entrada de comandos se usa la palabra de Forth
-ACCEPT , que permite limitar el número máximo de caracteres
+'accept', que permite limitar el número máximo de caracteres
 que serán aceptados. Por desgracia ACCEPT permite escribir
 más y después trunca la cadena, por lo que sería mejor
 escribir una alternativa.
@@ -11856,7 +11984,7 @@ svariable command  \ Zona de almacenamiento del comando
   else
     space_after_command_prompt?  if
       [defined] background_paper
-      [if]    background_paper
+      [if]    background_paper @ paper
       [else]  system_color
       [then]  space
     then
@@ -12135,7 +12263,7 @@ section( Introducción)  \ {{{
 : intro_3
   \ Muestra la introducción al juego (parte 3).
   s" Los hombres se" s{ s" ciernen" s" lanzan" s" arrojan" }s&
-  s" sobre la aldea, y la" s& s{ s" destruyen." s" arrasan" }s&
+  s" sobre la aldea, y la" s& s{ s" destruyen." s" arrasan." }s&
   s" No hubo tropas enemigas, ni honor en" s&
   s{ s" la batalla." s" el combate." s" la lucha." }s&
   narrate  scene_break
@@ -12196,10 +12324,11 @@ section( Principal)  \ {{{
   init_entities init_plot get_config
   \ Anular esto para depuración!!!:
   about cr intro  
-  location_01% enter_location
+  \ location_01% enter_location
 
   \ Activar esto selectivamente para depuración!!!:
   \ location_08% enter_location  \ Emboscada 
+  location_28% enter_location  \ Refugiados
   \ location_47% enter_location  \ casa de Ambrosio
   \ snake% is_here
   \ ambrosio% is_here
@@ -12525,7 +12654,7 @@ de una acción que no haga nada!
 
 No! Lo que hay que hacer es ejecutar las acciones de
 configuración como el resto de acciones, metiendo su xt en
-ACTION .  Y si después queremos seguir (dependerá de la
+'action'.  Y si después queremos seguir (dependerá de la
 acción de sistema de que se trata) basta poner ACTION a cero
 otra vez. O se puede leer el resto del comando, para
 anularlo!
@@ -12780,7 +12909,7 @@ complemento principal del otro tipo.
 
 2011-12:
 
-Limitar los usos de PRINT_STR a la impresión. Renombrarla.
+Limitar los usos de 'print_str' a la impresión. Renombrarla.
 Crear otra cadena dinámica para los usos genéricos con «+ y
 palabras similares.
 
@@ -12788,7 +12917,7 @@ palabras similares.
 
 2011-12:
 
-Comprobar los usos de TMP_STR .
+Comprobar los usos de 'tmp_str'.
 
 ...........................
 
@@ -12947,8 +13076,15 @@ puesta.
 \ }}} ########################################################## 
 \ Tareas pendientes: código fuente {{{
 
-Recortar las líneas para que no sobrepasen los 75 caractere.
+Terminar de cambiar el formato de nombres de palabras en los textos:
+
+De esto: «La palabra ZX , a veces, se usa como ZX2 .»
+A esto: «La palabra 'zx', a veces, se usa como 'zx2'.»
+
+Recortar las líneas para que no sobrepasen los 75 caracteres.
 
 }}}
+
+
 
 
