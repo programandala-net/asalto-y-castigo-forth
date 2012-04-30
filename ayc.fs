@@ -7,44 +7,49 @@ CR .( Asalto y castigo )  \ {{{
 \ Copyright (C) 2011,2012 Marcos Cruz (programandala.net)
 
 ONLY FORTH DEFINITIONS
-: version$  ( -- a u )  S" A-04-2012042919"  ;
+: version$  ( -- a u )  S" A-04-2012043015"  ;
 version$ TYPE CR
 
-\ 'Asalto y castigo' (written in Forth) is free software;
-\ you can redistribute it and/or modify it under the terms
-\ of the GNU General Public License as published by the Free
-\ Software Foundation; either version 2 of the License, or
-\ (at your option) any later version.
+\ 'Asalto y castigo' is free software; you can redistribute
+\ it and/or modify it under the terms of the GNU General
+\ Public License as published by the Free Software
+\ Foundation; either version 2 of the License, or (at your
+\ option) any later version.
 
 \ http://gnu.org/licenses/
 \ http://gnu.org/licenses/gpl.html
 \ http://www.gnu.org/licenses/gpl-2.0.html
 
-\ «Asalto y castigo» (escrito en Forth) es un programa
-\ libre; puedes distribuirlo y/o modificarlo bajo los
-\ términos de la Licencia Pública General de GNU, tal como
-\ está publicada por la Free Software Foundation ('fundación
-\ para los programas libres'), bien en su versión 2 o, a tu
-\ elección, cualquier versión posterior.
+\ «Asalto y castigo» es un programa libre; puedes
+\ distribuirlo y/o modificarlo bajo los términos de la
+\ Licencia Pública General de GNU, tal como está publicada
+\ por la Free Software Foundation ('fundación para los
+\ programas libres'), bien en su versión 2 o, a tu elección,
+\ cualquier versión posterior.
 
-\ «Asalto y castigo» (escrito en Forth) está basado en el
-\ programa homónimo escrito por Baltasar el Arquero en
-\ Sinclair BASIC para ZX Spectrum.
+\ «Asalto y castigo» está basado en el programa homónimo
+\ escrito por Baltasar el Arquero en Sinclair BASIC para ZX
+\ Spectrum.
 
 \ Idea, argumento, textos y programa originales:
 \ Copyright (C) 2009 Baltasar el Arquero
 \ http://caad.es/baltasarq/
+\ http://baltasarq.info
 
 (
 
-Información sobre:
+Información
 
-Juegos conversacionales: http://caad.es
-
-Forth: http://forth.org
-Gforth: http://www.jwdt.com/~paysan/gforth.html
-
-Otros proyectos del autor: http://programandala.net
+Juegos conversacionales:
+  http://caad.es
+Forth:
+  http://programandala.net/es.artículo.2009.04.27.libros_forth
+  http://forth.org
+  http://www.forthfreak.net
+  http://groups.google.com/group/comp.lang.forth/
+Gforth:
+  http://www.jwdt.com/~paysan/gforth.html
+  http://lists.gnu.org/mailman/listinfo/gforth
 
 )
 
@@ -72,16 +77,17 @@ b     = octeto, valor de ocho bitios
 c     = carácter de un octeto
 f     = indicador lógico: cero significa «falso»; otro valor significa «cierto»
 false = 0
-ff    = indicador puro de Forth: 0=«falso»; -1=«cierto»
+ff    = indicador puro de ANS Forth: 0=«falso»; -1=«cierto»
         [-1 es un valor de 32 bitios con todos los bitios a uno]
 i*x   = grupo de elementos sin especificar; puede estar vacío
 j*x   = grupo de elementos sin especificar; puede estar vacío
 n     = número de 32 bitios con signo
 true  = -1 [valor de 32 bitios con todos los bitios a uno]
 u     = número de 32 bitios sin signo
-x     = valor sin determinar 32 bitios
-xt    = identificador de ejecución de una palabra,
-        notación de ANS Forth análoga a «cfa» en Forth clásico
+x     = elemento indeterminado
+xt    = «execution token», identificador de ejecución de una palabra;
+        notación de ANS Forth análoga a «cfa»
+        [«code field addrees»] en Forth clásico
 
 Como es costumbre, los diferentes elementos del mismo tipo
 se distinguirán con un sufijo, casi siempre un dígito,
@@ -95,7 +101,7 @@ CR .( Requisitos)  \ {{{
 \ ------------------------------------------------
 \ De Gforth
 
-s" random.fs" required
+require random.fs
 
 \ ------------------------------------------------
 \ De la librería «Forth Foundation Library»
@@ -112,47 +118,33 @@ temáticamente en módulos independientes.  Cada módulo de la
 librería tiene por nombre una abreviatura de tres letras y
 sus palabras comienzan por esas mismas tres letras.  Por
 ejemplo: los nombres de las palabras proporcionadas por el
-módulo «str» empiezan por «str», como 'str-create' o
+módulo «str» empiezan por «str», como 'str-create',
 'str+columns' o 'str.version'.
 
 )
 
-\ Cadenas de texto dinámicas:
-s" ffl/str.fs" required
-\ Manejador de secuencias de escape de la consola
-\ (para cambiar sus características, colores, posición del cursor...):
-s" ffl/trm.fs" required
-\ Herramientas para caracteres:
-s" ffl/chr.fs" required
-\ Cadenas de texto con secuencias de escape:
-\ s" ffl/est.fs" required
-\ Tipo de datos para fecha (gregoriana) y hora:
-s" ffl/dtm.fs" required
-\ Palabras adicionales para manipular el tipo de datos
-\ provisto por el módulo dtm:
-s" ffl/dti.fs" required
+require ffl/str.fs  \ Cadenas de texto dinámicas
+require ffl/trm.fs  \ Manejo de terminal ANSI
+require ffl/chr.fs  \ Herramientas para caracteres
+require ffl/dtm.fs  \ Tipo de datos para fecha y hora
+require ffl/dti.fs  \ Herramientas adicionales para fecha y hora
 
 \ ------------------------------------------------
 \ De programandala.net
 
-\ Almacén circular de cadenas de texto
-s" sb.fs" required
+require sb.fs \ Almacén circular de cadenas de texto
 ' bs+ alias s+
 ' bs& alias s&
 ' bs" alias s" immediate
 2048 dictionary_sb
 
-\ Palabras 'mdrop' y 'm2drop'
-s" mdrop.fs" required
+require mdrop.fs \ 'mdrop' y 'm2drop'
 
-\ Selección aleatoria de cadenas de texto
-s" random_strings.fs" required
+require random_strings.fs \ Selección aleatoria de cadenas de texto
 
-\ Posición actual del cursor
-s" xy.fs" required
+require xy.fs \ Posición actual del cursor
 
-\ Herramienta para poner puntos de comprobación
-s" halto2.fs" required
+require halto2.fs \ Puntos de chequeo para depuración
 false to halto?
 
 \ Palabras de uso común
@@ -339,12 +331,6 @@ variable bit#  \ Contador de máscara de bitio para los campos buleanos.
     \ a' = Dirección del campo en que está definido el bitio en la ficha de datos.
     2@ rot +
   ;
-: bit@  ( u a -- ff )
-  \ Devuelve el contenido de un campo de bitio.
-  \ u = Máscara del bitio 
-  \ a = Dirección del campo
-  @ and 0<>
-  ;
 : bit_on  ( u a -- )
   \ Activa un campo de bitio.
   \ u = Máscara del bitio 
@@ -356,6 +342,18 @@ variable bit#  \ Contador de máscara de bitio para los campos buleanos.
   \ u = Máscara del bitio 
   \ a = Dirección del campo
   dup @ rot invert and swap !
+  ;
+: bit!  ( f u a -- )
+  \ Guarda un indicador en un campo de bitio.
+  \ u = Máscara del bitio 
+  \ a = Dirección del campo
+  rot if  bit_on  else  bit_off  then
+  ;
+: bit@  ( u a -- ff )
+  \ Devuelve el contenido de un campo de bitio.
+  \ u = Máscara del bitio 
+  \ a = Dirección del campo
+  @ and 0<>
   ;
 
 \ }}} ##########################################################
@@ -403,6 +401,10 @@ defer palabrita  \ Crear el vector
 [then]  \ Fin del ejemplo
 
 defer protagonist%  \ Ente protagonista
+defer sword%  \ Ente espada
+defer stone%  \ Ente piedra
+defer leader%  \ Ente líder de los refugiados
+
 defer do_exits  \ Acción de listar las salidas
 defer exits%  \ Ente "salidas"
 
@@ -507,7 +509,7 @@ defer you_do_not_wear_what_error#
 defer you_need_what_error#
 
 \ }}} ##########################################################
-section( Generador de números aleatorios; herramientas de azar)  \ {{{
+section( Herramientas de azar)  \ {{{
 
 \ Generador de números aleatorios
 
@@ -591,7 +593,6 @@ variable climbed_the_fallen_away?  \ ¿El protagonista ha intentado escalar el d
 variable hacked_the_log?  \ ¿El protagonista ha afilado el tronco?
 variable stone_forbidden?  \ ¿El protagonista ha intentado pasar con la piedra?
 variable sword_forbidden?  \ ¿El protagonista ha intentado pasar con la espada?
-variable talked_to_the_leader?  \ ¿El protagonista ha hablado con el líder?
 \ variable hold#  \ Contador de cosas llevadas por el protagonista (no se usa!!!)
 
 : init_plot
@@ -602,7 +603,6 @@ variable talked_to_the_leader?  \ ¿El protagonista ha hablado con el líder?
   hacked_the_log? off
   stone_forbidden? off
   sword_forbidden? off
-  talked_to_the_leader? off
   ;
 
 \ }}} ##########################################################
@@ -660,9 +660,11 @@ http://en.wikipedia.org/wiki/ANSI_escape_code
 
 )
 
-trm.foreground-black-high trm.foreground-black -
-constant +lighter  \ Diferencia entre los dos niveles de brillo
-: lighter  ( u1 -- u2 )  +lighter +  ;
+: lighter  ( u1 -- u2 )
+  \ Incrementa el brillo de un color (entre los colores normales y los brillantes
+  \ hay una diferencia numérica fija).
+  [ trm.foreground-black-high trm.foreground-black - ] literal +
+  ;
 
 : black  ( -- u )  trm.foreground-black  ;
 : blue  ( -- u )  trm.foreground-blue  ;
@@ -1117,9 +1119,8 @@ str-create tmp_str  \ Cadena dinámica de texto temporal para usos variados
   \ Añade dos puntos al final de una cadena.
   s" :" s+
   ;
-: dash2+  ( a1 u1 -- a2 u2 )
+: hyphen+  ( a1 u1 -- a2 u2 )
   \ Añade un guion a una cadena.
-  \ Pendiente!!! elegir otro nombre
   s" -" s+
   ;
 : and&  ( a1 u1 -- a2 u2 )
@@ -1200,12 +1201,15 @@ de cadena creadas con 'sconstant'.
   now$ s?
   ;
 : here$  ( -- a u )
-  \ Devuelve una variante de «aquí» o una cadena vacía.
-  s{ 0$ s" en este lugar" s" por aquí" s" aquí" }s
+  \ Devuelve una variante de «aquí». 
+  s{ s" por aquí" s" por este lugar" s" en este lugar" s" aquí" }s
   ;
-: now|here$  ( -- a u )
-  \ Devuelve el resultado de 'now$' o el de 'here$'.
-  s{ now$ here$ }s
+: here|""$  ( -- a u | a 0 )
+  \ Devuelve una variante de «aquí» o una cadena vacía.
+  here$ s?
+  ;
+: now|here|""$  ( -- a u | a 0 )
+  s{ now$ here|""$ }s
   ;
 : only$  ( -- a u )
   \ Devuelve una variante de «solamente».
@@ -1626,13 +1630,12 @@ s" de Westmorland" sconstant of_westmorland$
   s{ s" bloquea" s" está bloqueando" }s&
   the_pass$ s& toward_the(m)$ s" Sur" s& s?&
   ;
-: the_water_flow$  ( -- a u )
-  \ Pendiente!!! confirmar nombre en inglés
+: the_water_current$  ( -- a u )
   s" la" s{ s" caudalosa" s" furiosa" s" fuerte" s" brava" }s&
   s" corriente" s& s" de agua" s?&
   ;
-: ^the_water_flow$  ( -- a u )
-  the_water_flow$ ^uppercase
+: ^the_water_current$  ( -- a u )
+  the_water_current$ ^uppercase
   ;
 : comes_from$  ( -- a u )
   s{ s" viene" s" proviene" s" procede" }s
@@ -1662,7 +1665,33 @@ s" de Westmorland" sconstant of_westmorland$
 : rocks$  ( -- a u )
   s{ s" piedras" s" rocas" }s
   ;
-
+: wanted_peace$  ( -- a u )
+  \ Texto «la paz», parte final de los mensajes «Queremos/Quieren la paz».
+  s{  s" la" s" que haya"
+      s" poder" s? s" vivir en" s&
+      s{ s" tener" s" poder tener" s" poder disfrutar de" }s? s" una vida en" s&
+      s" que" s{ s" reine" s" llegue" }s& s" la" s&
+  }s s" paz." s&
+  ;
+: they_want_peace$  ( -- a u )
+  \ Mensaje «quieren la paz».
+  only$ s{ s" buscan" s" quieren" s" desean" s" anhelan" }s&
+  wanted_peace$ s&
+  ;
+: we_want_peace$  ( -- a u )
+  \ Mensaje «Queremos la paz».
+  ^only$ s{ s" buscamos" s" queremos" s" deseamos" s" anhelamos" }s&
+  wanted_peace$ s&
+  ;
+: to_understand$  ( -- a u )
+  s{ s" comprender" s" entender" }s
+  ;
+: way$  ( -- a u )
+  s{ s" manera" s" forma" }s
+  ;
+: to_realize$  ( -- a u )
+  s{ s" ver" s" notar" s" advertir" s" apreciar" }s
+  ;
 
 \ }}} ##########################################################
 section( Cadena dinámica para impresión)  \ {{{
@@ -2062,22 +2091,9 @@ svariable scene_prompt  \ Guardará el presto de cambio de escena
 \ }}}---------------------------------------------
 subsection( Impresión de citas de diálogos)  \ {{{
 
-false [if]  \ Pendiente!!!
-
-\ Gforth no imprime bien las comillas y la raya
-
-base @ hex
-create lquote$ 02 c, c2 c, ab c,
-create rquote$ 02 c, c2 c, bb c,
-base !
-
-[else]
-
 s" —" sconstant dash$  \ Raya (código Unicode 2014 en hexadecimal, 8212 en decimal)
 s" «" sconstant lquote$ \ Comilla castellana de apertura
 s" »" sconstant rquote$  \ Comilla castellana de cierre
-
-[then]
 
 : str-with-rquote-only?  ( a -- ff )
   \ ¿Hay en una cadena dinámica una comilla castellana de cierre pero no una de apertura?
@@ -2125,13 +2141,13 @@ false [if]  \ Obsoleto!!!
     (quotes+)
   then  tmp_str@
   ;
-: dash+  ( a1 u1 -- a2 u2 )
+: hyphen+  ( a1 u1 -- a2 u2 )
   \ Añade la raya a una cita de un diálogo.
   dash$ 2swap s+ 
   ;
 : quoted  ( a1 u1 -- a2 u2 )
   \ Pone comillas o raya a una cita de un diálogo.
-  castilian_quotes? @ if  quotes+  else  dash+  then  
+  castilian_quotes? @ if  quotes+  else  hyphen+  then  
   ;
 : speak  ( a u -- )
   \ Imprime una cita de un diálogo.
@@ -2250,10 +2266,12 @@ bitfields
   bitfield: ~is_decoration?  \ ¿Forma parte de la decoración de su localización?
   bitfield: ~is_global_indoor?  \ ¿Es global (común) en los escenarios interiores? 
   bitfield: ~is_global_outdoor?  \ ¿Es global (común) en los escenarios al aire libre?
+  bitfield: ~is_not_listed?  \ ¿No debe ser listado (entre los entes presentes o en inventario)?
   bitfield: ~is_human?  \ ¿Es humano? 
   bitfield: ~is_light?  \ ¿Es una fuente de luz que puede ser encendida?
   bitfield: ~is_lit?  \ ¿El ente, que es una fuente de luz que puede ser encendida, está encendido?
   bitfield: ~is_location?  \ ¿Es un escenario? 
+  bitfield: ~is_indoor_location?  \ ¿Es un escenario interior (no exterior, al aire libre)?
   bitfield: ~is_open?  \ ¿Está abierto?
   bitfield: ~is_vegetal?  \ ¿Es vegetal?
   bitfield: ~is_worn?  \ ¿Siendo una prenda, está puesta? 
@@ -2363,8 +2381,12 @@ campos.
 : is_global_outdoor?  ( a -- ff )  ~is_global_outdoor? bit@  ;
 : is_human?  ( a -- ff )  ~is_human? bit@  ;
 : is_light?  ( a -- ff )  ~is_light? bit@  ;
+: is_not_listed?  ( a -- ff )  ~is_not_listed? bit@  ;
+: is_listed?  ( a -- ff )  is_not_listed? 0=  ;
 : is_lit?  ( a -- ff )  ~is_lit? bit@  ;
 : is_location?  ( a -- ff )  ~is_location? bit@  ;
+: is_indoor_location?  ( a -- ff )  is_location? ~is_indoor_location? bit@ and  ;
+: is_outdoor_location?  ( a -- ff )  is_location? ~is_indoor_location? bit@ 0= and  ;
 : is_open?  ( a -- ff )  ~is_open? bit@  ;
 : is_closed?  ( a -- ff )  is_open? 0=  ;
 : name_str  ( a1 -- a2 )  ~name_str @  ;
@@ -2402,6 +2424,7 @@ campos.
 : is_character  ( a -- )  ~is_character? bit_on  ;
 : is_animal  ( a -- )  ~is_animal? bit_on  ;
 : is_light  ( a -- )  ~is_light? bit_on  ;
+: is_not_listed  ( a -- ff )  ~is_not_listed? bit_on  ;
 : is_lit  ( a -- )  ~is_lit? bit_on  ;
 : is_not_lit  ( a -- )  ~is_lit? bit_off  ;
 : is_cloth  ( a -- )  ~is_cloth? bit_on  ;
@@ -2410,6 +2433,8 @@ campos.
 : is_global_outdoor  ( a -- )  ~is_global_outdoor? bit_on  ;
 : is_human  ( a -- )  ~is_human? bit_on  ;
 : is_location  ( a -- )  ~is_location? bit_on  ;
+: is_indoor_location  ( a -- )  dup is_location ~is_indoor_location? bit_on  ;
+: is_outdoor_location  ( a -- )  dup is_location ~is_indoor_location? bit_off  ;
 : is_open  ( a -- )  ~is_open? bit_on  ;
 : is_closed  ( a -- )  ~is_open? bit_off  ;
 : times_open++  ( a -- )  ~times_open +++  ;
@@ -2435,10 +2460,6 @@ escribir posteriormente el código efectivo [pues no hace
 falta recordar si la propiedad real y por tanto el campo de
 la ficha del ente era «abierto» o «cerrado»] y hace el
 código más conciso y legible.
-
-Pendiente!!! Hay que unificar el criterio de los nombres de
-estas palabras, y sacar de aquí las que se refieran a campos
-básicos. 
 
 )
 
@@ -2558,7 +2579,7 @@ básicos.
   is_here? 0=
   ;
 : is_here_and_unknown?  ( a -- ff )
-  \ ¿¿Está un ente en la misma localización que el protagonista y aún no es conocido por él?
+  \ ¿Está un ente en la misma localización que el protagonista y aún no es conocido por él?
   dup is_here? swap is_unknown? and
   ;
 : is_here  ( a -- )
@@ -2611,6 +2632,17 @@ básicos.
   rocks%
   table%
   [then]
+  ;
+: talked_to_the_leader?  ( -- ff )
+  \ ¿El protagonista ha hablado con el líder?
+  leader% conversations 0<>
+  ;
+: do_you_hold_something_forbidden?  ( -- ff )
+  \ ¿Llevas algo prohibido?
+  \ Cálculo usado en varios lugares del programa,
+  \ en relación a los refugiados.
+  sword% is_accessible?
+  stone% is_accessible? or
   ;
 
 \ ------------------------------------------------
@@ -3264,22 +3296,24 @@ defer 'entities  \ Dirección de los entes; vector que después será redirigido
 : backup_entity  ( a -- x1 x2 x3 x4 x5 )
   \ Respalda los datos de un ente
   \ que se crearon durante la compilación del código y deben preservarse.
+  \ (En orden alfabético, para facilitar la edición).
   >r
-  r@ name_str
+  r@ description_xt
   r@ init_xt
   r@ location_enter_plot_xt
   r@ location_exit_plot_xt
-  r> description_xt
+  r> name_str
   ;
 : restore_entity  ( x1 x2 x3 x4 x5 a -- )
   \ Restaura los datos de un ente
   \ que se crearon durante la compilación del código y deben preservarse.
+  \ (En orden alfabético inverso, para facilitar la edición).
   >r
-  r@ ~description_xt !
+  r@ ~name_str !
   r@ ~location_exit_plot_xt !
   r@ ~location_enter_plot_xt !
   r@ ~init_xt !
-  r> ~name_str !
+  r> ~description_xt !
   ;
 : setup_entity  ( a -- )
   \ Prepara la ficha de un ente para ser completada con sus datos .
@@ -3490,7 +3524,7 @@ entity: ulfius%
 
 \ Entes que son (seudo)personajes: 
 entity: ambrosio%
-entity: leader%
+entity: (leader%) ' (leader%) is leader%
 entity: soldiers%
 entity: refugees%
 entity: officers%
@@ -3518,8 +3552,8 @@ entity: piece%
 entity: rags%
 entity: rocks%
 entity: snake%
-entity: stone%
-entity: sword%
+entity: (stone%) ' (stone%) is stone%
+entity: (sword%) ' (sword%) is sword%
 entity: table%
 entity: thread%
 entity: torch%
@@ -3950,7 +3984,7 @@ a la sección de textos calculados.
 \ Albergue de los refugiados
 
 : they_don't_let_you_pass$  ( -- a u )
-  \ Devuelve el mensaje de que los refugiados no te dejan pasar.
+  \ Mensaje de que los refugiados no te dejan pasar.
   s{
   s" te" s? (they)_block$ s&
   s" te rodean,"
@@ -3960,33 +3994,121 @@ a la sección de textos calculados.
   }s the_pass$ s&
   ;
 : the_pass_free$  ( -- a u )
-  \ Devuelve una variante de «libre el paso».
+  \ Variante de «libre el paso».
   s" libre" the_pass$ s&
   ;
 : they_let_you_pass_0$  ( -- a u )
-  \ Devuelve la primera versión del mensaje de que te dejan pasar.
+  \ Primera versión del mensaje de que te dejan pasar.
   s{
   s" te" s? s" han dejado" s&
   s" se han" s{ s" apartado" s" echado a un lado" }s& s" para dejar" s& s" te" s?+
   }s the_pass_free$ s&
   ;
 : they_let_you_pass_1$  ( -- a u )
-  \ Devuelve la segunda versión del mensaje de que te dejan pasar.
+  \ Segunda versión del mensaje de que te dejan pasar.
   s" se han" s{ s" apartado" s" retirado" }s&
   s" a" s{ s{ s" los" s" ambos" }s s" lados" s& s" uno y otro lado" }s& s?& comma+
   s{ s" dejándote" s" dejando" s" para dejar" s" te" s?+ }s&
   the_pass_free$ s&
   ;
 : they_let_you_pass_2$  ( -- a u )
-  \ Devuelve la tercera versión del mensaje de que te dejan pasar.
+  \ Tercera versión del mensaje de que te dejan pasar.
   s" ya no" they_don't_let_you_pass$ s& s" como antes" s?&
   ;
 : they_let_you_pass$  ( -- a u )
-  \ Devuelve el mensaje de que te dejan pasar.
+  \ Mensaje de que te dejan pasar.
   ['] they_let_you_pass_0$
   ['] they_let_you_pass_1$
   ['] they_let_you_pass_2$
   3 choose execute
+  ;
+
+: the_leader_said_they_want_peace$  ( -- a u )
+  \ El líder te dijo qué buscan los refugiados.
+  s" que," s" tal y" s?& s" como" s& leader% full_name s&
+  s" te" s?& s" ha" s&{ s" referido" s" hecho saber" s" contado" s" explicado" }s& comma+
+  they_want_peace$ s&
+  ;
+: you_don't_know_why_they're_here$  ( -- a u )
+  \ No sabes por qué están aquí los refugiados.
+  s{  s" Te preguntas"
+      s" No" s{  s" terminas de"
+                  s" acabas de"
+                  s" aciertas a"
+                  s" puedes"
+                }s& to_understand$ s&
+      s" No" s{ s" entiendes" s" comprendes" }s&
+  }s{
+    s" qué" s{ s" pueden estar" s" están" }s& s" haciendo" s&
+    s" qué" s{ s" los ha" s{ s" podría" s" puede" }s s" haberlos" s& }s&
+      s{ s" reunido" s" traído" s" congregado" }s&
+    s" cuál es" s{ s" el motivo" s" la razón" }s&
+      s" de que se" s&{ s" encuentren" s" hallen" }s&
+    s" por qué" s{ s" motivo" s" razón" }s?& s" se encuentran" s&
+  }s& here$ s& period+
+  ;
+: some_refugees_look_at_you$  ( -- a u )
+  s" Algunos" s" de ellos" s?&
+  s" reparan en" s&{ s" ti" s" tu persona" s" tu presencia" }s&
+  ;
+: in_their_eyes_and_gestures$  ( -- a u )
+  \ En sus ojos y gestos.
+  s" En sus" s{ s" ojos" s" miradas" }s&
+  s" y" s" en sus" s?& s" gestos" s&? s&
+  ;
+: the_refugees_trust$  ( -- a u )
+  \ Los refugiados confían.
+  some_refugees_look_at_you$ period+
+  in_their_eyes_and_gestures$ s&
+  s{ s" ves" s" notas" s" adviertes" s" aprecias" }s&
+  s{
+    s" amabilidad" s" confianza" s" tranquilidad"
+    s" serenidad" s" afabilidad"
+  }s&
+  ;
+: you_feel_they_observe_you$  ( -- a u )
+  \ Sientes que te observan.
+  s{ s" tienes la sensación de que" s" sientes que" }s?
+  s" te observan" s& s" como" s?&
+  s{  s" con timidez" s" tímidamente"
+      s" de" way$ s& s" subrepticia" s& s" subrepticiamente"
+      s" a escondidas"
+  }s& period+
+  ;
+: the_refugees_don't_trust$  ( -- a u )
+  \ Los refugiados no confían.
+  some_refugees_look_at_you$ s{ s" . Entonces" s"  y" }s+
+  you_feel_they_observe_you$ s&
+  in_their_eyes_and_gestures$ s& 
+  s{
+    s{ s" crees" s" te parece" }s to_realize$ s&
+    s{ s" ves" s" notas" s" adviertes" s" aprecias" }s
+    s" parece" to_realize$ s& s" se" s+
+  }s& s{
+    s" cierta" s?{
+      s" preocupación" s" desconfianza" s" intranquilidad"
+      s" indignación" }s&
+    s" cierto" s?{ s" nerviosismo" s" temor" }s&
+  }s&
+  ;
+: diverse_people$  ( -- a u )
+  s{ s" personas" s" hombres, mujeres y niños" }s
+  s" de toda" s& s" edad y" s?& s" condición" s&
+  ;
+: refugees_description
+  \ Descripición de los refugiados.
+  talked_to_the_leader?
+  if    s" Los refugiados son"
+  else  s" Hay"
+  then  diverse_people$ s&
+  talked_to_the_leader?
+  if    the_leader_said_they_want_peace$
+  else  period+ you_don't_know_why_they're_here$
+  then  s&
+  do_you_hold_something_forbidden? 
+  if    the_refugees_don't_trust$
+  else  the_refugees_trust$ 
+  then  s& period+ paragraph
   ;
 
 \ ------------------------------------------------
@@ -3996,9 +4118,6 @@ a la sección de textos calculados.
 
 : this_narrow_cave_pass$  ( -- a u )
   \ Devuelve una variante de «estrecho tramo de cueva», con el artículo adecuado.
-  \ Pendiente!!! Para que un escenario sea conocido, 
-  \ hay que incrementar sus visitas al salir de él,
-  \ y tenerlas en cuenta en 'is_known?'
   my_location dup is_known?
   if  not_distant_article
   else  undefined_article
@@ -4084,7 +4203,7 @@ false [if]  \ Código obsoleto!!!
   s" se intuyen" s" pueden intuirse" }s
   ;
 : (paths)_can_be_seen$  ( -- a u )
-  \ Pendiente!!! Hacer que el texto dependa, por grupos, de si el escenario es conocido
+  \ Pendiente!!! Hacer que el texto dependa, por grupos, de si el escenario es conocido.
   ['] (paths)_can_be_seen_0$  
   ['] (paths)_can_be_seen_1$  
   2 choose execute
@@ -4293,13 +4412,13 @@ create 'cave_descriptions
   comes_from$ from_that_way$ s&
   ;
 : water_from_there$  ( -- a u )
-  the_water_flow$ comes_from_there$ s&
+  the_water_current$ comes_from_there$ s&
   ;
 : ^water_from_there$  ( -- a u )
-  ^the_water_flow$ comes_from_there$ s&
+  ^the_water_current$ comes_from_there$ s&
   ;
 : water_that_way$  ( -- a u )
-  ^the_water_flow$ s{ s" corre" s" fluye" s" va" }s&
+  ^the_water_current$ s{ s" corre" s" fluye" s" va" }s&
   in_that_direction$ s& period+
   ;
 : stairway_to_river$  ( -- a u )
@@ -4352,6 +4471,7 @@ leader% :attributes
   s" anciano" self% mname!
   self% is_character
   self% is_human
+  self% is_not_listed
   location_28% self% is_there
   ;attributes
 leader% :description
@@ -4394,12 +4514,11 @@ refugees% :attributes
   self% is_decoration
   ;attributes
 refugees% :description
-  \ Pendiente!!! Descripciones provisionales
   my_location case
   location_28% of
-    s" Los refugiados bla bla bla..." paragraph
     endof
   location_29% of
+    \ Pendiente!!! Provisional!!!
     s" Todos los refugiados quedaron atrás." paragraph
     endof
   endcase
@@ -4748,7 +4867,7 @@ location_01% :attributes
   0 location_02% 0 0 0 0 0 0 self% init_location
   ;attributes
 location_01% :description
-  \ Crear colina!!! en los tres escenarios
+  \ Pendiente!!! Crear colina en los tres escenarios
   sight case
   self% of
     s" No ha quedado nada en pie, ni piedra sobre piedra."
@@ -5013,6 +5132,7 @@ location_09% :description
   ;description
 location_10% :attributes
   s" gruta de entrada" self% fname!
+  self% is_indoor_location
   location_08% 0 0 location_11% 0 0 0 0 self% init_location
   ;attributes
 location_10% :description
@@ -5032,6 +5152,7 @@ location_10% :description
   ;description
 location_11% :attributes
   s" gran lago" self% mname!
+  self% is_indoor_location
   0 0 location_10% 0 0 0 0 0 self% init_location
   ;attributes
 location_11% :description
@@ -5061,6 +5182,7 @@ location_11% :description
   ;description
 location_12% :attributes
   s" salida del paso secreto" self% fname!
+  self% is_indoor_location
   0 0 0 location_13% 0 0 0 0 self% init_location
   ;attributes
 location_12% :description
@@ -5090,6 +5212,7 @@ location_12% :description
   ;description
 location_13% :attributes
   s" puente semipodrido" self% mname!
+  self% is_indoor_location
   0 0 location_12% location_14% 0 0 0 0 self% init_location
   ;attributes
 location_13% :description
@@ -5115,6 +5238,7 @@ location_13% :description
   ;description
 location_14% :attributes
   s" recodo de la cueva" self% mname!
+  self% is_indoor_location
   0 location_15% location_13% 0 0 0 0 0 self% init_location
   ;attributes
 location_14% :description
@@ -5134,6 +5258,7 @@ location_14% :description
   ;description
 location_15% :attributes
   s" pasaje arenoso" self% mname!
+  self% is_indoor_location
   location_14% location_17% location_16% 0 0 0 0 0 self% init_location
   ;attributes
 location_15% :description
@@ -5165,6 +5290,7 @@ location_15% :description
   ;description
 location_16% :attributes
   s" pasaje del agua" self% mname!
+  self% is_indoor_location
   0 0 0 location_15% 0 0 0 0 self% init_location
   ;attributes
 location_16% :description
@@ -5192,6 +5318,7 @@ location_16% :description
   ;description
 location_17% :attributes
   s" estalactitas" self% fname!
+  self% is_indoor_location
   location_15% location_20% location_18% 0 0 0 0 0 self% init_location
   ;attributes
 location_17% :description
@@ -5215,6 +5342,7 @@ location_17% :description
   ;description
 location_18% :attributes
   s" puente de piedra" self% mname!
+  self% is_indoor_location
   0 0 location_19% location_17% 0 0 0 0 self% init_location
   ;attributes
 location_18% :description
@@ -5246,13 +5374,14 @@ location_18% :description
   ;description
 location_19% :attributes
   s" recodo arenoso del canal" self% mname!
+  self% is_indoor_location
   0 0 0 location_18% 0 0 0 0 self% init_location
   ;attributes
 location_19% :description
   sight case
   self% of
     \ Pendiente!!! Hacer variaciones
-    the_water_flow$ comma+
+    the_water_current$ comma+
     s" que discurre" s?&
     s" de Norte a Este," s& (it)_blocks$ s&
     s" el paso, excepto al Oeste." s&
@@ -5276,6 +5405,7 @@ location_19% :description
   ;description
 location_20% :attributes
   s" tramo de cueva" self% mname!
+  self% is_indoor_location
   location_17% location_22% location_25% 0 0 0 0 0 self% init_location
   ;attributes
 location_20% :description
@@ -5297,6 +5427,7 @@ location_20% :description
   ;description
 location_21% :attributes
   s" tramo de cueva" self% mname!
+  self% is_indoor_location
   0 location_27% location_23% location_20% 0 0 0 0 self% init_location
   ;attributes
 location_21% :description
@@ -5318,6 +5449,7 @@ location_21% :description
   ;description
 location_22% :attributes
   s" tramo de cueva" self% mname!
+  self% is_indoor_location
   0 location_24% location_27% location_22% 0 0 0 0 self% init_location
   ;attributes
 location_22% :description
@@ -5339,6 +5471,7 @@ location_22% :description
   ;description
 location_23% :attributes
   s" tramo de cueva" self% mname!
+  self% is_indoor_location
   0 location_25% 0 location_21% 0 0 0 0 self% init_location
   ;attributes
 location_23% :description
@@ -5357,6 +5490,7 @@ location_23% :description
   ;description
 location_24% :attributes
   s" tramo de cueva" self% mname!
+  self% is_indoor_location
   location_22% 0 location_26% 0 0 0 0 0 self% init_location
   ;attributes
 location_24% :description
@@ -5375,6 +5509,7 @@ location_24% :description
   ;description
 location_25% :attributes
   s" tramo de cueva" self% mname!
+  self% is_indoor_location
   location_22% location_28% location_23% location_21% 0 0 0 0 self% init_location
   ;attributes
 location_25% :description
@@ -5393,6 +5528,7 @@ location_25% :description
   ;description
 location_26% :attributes
   s" tramo de cueva" self% mname!
+  self% is_indoor_location
   location_26% 0 location_20% location_27% 0 0 0 0 self% init_location
   ;attributes
 location_26% :description
@@ -5415,6 +5551,7 @@ location_26% :description
   ;description
 location_27% :attributes
   s" tramo de cueva" self% mname!
+  self% is_indoor_location
   location_27% 0 0 location_25% 0 0 0 0 self% init_location
   ;attributes
 location_27% :description
@@ -5436,6 +5573,7 @@ location_27% :description
   ;description
 location_28% :attributes
   s" refugio" self% mname!
+  self% is_indoor_location
   location_26% 0 0 0 0 0 0 0 self% init_location
   ;attributes
 location_28% :description
@@ -5463,6 +5601,7 @@ location_28% :description
   ;description
 location_29% :attributes
   s" espiral" self% fname!
+  self% is_indoor_location  \ Confirmar con el mapa!!!
   0 0 0 location_28% 0 location_30% 0 0 self% init_location
   ;attributes
 location_29% :description
@@ -5487,6 +5626,7 @@ location_29% :description
   ;description
 location_30% :attributes
   s" inicio de la espiral" self% mname!
+  self% is_indoor_location  \ Confirmar con el mapa!!!
   0 0 location_31% 0 location_29% 0 0 0 self% init_location
   ;attributes
 location_30% :description
@@ -5510,6 +5650,7 @@ location_30% :description
   ;description
 location_31% :attributes
   s" puerta norte" self% fname!
+  self% is_indoor_location  \ Confirmar con el mapa!!!
   0 0 0 location_30% 0 0 0 0 self% init_location
   ;attributes
 location_31% :description
@@ -6707,7 +6848,7 @@ variable silent_well_done?  \ No se usa todavía!!!
     s{ 
       s{ s" será" s" sería" s" es" }s s" menester" s&
       s{ s" habrá" s" habría" s" hay" }s s" que" s&
-    }s s{ s" usar" s" utilizar" s" emplear" }s&
+    }s{ s" usar" s" utilizar" s" emplear" }s&
   }s& some_tool$ s& period+ ^uppercase
   ;
 : not_by_hand$  ( -- a u )
@@ -6851,6 +6992,7 @@ variable #elements  \ Total de los elementos de una lista
   \ Inacabado!!!
   dup protagonist% <>  \ ¿No es el protagonista?
   over is_decoration? 0=  and  \ ¿Y no es decorativo?
+  over is_listed? and  \ ¿Y puede ser listado?
   swap is_global? 0=  and  \ ¿Y no es global?
   ;
 : /list++  ( u1 a1 a2 -- u1 | u2 )
@@ -7040,7 +7182,7 @@ section( Recursos de las tramas asociadas a lugares)  \ {{{
   ;
 
 \ ------------------------------------------------
-\ Albegue de los refugiados
+\ Albergue de los refugiados
 
 : the_old_man_is_angry?  ( -- ff )
   \ ¿El anciano se enfada porque llevas algo prohibido?
@@ -7048,7 +7190,7 @@ section( Recursos de las tramas asociadas a lugares)  \ {{{
   sword% is_accessible?  or
   ;
 : he_looks_at_you_with_anger$  ( -- a u )
-  \ Devuelve una versión del texto de que el líder de los refugiados te mira.
+  \ Texto de que el líder de los refugiados te mira.
   s" parece sorprendido y" s?
   s{
   s" te mira" s{ s" con dureza" s" con preocupación" }s&
@@ -7057,21 +7199,21 @@ section( Recursos de las tramas asociadas a lugares)  \ {{{
   }s&
   ;
 : he_looks_at_you_with_calm$  ( -- a u )
-  \ Devuelve una versión del texto de que el líder de los refugiados te mira.
+  \ Texto de que el líder de los refugiados te mira.
   s" advierte tu presencia y" s?
   s{ s" por un momento" s" durante unos instantes" }s?&
   s" te" s&{ s" observa" s" contempla" }s&
   s{ s" con serenidad" s" con expresión serena" s" en calma" s" sereno" }s&
   ;
 : the_leader_looks_at_you$  ( -- a u )
-  \ Devuelve el texto de que el líder de los refugiados te mira.
+  \ Texto de que el líder de los refugiados te mira.
   leader% ^full_name  the_old_man_is_angry?
   if  he_looks_at_you_with_anger$ 
   else  he_looks_at_you_with_calm$
   then  s& period+
   ;
 : the_refugees_surround_you$  ( -- a u )
-  \ Devuelve descripción de la actitud de los refugiados.
+  \ Descripción de la actitud de los refugiados.
   s" Los refugiados"
   location_28% has_east_exit?
   if  they_let_you_pass$ 
@@ -7089,9 +7231,11 @@ location_01% :location_enter_plot
   ;location_enter_plot
 location_02% :location_enter_plot
   \ Decidir hacia dónde conduce la dirección hacia abajo
-  [false] [if]  \ Primera versión, al azar
-    self% location_01% location_03% 2 choose d-->  \ Decidir al azar la salida hacia abajo
-  [else]  \ Segunda versión, según el escenario de procedencia
+  [false] [if]  \ Primera versión
+    \ Decidir al azar:
+    self% location_01% location_03% 2 choose d-->
+  [else]  \ Segunda versión mejorada
+    \ Decidir según el escenario de procedencia:
     self%
     protagonist% previous_location location_01% =  \ ¿Venimos de la aldea?
     if  location_03%  else  location_01%  then  d-->
@@ -7646,8 +7790,8 @@ descripciones y definirlas aquí, a continuación de la trama.
 : (they_do_it)_their_way$  ( -- a u )
   s" ," s{
     s" a su" s{ s" manera" s" estilo" }s&
-    s" de la única"
-    s{ s" manera" s" forma" }s& s" que" s& s{ s" saben" s" conocen" }s&
+    s" de la única" way$ s&
+    s" que" s& s{ s" saben" s" conocen" }s&
   }s& comma+
   ;
 : this_sad_victory$  ( -- a u )
@@ -7791,8 +7935,7 @@ section( Errores del intérprete de comandos)  \ {{{
   s{ s"  la frase" s" lo" s"  la idea" }s+
   s{
   \ Final 0:
-  s{ 0$ s" de" s" otra" }s
-  s{ s" forma" s" manera" }s&
+  s{ 0$ s" de" s" otra" }s way$ s&
   s{ 0$ s" un poco" s" algo" }s& s" más" s&
   s{ s" simple" s" sencilla" s" clara" }s&
   \ Final 1:
@@ -9072,7 +9215,7 @@ subsection( Agredir)  \ {{{
   s" sería en balde" 
   s" sería un esfuerzo" s{ s" inútil" s" baldío" }s&
   s" sería un esfuerzo baldío"
-  }s s{
+  }s{
   s" hacerlo"
   s" volver a hacerlo"
   s" repetirlo"
@@ -9308,7 +9451,7 @@ subsection( Nadar)  \ {{{
 : (you_sink_0)$ ( -- a u )
   \ Devuelve la primera versión del mensaje sobre hundirse con la coraza.
   s{ s" Caes" s" Te hundes"
-  s{ s" Empiezas" s" Comienzas" }s s{ s" a hundirte" s" a caer" }s&
+  s{ s" Empiezas" s" Comienzas" }s{ s" a hundirte" s" a caer" }s&
   }s s" sin remedio" s?& s" hacia" s&
   s{ s" el fondo" s" las profundidades" }s&
   s{ s" por el" s" debido al" s" arrastrado por" s" a causa del" }s&
@@ -9351,7 +9494,7 @@ subsection( Nadar)  \ {{{
     you_emerge$ narrate narration_break
     location_12% enter_location  the_battle_ends
   else
-    s" nadar" now|here$ s& is_nonsense
+    s" nadar" now|here|""$ s& is_nonsense
   then
   ;action
 
@@ -9379,7 +9522,7 @@ subsection( Escalar)  \ {{{
   s{ s" vana" s" pobre" s" débil" }s& s" esperanza" s&
   s" de" s&
   s{ s" encontrar" s" hallar" s" descubrir" }s&
-  s{ s" la" s" alguna" }s& s{ s" manera" s" forma" }s& s" de" s&
+  s{ s" la" s" alguna" }s& way$ s& s" de" s&
   s{  s" escalarlo" s" vencerlo" s" atravesarlo"
       s" superarlo" s" pasarlo"
       s{ s" pasar" s" cruzar" }s s" al otro lado" s&
@@ -9391,11 +9534,9 @@ subsection( Escalar)  \ {{{
   ^but$ 
   s{  s{ s" pronto" s" enseguida" }s s" has de" s&
       s" no tardas mucho en"
-  }s& s{  
-    s" rendirte ante"
-    s" aceptar"
-    s" resignarte ante"
-  }s& s{
+  }s&
+  s{  s" rendirte ante" s" aceptar" s" resignarte ante" }s&
+  s{
     s{ s" los hechos" s" la realidad" s" la situación" s" tu suerte" }s
     s{  s" la voluntad"
         s{ s" el" s" este" }s s" giro" s&
@@ -9579,7 +9720,7 @@ subsection( Hablar y presentarse)  \ {{{
   ;
 : you_can_not_take_the_stone$  ( -- a u )
   \ Mensaje de que no te puedes llevar la piedra.
-  s{ s" No" s" En modo alguno" s" De ninguna manera" }s
+  s{ s" No" s" En modo alguno" s" De ninguna" way$ s& s" De ningún modo" }s
   s" podemos" s{ s" permitiros" s" consentiros" s" toleraros" }s
   s{ s" huir con" s" escapar con" s" marchar con" s" pasar con"
   s" que os vayáis con" s" que os marchéis con"
@@ -9691,22 +9832,9 @@ subsection( Hablar y presentarse)  \ {{{
   s" somos refugiados de" s& ^uppercase
   s{ s" la gran" s" esta terrible" }s& s" guerra." s& 
   ;
-: we_want_peace$  ( -- a u )
-  \ Mensaje «Queremos la paz».
-  ^only$ s{ s" buscamos" s" queremos" s" deseamos" s" anhelamos" }s&
-  s{  s" la" s" que haya"
-      s" poder" s? s" vivir en" s&
-      s{ s" tener" s" poder tener" s" poder disfrutar de" }s? s" una vida en" s&
-      s" que" s{ s" reine" s" llegue" }s& s" la" s&
-  }s& s" paz." s&
-  ;
 : we_are_refugees
   \ Somos refugiados.
   we_are_refugees$ we_want_peace$ s& speak narration_break
-  ;
-: do_you_hold_something_forbidden?  ( -- ff )
-  sword% is_accessible?
-  stone% is_accessible? or
   ;
 : the_leader_trusts
   \ El líder te corta, confiado.
@@ -10077,7 +10205,6 @@ immediate
 : load_plot  ( x0 ... xn -- )
   \ Restaura las variables de la trama.
   \ Debe hacerse en orden alfabético inverso.
-  talked_to_the_leader? !
   sword_forbidden? !
   stone_forbidden? !
   hacked_the_log? !
@@ -10117,7 +10244,7 @@ restore_vocabularies
   ;
 : yyyy-mm-dd_hh:mm:ss$  ( -- a u )
   \ Devuelve la fecha y hora actuales como una cadena en formato «aaaa-mm-dd_hh:mm:ss».
-  time&date 00>s dash2+ 00>s+ dash2+ 00>s+ space+
+  time&date 00>s hyphen+ 00>s+ hyphen+ 00>s+ space+
   00>s+ colon+ 00>s+ colon+ 00>s+
   ;
 : n>file  ( n -- )
@@ -10186,7 +10313,6 @@ restore_vocabularies
   hacked_the_log? @ f>file
   stone_forbidden? @ f>file
   sword_forbidden? @ f>file
-  talked_to_the_leader? @ f>file
   s" load_plot" >file/  \ Palabra que hará la restauración de la trama 
   ;
 : file_header
@@ -10985,7 +11111,8 @@ adecuada.
 \ }}} ##########################################################
 section( Vocabulario del juego)  \ {{{
 
-also player_vocabulary definitions  \ Elegir el vocabulario PLAYER_VOCABULARY para crear en él las nuevas palabras
+\ Elegir el vocabulario 'player_vocabulary' para crear en él las nuevas palabras:
+also player_vocabulary definitions
 
 \ Pronombres
 
@@ -12139,7 +12266,7 @@ false [if]  \ No se usa!!!
   s" ¿De verdad quieres"
   s" ¿Estás segur" player_gender_ending$+ s" de que quieres" s& 
   s" ¿Estás decidid" player_gender_ending$+ s" a" s&
-  }s s{
+  }s{
   s" dejarlo?"
   s" rendirte?"
   s" abandonar?"
@@ -13118,6 +13245,12 @@ puesta.
 
 \ }}} ########################################################## 
 \ Tareas pendientes: código fuente {{{
+
+Unificar los comentarios de palabras que devuelven cadenas de texto:
+
+* Devuelve mensaje de que X...
+* Mensaje de que X...
+* X...
 
 Terminar de cambiar el formato de nombres de palabras en los textos:
 
