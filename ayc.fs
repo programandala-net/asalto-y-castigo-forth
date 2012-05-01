@@ -7,7 +7,7 @@ CR .( Asalto y castigo )  \ {{{
 \ Copyright (C) 2011,2012 Marcos Cruz (programandala.net)
 
 ONLY FORTH DEFINITIONS
-: version$  ( -- a u )  S" A-04-2012043015"  ;
+: version$  ( -- a u )  S" A-04-2012050200"  ;
 version$ TYPE CR
 
 \ 'Asalto y castigo' is free software; you can redistribute
@@ -132,17 +132,26 @@ require ffl/dti.fs  \ Herramientas adicionales para fecha y hora
 \ ------------------------------------------------
 \ De programandala.net
 
-require sb.fs \ Almacén circular de cadenas de texto
+\ Programandala Gforth Library (ghoul)
+
+require ghoul/sb.fs \ Almacén circular de cadenas de texto
 ' bs+ alias s+
 ' bs& alias s&
 ' bs" alias s" immediate
 2048 dictionary_sb
 
-require mdrop.fs \ 'mdrop' y 'm2drop'
+require ghoul/mdrop.fs 
+require ghoul/2mdrop.fs
+require ghoul/2choose.fs
+' 2choose alias schoose
+require ghoul/choose.fs
+require ghoul/random_strings.fs \ Selección aleatoria de cadenas de texto
+require ghoul/xy.fs \ Posición actual del cursor
+require ghoul/sconstant.fs \ Constantes de cadenas de texto
+require ghoul/svariable.fs \ Variables de cadenas de texto
+require ghoul/randomize.fs 
 
-require random_strings.fs \ Selección aleatoria de cadenas de texto
-
-require xy.fs \ Posición actual del cursor
+\ Otras herramientas
 
 require halto2.fs \ Puntos de chequeo para depuración
 false to halto?
@@ -262,20 +271,13 @@ false constant [false]  immediate
 
 : truncate_length  ( u1 -- u1 | u2 )
   \ Recorta la longitud de una cadena si es demasiado larga.
+  \ ¿Prescindible?!!!
   /counted_string chars min 
-  ;
-: sconstant  (  a1 u "name" -- )
-  \ Crea una constante de cadena.
-  create  truncate_length s,
-  does>  ( pfa -- a2 u )  count
-  ;
-: svariable  ( "name" -- )
-  \ Crea una variable de cadena.
-  create  /counted_string chars allot align
   ;
 : s!  ( a1 u1 a2 -- )
   \ Guarda una cadena en una variable de cadena,
   \ asegurando que la longitud no supere la máxima permitida.
+  \ Pendiente!!! Prescindir de esta palabra y usar 'place'.
   swap truncate_length swap place
   ;
 pad 0 2constant ""  \ Simula una cadena vacía.
@@ -511,14 +513,8 @@ defer you_need_what_error#
 \ }}} ##########################################################
 section( Herramientas de azar)  \ {{{
 
-\ Generador de números aleatorios
-
-: randomize
-  \ Reinicia la semilla de generación de números aleatorios.
-  time&date 2drop 2drop * seed !
-  ;
-
 \ Desordenar al azar varios elementos de la pila
+\ Pendiente!!! Extraer a la librería.
 
 0 value unsort#
 : unsort  ( x1 ... xu u -- x1' ... xu' )
@@ -610,12 +606,6 @@ section( Pantalla)  \ {{{
 
 \ ------------------------------------------------
 subsection( Variables y constantes)  \ {{{
-
-false constant [old_cursor] immediate  \ ¿Usar el antiguo sistema de seguimiento del cursor?
-[old_cursor] [if]
-  variable cursor_x  \ Columna actual del cursor
-  variable cursor_y  \ Fila actual del cursor
-[then]
 
 \ Parámetros SGR (Select Graphic Rendition)
 \ que no están incluidos en el módulo trm de Forth Foundation library.
@@ -963,6 +953,9 @@ false [if]  \ Antiguo!!!
 \ }}} ##########################################################
 section( Depuración)  \ {{{
 
+\ Para probar!!!:
+\ : ~~ postpone ~~ s" key drop" evaluate ; immediate
+
 : fatal_error  ( ff a u -- )
   \ Informa de un error y sale del sistema, si el indicador de error es distinto de cero.
   \ No se usa!!!
@@ -986,10 +979,7 @@ section( Depuración)  \ {{{
   ." Espacio para cadenas:" sb# ?
   ;
 : .cursor
-  \ Imprime las coordenadas del cursor.
-  [old_cursor] [if]
-    ." Cursor:" cursor_x ? cursor_y ?
-  [then]
+  \ Imprime las coordenadas del cursor. Antiguo!!!
   ;
 : .system_status
   \ Muestra el estado del sistema.
@@ -1134,8 +1124,6 @@ str-create tmp_str  \ Cadena dinámica de texto temporal para usos variados
   s" o" s&
   ;
 
-s" " sconstant 0$  \ Cadena de longitud cero
-
 : (?keep)  ( a u ff -- a u | a 0 )
   \ Conserva una cadena si un indicador es 'true'
   \ si es 'false' la vacía.
@@ -1173,18 +1161,16 @@ de cadena creadas con 'sconstant'.
   ;
 : with_him$  ( -- a u )
   \ Devuelve una variante de «consigo» o una cadena vacía.
-  s{ 0$ s" consigo" s" encima" }s
+  s{ "" s" consigo" s" encima" }s
   ;
 : with_you$  ( -- a u )
   \ Devuelve «contigo» o una cadena vacía.
   s" contigo" s?
   ;
 : carries$  ( -- a u )
-  \ Devuelve una variante de «lleva».
   s{ s" tiene" s" lleva" }s
   ;
 : you_carry$  ( -- a u )
-  \ Devuelve una variante de «llevas».
   s{ s" tienes" s" llevas" }s
   ;
 : ^you_carry$  ( -- a u )
@@ -1193,7 +1179,7 @@ de cadena creadas con 'sconstant'.
   ;
 : now$  ( -- a u )
   \ Devuelve una variante de «ahora» o una cadena vacía.
-  s{ 0$ s" ahora" s" en este momento" s" en estos momentos" }s
+  s{ "" s" ahora" s" en este momento" s" en estos momentos" }s
   ;
 : now_$  ( -- a u )
   \ Devuelve el resultado de 'now$' o una cadena vacía.
@@ -1335,7 +1321,7 @@ de cadena creadas con 'sconstant'.
   ;
 : of_your_ex_cloak$  ( -- a u )
   \ Devuelve un texto común a las descripciones de los restos de la capa.
-  s{ 0$ s" que queda" s" que quedó" }s s" de" s&
+  s{ "" s" que queda" s" que quedó" }s s" de" s&
   s{ s" lo" s" la" }s& s" que" s& s" antes" s?&
   s{ s" era" s" fue" s" fuera" }s&
   s{ s" tu" s" la" }s& s{ s" negra" s" oscura" }s?&
@@ -1838,36 +1824,35 @@ svariable scroll_prompt  \ Guardará el presto de pausa
 \ }}}---------------------------------------------
 subsection( Impresión de párrafos ajustados)  \ {{{
 
-false [if]  \ Antiguo!!!
-last_col value max_x  \ Número máximo de columna 
-last_row value max_y  \ Número máximo de fila (25 filas)
-[then]
+true constant [new_print] immediate
+
+[new_print] [if]
+
+
+require ghoul/print.fs
 
 \ Indentación de la primera línea de cada párrafo (en caracteres):
 2 constant default_indentation  \ Predeterminada 
 8 constant max_indentation  \ Máxima
 variable /indentation  \ En curso
 
-[old_cursor] [if]
-: line++
-  \ Incrementa el número de línea, si se puede.
-  \ No se usa!!!
-  \ Versión para no pasar del máximo:
-  \   cursor_y @ 1+ max_y 1- min cursor_y !
-  \ Versión circular para pasar del máximo a cero:
-  \ cursor_y dup @ 1+ dup max_y < abs * swap !
-  \ Versión circular, con puesta a cero de la columna:
-  \ cursor_y @ 1+ dup max_y < abs *  0 swap at-xy
-  \ 2011-12-01 Cambio!!!:
-  cursor_y @ 1+ dup max_y < and  0 swap at-xy
+: indent
+  \ Mueve el cursor a la posición requerida por la indentación.
+  /indentation @ ?dup if  trm+move-cursor-right  then
   ;
-: cr+
-  \ Hace un salto de línea y actualiza el cursor.
-  cr  cursor_y ++ cursor_x off 
-  ;
-[else] 
-  ' cr alias cr+
-[then]
+
+variable indent_first_line_too?  \ ¿Se indentará también la línea superior de la pantalla, si un párrafo empieza en ella?
+
+' cr alias cr+
+
+[else]  \ Old system
+
+\ Indentación de la primera línea de cada párrafo (en caracteres):
+2 constant default_indentation  \ Predeterminada 
+8 constant max_indentation  \ Máxima
+variable /indentation  \ En curso
+
+' cr alias cr+
 : ?cr  ( u -- )
   \ Hace un salto de línea si hace falta.
   \ u = Longitud en caracteres del párrafo que ha sido imprimido
@@ -1879,10 +1864,7 @@ variable /indentation  \ En curso
   ;
 : not_first_line?  ( -- ff )
   \ ¿La línea de pantalla donde se imprimirá es la primera?
-  [old_cursor]
-  [if]    cursor_y @
-  [else]  row
-  [then]  0>
+  row 0>
   ;
 variable indent_first_line_too?  \ ¿Se indentará también la línea superior de la pantalla, si un párrafo empieza en ella?
 : indentation?  ( -- ff )
@@ -1951,6 +1933,7 @@ variable indent_first_line_too?  \ ¿Se indentará también la línea superior d
   \ y una separación posterior si hace falta.
   dup >r  paragraph/ r> ?cr
   ;
+false [if]  \ Inacabado!!!
 : str_first_word_length  ( a -- u )
   \ Devuelve la longitud de la primera palabra de una cadena dinámica.
   \ a = Dirección de la cadena dinámica
@@ -1999,6 +1982,11 @@ variable indent_first_line_too?  \ ¿Se indentará también la línea superior d
   else  drop paragraph/
   then
   ;
+[then]
+
+
+[then]
+
 : report  ( a u -- )
   \ Imprime una cadena como un informe de error.
   error_color paragraph system_color
@@ -2014,7 +2002,7 @@ subsection( Pausas y prestos en la narración)  \ {{{
 variable indent_pause_prompts?  \ ¿Hay que indentar también los prestos?
 : .prompt  ( a u -- )
   \ Imprime un presto.
-  indent_pause_prompts? @ if  indent  then  type
+  indent_pause_prompts? @ if  indent  then  cr type
   ;
 
 dtm-create deadline  \ Variable para guardar el momento final de las pausas
@@ -2963,7 +2951,7 @@ cell constant /article_gender_set  \ De femenino a masculino
   \ Devuelve la terminación adecuada del plural para el nombre de un ente.
   [false] [if]
     \ Método 1, «estilo BASIC»:
-    has_plural_name? if  s" s"  else  0$  then
+    has_plural_name? if  s" s"  else  ""  then
   [else]
     \ Método 2, sin estructuras condicionales, «estilo Forth»:
     s" s" rot has_plural_name? and
@@ -3983,6 +3971,13 @@ a la sección de textos calculados.
 \ ------------------------------------------------
 \ Albergue de los refugiados
 
+: the_refugees$  ( -- a u )
+  leader% conversations?
+  if  s" los refugiados"  else  s" todos"  then
+  ;
+: ^the_refugees$  ( -- a u )
+  the_refugees$ ^uppercase
+  ;
 : they_don't_let_you_pass$  ( -- a u )
   \ Mensaje de que los refugiados no te dejan pasar.
   s{
@@ -4515,8 +4510,7 @@ refugees% :attributes
   ;attributes
 refugees% :description
   my_location case
-  location_28% of
-    endof
+  location_28% of  refugees_description  endof
   location_29% of
     \ Pendiente!!! Provisional!!!
     s" Todos los refugiados quedaron atrás." paragraph
@@ -5584,13 +5578,13 @@ location_28% :description
     s" amplia estancia, que se extiende de Norte a Este," s&
     leader% conversations?
     if  s" hace de albergue para los refugiados."
-    else  s" está llena de gente. Parecen refugiados."
+    else  s" está llena de gente."
     then  s& 
     s" Hay banderas de ambos bandos." s&
     paragraph
     endof
   east% of
-    s" Los refugiados"
+    ^the_refugees$
     self% has_east_exit?
     if  they_let_you_pass$ s&
     else  they_don't_let_you_pass$ s&
@@ -6489,7 +6483,7 @@ variable current_preposition
 ' (impossible_error#) is impossible_error#
 : try$  ( -- a u )
   \ Devuelve una variante de «intentar» (o vacía).
-  s{ 0$ 0$ s" intentar" }s
+  s{ "" "" s" intentar" }s
   ;
 : nonsense$  ( -- a u )
   \ Devuelve una variante de «no tiene sentido»,
@@ -6671,7 +6665,7 @@ variable silent_well_done?  \ No se usa todavía!!!
   s" más" s&
   s{ s" importantes" s" urgentes" s" útiles" }s&
   s{
-  0$ s" a que prestar atención" s" de que ocuparse"
+  "" s" a que prestar atención" s" de que ocuparse"
   s" para ocuparse" s" para prestarles atención"
   }s&
   ;
@@ -6784,7 +6778,7 @@ variable silent_well_done?  \ No se usa todavía!!!
 ' (you_do_not_have_what_error#) is you_do_not_have_what_error#
 
 : it_seems$  ( -- a u )
-  s{ 0$ s" parece que" s" por lo que parece," }s
+  s{ "" s" parece que" s" por lo que parece," }s
   ;
 : it_is$  ( -- a u )
   s{ s" es" s" sería" s" será" }s
@@ -7214,7 +7208,7 @@ section( Recursos de las tramas asociadas a lugares)  \ {{{
   ;
 : the_refugees_surround_you$  ( -- a u )
   \ Descripción de la actitud de los refugiados.
-  s" Los refugiados"
+  ^the_refugees$
   location_28% has_east_exit?
   if  they_let_you_pass$ 
   else  they_don't_let_you_pass$
@@ -7477,7 +7471,7 @@ section( Trama global)  \ {{{
   \ Inacabado!!!
   ^your_soldiers$
   s" empiezan a acusar" s&
-  s{ 0$ s" visiblemente" s" notoriamente" }s&
+  s{ "" s" visiblemente" s" notoriamente" }s&
   s" el" s&{ s" titánico" s" enorme" }s?&
   s" esfuerzo." s&
   ;
@@ -7717,7 +7711,7 @@ here swap - cell / constant battle_phases  \ Fases de la batalla
   s{ s" e intimidante" s" e impenetrable" s" y sobrecogedora" }s&
   s" oscuridad," s&
   s{ s" vuelves atrás" s" retrocedes" }s&
-  s{ 0$ s" unos pasos" s" sobre tus pasos" }s&
+  s{ "" s" unos pasos" s" sobre tus pasos" }s&
   s" hasta donde puedes ver." s&
   narrate  scene_break
   location_17% enter_location
@@ -7911,7 +7905,7 @@ section( Errores del intérprete de comandos)  \ {{{
   ;
 : in_the_sentence$  ( -- a u )
   \ Devuelve una variante de «en la frase» (o una cadena vacía).
-  s{ 0$ s" en la frase" s" en el comando" s" en el texto" }s
+  s{ "" s" en la frase" s" en el comando" s" en el texto" }s
   ;
 : error_comment_0$  ( -- a u )
   \ Devuelve la variante 0 del mensaje de acompañamiento para los errores lingüísticos.
@@ -7932,11 +7926,12 @@ section( Errores del intérprete de comandos)  \ {{{
   \ Comienzo común:
   s{ s" intenta" s" procura" s" prueba a" }s
   s{ s" reescribir" s" expresar" s" escribir" s" decir" }s&
+  \ Pendiente!!! este "lo" crea problema de concordancia con el final de la frase:
   s{ s"  la frase" s" lo" s"  la idea" }s+
   s{
   \ Final 0:
-  s{ 0$ s" de" s" otra" }s way$ s&
-  s{ 0$ s" un poco" s" algo" }s& s" más" s&
+  s{ s" de" s" otra" }s way$ s&? 
+  s{ "" s" un poco" s" algo" }s& s" más" s&
   s{ s" simple" s" sencilla" s" clara" }s&
   \ Final 1:
   s{ s" más claramente" s" con más sencillez" }s
@@ -9079,7 +9074,7 @@ subsection( Agredir)  \ {{{
   s" se da a la fuga" s" se quita de enmedio"
   s" se aparta" s" escapa"
   }s&
-  s{ 0$ s" asustada" s" atemorizada" }s&
+  s{ "" s" asustada" s" atemorizada" }s&
   narrate
   ;
 : attack_the_snake
@@ -9433,7 +9428,7 @@ subsection( Nadar)  \ {{{
   s" la dejas caer" s" la sueltas" }s
   rot if  \ ¿Inicio de frase?
     s{ s" Rápidamente" s" Sin dilación"
-    s" Sin dudarlo" s{ 0$ s" un momento" s" un instante" }s&
+    s" Sin dudarlo" s{ "" s" un momento" s" un instante" }s&
     }s 2swap s&
   then  period+
   ;
@@ -9461,7 +9456,7 @@ subsection( Nadar)  \ {{{
   \ Devuelve la segunda versión del mensaje sobre hundirse con la coraza.
   s" El peso de tu coraza"
   s{ s" te arrastra" s" tira de ti" }s&
-  s{ 0$ s" sin remedio" s" con fuerza" }s&
+  s{ "" s" sin remedio" s" con fuerza" }s&
   s{
   s" hacia el fondo"
   s" hacia las profundidaes" 
@@ -9483,7 +9478,7 @@ subsection( Nadar)  \ {{{
   \  Devuelve mensaje sobre nadar.
   cuirasse% is_hold? 
   if  you_swim_with_cuirasse$  cuirasse% vanish
-  else  0$
+  else  ""
   then  swiming$ s&
   ;
 :action do_swim
@@ -9670,15 +9665,25 @@ subsection( Hablar y presentarse)  \ {{{
 \ Conversaciones con el líder de los refugiados
 
 : a_man_takes_the_stone
-  \ Mensaje sobre el hombre que devuelve la pieda a su sitio.
-  s{ s" Un hombre" s" Uno de los" s{ s" hombres" s" refugiados" }s }s
+  \ Un hombre te quita la piedra.
+  s{  s" Un hombre" s" Un refugiado"
+      s" Uno de los" s{ s" hombres" s" refugiados" }s&
+  }s{ s" se adelanta,"
+      s" sale de entre"
+        s{  s" sus compañeros" s" los otros"
+            s" la multitud" s" la gente"
+        }s& comma+
+  }s?&
+  s{  s" se te acerca," s" se acerca a ti,"
+      s" se te aproxima," s" se aproxima a ti,"
+  }s?&
   s" te" s&{ s" arrebata" s" quita" }s&
   s" la piedra" s& s" de las manos" s?& s" y" s&
   s{
-    s" se la lleva."
-    s{ s" se marcha" s" se va" s" desaparece" }s s" con ella" s?& period+
-  }s&
-  narrate  location_18% stone% is_there
+    s" se la lleva"
+    s{ s" se marcha" s" se va" s" desaparece" }s s" con ella" s?&
+  }s& period+ narrate
+  location_18% stone% is_there
   ;
 : gets_angry$  ( -- a u )
   \ Devuelve una variante de «se enfada».
@@ -9686,49 +9691,118 @@ subsection( Hablar y presentarse)  \ {{{
   ;
 : the_leader_gets_angry$  ( -- a u )
   \ Devuelve una variante de «El líder se enfada».
+  \ Yo no se usa!!! 
   s{ s" Al verte" s" Viéndote" s" Tras verte" }s
-  s{ s" llegar" s" aparecer" s" venir" }s
+  s{ s" llegar" s" aparecer" s" venir" }s&
   again$ stone_forbidden? @ ?keep s&
   s" con la piedra," s&
-  s" el" old_man$ s& gets_angry$ s& ^uppercase
+  s" el" s& old_man$ s& gets_angry$ s& 
   ;
 : the_leader_gets_angry
   \ Mensaje de que el líder se enfada.
-  the_leader_gets_angry$ s& period+
-  narrate
+  \ Ya no se usa!!! 
+  the_leader_gets_angry$ period+ narrate
+  ;
+: warned_once$  ( -- a u )
+  s{
+  s" antes"
+  s" en la ocasión anterior"
+  s" en la otra ocasión" 
+  s" en una ocasión" 
+  s" la otra vez"
+  s" la vez anterior"
+  s" una vez"
+  }s
+  ;
+: warned_twice$  ( -- a u )
+  s{
+  s" antes"
+  s" dos veces"
+  s" en dos ocasiones"
+  s" en las otras ocasiones"
+  s" en mas de una ocasión"
+  s" en un par de ocasiones"
+  s" las otras veces"
+  s" más de una vez"
+  s" un par de veces"
+  }s
+  ;
+: warned_several_times$  ( -- a u )
+  s{
+  s" en las otras ocasiones"
+  s" en más de dos ocasiones"
+  s" en más de un par de ocasiones"
+  s" en otras ocasiones"
+  s" en varias ocasiones"
+  s" las otras veces"
+  s" más de dos veces"
+  s" más de un par de veces"
+  s" otras veces"
+  s" varias veces"
+  }s
+  ;
+: warned_many_times$  ( -- a u )
+  s{
+  s" demasiadas veces"
+  s" en demasiadas ocasiones"
+  s" en incontables ocasiones"
+  s" en innumerables ocasiones"
+  s" en las otras ocasiones"
+  s" en muchas ocasiones"
+  s" en varias ocasiones"
+  s" incontables veces"
+  s" innumerables veces"
+  s" las otras veces"
+  s" muchas veces"
+  s" otras veces"
+  s" varias veces"
+  }s
+  ;
+: times_warned  ( u -- a1 u1 )
+  { times }  \ Variable local
+  true case
+    times 0 = of  ""  endof
+    times 1 = of  warned_once$  endof
+    times 2 = of  warned_twice$  endof
+    times 6 < of  warned_several_times$  endof
+    warned_many_times$ rot
+  endcase
   ;
 : already_warned$  ( -- a u )
   \ Mensaje de que el líder ya te advirtió sobre un objeto.
-  s" Ya"
+  \ Pendiente!!! Elaborar más.
+  s" ya" s?
   s{
     s" fuisteis" s{ s" avisado" s" advertido" }s& s" de ello" s?&
     s" se os" s{ s" avisó" s" advirtió" }s& s" de ello" s?&
-    s" así os lo" s{ s" hicimos saber" s" advertimos" }s&
-    s" se os hizo saber"
-    s" se os dejó claro"
-  }s period+
-  [false] [if]  \ Inacabado!!!
-  s{
-    s" No deberíais"
-    s" insistir."
-  }s
-  [then]
+    s" os lo" s{ s" hicimos saber" s" advertimos" }s&
+    s" os lo" s{ s" hice saber" s" advertí" }s&
+    s" se os" s{ s" hizo saber" s" dejó claro" }s&
+  }s& 
   ;
-: already_warned_about_the_stone$  ( -- a u | a 0 )
-  \ Mensaje de que el líder ya te advirtió sobre la piedra.
-  stone_forbidden? @ if  already_warned$  else  ""  then
+: already_warned  ( u -- a1 u1 )
+  \ Mensaje de que el líder ya te advirtió sobre un objeto,
+  \ con indicación al azar del número de veces.
+  times_warned already_warned$ rnd2swap s& period+ ^uppercase
   ;
 : you_can_not_take_the_stone$  ( -- a u )
   \ Mensaje de que no te puedes llevar la piedra.
   s{ s" No" s" En modo alguno" s" De ninguna" way$ s& s" De ningún modo" }s
-  s" podemos" s{ s" permitiros" s" consentiros" s" toleraros" }s
-  s{ s" huir con" s" escapar con" s" marchar con" s" pasar con"
-  s" que os vayáis con" s" que os marchéis con"
-  s" que marchéis con" s" que os llevéis" s" que robéis" s" que nos robéis"
-  s" que os apropiés de" s" que os apoderéis de" s" que os adueñéis de"
-  }s& s" la piedra del druida" 
+  s" podemos" s&
+  s{
+    s{ s" permitiros" s" consentiros" }s
+      s{ s" huir" s" escapar" s" marchar" s" pasar" }s& s" con" s&
+    s{ s" permitir" s" consentir" s" aceptar" }s s" que" s&
+      s{  s{ s" huyáis" s" escapéis" s" marchéis" s" paséis" }s s" con" s&
+          s" os vayáis con"
+          s" os" s? s" marchéis con" s&
+          s" os llevéis"
+          s" nos" s? s" robéis" s&
+          s" os" s{ s" apropiés" s" apoderéis" s" adueñéis" }s& s" de" s&
+      }s&
+  }s& s" la" s" piedra del druida" 
   2dup stone% fname!  \ Nuevo nombre para la piedra
-  period+ s&
+  s& s& period+
   ;
 : gesture_about_the_stone$  ( -- a u )
   \ Mensaje de que el líder hace un gesto sobre la piedra.
@@ -9738,50 +9812,50 @@ subsection( Hablar y presentarse)  \ {{{
   s" casi imperceptible" s?&
   s" ..." s+ 
   ;
-: you_can_not_take_the_stone
-  \ El líder dice que no te puedes llevar la piedra.
-  you_can_not_take_the_stone$ already_warned_about_the_stone$ s& speak
-  gesture_about_the_stone$ narrate narration_break
-  ;
-: the_stone_must_be_in_its_place
+: the_stone_must_be_in_its_place$  ( -- a u )
   \ El líder dice que la piedra debe ser devuelta.
   s" La piedra" s{ s" ha de" s" debe" s" tiene que" }s&
   s{ s" ser devuelta" s" devolverse" to_go_back$ }s&
   s{
-    s" a su lugar" s& s" de encierro" s?&
+    s" a su lugar" s" de encierro" s?&
     s" al lugar al que pertenece"
-    s" al lugar del que nunca debió" s{ s" salir" s" ser sacada" s" ser arrancada" }s
+    s" al lugar del que nunca debió" s{ s" salir" s" ser sacada" s" ser arrancada" }s&
     s" al lugar que nunca debió" s{ s" abandonar" s" haber abandonado" }s&
-  }s& period+ speak
+  }s& 
   ;
-: the_leader_talks_about_the_stone
+: the_leader_warns_about_the_stone
   \ El líder habla acerca de la piedra.
-  the_leader_gets_angry
-  you_can_not_take_the_stone  
-  the_stone_must_be_in_its_place
+  stone_forbidden? @ already_warned
+  you_can_not_take_the_stone$
+  the_stone_must_be_in_its_place$ rnd2swap s& s&
+  period+ speak
   ;
-: the_leader_points_to_the_north
+: the_leader_points_to_the_north$  ( -- a u )
   \ El líder se enfada y apunta al Norte.
-  the_leader_gets_angry$  
-  s" y" s&{ s" alza" s" extiende" s" levanta" }s&
+  leader% ^full_name
+  s{ s" alza" s" extiende" s" levanta" }s&
   s{ s" su" s" el" }s& s" brazo" s&
   s{ s" indicando" s" en dirección" s" señalando" }s&
   toward_the(m)$ s& s" Norte." s&
-  narrate
   ;
-: nobody_passes_with_arms
+: the_leader_points_to_the_north
+  \ El líder se enfada y apunta al Norte.
+  the_leader_points_to_the_north$ narrate
+  ;
+: nobody_passes_with_arms$  ( -- a u )
   \ El líder dice que nadie pasa con armas.
   s{ s" Nadie" s" Ningún hombre" }s
   s{ s" con" s" llevando" s" portando" s" portador de"
   s" que porte" s" que lleve" }s&
   s{ s" armas" s" un arma" s" una espada" }s&
   with_him$ s&{ s" debe" s" puede" s" podrá" }s& 
-  s" pasar." s&  speak
+  s" pasar." s&
   ;
-: the_leader_talks_about_the_sword
+: the_leader_warns_about_the_sword
   \ El líder habla acerca de la espada.
-  the_leader_points_to_the_north  
-  nobody_passes_with_arms  
+  the_leader_points_to_the_north
+  sword_forbidden? @ already_warned
+  nobody_passes_with_arms$ s& speak
   ;
 : the_leader_points_to_the_east
   \ El líder apunta al Este.
@@ -9840,7 +9914,7 @@ subsection( Hablar y presentarse)  \ {{{
   \ El líder te corta, confiado.
   s" El" old_man$ s& s" asiente" s&
   s{ s" confiado" s" con confianza" }s& s" y," s&
-  s" con un suave gesto" s& s" de su mano" s?& comma+ 
+  s" con un suave gesto" s& s" de su mano" s?& comma+
   s" te interrumpe para" s&
   s{  s" explicar" s{ s" te" s" se" "" }s+
       s" presentarse" s" contarte" s" decir" s" te" s?+
@@ -9869,23 +9943,24 @@ subsection( Hablar y presentarse)  \ {{{
   my_name_is$ s" Ulfius y..." s& speak talked_to_the_leader
   the_leader_introduces_himself
   ;
-: the_leader_checks_the_stone
-  \ El jefe te avisa de que no puedes pasar con la piedra.
-  the_leader_talks_about_the_stone
+: the_leader_forbids_the_stone
+  \ El jefe te avisa de que no puedes pasar con la piedra y te la quita.
+  the_leader_warns_about_the_stone
   stone_forbidden? +++  \ Recordarlo
+  gesture_about_the_stone$ narrate narration_break
   a_man_takes_the_stone
   ;
-: the_leader_checks_the_sword
+: the_leader_forbids_the_sword
   \ El jefe te avisa de que no puedes pasar con la espada.
-  the_leader_talks_about_the_sword
+  the_leader_warns_about_the_sword
   sword_forbidden? +++  \ Recordarlo
   ;
 : the_leader_checks_what_you_carry
   \ El jefe controla lo que llevas.
   \ Pendiente!!! Mejorar para que se pueda pasar si dejamos el objeto en el suelo o se lo damos.
   true case
-    stone% is_accessible? of  the_leader_checks_the_stone  endof
-    sword% is_accessible? of  the_leader_checks_the_stone  endof
+    stone% is_accessible? of  the_leader_forbids_the_stone  endof
+    sword% is_accessible? of  the_leader_forbids_the_sword  endof
     the_leader_lets_you_go
   endcase
   ;
@@ -9973,7 +10048,7 @@ subsection( Hablar y presentarse)  \ {{{
   s" Ulfius," s&
   s" cumplid vuestra" s{ s" promesa." s" palabra." }s&
   s" Tomad la llave" s&
-  s{ 0$ s" en vuestra mano" s" en vuestras manos" s" con vos" }s&
+  s{ "" s" en vuestra mano" s" en vuestras manos" s" con vos" }s&
   s" y abrid la puerta de la cueva." s&  speak
   key% is_hold
   \ aquí en SuperBASIC: do_takeable the_key \ pendiente!!!
@@ -10780,16 +10855,6 @@ immediate
 [then]
 ' true alias sí
 ' false alias no
-false [if]  \ Antiguo!!! Se tomará el tamaño actual de la consola.
-: columnas  ( u -- )
-  \ Cambia el número de columnas.
-  1- to max_x
-  ;
-: líneas ( u -- )
-  \ Cambia el número de líneas.
-  1- to max_y
-  ;
-[then]
 : varón
   \ Indica que el jugador es un varón.
   woman_player? off
@@ -10927,10 +10992,6 @@ restore_vocabularies
   -1 narration_break_seconds !
   -1 scene_break_seconds !
   scene_page? on
-  [false] [if]  \ Antiguo!!!
-  last_col to max_x  \ Número máximo de columna 
-  last_row to max_y  \ Número máximo de fila 
-  [then]
   verbose_language_errors? on
   init_prompts  init_colors
   ;
@@ -11060,16 +11121,17 @@ adecuada.
   \ Puede referirse a los soldados o a los refugiados.
   [false] [if] \ Primera versión.
     true case
-      pass_still_open? battle? or of  soldiers%  endof
       location_28% am_i_there? location_29% am_i_there? or of  refugees%  endof
+      pass_still_open? battle? or of  soldiers%  endof
       false swap
     endcase
   [else]  \ Segunda versión, lo mismo pero sin 'case':
-    pass_still_open? battle? or
-    if  soldiers% exit  then
     location_28% am_i_there? location_29% am_i_there? or
     if  refugees% exit  then
+    pass_still_open? battle? or
+    if  soldiers% exit  then
     false
+  [then]
   ;
 : (ambrosio) ( -- a | false )
   \ Devuelve el ente adecuado a la palabra «ambrosio»
@@ -11682,7 +11744,7 @@ o sustantivos.
 \ «jefe» podría ser también el jefe de los enemigos durante la batalla:
 : jefe  leader% complement!  ;
 ' jefe synonyms{
-  líder refugiado viejo anciano abuelo
+  líder viejo anciano abuelo
   }synonyms
 : soldados  soldiers% complement!  ;
 ' soldados synonyms{
@@ -11691,9 +11753,8 @@ o sustantivos.
   guerrero luchador combatiente camarada
   compañero oficial suboficial militar
   }synonyms
-: refugiados  refugees% complement!  ;
-' refugiados synonyms{
-  refugiada refugiadas
+: multitud  refugees% complement!  ;
+' multitud synonyms{
   niño niños niña niñas
   muchacho muchachos muchacha muchachas
   adolescente adolescentes 
@@ -11705,9 +11766,12 @@ o sustantivos.
   bebé bebés beba bebas bebito bebitos bebita bebitas
   pobres desgraciados desafortunados
   desgraciadas desafortunadas
-  muchedumbre multitud masa
-  bandos
+  muchedumbre masa enjambre
   }synonyms  
+: refugiados leader% conversations? if  multitud  then  ;
+' refugiados synonyms{ refugiada refugiadas }synonyms  
+: refugiado leader% conversations? if  viejo  then  ;
+ 
 : altar  altar% complement!  ;
 : arco  arch% complement!  ;
 : capa  cloak% complement!  ; \ pendiente!!! hijuelo?
@@ -12141,11 +12205,11 @@ svariable command  \ Zona de almacenamiento del comando
 : wait_for_input  ( -- a u )
   \ Espera y devuelve el comando introducido por el jugador.
   input_color  command /command accept
-  cr command swap  str+strip  \ Eliminar espacios laterales
+  command swap  str+strip  \ Eliminar espacios laterales
   ;
 : .command_prompt
   \ Imprime un presto para la entrada de comandos.
-  command_prompt_color indent command_prompt$ type
+  command_prompt_color indent command_prompt$ cr type
   cr_after_command_prompt? @ if
     cr indent
   else
@@ -12159,7 +12223,7 @@ svariable command  \ Zona de almacenamiento del comando
   ;
 : listen  ( -- a u )
   \ Imprime un presto y devuelve el comando introducido por el jugador.
-  [debug_info] [if]  0$ debug  [then]  \ Depuración!!!
+  [debug_info] [if]  "" debug  [then]  \ Depuración!!!
   .command_prompt wait_for_input
   [debug] [if]  cr cr ." <<<" 2dup type ." >>>" cr cr  [then]  \ Depuración!!!
   ; 
@@ -12379,8 +12443,8 @@ section( Acerca del programa)  \ {{{
   ;
 : program
   \ Muestra el nombre y versión del programa.
-  s" «Asalto y castigo» (escrito en Gforth)" paragraph/
-  s" Versión " version$ s& paragraph/
+  s" «Asalto y castigo» (escrito en Gforth)" paragraph
+  s" Versión " version$ s& paragraph
   ;
 : about
   \ Muestra información sobre el programa.
@@ -12445,7 +12509,7 @@ section( Introducción)  \ {{{
   ;
 : needed_orders$  ( -- a u )
   \ Devuelve una variante de «órdenes necesarias».
-  s" órdenes" s{ 0$ s" necesarias" s" pertinentes" }s&
+  s" órdenes" s{ "" s" necesarias" s" pertinentes" }s&
   ;
 : intro_5
   \ Muestra la introducción al juego (parte 5).
@@ -12513,8 +12577,8 @@ section( Principal)  \ {{{
   ;
 
 also forth definitions
-' main alias ayc
 ' main alias go
+' main alias run
 
 : i0
   \ Hace toda la inicialización; para depuración!!!.
@@ -12701,6 +12765,14 @@ do_take_off
 
 \ }}} ########################################################## 
 \ Tareas pendientes: programación {{{
+
+...........................
+2012-04-30:
+
+Hacer que el nombre de algunos escenarios cambie.  Por
+ejemplo, el refugio debe llamarse "Una amplia estancia"
+hasta que hablamos con el anciano; después se llamará "El
+refugio".
 
 ...........................
 2012-03-01:
@@ -13260,7 +13332,4 @@ A esto: «La palabra 'zx', a veces, se usa como 'zx2'.»
 Recortar las líneas para que no sobrepasen los 75 caracteres.
 
 }}}
-
-
-
 
