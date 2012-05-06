@@ -6,9 +6,9 @@ CR .( Asalto y castigo )  \ {{{
 
 \ Copyright (C) 2011,2012 Marcos Cruz (programandala.net)
 
-ONLY FORTH DEFINITIONS
-: version$  ( -- a u )  S" A-04-2012050621"  ;
-version$ TYPE CR
+only forth definitions
+: version$  ( -- a u )  s" A-04-2012050701"  ;
+version$ type cr
 
 \ 'Asalto y castigo' is free software; you can redistribute
 \ it and/or modify it under the terms of the GNU General
@@ -140,36 +140,33 @@ require ghoul/sb.fs \ Almacén circular de cadenas de texto
 ' bs" alias s" immediate
 2048 dictionary_sb
 
-require ghoul/mdrop.fs 
-require ghoul/2mdrop.fs
-require ghoul/2choose.fs ' 2choose alias schoose
-require ghoul/choose.fs
+require ghoul/mdrop.fs  \ Eliminación de varios elementos de la pila
+require ghoul/2mdrop.fs  \ Eliminación de varios elementos dobles de la pila
+require ghoul/2choose.fs  \ Selección aleatoria de un elemento doble de la pila
+' 2choose alias schoose
+require ghoul/choose.fs  \ Selección aleatoria de un elemento de la pila
 require ghoul/random_strings.fs  \ Selección aleatoria de cadenas de texto
 require ghoul/xy.fs  \ Posición actual del cursor
 require ghoul/print.fs  \ Impresión de textos ajustados
 require ghoul/sconstant.fs \ Constantes de cadenas de texto
 require ghoul/svariable.fs \ Variables de cadenas de texto
-require ghoul/randomize.fs 
-require ghoul/between.fs 
+require ghoul/randomize.fs
+require ghoul/between.fs  \ 'between' (variante habitual de 'within')
+require ghoul/home.fs
+require ghoul/enum.fs
+require ghoul/increment.fs  \ '++'
+require ghoul/decrement.fs  \ '--'
+require ghoul/question-empty.fs  \ '?empty' y '?keep'
 
 \ Otras herramientas
 
 require halto2.fs \ Puntos de chequeo para depuración
 false to halto?
 
-\ Palabras de uso común
-
-: enum  (  n "name" -- n+1 )  dup constant 1+  ;
-: ++  ( a -- )  1 swap +!  ;
-: --  ( a -- )  -1 swap +!  ;
-: home  0 dup at-xy  ;
-
-\ Palabras diversas
-
-: wait  key drop  ;
-
 \ }}} ##########################################################
 \ Meta \ {{{
+
+: wait  key drop  ;
 
 : \eof ( -- )
   \ Ignora el resto del fichero
@@ -1132,22 +1129,6 @@ str-create tmp_str  \ Cadena dinámica de texto temporal para usos variados
   s" o" s&
   ;
 
-: (?keep)  ( a u ff -- a u | a 0 )
-  \ Conserva una cadena si un indicador es 'true'
-  \ si es 'false' la vacía.
-  abs *
-  ;
-: ?keep  ( a u f -- a u | a 0 )
-  \ Conserva una cadena si un indicador no es cero;
-  \ si es cero la vacía.
-  0<> (?keep)
-  ;
-: ?empty  ( a u f -- a u | a 0 )
-  \ Vacía una cadena si un indicador no es cero;
-  \ si es cero la conserva. 
-  0= (?keep)
-  ;
-
 \ }}} ##########################################################
 section( Textos aleatorios)  \ {{{
 
@@ -1702,6 +1683,9 @@ s" de Westmorland" sconstant of_westmorland$
   ;
 : ^finally$  ( -- a u )
   finally$ ^uppercase
+  ;
+: rocky(f)$  ( -- a u )
+  s{ s" rocosa" s" de roca" s" s" s?+ }s
   ;
 
 \ }}} ##########################################################
@@ -3459,6 +3443,7 @@ entity: lock%
 entity: log%
 entity: piece%
 entity: rags%
+entity: ravine_wall%
 entity: rocks%
 entity: snake%
 entity: (stone%) ' (stone%) is stone%
@@ -3466,6 +3451,7 @@ entity: (sword%) ' (sword%) is sword%
 entity: table%
 entity: thread%
 entity: (torch%) ' (torch%) is torch%
+entity: wall%  \ Inacabado!!!
 entity: waterfall%
 
 \ Entes escenario (en orden de número):
@@ -4316,6 +4302,25 @@ create 'cave_descriptions
   ;
 
 \ ------------------------------------------------
+\ Pared del desfiladero
+
+: it_looks_impassable$  ( -- a u )
+  \ Mensaje «parece infranqueable».
+  s{ s" por su aspecto" s" a primera vista" s" en principio" }s?
+  s{  s" parece imposible" s" de" s?& s{ s" superar" s" atravesar" s" franquear" s" vencer" }s&
+      \ Eliminar!!!:
+      \ s" no parece ofrecer" s{ s" salida" s" escapatoria" }s& s" alguna" s?&
+      s" parece" s{ s" insuperable" s" invencible" s" infranqueable" }s& 
+  }s& 
+  ;
+: the_cave_entrance_is_visible$  ( -- a u )
+  s{  s" se" s{ s" ve" s" abre" s" haya"
+                s" encuentra" s" aprecia" s" distingue" }s&
+      s" puede" s{ s" verse" s" apreciarse" s" distinguirse" }s&
+  }s cave_entrance% full_name s&
+  ;
+
+\ ------------------------------------------------
 \ Entrada a la cueva
 
 : the_cave_entrance_was_discovered?
@@ -4330,7 +4335,8 @@ create 'cave_descriptions
   \ Comunica el escenario 8 con el 10 (de dos formas y en ambos sentidos).
   location_08% dup location_10% s<-->  location_10% i<-->
   ;
-: you_find_out_the_cave$  ( -- a u )
+: you_discover_the_cave_entrance$  ( -- a u )
+  \ Mensaje de que descubres la cueva.
   ^but$ comma+
   s{  s" reconociendo" s" el terreno" more_carefully$ rnd2swap s& s&
       s" fijándote" more_carefully$ s&
@@ -4338,10 +4344,40 @@ create 'cave_descriptions
   s" sin duda" s?& s{ s" parece ser" s" es" s" debe de ser" }s&
   s{ s" la entrada" s" el acceso" }s& s" a una" s& cave$ s&
   ;
-: you_find_out_the_cave
-  you_find_out_the_cave$ period+ paragraph
+: you_discover_the_cave_entrance
+  \ Descubres la cueva.
+  you_discover_the_cave_entrance$ period+ paragraph
   open_the_cave_entrance
   cave_entrance% is_here
+  ;
+: you_maybe_discover_the_cave_entrance  ( a u -- )
+  \ Descubres la cueva con un 50% de probabilidad.
+  \ a u = Texto introductorio
+  s" ..." s+ paragraph
+  2 random 0= if  narration_break you_discover_the_cave_entrance  then
+  ;
+: the_cave_entrance_is_hidden$  ( -- a u )
+  s" La entrada" s" a la cueva" s?&
+  s{ s" está" s" muy" s?& s" no podría estar más" }s&
+  s{ s" oculta" s" camuflada" s" escondida" }s& 
+  s" en la pared" s& rocky(f)$ s& period+
+  ;
+: you_were_lucky_finding_it_out$ ( -- a u )
+  s" Has tenido" s& s" muy" s?& s" buena" s&{ s" fortuna" s" suerte" }s&
+  s{  s{ s" al" s" en" s" con" }s
+        s{ s" hallarla" s" encontrarla" s" dar con ella" s" descubrirla" }s&
+      s{  s" hallándola" s" encontrándola"
+          s" dando con ella" s" descubriéndola"
+      }s
+  }s& period+
+  ;
+: it's_your_last_hope$  ( -- a u )
+  s{ s" te das cuenta de que" s" sabes que" }s?
+  s{ s" es" s" se trata de" }s& ^uppercase s&
+  s{ s" la" s" tu" }s& s{ s" única" s" última" }s&
+  s{ s" salida" s" opción" s" esperanza" s" posibilidad" }s&
+  s{ s" de" s" para" }s{ s" escapar" s" huir" s" evitar ser capturado" }s&? s&
+  period+ 
   ;
 
 \ ------------------------------------------------
@@ -4534,30 +4570,10 @@ cave_entrance% :attributes
   s" entrada a una cueva" self% fname!
   ;attributes
 cave_entrance% :description
-  [false] [if] \ Primer borrador, obsoleto!!!
-  my_location case  
-    location_08% of  s" [La entrada a la cueva vista desde fuera]"  endof
-    location_10% of  s" [La entrada de la cueva vista desde dentro]"  endof
-    \ Inacabado!!! Ojo con el caso predeterminado. Se supone que no debería darse.
-  endcase  period+ paragraph
-  [then]
-  s" La entrada" s" a la cueva" s?&
-  s{ s" está" s" muy" s?& s" no podría estar más" }s&
-  s{ s" oculta" s" camuflada" s" escondida" }s& 
-  s" en la pared" s&{ s" de rocas" s" rocosa" }s& period+
-  s" Has tenido" s& s" muy" s?& s" buena" s&{ s" fortuna" s" suerte" }s&
-  s{  s{ s" al" s" en" s" con" }s
-        s{ s" hallarla" s" encontrarla" s" dar con ella" s" descubrirla" }s&
-      s{  s" hallándola" s" encontrándola"
-          s" dando con ella" s" descubriéndola"
-      }s
-  }s& period+
-  s{ s" te das cuenta de que" s" sabes que" }s?
-  s{ s" es" s" se trata de" }s& ^uppercase s&
-  s{ s" la" s" tu" }s& s{ s" única" s" última" }s&
-  s{ s" salida" s" opción" s" esperanza" s" posibilidad" }s&
-  s{ s" de" s" para" }s{ s" escapar" s" huir" s" evitar ser capturado" }s&? s&
-  period+ paragraph
+  the_cave_entrance_is_hidden$
+  you_were_lucky_finding_it_out$ s&
+  it's_your_last_hope$ s&
+  paragraph
   ;description
 cloak% :attributes
   s" capa" self% fname!
@@ -4749,6 +4765,24 @@ rags% :description
   s{ s" un poco" s" algo" }s?& s" grande" s&
   of_your_ex_cloak$ s&
   paragraph
+  ;description
+ravine_wall% :attributes
+  s" pared" rocky(f)$ s& self% fname!
+  location_08% self% is_there
+  self% is_not_listed  \ Innecesario!!!
+  self% is_decoration
+  ;attributes
+ravine_wall% :description
+  s" en" the_cave_entrance_was_discovered? ?keep
+  s" la pared" s& rocky(f)$ s& ^uppercase
+  the_cave_entrance_was_discovered? if
+    s" , que" it_looks_impassable$ s& comma+ s?+
+    the_cave_entrance_is_visible$ s&
+    period+ paragraph
+  else
+    it_looks_impassable$ s&
+    you_maybe_discover_the_cave_entrance
+  then
   ;description
 rocks% :attributes
   s" rocas" self% fnames!
@@ -5071,7 +5105,7 @@ location_08% :description
   self% of
     ^the_pass_way$ s" entre el desfiladero sigue de Norte a Este" s&
     s" junto a una" s&
-    s" rocosa" s" pared" rnd2swap s& s& period+
+    s{  s" pared" rocky(f)$ s& s" rocosa pared" }s& period+
     \ Pendiente!!! Completar con entrada a caverna, tras ser descubierta.
     paragraph
     endof
@@ -5081,25 +5115,21 @@ location_08% :description
     paragraph
     endof
   south% of
-    \ Pendiente!!! La salida debe abrirse también al examinar la pared o la roca
-    s{  ^in_that_direction$ s" Hacia el sur" }s
-    s{ s" se alza" s" se levanta" s" solo hay" }s&
-    [false] [if]  \ Versión inicial, anulada por la diferencia de género entre «pared» y «muro»
-    s{  s{ s" un muro" s" una pared" }s s" de roca" s&
-        s" un" s" muro" s" rocoso" rnd2swap s& s&
-        s" una" s" pared" s" rocosa" rnd2swap s& s&
-    }s& s{ s" insuperable" s" invencible" }s& 
-    [else]  s" una pared" s&{ s" rocosa" s" de roca" }s&
-    [then]  
-    self% has_south_exit? if
+    self% ravine_wall% is_there
+    s{ ^in_that_direction$ s" Hacia el sur" }s
+    s{ s" se alza" s" se levanta" }s&
+    \ s" una pared" s& rocky(f)$ s& \ Antiguo!!!
+    ravine_wall% full_name s&
+    the_cave_entrance_was_discovered? if
       comma+ s" en la" s&{ s" que" s" cual" }s&
-      s{  s" se" s{ s" ve" s" abre" s" haya"
-                    s" encuentra" s" aprecia" s" distingue" }s&
-          s" puede" s{ s" verse" s" apreciarse" s" distinguirse" }s&
-      }s& cave_entrance% full_name period+ s& paragraph
+      the_cave_entrance_is_visible$ s&
+      period+ paragraph
     else
-      s" ..." s+ paragraph
-      3 random 0= if  narration_break you_find_out_the_cave  then
+      ravine_wall% is_known? if
+        s" que" it_looks_impassable$ s& s?&
+        you_maybe_discover_the_cave_entrance
+      else  ravine_wall% familiar++
+      then
     then
     endof
   uninteresting_direction
@@ -6309,8 +6339,16 @@ sky% :attributes
   ;attributes
 sky% :description
   \ Provisional!!!
-  s" El cielo es un cuenco de color azul, listado en lo alto por nubes"
-  s" del tipo cirros, ligeras y transparentes." s&
+  s" [El cielo es mu bonito]"
+  paragraph
+  ;description
+wall% :attributes
+  s" pared" self% mname!
+  self% is_global_indoor
+  ;attributes
+wall% :description
+  \ Provisional!!!
+  s" [La pared es mu bonita]"
   paragraph
   ;description
 
@@ -11720,12 +11758,20 @@ adecuada.
 : (stone) ( -- a )
   \ Devuelve el ente adecuado a la palabra «piedra».
   \ Puede referise, en orden preferente,
-  \ a la piedra, a la esmeralda o a las rocas.
+  \ a la piedra, a la esmeralda, a la pared de roca del desfiladero o a las rocas.
   true case
     stone% is_accessible? of  stone%  endof
     emerald% is_accessible? of  emerald%  endof
+    location_08% am_i_there? of  ravine_wall%  endof
     rocks% swap
   endcase
+  ;
+: (wall) ( -- a )
+  \ Devuelve el ente adecuado a la palabra «pared».
+  location_08% am_i_there?
+  if    ravine_wall%
+  else  wall%
+  then
   ;
 : (somebody) ( -- a | false )
   \ Devuelve el ente adecuado a la palabra «alguien».
@@ -12486,20 +12532,27 @@ o sustantivos.
 \ Términos asociados a entes globales o virtuales
 
 : nubes  clouds% complement!  ;
+\ Pendiente!!! ¿cúmulo-nimbos?, ¿nimbos?
 ' nubes synonyms{  nube estratocúmulo estratocúmulos cirro cirros  }synonyms
 : suelo  floor% complement!  ;
 ' suelo synonyms{  suelos tierra firme  }synonyms
-\ «piso» ambiguo!!!
+\ Pendiente!!! Añadir «piso», que es ambiguo
 : cielo  sky% complement!  ;
 ' cielo synonyms{  cielos firmamento  }synonyms
 : techo  ceiling% complement!  ;
 : cueva  (cave) complement!  ;
 ' cueva synonyms{  caverna gruta  }synonyms
-\ Pendiente!!! "acceso":
 : entrada  (entrance) complement!  ;
+\ Pendiente!!! ¿Implementar cambio de nombre y/o género gramatical? (entrada, acceso):
+' entrada synonyms{  acceso }synonyms
 : enemigo  enemy% complement!  ;
 ' enemigo synonyms{ enemigos sajón sajones }synonyms
-: todo ;  \ pendiente!!!
+: todo ;  \ Pendiente!!!
+\ Pendiente!!! ¿Implementar cambio de nombre y/o género gramatical? (pared/es, muro/s):
+: pared  (wall) complement!  ;
+' pared  synonyms{ muro }synonyms
+: paredes  wall% complement!  ;
+' paredes  synonyms{ muros }synonyms
 
 \ Artículos
 
