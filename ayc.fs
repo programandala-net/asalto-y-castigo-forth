@@ -7,7 +7,7 @@ CR .( Asalto y castigo )  \ {{{
 \ Copyright (C) 2011,2012 Marcos Cruz (programandala.net)
 
 only forth definitions
-: version$  ( -- a u )  s" A-04-2012050701"  ;
+: version$  ( -- a u )  s" A-04-2012050900"  ;
 version$ type cr
 
 \ 'Asalto y castigo' is free software; you can redistribute
@@ -140,11 +140,11 @@ require ghoul/sb.fs \ Almacén circular de cadenas de texto
 ' bs" alias s" immediate
 2048 dictionary_sb
 
-require ghoul/mdrop.fs  \ Eliminación de varios elementos de la pila
-require ghoul/2mdrop.fs  \ Eliminación de varios elementos dobles de la pila
-require ghoul/2choose.fs  \ Selección aleatoria de un elemento doble de la pila
+require ghoul/mdrop.fs  \ 'mdrop', eliminación de varios elementos de la pila
+require ghoul/2mdrop.fs  \ '2mdrop', eliminación de varios elementos dobles de la pila
+require ghoul/2choose.fs  \ '2schoose', selección aleatoria de un elemento doble de la pila
 ' 2choose alias schoose
-require ghoul/choose.fs  \ Selección aleatoria de un elemento de la pila
+require ghoul/choose.fs  \ 'choose', selección aleatoria de un elemento de la pila
 require ghoul/random_strings.fs  \ Selección aleatoria de cadenas de texto
 require ghoul/xy.fs  \ Posición actual del cursor
 require ghoul/print.fs  \ Impresión de textos ajustados
@@ -152,11 +152,21 @@ require ghoul/sconstant.fs \ Constantes de cadenas de texto
 require ghoul/svariable.fs \ Variables de cadenas de texto
 require ghoul/randomize.fs
 require ghoul/between.fs  \ 'between' (variante habitual de 'within')
-require ghoul/home.fs
-require ghoul/enum.fs
-require ghoul/increment.fs  \ '++'
-require ghoul/decrement.fs  \ '--'
-require ghoul/question-empty.fs  \ '?empty' y '?keep'
+require ghoul/home.fs  \ 'home'
+require ghoul/enum.fs  \ 'enum'
+require ghoul/plus-plus.fs  \ '++'
+require ghoul/minus-minus.fs  \ '--'
+require ghoul/question-empty.fs  \ '?empty'
+require ghoul/question-keep.fs  \ '?keep'
+require ghoul/question-question.fs  \ '??'
+require ghoul/bracket-question-question.fs  \ '[??]'
+require ghoul/bracket-true.fs  \ '[true]'
+require ghoul/bracket-false.fs  \ '[false]'
+require ghoul/bracket-or.fs  \ '[or]'
+require ghoul/backslash-end-of-file.fs  \ '\eof'
+require ghoul/column.fs  \ 'column'
+require ghoul/row.fs  \ 'row'
+require ghoul/at-x.fs  \ 'at-x' Provisional!!! Para depuración
 
 \ Otras herramientas
 
@@ -167,12 +177,6 @@ false to halto?
 \ Meta \ {{{
 
 : wait  key drop  ;
-
-: \eof ( -- )
-  \ Ignora el resto del fichero
-  source-id if  begin  refill 0=  until  then
-  ;
-: [or]  ( x1 x2 -- x3 )  or  ;  immediate
 
 \ Indicadores para depuración
 
@@ -194,11 +198,6 @@ true constant [old_method]  immediate
 true constant [dark_cave_in_global_plot?]  immediate
 false constant [ambush_in_global_plot?]  immediate
 
-\ Constantes
-
-true constant [true] immediate  \ Para compilación condicional 
-false constant [false] immediate  \ Para compilación condicional 
-
 \ Títulos de sección
 
 : depth_warning
@@ -219,8 +218,8 @@ false constant [false] immediate  \ Para compilación condicional
   ;
 : subsection(  ( "text<bracket>" -- )
   \ Notación para los títulos de subsección en el código fuente.
-  [char] * emit space postpone .(  \ El nombre de subsección terminará con: )
-  space .s?
+  cr 2 spaces [char] - emit postpone .(  \ El nombre de subsección terminará con: )
+  .s?
   ;
 
 \ }}} ##########################################################
@@ -522,7 +521,7 @@ section( Herramientas de azar)  \ {{{
 
 : rnd2swap  ( a1 u1 a2 u2 -- a1 u1 a2 u2 | a2 u2 a1 u1 )
   \ Intercambia (con 50% de probabililad) la posición de dos textos.
-  2 random if  2swap  then
+  2 random ?? 2swap
   ;
 : (both)  ( a1 u1 a2 u2 -- a1 u1 a3 u3 a2 u2 | a2 u2 a3 u3 a1 u1 )
   \ Devuelve las dos cadenas recibidas, en cualquier orden,
@@ -893,11 +892,6 @@ true [if]  \ Pendiente!!!
   ;
 
 \ }}}---------------------------------------------
-subsection( Cursor)  \ {{{
-
-: last_col  ( -- u )  cols 1-  ;
-: last_row  ( -- u )  rows 1-  ;
-
 \ }}}---------------------------------------------
 subsection( Borrado de pantalla)  \ {{{
 
@@ -913,11 +907,9 @@ subsection( Borrado de pantalla)  \ {{{
   \ cuando se borra el texto que está siendo escrito.
   \ No se ha comprabado si en Windows ocurre lo mismo.
   \ No sirve de nada usar trm+set-default-attributes
-  paper home
+  paper print_home
   [false] [if]  \ Por líneas, más lento
-  rows 0 do
-    i if  cr  then  [ cols ] literal spaces
-  loop
+    rows 0 do  i ?? cr [ cols ] literal spaces  loop
   [else]  \ Pantalla entera, más rápido
     rows cols * spaces
   [then]
@@ -933,16 +925,16 @@ subsection( Borrado de pantalla)  \ {{{
   [defined] background_paper
   [if]    color_background \ Experimental!!!
   [else]  trm+erase-display
-  [then]  home
+  [then]  print_home
   ;
 
 : clear_screen_for_location
   \ Restaura el color de tinta y borra la pantalla para cambiar de escenario.
-  location_page? @ if  new_page  then
+  location_page? @ ?? new_page
   ;
 : init_screen
   \ Prepara la pantalla la primera vez.
-  trm+reset system_color home
+  trm+reset system_color print_home
   init_colors
   ;
 
@@ -951,7 +943,7 @@ subsection( Borrado de pantalla)  \ {{{
 section( Depuración)  \ {{{
 
 \ : ~~ postpone ~~ s" key drop" evaluate ; immediate
-[false] [if]
+[true] [if]
 : ~~
   \ Muestra la misma información que '~~' pero precedida por
   \ el nombre de la última palabra creada,
@@ -996,7 +988,7 @@ section( Depuración)  \ {{{
   ;
 : debug_pause
   \ Pausa tras mostrar la información de depuración.
-  [debug_pause] [if]  depth if  wait  then  [then]
+  [debug_pause] [if]  depth ?? wait [then]
   ;
 : debug  ( a u -- )
   \ Punto de chequeo: imprime un mensaje y muestra el estado del sistema.
@@ -1040,7 +1032,7 @@ str-create tmp_str  \ Cadena dinámica de texto temporal para usos variados
   \ y la devuelve con la primera letra en mayúscula,
   \ dependiendo del valor de un indicador.
   \ No se usa!!!
-  if  ^uppercase  then
+  ?? ^uppercase
   ;
 : -punctuation  ( a u -- a u )
   \ Sustituye por espacios todos los signos de puntuación de una cadena.
@@ -1303,7 +1295,7 @@ de cadena creadas con 'sconstant'.
   \ Devuelve una variante de «del/de los enemigo/s».
   (the_enemy|enemies) >r
   s" de" 2swap s&
-  r> 0= if  «de_el»>«del»  then
+  r> 0= ?? «de_el»>«del»
   ;
 : ^the_enemy|enemies  ( -- a u ff )
   \ Devuelve una variante de «El/Los enemigo/s», y un indicador del número.
@@ -1677,7 +1669,7 @@ s" de Westmorland" sconstant of_westmorland$
   }s
   ;
 : finally$  ( -- a u )
-  s{  s{ s" al" s" por" }s s" fin"
+  s{  s{ s" al" s" por" }s s" fin" s&
       s" finalmente"
   }s
   ;
@@ -1827,7 +1819,7 @@ svariable scroll_prompt  \ Guardará el presto de pausa
   \ Imprime un presto y espera la pulsación de una tecla,
   \ si corresponde a la línea en curso.
   \ u = Línea actual del párrafo que se está imprimiendo
-  scroll_prompt? if  .scroll_prompt  then
+  scroll_prompt? ?? .scroll_prompt
   ;
 
 \ }}}---------------------------------------------
@@ -1839,9 +1831,13 @@ subsection( Impresión de párrafos ajustados)  \ {{{
 variable /indentation  \ En curso
 
 variable indent_first_line_too?  \ ¿Se indentará también la línea superior de la pantalla, si un párrafo empieza en ella?
+: not_first_line?  ( -- ff )
+  \ ¿El cursor no está en la primera línea?
+  row 0>
+  ;
 : indentation?  ( -- ff )
   \ ¿Indentar la línea actual?
-  row 0> indent_first_line_too? @ or
+  not_first_line? indent_first_line_too? @ or
   ;
 : (indent)
   \ Indenta.
@@ -1849,32 +1845,31 @@ variable indent_first_line_too?  \ ¿Se indentará también la línea superior d
   ;
 : indent
   \ Indenta si es necesario.
-  indentation? if  (indent)  then
+  indentation? ?? (indent)
   ;
 : cr+
-  print_cr indent 
+  \ Hace un salto de línea y una indentación, para el sistema
+  \ de impresión de textos justificados.
+  [false] [if]  \ Primera versión
+    print_cr indent 
+  [else]  \ Pendiente!!! pruebas para solucionar problema de la línea en blanco
+    \ row last_row <> column or ?? print_cr indent 
+    column 0<> ?? print_cr indent 
+  [then]
   ;
 : paragraph  ( a u -- )
   \ Imprime un texto justificado como inicio de un párrafo.
   \ a u = Texto
   cr+ print
   ;
-: |paragraph  ( a u xt -- )
-  \ Imprime un texto justificado como inicio de un párrafo.
-  \ Versión que no contamina el sangrado con el
-  \ color de fondo del texto.
-  \ a u = Texto
-  \ xt = Dirección de ejecución de una palabra que cambia los atributos de impresión.
-  background_color cr+ execute print
-  ;
 
 : report  ( a u -- )
   \ Imprime una cadena como un informe de error.
-  ['] error_color |paragraph system_color
+  error_color paragraph system_color
   ;
 : narrate  ( a u -- )
   \ Imprime una cadena como una narración.
-  ['] narration_color |paragraph system_color
+  narration_color paragraph system_color
   ;
 
 \ }}}---------------------------------------------
@@ -1883,8 +1878,14 @@ subsection( Pausas y prestos en la narración)  \ {{{
 variable indent_pause_prompts?  \ ¿Hay que indentar también los prestos?
 : .prompt  ( a u -- )
   \ Imprime un presto.
-  indent_pause_prompts? @ if  indent  then  cr type
+  print_cr indent_pause_prompts? @ ?? indent print
   ;
+
+[false] [if]  \ Primera versión, con fallo extraño!!!
+
+\ 2012-05-08
+\ El fallo es que cuando se interrumpe una pausa con el teclado,
+\ el cursor se mueve varias líneas hacia abajo. Es muy misterioso.
 
 dtm-create deadline  \ Variable para guardar el momento final de las pausas
 : no_time_left?  ( -- ff )
@@ -1893,17 +1894,33 @@ dtm-create deadline  \ Variable para guardar el momento final de las pausas
   deadline dtm-compare  \ Comparar con el momento final (el resultado puede ser: -1, 0, 1)
   1 =  \ ¿Nos hemos pasado?
   ;
-: no_key?  ( -- ff )
-  \ ¿No hay una tecla pulsada?
-  key? 0=
-  ;
 : seconds_wait ( u -- )
   \ Espera los segundos indicados, o hasta que se pulse una tecla.
   deadline dtm-init  \ Guardar la fecha y hora actuales como límite...
   s>d deadline dti-seconds+  \ ...y sumarle los segundos indicados
-  begin  no_time_left? no_key? or  until
+  begin  no_time_left? key? 0= or  until
   begin  no_time_left? key? or  until
   ;
+
+[else]  \ Versión extraída del juego Autohipnosis, para probar la diferencia
+
+\ Esta versión no produce ninguna diferencia.
+\ Parece que el problema está en 'key?'.
+
+: time?  ( d -- ff )  utime d<  ;
+: microseconds  ( u -- )
+  \ Espera un número de microsegundos o hasta que se pulse una tecla.
+  s>d utime d+
+  begin  2dup time? ( key? 0= or ) until
+  begin  2dup time? ( key? or  ) until
+  2drop  ;
+: miliseconds  ( u -- )  1000 * microseconds  ;
+: seconds  ( u -- )  1000000 * microseconds  ;
+
+' seconds alias seconds_wait
+
+[then]
+
 : wait  ( u -- )
   \ Hace una pausa.
   \ u = Segundos (o un número negativo para pausa sin fin hasta la pulsación de una tecla)
@@ -1920,17 +1937,22 @@ svariable narration_prompt  \ Guardará el presto usado en las pausas de la narr
   \ Imprime el presto de fin de escena.
   narration_prompt_color narration_prompt$ .prompt
   ;
+: (break)  ( n -- )
+  \ n = Segundos (o un número negativo para hacer una pausa indefinida hasta la pulsación de una tecla)
+  \ Hace una pausa,
+  \ borra la línea en que se ha mostrado el presto de pausa
+  \ y restaura la situación de impresión para no afectar
+  \ al siguiente párrafo.
+  wait  trm+erase-line print_start_of_line
+  ;
 : (narration_break)  ( n -- )
   \ Alto en la narración: Muestra un presto y hace una pausa .
-  \ u = Segundos (o un número negativo para hacer una pausa indefinida hasta la pulsación de una tecla)
-  trm+save-cursor
-  .narration_prompt wait
-  trm+erase-line  trm+restore-cursor
+  \ n = Segundos (o un número negativo para hacer una pausa indefinida hasta la pulsación de una tecla)
+  .narration_prompt (break)
   ;
 : narration_break
   \ Alto en la narración, si es preciso.
-  narration_break_seconds @ ?dup
-  if  (narration_break)  then
+  narration_break_seconds @ ?dup ?? (narration_break) 
   ;
 
 variable scene_break_seconds  \ Segundos de espera en las pausas de final de escena
@@ -1946,15 +1968,11 @@ svariable scene_prompt  \ Guardará el presto de cambio de escena
 : (scene_break)  ( n -- )
   \ Final de escena: Muestra un presto y hace una pausa .
   \ n = Segundos (o un número negativo para hacer una pausa indefinida hasta la pulsación de una tecla)
-  trm+save-cursor
-  .scene_prompt wait
-  trm+erase-line  trm+restore-cursor
-  scene_page? @ if  new_page  then
+  .scene_prompt (break)  scene_page? @ ?? new_page 
   ;
 : scene_break
   \ Final de escena, si es preciso.
-  scene_break_seconds @ ?dup
-  if  (scene_break)  then
+  scene_break_seconds @ ?dup ?? (scene_break)
   ;
 
 \ }}}---------------------------------------------
@@ -3208,7 +3226,7 @@ defer 'entities  \ Dirección de los entes; vector que después será redirigido
   [debug_init] [if]  s" Inicio de :NAME_STR" debug [then]
   dup name_str ?dup
   [debug_init] [if]  s" A punto para STR-FREE" debug [then]
-  if  str-free  then
+  ?? str-free
   str-new swap ~name_str !
   [debug_init] [if]  s" Final de :NAME_STR" debug [then]
   ;
@@ -3327,7 +3345,7 @@ false value sight  \ Guarda el ente dirección al que se mira en un escenario (o
 : .location_name  ( a -- )
   \ Imprime el nombre de un ente escenario, como cabecera de su descripción.
   [debug_map] [if]  dup  [then]
-  name ^uppercase ['] location_name_color |paragraph 
+  name ^uppercase location_name_color paragraph 
   [debug_map] [if]
     entity># location_01% entity># - 1+ ."  [ location #" . ." ]"
   [then]
@@ -3339,10 +3357,7 @@ false value sight  \ Guarda el ente dirección al que se mira en un escenario (o
   ;
 : describe_location  ( a -- )
   \ Describe un ente escenario, con borrado de pantalla y título.
-  [debug] [if]  s" En DESCRIBE_LOCATION" debug  [then]  \ Depuración!!!
-  clear_screen_for_location
-  dup .location_name  (describe_location)
-  [debug] [if]  cr s" Location visited:" my_location visits .  [then]  \ Depuración!!!
+  clear_screen_for_location dup .location_name  (describe_location)
   ;
 : describe_other  ( a -- )
   \ Describe un ente de otro tipo.
@@ -3368,14 +3383,12 @@ false value sight  \ Guarda el ente dirección al que se mira en un escenario (o
   ;
 : describe  ( a -- )
   \ Describe un ente, según su tipo.
-  [debug] [if]  s" En DESCRIBE" debug  [then]  \ Depuración!!!
   dup description_type  
-  [debug] [if]  s" En DESCRIBE antes de CASE" debug  [then]  \ Depuración!!!
   case
     0 of  describe_other  endof
     1 of  describe_location  endof
     2 of  describe_direction  endof
-    abort" Error fatal en DESCRIBE : dato incorrecto"  \ depuración!!!
+    abort" Error fatal en DESCRIBE : dato incorrecto"  \ Depuración!!!
   endcase
   ;
 : uninteresting_direction
@@ -4010,7 +4023,7 @@ a la sección de textos calculados.
   do_you_hold_something_forbidden? 
   if    the_refugees_don't_trust$
   else  the_refugees_trust$ 
-  then  s& period+ paragraph
+  then  s& period+ narrate
   ;
 
 \ ------------------------------------------------
@@ -4304,13 +4317,21 @@ create 'cave_descriptions
 \ ------------------------------------------------
 \ Pared del desfiladero
 
+: to_pass_(wall)$  ( -- a u )
+  \ Infinitivo aplicable para atravesar una pared o un muro.
+  s{ s" superar" s" atravesar" s" franquear" s" vencer" s" escalar" }s
+  ;
 : it_looks_impassable$  ( -- a u )
   \ Mensaje «parece infranqueable».
-  s{ s" por su aspecto" s" a primera vista" s" en principio" }s?
-  s{  s" parece imposible" s" de" s?& s{ s" superar" s" atravesar" s" franquear" s" vencer" }s&
-      \ Eliminar!!!:
-      \ s" no parece ofrecer" s{ s" salida" s" escapatoria" }s& s" alguna" s?&
-      s" parece" s{ s" insuperable" s" invencible" s" infranqueable" }s& 
+  \ Pendiente!!! Ojo: género femenino; generalizar factorizando cuando se use en otro contexto
+  s{ s" por su aspecto" s" a primera vista" }s?
+  s{  s" parece"
+      s" diríase que es"
+      s" bien" s? s" puede decirse que es" s&
+  }s&
+  s{  s" imposible de" to_pass_(wall)$ s&
+      s" imposible" to_pass_(wall)$ s& s" la" s+
+      s{ s" insuperable" s" invencible" s" infranqueable" }s
   }s& 
   ;
 : the_cave_entrance_is_visible$  ( -- a u )
@@ -4346,14 +4367,14 @@ create 'cave_descriptions
   ;
 : you_discover_the_cave_entrance
   \ Descubres la cueva.
-  you_discover_the_cave_entrance$ period+ paragraph
+  you_discover_the_cave_entrance$ period+ narrate
   open_the_cave_entrance
   cave_entrance% is_here
   ;
 : you_maybe_discover_the_cave_entrance  ( a u -- )
   \ Descubres la cueva con un 50% de probabilidad.
   \ a u = Texto introductorio
-  s" ..." s+ paragraph
+  s" ..." s+ narrate
   2 random 0= if  narration_break you_discover_the_cave_entrance  then
   ;
 : the_cave_entrance_is_hidden$  ( -- a u )
@@ -4362,8 +4383,8 @@ create 'cave_descriptions
   s{ s" oculta" s" camuflada" s" escondida" }s& 
   s" en la pared" s& rocky(f)$ s& period+
   ;
-: you_were_lucky_finding_it_out$ ( -- a u )
-  s" Has tenido" s& s" muy" s?& s" buena" s&{ s" fortuna" s" suerte" }s&
+: you_were_lucky_discovering_it$ ( -- a u )
+  s" Has tenido" s" muy" s?& s" buena" s&{ s" fortuna" s" suerte" }s&
   s{  s{ s" al" s" en" s" con" }s
         s{ s" hallarla" s" encontrarla" s" dar con ella" s" descubrirla" }s&
       s{  s" hallándola" s" encontrándola"
@@ -4373,11 +4394,13 @@ create 'cave_descriptions
   ;
 : it's_your_last_hope$  ( -- a u )
   s{ s" te das cuenta de que" s" sabes que" }s?
-  s{ s" es" s" se trata de" }s& ^uppercase s&
+  s{ s" es" s" se trata de" }s& ^uppercase 
   s{ s" la" s" tu" }s& s{ s" única" s" última" }s&
   s{ s" salida" s" opción" s" esperanza" s" posibilidad" }s&
-  s{ s" de" s" para" }s{ s" escapar" s" huir" s" evitar ser capturado" }s&? s&
-  period+ 
+  s{ s" de" s" para" }s
+  s{  s" escapar" s" huir"
+      s" evitar" s{ s" ser capturado" s" que te capturen" }s&
+  }s&? s& period+ 
   ;
 
 \ ------------------------------------------------
@@ -4571,7 +4594,7 @@ cave_entrance% :attributes
   ;attributes
 cave_entrance% :description
   the_cave_entrance_is_hidden$
-  you_were_lucky_finding_it_out$ s&
+  you_were_lucky_discovering_it$ s&
   it's_your_last_hope$ s&
   paragraph
   ;description
@@ -4781,7 +4804,10 @@ ravine_wall% :description
     period+ paragraph
   else
     it_looks_impassable$ s&
-    you_maybe_discover_the_cave_entrance
+    ravine_wall% is_known?
+    if    you_maybe_discover_the_cave_entrance
+    else  period+ paragraph  
+    then 
   then
   ;description
 rocks% :attributes
@@ -5115,7 +5141,6 @@ location_08% :description
     paragraph
     endof
   south% of
-    self% ravine_wall% is_there
     s{ ^in_that_direction$ s" Hacia el sur" }s
     s{ s" se alza" s" se levanta" }s&
     \ s" una pared" s& rocky(f)$ s& \ Antiguo!!!
@@ -5128,7 +5153,8 @@ location_08% :description
       ravine_wall% is_known? if
         s" que" it_looks_impassable$ s& s?&
         you_maybe_discover_the_cave_entrance
-      else  ravine_wall% familiar++
+      else
+        period+ paragraph  ravine_wall% familiar++ 
       then
     then
     endof
@@ -6558,7 +6584,6 @@ variable current_preposition
   ;
 : impossible
   \ Informa de que una acción no especificada es imposible.
-  [debug] [if]  s" En IMPOSSIBLE" debug  [then]  \ Depuración!!!
   something_like_that$ is_impossible
   ;
 ' impossible constant (impossible_error#)
@@ -6612,7 +6637,6 @@ variable current_preposition
 : nonsense
   \ Informa de que alguna acción no especificada no tiene sentido.
   \ Provisional!!!
-  [debug] [if]  s" En NONSENSE" debug  [then]  \ Depuración!!!
   s" eso" is_nonsense 
   ;
 ' nonsense constant (nonsense_error#)
@@ -7188,7 +7212,7 @@ true [if]
 [then]
 : ?execute  ( xt | 0 -- )
   \ Ejecuta un vector de ejecución, si no es cero.
-  ?dup if  execute  then
+  ?dup ?? execute
   ;
 : every_location_enter_plot
   \ Trama de entrada común a todos los entes escenario.
@@ -7218,7 +7242,6 @@ true [if]
   ;
 : enter_location  ( a -- )
   \ Entra en un escenario.
-  [debug] [if]  s" En ENTER" debug  [then]  \ Depuración!!!
   leave_location
   \ Pendiente!!! Llamar desde aquí a una trama previa de entrada en escenario, antes de su asignación,
   \ lo que permitiría gestionar aquí el cambio de escenario desde la cueva oscura.
@@ -7261,7 +7284,7 @@ section( Recursos de las tramas asociadas a lugares)  \ {{{
   \ De vuelta a casa, si procede.
   pass_still_open?
   still_in_the_village? 0= and
-  if  soldiers_follow_you  then
+  ?? soldiers_follow_you
   ;
 : celebrating
   \ Celebrando la victoria.
@@ -7297,6 +7320,39 @@ section( Recursos de las tramas asociadas a lugares)  \ {{{
   \ ¿En un escenario en que los sajones pueden perseguir al protagonista?
   my_location location_12% <
   ;
+: you_think_you're_safe$  ( -- a u )
+  s{  s" crees estar"
+      s" te sientes"
+      s" crees sentirte"
+      s" tienes la sensación de estar"
+  }s{ s" a salvo" s" seguro" }s&
+  ;
+: but_it's_an_impression$  ( -- a u )
+  s" ," but$ s&
+  s{ s" dentro de ti" s" en tu interior" s" en el fondo" }s?&
+  s{
+    s{  s" sabes" s" bien" s?& s" eres consciente de" }s s" que" s&
+    s{  s" tu instinto" s{ s" militar" s" guerrero" s" de soldado" }s?&
+        s" una voz" 
+        s" algo" 
+    }s s{ s" no te engaña" 
+          s" te dice que" s{  s" no debes confiarte"
+                              still$ s" no lo has logrado" s& }s&
+    }s& s{ s" ;" s" :" s" ..." }s+
+  }s& s{  
+    only$ s" es una falsa impresión" s&
+    still$  s{  s" no lo has" s{ s" logrado" s" conseguido" }s&
+                s" podrían" s{ s" encontrarte" s" atraparte" }s& s" aquí" s?&
+            }s&
+    s" puede que te hayan" s{ s" visto" s" entrar" s?&
+                              s" seguido" }s&
+    s{ s" probablemente" s" seguramente" }s
+      s" te" s& s{  s" estarán buscando"
+                    s" habrán seguido"
+                    s" hayan visto" s" entrar" s?& }s&
+  }s&
+  ;
+
 
 \ ------------------------------------------------
 \ Batalla
@@ -7542,8 +7598,8 @@ here swap - cell / constant battle_phases  \ Fases de la batalla
   ;
 : battle
   \ Batalla y persecución.
-  battle_location? if  battle_phase  then
-  pursue_location? if  pursued  then
+  battle_location? ?? battle_phase
+  pursue_location? ?? pursued
   battle_phase++
   ;
 : battle?  ( -- ff )
@@ -7604,7 +7660,7 @@ here swap - cell / constant battle_phases  \ Fases de la batalla
 : officers_speach
   \ Palabras de los oficiales.
   sire,$ s?  dup taking_prisioner$
-  rot 0= if  ^uppercase  then  s&
+  rot 0= ?? ^uppercase s&
   s" a un general britano" s& they_win$ s&  speak
   ;
 : officers_talk_to_you
@@ -7616,12 +7672,16 @@ here swap - cell / constant battle_phases  \ Fases de la batalla
   s" piden que huyas" }s& colon+ narrate
   officers_speach
   s{ s" Sabes" s" Comprendes" }s s" que" s&
-  s{ s" es cierto" s" llevan razón"
-  s" están en lo cierto" }s&
-  s" , y te duele." s+  narrate
+  s{  s" es cierto" s{ s" tienen" s" llevan" }s s" razón" s&
+      s" están en lo cierto" }s& comma+
+  s{  but$ s{ s" a pesar de ello" s" aun así" }s?&
+      s" y"
+  }s& s" te duele" s&
+
+  period+ narrate
   ;
-: the_enemy_is_stronger
-  \ El enemigo es superior.
+: the_enemy_is_stronger$  ( -- a u )
+  \ Mensaje de que el enemigo es superior.
   s" En el" narrow(m)$ s& s" paso es posible" s&
   s{ s" resistir," s" defenderse," }s& but$ s&
   s{ s" por desgracia" s" desgraciadamente" }s&
@@ -7633,7 +7693,11 @@ here swap - cell / constant battle_phases  \ Fases de la batalla
   s" sus hombres son más numerosos que los tuyos"
   s" ellos son muy superiores en número"
   s" ellos son mucho más numerosos"
-  }s& period+  narrate scene_break
+  }s& 
+  ;
+: the_enemy_is_stronger
+  \ El enemigo es superior.
+  the_enemy_is_stronger$ period+ narrate scene_break
   ;
 : ambush
   \ Emboscada.
@@ -7726,7 +7790,7 @@ location_08% :location_enter_plot
   soldiers% is_here
   going_home
   [ [ambush_in_global_plot?] 0= ] [if]
-    pass_still_open? if  ambush  then
+    pass_still_open? ?? ambush
   [then]
   ;location_enter_plot
 location_09% :location_enter_plot
@@ -7739,13 +7803,8 @@ location_10% :location_enter_plot
   self% visits
   if  ^again$  else  ^finally$ s" ya" s?&  then
   \ Inacabado!!! Ampliar con otros textos alternativos
-  s{  s" crees estar"
-      s" piensas que te encuentras"
-      s" te sientes"
-      s" crees sentirte"
-      s" tienes la sensación de estar"
-  }s&
-  s{ s" a salvo" s" seguro" }s&
+  you_think_you're_safe$ s&
+  but_it's_an_impression$ s?+
   period+ narrate
   ;location_enter_plot
 location_11% :location_enter_plot
@@ -8099,8 +8158,8 @@ here swap - cell / constant battle_phases  \ Fases de la batalla
   ;
 : battle
   \ Batalla y persecución.
-  battle_location? if  battle_phase  then
-  pursue_location? if  pursued  then
+  battle_location? ?? battle_phase
+  pursue_location? ?? pursued
   battle_phase++
   ;
 : battle?  ( -- ff )
@@ -8167,7 +8226,7 @@ here swap - cell / constant battle_phases  \ Fases de la batalla
 : officers_speach
   \ Palabras de los oficiales.
   sire,$ s?  dup taking_prisioner$
-  rot 0= if  ^uppercase  then  s&
+  rot 0= ?? ^uppercase s&
   s" a un general britano" s& they_win$ s&  speak
   ;
 : officers_talk_to_you
@@ -8273,7 +8332,7 @@ diferente a que esté accesible.
   [dark_cave_in_global_plot?] [if]
     dark_cave? if  dark_cave exit  then
   [then]
-  ambrosio_must_follow? if  ambrosio_must_follow  then
+  ambrosio_must_follow? ?? ambrosio_must_follow
   ;
 
 \ }}} ##########################################################
@@ -8419,7 +8478,7 @@ section( Errores del intérprete de comandos)  \ {{{
   \ Añade una cadena al inicio o al final de otra, con una coma de separación.
   \ a1 u1 = Cadena principal
   \ a2 u2 = Cadena que se añadirá a la principal
-  2 random if  2swap  then
+  2 random ?? 2swap
   comma+ 2swap s&
   ;
 : please&  ( a1 u1 -- a1 u1 | a2 u2 )
@@ -8617,9 +8676,9 @@ section( Errores del intérprete de comandos)  \ {{{
 : ?wrong  ( xt | 0 -- )
   \ Informa, si es preciso, de un error en el comando.
   \ xt = Dirección de ejecución de la palabra de error (que se usa también como código del error)
-  [debug_catch] [debug_parsing] [or] ?halto" Al entrar en ?WRONG"  \ Depuración!!!
-  ?dup if  execute  then
-  [debug_catch] [debug_parsing] [or] ?halto" Al salir de ?WRONG"  \ Depuración!!!
+  \ [debug_catch] [debug_parsing] [or] [??] ~~
+  ?dup ?? execute
+  \ [debug_catch] [debug_parsing] [or] [??] ~~
   ;
 
 \ }}} ##########################################################
@@ -8780,9 +8839,7 @@ condicionales anidadas.
 : main_complement{required}
   \ Provoca un error si no hay complemento principal.
   main_complement @
-  [false] ?halto" main_complement{required} 1"
   0= no_main_complement_error# and throw
-  [false] ?halto" main_complement{required} 2"
   ;
 : main_complement{this_only}  ( a -- )
   \ Provoca un error si hay complemento principal y no es el indicado.
@@ -8816,7 +8873,7 @@ condicionales anidadas.
   ;
 : tool_complement{unnecessary}
   \ Provoca un error si hay un complemento instrumental.
-  tool_complement @ ?dup if  unnecessary_tool  then
+  tool_complement @ ?dup ?? unnecessary_tool
   ;
 : tool_complement{unnecessary_for_that}  ( a u -- )
   \ Provoca un error si hay un complemento instrumental.
@@ -8832,7 +8889,7 @@ condicionales anidadas.
   ;
 : ?{hold}  ( a | 0 -- )
   \ Provoca un error si un supuesto ente lo es y no está en inventario.
-  ?dup if  {hold}  then
+  ?dup ?? {hold}
   ;
 : main_complement{hold}
   \ Provoca un error si el complemento principal existe y no está en inventario.
@@ -8849,7 +8906,7 @@ condicionales anidadas.
   ;
 : ?{not_hold}  ( a | 0 -- )
   \ Provoca un error si un supuesto ente lo es y está en inventario.
-  ?dup if  {not_hold}  then
+  ?dup ?? {not_hold}
   ;
 : main_complement{not_hold}
   \ Provoca un error si el complemento principal existe y está en inventario.
@@ -8862,7 +8919,7 @@ condicionales anidadas.
   ;
 : ?{worn}  ( a | 0 -- )
   \ Provoca un error si un supuesto ente lo es y no lo llevamos puesto.
-  ?dup if  {worn}  then
+  ?dup ?? {worn}
   ;
 : main_complement{worn}
   \ Provoca un error si el complemento principal existe y no lo llevamos puesto.
@@ -8885,7 +8942,7 @@ condicionales anidadas.
   ;
 : ?{not_worn}  ( a | 0 -- )
   \ Provoca un error si un supuesto ente lo es y lo llevamos puesto.
-  ?dup if  {not_worn}  then
+  ?dup ?? {not_worn}
   ;
 : main_complement{not_worn}
   \ Provoca un error si el complemento principal existe y lo llevamos puesto.
@@ -8897,7 +8954,7 @@ condicionales anidadas.
   ;
 : ?{cloth}  ( a | 0 -- )
   \ Provoca un error si un supuesto ente lo es y no se puede llevar puesto.
-  ?dup if  {cloth}  then
+  ?dup ?? {cloth}
   ;
 : main_complement{cloth}
   \ Provoca un error si el complemento principal existe y no se puede llevar puesto.
@@ -8910,7 +8967,7 @@ condicionales anidadas.
   ;
 : ?{here}  ( a | 0 -- )
   \ Provoca un error si un supuesto ente lo es y no está presente.
-  ?dup if  {here}  then
+  ?dup ?? {here}
   ;
 : main_complement{here}
   \ Provoca un error si el complemento principal existe y no está presente.
@@ -8918,26 +8975,15 @@ condicionales anidadas.
   ;
 : {accessible}  ( a -- )
   \ Provoca un error si un ente no está accessible.
-  [false] ?halto" {accessible} 1"
-  dup what !
-  is_not_accessible?
-  [false] ?halto" {accessible} 1a"
-  cannot_see_what_error# and
-  [false] ?halto" {accessible} 1b"
-  throw
-  [false] ?halto" {accessible} 2"
+  dup what !  is_not_accessible?  cannot_see_what_error# and throw
   ;
 : ?{accessible}  ( a | 0 -- )
   \ Provoca un error si un supuesto ente lo es y no está accessible.
-  [false] ?halto" ?{accessible} 1"
-  ?dup if  {accessible}  then
-  [false] ?halto" ?{accessible} 1"
+  ?dup ?? {accessible}
   ;
 : main_complement{accessible}
   \ Provoca un error si el complemento principal existe y no está accessible.
-  [false] ?halto" main_complement{accessible} 1"
   main_complement @ ?{accessible}
-  [false] ?halto" main_complement{accessible} 2"
   ;
 : {takeable}  ( a -- )
   \ Provoca un error si un ente no puede ser tomado.
@@ -8948,7 +8994,7 @@ condicionales anidadas.
   ;
 : ?{takeable}  ( a | 0 -- )
   \ Provoca un error si un supuesto ente lo es y no puede ser tomado.
-  ?dup if  {takeable}  then
+  ?dup ?? {takeable}
   ;
 : main_complement{takeable}
   \ Provoca un error si el complemento principal existe y no puede ser tomado.
@@ -8961,7 +9007,7 @@ condicionales anidadas.
   ;
 : ?{broken}  ( a | 0 -- )
   \ Provoca un error si un supuesto ente lo es y no puede ser roto.
-  ?dup if  {broken}  then
+  ?dup ?? {broken}
   ;
 : main_complement{broken}
   \ Provoca un error si el complemento principal existe y no puede ser roto.
@@ -8975,7 +9021,7 @@ condicionales anidadas.
   ;
 : ?{looked}  ( a | 0 -- )
   \ Provoca un error si un supuesto ente lo es y no puede ser mirado.
-  ?dup if  {looked}  then
+  ?dup ?? {looked}
   ;
 : main_complement{looked}
   \ Provoca un error si el complemento principal existe y no puede ser mirado.
@@ -8983,21 +9029,15 @@ condicionales anidadas.
   ;
 : {living}  ( a -- )
   \ Provoca un error si un ente no es un ser vivo.
-  [false] ?halto" {living} 1"
   is_living_being? 0= nonsense_error# and throw
-  [false] ?halto" {living} 2"
   ;
 : ?{living}  ( a | 0 -- )
   \ Provoca un error si un supuesto ente lo es y no es un ser vivo.
-  [false] ?halto" ?{living} 1"
-  ?dup if  {living}  then
-  [false] ?halto" ?{living} 2"
+  ?dup ?? {living}
   ;
 : main_complement{living}
   \ Provoca un error si el complemento principal existe y no es un ser vivo.
-  [false] ?halto" main_complement{living} 1"
   main_complement @ ?{living}
-  [false] ?halto" main_complement{living} 2"
   ;
 : {needed}  ( a -- )
   \ Provoca un error si un ente no está en inventario, pues es necesario.
@@ -9006,7 +9046,7 @@ condicionales anidadas.
   ;
 : ?{needed}  ( a | 0 -- )
   \ Provoca un error si un supuesto ente lo es y no está en inventario, pues es necesario.
-  ?dup if  {needed}  then
+  ?dup ?? {needed}
   ;
 : main_complement{needed}
   \ Provoca un error si el complemento principal existe y no está en inventario, pues lo necesitamos.
@@ -9019,7 +9059,7 @@ condicionales anidadas.
   ;
 : ?{direction}  ( a | 0 -- )
   \ Provoca un error si un supuesto ente lo es y no es una dirección.
-  ?dup if  {direction}  then
+  ?dup ?? {direction}
   ;
 : main_complement{direction}
   \ Provoca un error si el complemento principal existe y no es una dirección.
@@ -9131,18 +9171,18 @@ subsection( Mirar, examinar y registrar)  \ {{{
 : (do_look)  ( a -- )
   \ Mira un ente.
   dup describe
-  dup is_location? if  .present  then  familiar++ 
+  dup is_location? ?? .present familiar++ 
   ;
 :action do_look
   \  Acción de mirar.
   tool_complement{unnecessary} 
-  main_complement @ ?dup 0= if  my_location  then
+  main_complement @ ?dup 0= ?? my_location
   dup {looked} (do_look)  
   ;action
 :action do_look_yourself
   \  Acción de mirarse.
   tool_complement{unnecessary} 
-  main_complement @ ?dup 0= if  protagonist%  then
+  main_complement @ ?dup 0= ?? protagonist%
   (do_look)
   ;action
 :action do_look_to_direction
@@ -9248,9 +9288,9 @@ false [if]  \ Primera versión
   #listed off
   my_location dup free_exits #free_exits !
   last_exit> 1+ first_exit> do
-\   [debug_do_exits]  ?[false] ?halto" do_exits 1"  \ Depuración!!!
+    [debug_do_exits] [??] ~~
     dup i + @
-\   [debug_do_exits]  ?[false] ?halto" do_exits 2"  \ Depuración!!!
+    [debug_do_exits] [??] ~~
     if  i exit>list  then
   cell  +loop  drop
   .exits
@@ -9269,7 +9309,7 @@ false [if]  \ Primera versión
   [debug_do_exits] [if]  cr ." free_exits" cr .stack  [then]  \ Depuración!!!
   to this_location  depth >r
   last_exit> 1+ first_exit> do
-    this_location i + @ if  i  then
+    this_location i + @ ?? i
   cell  +loop 
   depth r> -
   [debug_do_exits] [if]  cr .stack  [then]  \ Depuración!!!
@@ -9413,7 +9453,7 @@ subsection( Cerrar y abrir)  \ {{{
   key% tool{this_only}
   lock% {open}
   key% {hold}
-  door% is_open? if  first_close_the_door  then
+  door% is_open? ?? first_close_the_door
   lock% is_closed  .the_key_fits
   ;
 : .the_door_closes
@@ -9555,7 +9595,7 @@ subsection( Cerrar y abrir)  \ {{{
 : (open_the_door)
   \ Abrir la puerta, que está cerrada.
   key% tool{this_only}  \ Pendiente!!! ¿Por qué aquí?
-  lock% is_closed? if  unlock_the_door  then
+  lock% is_closed? ?? unlock_the_door
   location_47% location_48% w<-->
   location_47% location_48% o<-->
   .the_door_opens
@@ -9673,17 +9713,11 @@ subsection( Agredir)  \ {{{
   ;
 :action do_kill
   \ Acción de matar.
-  [false] ?halto" do_kill 1"
   main_complement{required}
-  [false] ?halto" do_kill 2"
   main_complement{accessible}
-  [false] ?halto" do_kill 3"
   main_complement{living}  \ Pendiente!!! También es posible matar otras cosas, como el enemigo!!!
-  [false] ?halto" do_kill 4"
   tool_complement{hold}
-  [false] ?halto" do_kill 5"
   main_complement @ (do_kill)
-  [false] ?halto" do_kill 6"
   ;action
 : break_the_cloak
   \ Romper la capa.
@@ -10084,7 +10118,7 @@ subsection( Escalar)  \ {{{
 : do_climb_the_fallen_away
   \ Escalar el derrumbe.
   climbed_the_fallen_away? @ 0=
-  if  do_climb_the_fallen_away_first  then
+  ?? do_climb_the_fallen_away_first
   climbing_the_fallen_away_is_impossible
   climbed_the_fallen_away? on
   ;
@@ -10130,7 +10164,7 @@ subsection( Inventario)  \ {{{
 : anything_with_you$  ( -- a u )
   \ Devuelve una variante de «nada contigo».
   s" nada" with_you$  ?dup if
-    2 random if  2swap  then  s&
+    2 random ?? 2swap s&
   else drop
   then
   ;
@@ -10546,7 +10580,7 @@ subsection( Hablar y presentarse)  \ {{{
 : (talk_to_the_leader)
   \ Hablar con el jefe.
   leader% no_conversations?
-  if  first_conversation_with_the_leader  then
+  ?? first_conversation_with_the_leader
   the_leader_checks_what_you_carry
   ;
 : talk_to_the_leader
@@ -10607,7 +10641,7 @@ subsection( Hablar y presentarse)  \ {{{
 : conversation_0_with_ambrosio
   \ Primera conversación con Ambrosio, si se dan las condiciones.
   location_19% am_i_there?
-  if  (conversation_0_with_ambrosio)  then
+  ?? (conversation_0_with_ambrosio)
   ;
 : (conversation_1_with_ambrosio)
   \ Segunda conversación con Ambrosio.
@@ -10626,7 +10660,7 @@ subsection( Hablar y presentarse)  \ {{{
   \ Segunda conversación con Ambrosio, si se dan las condiciones.
   location_46% am_i_there?
   ambrosio_follows? 0=  and
-  if  (conversation_1_with_ambrosio)  then
+  ?? (conversation_1_with_ambrosio)
   ;
 : (conversation_2_with_ambrosio)
   \ Tercera conversación con Ambrosio.
@@ -10643,7 +10677,7 @@ subsection( Hablar y presentarse)  \ {{{
 : conversation_2_with_ambrosio
   \ Tercera conversación con Ambrosio, si se dan las condiciones.
   location_45% 1- location_47% 1+ my_location within 
-  if  (conversation_2_with_ambrosio)  then
+  ?? (conversation_2_with_ambrosio)
   ;
 : (talk_to_ambrosio)
   \ Hablar con Ambrosio.
@@ -10725,7 +10759,7 @@ subsection( Hablar y presentarse)  \ {{{
   s" Hablas con" rot full_name s& colon+ narrate
   ;
 : you_speak_to  ( a | 0 -- )
-  ?dup if  (you_speak_to)  then
+  ?dup ?? (you_speak_to)
   ;
 :action do_speak
   \ Acción de hablar.
@@ -11011,39 +11045,39 @@ restore_vocabularies
   \ Pendiente!!! No funciona bien
   \ main_complement{forbidden}
   only restore_vocabulary
-  [debug_filing] ?halto" in do_load_the_game before save-input"
+  [debug_filing] [??] ~~
   \ included  \ !!! el sistema estalla
   \ 2drop  \ !!! sin error
   \ cr type  \ !!! sin error  
   2>r save-input 2r>
-  [debug_filing] ?halto" in do_load_the_game before fs+"
+  [debug_filing] [??] ~~
   fs+
-  [debug_filing] ?halto" in do_load_the_game before included"
+  [debug_filing] [??] ~~
 [false] [if]  \ Depuración!!!
   read_game_file
 [else]
   ['] read_game_file
-  [debug_filing] ?halto" in do_load_the_game before catch"
+  [debug_filing] [??] ~~
   catch  
-  [debug_filing] ?halto" in do_load_the_game after catch"
+  [debug_filing] [??] ~~
   restore_vocabularies
-  [debug_filing] ?halto" in do_load_the_game before if"
+  [debug_filing] [??] ~~
   ?dup if
     ( a u u2 ) nip nip
     case  \ tmp!!!
       2 of  s" Fichero no encontrado." narrate  endof
       s" Error al intentar leer el fichero." narrate
     endcase
-    [debug_filing] ?halto" in do_load_the_game after endcase"
+    [debug_filing] [??] ~~
   then
 [then]
-  [debug_filing] ?halto" in do_load_the_game after then"
+  [debug_filing] [??] ~~
   restore-input
   if
     \ tmp!!!
     s" Error al intentar restaurar la entrada tras leer el fichero." narrate
   then
-  [debug_filing] ?halto" in do_load_the_game at the end" 
+  [debug_filing] [??] ~~ 
   continue_the_loaded_game
   ;action
 
@@ -11202,19 +11236,19 @@ dicha [seudo]preposición, o bien cero si la
 
 : (execute_action)  ( xt -- )
   \ Ejecuta la acción del comando.
-  [debug_catch] [debug_parsing] [or] ?halto" En (EXECUTE_ACTION) antes de CATCH"  \ Depuración!!!
+  [debug_catch] [debug_parsing] [or] [??] ~~
   catch  \ Ejecutar la acción a través de CATCH para poder regresar directamente con THROW en caso de error
-  [debug_catch] [debug_parsing] [or] ?halto" En (EXECUTE_ACTION) después de CATCH"  \ Depuración!!!
+  [debug_catch] [debug_parsing] [or] [??] ~~
   ?wrong
-  [debug_catch] [debug_parsing] [or] ?halto" En (EXECUTE_ACTION) después de ?WRONG"  \ Depuración!!!
+  [debug_catch] [debug_parsing] [or] [??] ~~
   ;
 : execute_action
   \ Ejecuta la acción del comando, si existe.
-  [debug_catch] [debug_parsing] [or] ?halto" En EXECUTE_ACTION"  \ Depuración!!!
+  [debug_catch] [debug_parsing] [or] [??] ~~
   action @ ?dup
-  [debug_catch] [debug_parsing] [or] ?halto" En EXECUTE_ACTION tras ACTION @ ?DUP"  \ Depuración!!!
+  [debug_catch] [debug_parsing] [or] [??] ~~
   if  (execute_action)  else  no_verb_error# ?wrong  then
-  [debug_catch] [debug_parsing] [or] ?halto" Al final de EXECUTE_ACTION"  \ Depuración!!!
+  [debug_catch] [debug_parsing] [or] [??] ~~
   ;
 
 : (evaluate_command)
@@ -11247,21 +11281,21 @@ dicha [seudo]preposición, o bien cero si la
   \ a u = Comando
   \ ff = ¿El comando se analizó sin error?
   -punctuation 
-  [debug_parsing] ?halto" Entrando en VALID_PARSING?"  \ Depuración!!!
+  [debug_parsing] [??] ~~
   \ Dejar solo el diccionario PLAYER_VOCABULARY activo
   only player_vocabulary
   \ [debug_catch] [if]  s" En VALID_PARSING? antes de preparar CATCH" debug  [then]  \ Depuración!!!
-  [debug_parsing] ?halto" en valid_parsing? antes de preparar CATCH"  \ Depuración!!!
+  [debug_parsing] [??] ~~
   ['] evaluate_command catch
-  [debug_parsing] ?halto" en valid_parsing? después de CATCH"  \ Depuración!!!
-  [debug_parsing] ?halto" en valid_parsing? antes de NIP NIP"  \ Depuración!!!
+  [debug_parsing] [??] ~~
+  [debug_parsing] [??] ~~
   dup if  nip nip  then  \ Arreglar la pila, pues CATCH hace que apunte a su posición previa
-  [debug_parsing] ?halto" en valid_parsing? tras NIP NIP"
+  [debug_parsing] [??] ~~
   dup ?wrong 0=
-  [debug_parsing] ?halto" en valid_parsing? tras ?WRONG"
+  [debug_parsing] [??] ~~
   restore_vocabularies
   no_parsing_error_left? and
-  [debug_parsing] ?halto" Saliendo de VALID_PARSING?"  \ Depuración!!!
+  [debug_parsing] [??] ~~
   ;
 
 : >but_one!  ( a -- )
@@ -11290,13 +11324,13 @@ dicha [seudo]preposición, o bien cero si la
 
 : obbey  ( a u -- )
   \ Evalúa un comando con el vocabulario del juego.
-  [debug_parsing] ?halto" Al entrar en OBBEY"  \ Depuración!!!
+  [debug_parsing] [??] ~~
   dup if
     init_parsing valid_parsing?
-    if  execute_action  then
+    ?? execute_action
   else  2drop
   then
-  [debug_parsing] ?halto" Al final de OBBEY"  \ Depuración!!!
+  [debug_parsing] [??] ~~
   ; 
 
 : second?  ( x1 x2 -- x1 ff )
@@ -11304,22 +11338,22 @@ dicha [seudo]preposición, o bien cero si la
   \ Los dos valores representan una acción (xt) o un ente (a).
   \ x1 = Acción o complemento recién encontrado
   \ x2 = Acción o complemento anterior, o cero
-  [debug_parsing] ?halto" second? 1"
+  [debug_parsing] [??] ~~
   2dup different?  \ ¿Hay ya otro anterior y es diferente?
-  [debug_parsing] ?halto" second? 2"
+  [debug_parsing] [??] ~~
   ;
 : action!  ( a -- )
   \ Comprueba y almacena la acción.
   \ a = Dirección de ejecución de la palabra de la acción
-  [debug_parsing] ?halto" action! 1"
+  [debug_parsing] [??] ~~
   action @ second?  \ ¿Había ya una acción?
-  [debug_parsing] ?halto" action! 2"
+  [debug_parsing] [??] ~~
   too_many_actions_error# and
-  [debug_parsing] ?halto" action! antes de throw"
+  [debug_parsing] [??] ~~
   throw  \ Sí, error
-  [debug_parsing] ?halto" action! 2a"
+  [debug_parsing] [??] ~~
   action !  \ No, guardarla
-  [debug_parsing] ?halto" action! 3"
+  [debug_parsing] [??] ~~
   ;
 : preposition!  ( u -- )
   \ Almacena una (seudo)preposición recién hallada en la frase.
@@ -11331,13 +11365,13 @@ dicha [seudo]preposición, o bien cero si la
 : prepositional_complement!  ( a -- )
   \ Almacena un complemento (seudo)preposicional.
   \ a = Identificador de ente 
-  [debug_parsing] ?halto" prepositional_complement! 1"
+  [debug_parsing] [??] ~~
   current_prepositional_complement @ second?  \ ¿Se había usado ya esta preposición con otro complemento?
   repeated_preposition_error# and throw  \ Si es así, error
   dup new_last_complement
   current_prepositional_complement !
   current_preposition off  \ Cerrar la preposición
-  [debug_parsing] ?halto" prepositional_complement! 2"
+  [debug_parsing] [??] ~~
   ;
 : secondary_complement!  ( a -- )
   \ Almacena el complemento secundario. 
@@ -11349,7 +11383,7 @@ dicha [seudo]preposición, o bien cero si la
 : main_complement!  ( a -- )
   \ Almacena el complemento principal.
   \ a = Identificador de ente 
-  [debug_parsing] ?halto" En (COMPLEMENT!)"  \ Depuración!!!
+  [debug_parsing] [??] ~~
   main_complement @ second?  \ ¿Había ya un complemento principal?
   too_many_complements_error# and throw  \ Si es así, error
   dup new_last_complement
@@ -11367,7 +11401,7 @@ dicha [seudo]preposición, o bien cero si la
 : (complement!)  ( a -- )
   \ Comprueba y almacena un complemento.
   \ a = Identificador de ente
-  [debug_parsing] ?halto" En (COMPLEMENT!)"  \ Depuración!!!
+  [debug_parsing] [??] ~~
   current_preposition @  \ ¿Hay una (seudo)preposición abierta?
   if  prepositional_complement!  \ Sí: complemento (seudo)preposicional
   else  non_prepositional_complement!  \ No: complemento principal o secundario
@@ -11377,8 +11411,8 @@ dicha [seudo]preposición, o bien cero si la
   \ Comprueba y almacena un complemento.
   \ a = Identificador de ente,
   \     o cero si se trata de un pronombre sin referente.
-  [debug_parsing] ?halto" En COMPLEMENT!"  \ Depuración!!!
-  ?dup if  (complement!)  then
+  [debug_parsing] [??] ~~
+  ?dup ?? (complement!)
   ;
 : action|complement!  ( a1 a2 -- )
   \ Comprueba y almacena un complemento o una acción,
@@ -11768,6 +11802,7 @@ adecuada.
   ;
 : (wall) ( -- a )
   \ Devuelve el ente adecuado a la palabra «pared».
+  \ Inacabado!!! Probablemente habrá que añadir más casos.
   location_08% am_i_there?
   if    ravine_wall%
   else  wall%
@@ -12351,7 +12386,9 @@ o sustantivos.
 \ meter introducir insertar colar encerrar
 
 : ulfius  ulfius% complement!  ;
+' ulfius synonyms{ Ulfius }synonyms
 : ambrosio  (ambrosio) complement!  ;
+' ambrosio synonyms{ Ambrosio }synonyms
 : hombre  (man) complement!  ;
 ' hombre synonyms{  señor tipo individuo persona  }synonyms
 : hombres  (men) complement!  ;
@@ -12384,9 +12421,9 @@ o sustantivos.
   desgraciadas desafortunadas
   muchedumbre masa enjambre
   }synonyms  
-: refugiados leader% conversations? if  multitud  then  ;
+: refugiados leader% conversations? ?? multitud ;
 ' refugiados synonyms{ refugiada refugiadas }synonyms  
-: refugiado leader% conversations? if  viejo  then  ;
+: refugiado leader% conversations? ?? viejo ;
  
 : altar  altar% complement!  ;
 : arco  arch% complement!  ;
@@ -12406,7 +12443,7 @@ o sustantivos.
     mástil mástiles
     estandarte estandartes 
   }synonyms \ pendiente: estandarte, enseña... otro género!!!
-: dragones  flags% is_known? if  banderas  then  ;
+: dragones  flags% is_known? ?? banderas ;
 ' dragones synonyms{ dragón }synonyms
 : pedernal  flint% complement!  ;
 : ídolo  idol% complement!  ;
@@ -12636,11 +12673,11 @@ false [if]  \ Descartado!!! Pendiente!!!
   }synonyms
 : GRABAR  ( "name" -- )
   \ Graba el estado de la partida en un fichero.
-  [debug_parsing] ?halto" en GRABAR 1"  \ depuración!!!
+  [debug_parsing] [??] ~~
   parse-name >sb
-  [debug_parsing] ?halto" en GRABAR 2"  \ depuración!!!
+  [debug_parsing] [??] ~~
   ['] do_save_the_game action!
-  [debug_parsing] ?halto" en GRABAR 3"  \ depuración!!!
+  [debug_parsing] [??] ~~
   ;  immediate
 ' GRABAR immediate_synonyms{
   GRABA GRABO
@@ -12650,13 +12687,13 @@ false [if]  \ Descartado!!! Pendiente!!!
   }synonyms
 : CARGAR  ( "name" -- )
   \ Carga el estado de la partida de un fichero.
-  [debug_parsing] ?halto" en CARGAR 1"  \ depuración!!!
+  [debug_parsing] [??] ~~
   parse-name
-  [debug_parsing] ?halto" en CARGAR 1a"  \ depuración!!!
+  [debug_parsing] [??] ~~
   >sb
-  [debug_parsing] ?halto" en CARGAR 2"  \ depuración!!!
+  [debug_parsing] [??] ~~
   ['] do_load_the_game action!
-  [debug_parsing] ?halto" en CARGAR 3"  \ depuración!!!
+  [debug_parsing] [??] ~~
   ;  immediate
 ' CARGAR immediate_synonyms{
   CARGA CARGO
@@ -12834,7 +12871,7 @@ svariable command  \ Zona de almacenamiento del comando
   ;
 : .command_prompt
   \ Imprime un presto para la entrada de comandos.
-  command_prompt$ ['] command_prompt_color |paragraph
+  command_prompt$ command_prompt_color paragraph
   cr_after_command_prompt? @ if
     cr+
   else
@@ -12920,22 +12957,22 @@ false [if]  \ No se usa!!!
   ;
 : play_again?$  ( -- a u )
   \ Devuelve la pregunta que se hace al jugador tras haber completado con éxito el juego.
-  s{ s" ¿Quieres" s" ¿Te animas a" s" ¿Te apetece" }s
+  s{ s" ¿Quieres" s" ¿Te" s{ s" animas a" s" apetece" }s& }s
   s{ s" jugar" s" empezar" }s&  again?$ s&
   ;
-: retry?1$  ( -- a u )
+: retry?0$  ( -- a u )
   \ Devuelve una variante para el comienzo de la pregunta que se hace al jugador tras haber fracasado.
   s" ¿Tienes"
   s{ s" fuerzas" s" arrestos" s" agallas" s" energías" s" ánimos" }s&
   ;
-: retry?2$  ( -- a u )
+: retry?1$  ( -- a u )
   \ Devuelve una variante para el comienzo de la pregunta que se hace al jugador tras haber fracasado.
   s{ s" ¿Te quedan" s" ¿Guardas" s" ¿Conservas" }s
   s{ s" fuerzas" s" energías" s" ánimos" }s&
   ;
 : retry?$  ( -- a u )
   \ Devuelve la pregunta que se hace al jugador tras haber fracasado.
-  s{ retry?1$ retry?2$ }s s" para" s&
+  s{ retry?0$ retry?1$ }s s" para" s&
   s{ s" jugar" s" probar" s" intentarlo" }s& again?$ s&
   ;
 : enough?  ( -- ff )
@@ -13002,17 +13039,33 @@ false [if]  \ No se usa!!!
   s" Te has ganado un buen descanso."
   narrate
   ;
-: enemy_speech
-  \ Palabras del general enemigo.
-  s{  s" Hoy" s{ s" es" s" parece ser" s" sin duda es" }s&
-      s" Sin duda hoy"
-      s" No cabe duda de que hoy es"
+: ransom$  ( -- a u )
+  s" un" s{ s" buen" s" suculento" }s& s" rescate" s&
+  ;
+: my_lucky_day$  ( -- a u )
+  s{  s" Hoy" s{ s" es" s" parece ser" s" sin duda es" s" al parecer es" }s&
+      s{  s" Sin duda" s" No cabe duda de que"
+          s" Parece que" s" Por lo que parece"
+      }s s" hoy es" s&
   }s s{ s" un" s" mi" }s& s" día" s&
   s{ s" de suerte" s" afortunado" }s& s" ..." s+
+  ;
+: enemy_speech$  ( -- a u )
+  \ Texto de las palabras del general enemigo.
+  my_lucky_day$
   s{ s" Bien, bien..." s" Excelente..." }s&
-  s{  s" Por el gran Ulfius podremos pedir un" s{ s" buen" s" suculento" }s& s" rescate" s&
-      s" Del gran Ulfius podremos" s{ s" sacar" s" obtener" }s& s" una buena ventaja" s&
-  }s& period+  speak
+  s{  s" Por el gran Ulfius"
+        s{  s" podremos" s{ s" pedir" s" negociar" s" exigir" }s&
+            s" pediremos" s" exigiremos" s" nos darán" s" negociaremos"
+        }s& ransom$ s&
+      s" Del gran Ulfius" s{ s" podremos" s" lograremos" }s&
+        s{ s" sacar" s" obtener" }s&
+        s{ ransom$ s{ s" alguna" s" una" }s s" buena ventaja" s& }s&
+  }s&
+  ;
+: enemy_speech
+  \ Palabras del general enemigo.
+  enemy_speech$ period+  speak
   ;
 : the_sad_end
   \ Final del juego con fracaso.
@@ -13051,7 +13104,7 @@ false [if]  \ No se usa!!!
 :action do_finish
   \ Acción de abandonar el juego.
   surrender? if
-    \ retry?$  cr no? if  (do_finish)  then
+    \ retry?$  cr no? ?? (do_finish)
     (do_finish)
   then
   ;action
@@ -13238,6 +13291,32 @@ errores.
 
 true [if]
 
+: pp
+  \ this does not work fine!
+  page ." first para. press any key or wait 3 seconds."
+  3 (break) ." second para"
+  ;
+: ww 
+  \ this works fine
+  page ." first para. press any key or wait 3 seconds."
+  3 wait ." second para"
+  ;
+: tt 
+  page ." first para. press any key or wait 3 seconds."
+  trm+erase-line print_start_of_line
+  ." second para"
+  ;
+: -pp
+  \ this works fine
+  page ." first para. press any key or wait."
+  -3 (break) ." second para"
+  ;
+: -ww
+  \ this works fine
+  page ." first para. press any key or wait"
+  -3 wait ." second para"
+  ;
+
 : check_stack1
   \ Provoca un error -3 («stack overflow») si la pila no tiene solo un elemento.
   depth 1 <> -3 and throw
@@ -13404,6 +13483,18 @@ do_take_off
 \ Tareas pendientes: programación {{{
 
 ...........................
+2012-05-08:
+
+Corregir fallo: cuando se interrumpe una pausa de narración o de
+escena, el cursor baja varias líneas. Misterioso...
+
+...........................
+2012-03-01:
+...........................
+2012-03-01:
+...........................
+2012-03-01:
+...........................
 2012-03-01:
 
 Error: «No se ve ningunas velas». No es incorrecto, pero queda mejor
@@ -13459,6 +13550,15 @@ librería del sistema 4tH.
 2012-02-07:
 
 Hacer x sinónimo de ex cuando no tenga complemento.
+
+Para repetir la última acción con los últimos complementos:
++ = sigue = continúa = más = r = repite
+...pero no tiene utilidad habiendo historial de comandos!
+
+¿Implementar gerundios?:
+> sigue hablando con X
+Tampoco tiene utilidad, salvo aumentar el rango de
+expresiones comprensibles.
 
 ...........................
 2012-01-03:
