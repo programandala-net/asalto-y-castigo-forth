@@ -7,7 +7,7 @@ CR .( Asalto y castigo )  \ {{{
 \ Copyright (C) 2011,2012 Marcos Cruz (programandala.net)
 
 only forth definitions
-: version$  ( -- a u )  s" A-04-2012051516"  ;
+: version$  ( -- a u )  s" A-04-201205151630"  ;
 version$ type cr
 
 \ 'Asalto y castigo' is free software; you can redistribute
@@ -248,18 +248,7 @@ restore_vocabularies
 \ Demás vocabularios
 
 vocabulary menu_vocabulary  \ palabras del menú \ Aún no se usa!!!
-\ Vocabulario del jugador 
-
-\ Gforth necesita su propio método
-\ para crear un vocabulario sensible a mayúsculas,
-\ con la palabra 'table':
-table value (player_vocabulary)
-: player_vocabulary
-  \ Reemplaza el vocabulario superior con el del jugador.
-  \ Código adaptado de Gforth (compat/vocabulary.fs).
-  get-order dup 0= 50 and throw  \ Error 50 («search-order underflow») si la lista está vacía
-  nip (player_vocabulary) swap set-order
-  ;
+vocabulary player_vocabulary  \ palabras del jugador
 vocabulary answer_vocabulary  \ respuestas a preguntas de «sí» o «no»
 vocabulary config_vocabulary  \ palabras de configuración del juego
 vocabulary restore_vocabulary  \ palabras de restauración de una partida 
@@ -11421,31 +11410,35 @@ o sustantivos.
 )
 
 : éste  last_complement >masculine >singular @ complement!  ;
-' éste synonyms{ ése }synonyms
+' éste synonyms{ Éste ése Ése }synonyms
 : ésta  last_complement >feminine >singular @ complement!  ;
-' ésta synonyms{ ésa }synonyms
+' ésta synonyms{ Ésta ésa Ésa }synonyms
 : éstos  last_complement >masculine >plural @ complement!  ;
-' éstos synonyms{ ésos }synonyms
+' éstos synonyms{ Éstos ésos Ésos }synonyms
 : éstas  last_complement >feminine >plural @ complement!  ;
-' éstas synonyms{ ésas }synonyms
+' éstas synonyms{ Éstas ésas Ésas }synonyms
 : aquél  last_but_one_complement >masculine >singular @ complement!  ;
+' aquél synonyms{ aquÉl }synonyms
 : aquélla  last_but_one_complement >feminine >singular @ complement!  ;
+' aquélla synonyms{ aquÉlla }synonyms
 : aquéllos  last_but_one_complement >masculine >plural @ complement!  ;
+' aquéllos synonyms{ aquÉllos }synonyms
 : aquéllas  last_but_one_complement >feminine >plural @ complement!  ;
+' aquéllas synonyms{ aquÉllas }synonyms
 
 \ Verbos
 
 : ir ['] do_go action!  ;
 ' ir synonyms{
-  dirigirme diríjame diríjome
-  dirigirse dirigíos diríjase
-  dirigirte diríjote dirígete
-  irme voyme váyame
-  irse váyase
+  dirigirme diríjame dirÍjame diríjome dirÍjome
+  dirigirse dirigíos dirigÍos diríjase dirÍjase
+  dirigirte diríjote dirÍjote dirígete dirÍgete
+  irme voyme váyame vÁyame
+  irse váyase vÁyase
   irte vete
-  moverme muévame muévome
-  moverse muévase moveos
-  moverte muévete 
+  moverme muévame muÉvame muévome muÉvome
+  moverse muévase muÉvase moveos
+  moverte muévete muÉvete 
   ve id idos voy vaya
   marchar marcha marchad marcho marche
   }synonyms
@@ -11453,24 +11446,24 @@ o sustantivos.
 : abrir  ['] do_open action!  ;
 ' abrir synonyms{  abre abrid abro abra  }synonyms
 : abrirlo  abrir éste  ;
-' abrirlo synonyms{ ábrelo abridlo ábrolo ábralo }synonyms
+' abrirlo synonyms{ ábrelo Ábrelo abridlo ábrolo Ábrolo ábralo Ábralo }synonyms
 : abrirla  abrir ésta  ;
-' abrirla synonyms{ ábrela abridla ábrola ábrala }synonyms
+' abrirla synonyms{ ábrela Ábrela abridla ábrola Ábrola ábrala Ábrala }synonyms
 : abrirlos  abrir éstos  ;
-' abrirlos synonyms{ ábrelos abridlos ábrolos ábralos }synonyms
+' abrirlos synonyms{ ábrelos Ábrelos abridlos ábrolos Ábrolos ábralos Ábralos }synonyms
 : abrirlas  abrir éstas  ;
-' abrirlas synonyms{ ábrelas abridlas ábrolas ábralas }synonyms
+' abrirlas synonyms{ ábrelas Ábrelas abridlas ábrolas Ábrolas ábralas Ábralas }synonyms
 
 : cerrar  ['] do_close action!  ;
 ' cerrar synonyms{  cierra cerrad cierro }synonyms
 : cerrarlo  cerrar éste  ;
-' cerrarlo synonyms{  ciérralo cerradlo ciérrolo ciérrelo }synonyms
+' cerrarlo synonyms{  ciérralo ciÉrralo cerradlo ciérrolo ciÉrrolo ciérrelo ciÉrrelo }synonyms
 : cerrarla  cerrar ésta  ;
-' cerrarla synonyms{  ciérrala cerradla ciérrola ciérrela }synonyms
+' cerrarla synonyms{  ciérrala ciÉrrala cerradla ciérrola ciÉrrola ciérrela ciÉrrela }synonyms
 : cerrarlos  cerrar éstos  ;
-' cerrarlos synonyms{  ciérralos cerradlos ciérrolos ciérrelos }synonyms
+' cerrarlos synonyms{  ciérralos ciÉrralos cerradlos ciérrolos ciÉrrolos ciérrelos ciÉrrelos }synonyms
 : cerrarlas  cerrar éstas  ;
-' cerrarlas synonyms{  ciérralas cerradlas ciérrolas ciérrelas }synonyms
+' cerrarlas synonyms{  ciérralas ciÉrralas cerradlas ciérrolas ciÉrrolas ciérrelas ciÉrrelas }synonyms
 
 : coger  ['] do_take action!  ;
 ' coger synonyms{
@@ -11480,27 +11473,27 @@ o sustantivos.
   }synonyms
 : cogerlo  coger éste  ;
 ' cogerlo synonyms{
-  cógelo cogedlo cójolo cójalo
-  agarrarlo agárralo agarradlo agárrolo agárrelo
-  recogerlo recógelo recogedlo recójolo recójalo
+  cógelo cÓgelo cogedlo cójolo cÓjolo cójalo cÓjalo
+  agarrarlo agárralo agÁrralo agarradlo agárrolo agÁrrolo agárrelo agÁrrelo
+  recogerlo recógelo recÓgelo recogedlo recójolo recÓjolo recójalo recÓjalo
   }synonyms
 : cogerla  coger éste  ;
 ' cogerla synonyms{
-  cógela cogedla cójola cójala
-  agarrarla agárrala agarradla agárrola agárrela
-  recogerla recógela recogedla recójola recójala
+  cógela cÓgela cogedla cójola cÓjola cójala cÓjala
+  agarrarla agárrala agÁrrala agarradla agárrola agÁrrola agárrela agÁrrela
+  recogerla recógela recÓgela recogedla recójola recÓjola recójala recÓjala
   }synonyms
 : cogerlos  coger éstos  ;
 ' cogerlos synonyms{
-  cógelos cogedlos cójolos cójalos
-  agarrarlos agárralos agarradlos agárrolos agárrelos
-  recogerlos recógelos recogedlos recójolos recójalos
+  cógelos cÓgelos cogedlos cójolos cÓjolos cójalos cÓjalos
+  agarrarlos agárralos agÁrralos agarradlos agárrolos agÁrrolos agárrelos agÁrrelos
+  recogerlos recógelos recÓgelos recogedlos recójolos recÓjolos recójalos recÓjalos
   }synonyms
 : cogerlas  coger éstas  ;
 ' cogerlas synonyms{
-  cógelas cogedlas cójolas cójalas
-  agarrarlas agárralas agarradlas agárrolas agárrelas
-  recogerlas recógelas recogedlas recójolas recójalas
+  cógelas cÓgelas cogedlas cójolas cÓjolas cójalas cÓjalas
+  agarrarlas agárralas agÁrralas agarradlas agárrolas agÁrrolas agárrelas agÁrrelas
+  recogerlas recógelas recÓgelas recogedlas recójolas recÓjolas recójalas recÓjalas
   }synonyms
 
 : tomar  ['] do_take|do_eat action!  ; \ Inacabado!!!
@@ -11508,7 +11501,7 @@ o sustantivos.
   toma tomad tomo tome
   }synonyms
 : tomarlo  tomar éste  ;
-' tomarlo synonyms{ tómalo tomadlo tómolo tómelo }synonyms
+' tomarlo synonyms{ tómalo tÓmalo tomadlo tómolo tÓmolo tómelo tÓmelo }synonyms
 
 : dejar  ['] do_drop action!  ;
 ' dejar synonyms{
@@ -11518,27 +11511,27 @@ o sustantivos.
   }synonyms
 : dejarlo  dejar éste  ;
 ' dejarlo synonyms{
-  déjalo dejadlo déjolo déjelo
-  soltarlo suéltalo soltadlo suéltolo suéltelo
-  tirarlo tíralo tiradlo tírolo tírelo
+  déjalo dÉjalo dejadlo déjolo dÉjolo déjelo dÉjelo
+  soltarlo suéltalo suÉltalo soltadlo suéltolo suÉltolo suéltelo suÉltelo
+  tirarlo tíralo tÍralo tiradlo tírolo tÍrolo tírelo tÍrelo
   }synonyms
 : dejarlos  dejar éstos  ;
 ' dejarlos synonyms{
-  déjalos dejadlos déjolos déjelos
-  soltarlos suéltalos soltadlos suéltolos suéltelos
-  tirarlos tíralos tiradlos tírolos tírelos
+  déjalos dÉjalos dejadlos déjolos dÉjolos déjelos dÉjelos
+  soltarlos suéltalos suÉltalos soltadlos suéltolos suÉltolos suéltelos suÉltelos
+  tirarlos tíralos tÍralos tiradlos tírolos tÍrolos tírelos tÍrelos
   }synonyms
 : dejarla  dejar ésta  ;
 ' dejarla synonyms{
-  déjala dejadla déjola déjela
-  soltarla suéltala soltadla suéltola suéltela
-  tirarla tírala tiradla tírola tírela
+  déjala dÉjala dejadla déjola dÉjola déjela dÉjela
+  soltarla suéltala suÉltala soltadla suéltola suÉltola suéltela suÉltela
+  tirarla tírala tÍrala tiradla tírola tÍrola tírela tÍrela
   }synonyms
 : dejarlas  dejar éstas  ;
 ' dejarlas synonyms{
-  déjalas dejadlas déjolas déjelas
-  soltarlas suéltalas soltadlas suéltolas suéltelas
-  tirarlas tíralas tiradlas tírolas tírelas
+  déjalas dÉjalas dejadlas déjolas dÉjolas déjelas dÉjelas
+  soltarlas suéltalas suÉltalas soltadlas suéltolas suÉltolas suéltelas suÉltelas
+  tirarlas tíralas tÍralas tiradlas tírolas tÍrolas tírelas tÍrelas
   }synonyms
 
 : mirar  ['] do_look action!  ;
@@ -11549,41 +11542,41 @@ o sustantivos.
   }synonyms
 : mirarlo  mirar éste  ;
 ' mirarlo synonyms{
-  míralo miradlo mírolo mírelo
-  contemplarlo contémplalo contempladlo contémplolo contémplelo
-  observarlo obsérvalo observadlo obsérvolo obsérvelo
+  míralo mÍralo miradlo mírolo mÍrolo mírelo mÍrelo
+  contemplarlo contémplalo contÉmplalo contempladlo contémplolo contÉmplolo contémplelo contÉmplelo
+  observarlo obsérvalo obsÉrvalo observadlo obsérvolo obsÉrvolo obsérvelo obsÉrvelo
   }synonyms
 : mirarla  mirar ésta  ;
 ' mirarla synonyms{
-  mírala miradla mírola mírela
-  contemplarla contémplala contempladla contémplola contémplela
-  observarla obsérvala observadla obsérvola obsérvela
+  mírala mÍrala miradla mírola mÍrola mírela mÍrela
+  contemplarla contémplala contÉmplala contempladla contémplola contÉmplola contémplela contÉmplela
+  observarla obsérvala obsÉrvala observadla obsérvola obsÉrvola obsérvela obsÉrvela
   }synonyms
 : mirarlos  mirar éstos  ;
 ' mirarlos synonyms{
-  míralos miradlos mírolos mírelos
-  contemplarlos contémplalos contempladlos contémplolos contémplelos
-  observarlos obsérvalos observadlos obsérvolos obsérvelos
+  míralos mÍralos miradlos mírolos mÍrolos mírelos mÍrelos
+  contemplarlos contémplalos contÉmplalos contempladlos contémplolos contÉmplolos contémplelos contÉmplelos
+  observarlos obsérvalos obsÉrvalos observadlos obsérvolos obsÉrvolos obsérvelos obsÉrvelos
   }synonyms
 : mirarlas  mirar éstas  ;
 ' mirarlas synonyms{
-  míralas miradlas mírolas mírelas
-  contemplarlas contémplalas contempladlas contémplolas contémplelas
-  observarlas obsérvalas observadlas obsérvolas obsérvelas
+  míralas mÍralas miradlas mírolas mÍrolas mírelas mÍrelas
+  contemplarlas contémplalas contÉmplalas contempladlas contémplolas contÉmplolas contémplelas contÉmplelas
+  observarlas obsérvalas obsÉrvalas observadlas obsérvolas obsÉrvolas obsérvelas obsÉrvelas
   }synonyms
 
 
 : mirarse  ['] do_look_yourself action!  ;
 ' mirarse synonyms{
-  mírese miraos
-  mirarte mírate mírote mírete
-  mirarme mírame miradme mírome míreme
-  contemplarse contemplaos contémplese
-  contemplarte contémplate contémplote contémplete
-  contemplarme contémplame contempladme contémplome contémpleme
-  observarse obsérvese observaos
-  observarte obsérvate obsérvote obsérvete
-  observarme obsérvame observadme obsérvome obsérveme
+  mírese mÍrese miraos
+  mirarte mírate mÍrate mírote mÍrote mírete mÍrete
+  mirarme mírame mÍrame miradme mírome mÍrome míreme mÍreme
+  contemplarse contemplaos contémplese contÉmplese
+  contemplarte contémplate contÉmplate contémplote contÉmplote contémplete contÉmplete
+  contemplarme contémplame contÉmplame contempladme contémplome contÉmplome contémpleme contÉmpleme
+  observarse obsérvese obsÉrvese observaos
+  observarte obsérvate obsÉrvate obsérvote obsÉrvote obsérvete obsÉrvete
+  observarme obsérvame obsÉrvame observadme obsérvome obsÉrvome obsérveme obsÉrveme
   }synonyms
 
 : otear  ['] do_look_to_direction action!  ;
@@ -11596,52 +11589,52 @@ o sustantivos.
 : examinar  ['] do_examine action!  ;
 ' examinar synonyms{ ex examina examinad examino examine  }synonyms
 : examinarlo  examinar éste  ;
-' examinarlo synonyms{ examínalo examinadlo examínolo examínelo  }synonyms
+' examinarlo synonyms{ examínalo examÍnalo examinadlo examínolo examÍnolo examínelo examÍnelo  }synonyms
 : examinarlos  examinar éstos  ;
-' examinarlos synonyms{ examínalos examinadlos examínolos examínelos  }synonyms
+' examinarlos synonyms{ examínalos examÍnalos examinadlos examínolos examÍnolos examínelos examÍnelos  }synonyms
 : examinarla  examinar ésta  ;
-' examinarla synonyms{ examínala examinadla examínola examínela  }synonyms
+' examinarla synonyms{ examínala examÍnala examinadla examínola examÍnola examínela examÍnela  }synonyms
 : examinarlas  examinar éstas  ;
-' examinarlas synonyms{ examínalas examinadlas examínolas examínelas  }synonyms
+' examinarlas synonyms{ examínalas examÍnalas examinadlas examínolas examÍnolas examínelas examÍnelas  }synonyms
 
 : examinarse  ['] do_examine action! protagonist% complement!  ;
 ' examinarse synonyms{
-  examínese examinaos
-  examinarte examínate examínete
-  examinarme examíname examinadme examínome examíneme
+  examínese examÍnese examinaos
+  examinarte examínate examÍnate examínete examÍnete
+  examinarme examíname examÍname examinadme examínome examÍnome examíneme examÍneme
   }synonyms
 
 : registrar  ['] do_search action!  ;
 ' registrar synonyms{  registra registrad registro registre  }synonyms
 : registrarlo  registrar éste  ;
-' registrarlo synonyms{ regístralo registradlo regístrolo regístrelo  }synonyms
+' registrarlo synonyms{ regístralo regÍstralo registradlo regístrolo regÍstrolo regístrelo regÍstrelo  }synonyms
 : registrarla  registrar ésta  ;
-' registrarla synonyms{ regístrala registradla regístrola regístrela  }synonyms
+' registrarla synonyms{ regístrala regÍstrala registradla regístrola regÍstrola regístrela regÍstrela  }synonyms
 : registrarlos  registrar éstos  ;
-' registrarlos synonyms{ regístralos registradlos regístrolos regístrelos  }synonyms
+' registrarlos synonyms{ regístralos regÍstralos registradlos regístrolos regÍstrolos regístrelos regÍstrelos  }synonyms
 : registrarlas  registrar éstas  ;
-' registrarlas synonyms{ regístralas registradlas regístrolas regístrelas  }synonyms
+' registrarlas synonyms{ regístralas regÍstralas registradlas regístrolas regÍstrolas regístrelas regÍstrelas  }synonyms
 
 : i  ['] do_inventory inventory% action|complement!  ;
 ' i synonyms{  inventario  }synonyms
 : inventariar  ['] do_inventory action!  ;
 ' inventariar synonyms{
-  inventaría inventariad inventarío inventaríe
-  registrarse regístrase regístrese
-  registrarme regístrame registradme regístrome regístreme
-  registrarte regístrate regístrote regístrete
+  inventaría inventarÍa inventariad inventarío inventarÍo inventaríe inventarÍe
+  registrarse regístrase regÍstrase regístrese regÍstrese
+  registrarme regístrame regÍstrame registradme regístrome regÍstrome regístreme regÍstreme
+  registrarte regístrate regÍstrate regístrote regÍstrote regístrete regÍstrete
   }synonyms
 
 : hacer  ['] do_do action!  ;
 ' hacer synonyms{  haz haced hago haga  }synonyms
 : hacerlo  hacer éste  ;
-' hacerlo synonyms{  hazlo hacedlo hágolo hágalo  }synonyms
+' hacerlo synonyms{  hazlo hacedlo hágolo hÁgolo hágalo hÁgalo  }synonyms
 : hacerla  hacer ésta  ;
-' hacerla synonyms{  hazla hacedla hágola hágala  }synonyms
+' hacerla synonyms{  hazla hacedla hágola hÁgola hágala hÁgala  }synonyms
 : hacerlos  hacer éstos  ;
-' hacerlos synonyms{  hazlos hacedlos hágolos hágalos  }synonyms
+' hacerlos synonyms{  hazlos hacedlos hágolos hÁgolos hágalos hÁgalos  }synonyms
 : hacerlas  hacer éstas  ;
-' hacerlas synonyms{  hazlas hacedlas hágolas hágalas  }synonyms
+' hacerlas synonyms{  hazlas hacedlas hágolas hÁgolas hágalas hÁgalas  }synonyms
 
 : fabricar  ['] do_make action!  ;
 ' fabricar synonyms{
@@ -11650,112 +11643,120 @@ o sustantivos.
   }synonyms
 : fabricarlo  fabricar éste  ;
 ' fabricarlo synonyms{
-  fabrícalo fabricadlo fabrícolo fabríquelo
-  construirlo constrúyelo construidlo constrúyolo constrúyalo
+  fabrícalo fabrÍcalo fabricadlo fabrícolo fabrÍcolo fabríquelo fabrÍquelo
+  construirlo constrúyelo constrÚyelo construidlo constrúyolo constrÚyolo constrúyalo constrÚyalo
   }synonyms
 : fabricarla  fabricar éste  ;
 ' fabricarla synonyms{
-  fabrícala fabricadla fabrícola fabríquela
-  construirla constrúyela construidla constrúyola constrúyala
+  fabrícala fabrÍcala fabricadla fabrícola fabrÍcola fabríquela fabrÍquela
+  construirla constrúyela constrÚyela construidla constrúyola constrÚyola constrúyala constrÚyala
   }synonyms
 : fabricarlos  fabricar éste  ;
 ' fabricarlos synonyms{
-  fabrícalos fabricadlos fabrícolos fabríquelos
-  construirlos constrúyelos construidlos constrúyolos constrúyalos
+  fabrícalos fabrÍcalos fabricadlos fabrícolos fabrÍcolos fabríquelos fabrÍquelos
+  construirlos constrúyelos constrÚyelos construidlos constrúyolos constrÚyolos constrúyalos constrÚyalos
   }synonyms
 : fabricarlas  fabricar éste  ;
 ' fabricarlas synonyms{
-  fabrícalas fabricadlas fabrícolas fabríquelas
-  construirlas constrúyelas construidlas constrúyolas constrúyalas
+  fabrícalas fabrÍcalas fabricadlas fabrícolas fabrÍcolas fabríquelas fabrÍquelas
+  construirlas constrúyelas constrÚyelas construidlas constrúyolas constrÚyolas constrúyalas constrÚyalas
   }synonyms
 
 : nadar  ['] do_swim action!  ;
 ' nadar synonyms{
   nada nado nade
   bucear bucea bucead buceo bucee
-  sumergirse sumérgese sumérjase
-  sumergirme sumérgeme sumérjome sumérjame
-  sumergirte sumérgete sumergíos sumérjote sumérjate
-  zambullirse zambullíos zambúllese zambúllase
-  zambullirme zambúlleme zambúllome zambúllame
-  zambullirte zambúllete zambúllote zambúllate
-  bañarse báñase báñese
-  bañarme báñame báñome báñeme
-  bañarte báñate bañaos báñote báñete
+  sumergirse sumérgese sumÉrgese sumérjase sumÉrjase
+  sumergirme sumérgeme sumÉrgeme sumérjome sumÉrjome sumérjame sumÉrjame
+  sumergirte sumérgete sumÉrgete sumergíos sumergÍos sumérjote sumÉrjote sumérjate sumÉrjate
+  zambullirse zambullíos zambullÍos zambúllese zambÚllese zambúllase zambÚllase
+  zambullirme zambúlleme zambÚlleme zambúllome zambÚllome zambúllame zambÚllame
+  zambullirte zambúllete zambÚllete zambúllote zambÚllote zambúllate zambÚllate
+  bañarse baÑarse báñase bÁñase báÑase bÁÑase báñese bÁñese báÑese bÁÑese
+  bañarme baÑarme báñame bÁñame báÑame bÁÑame báñome bÁñome báÑome bÁÑome báñeme bÁñeme báÑeme bÁÑeme
+  bañarte báñate bÁñate báÑate bÁÑate bañaos baÑaos báñote bÁñote báÑote bÁÑote báñete bÁñete báÑete bÁÑete
   }synonyms
 
 : quitarse  ['] do_take_off action!  ;
 ' quitarse synonyms{
-  quítase quitaos quítese
-  quitarte quítate quítote quítete
-  quitarme quítame quítome quíteme
+  quítase quÍtase quitaos quítese quÍtese
+  quitarte quítate quÍtate quítote quÍtote quítete quÍtete
+  quitarme quítame quÍtame quítome quÍtome quíteme quÍteme
   }synonyms
-: quítarselo  quitarse éste  ;
-' quítarselo synonyms{
-  quitártelo quitáoslo quíteselo
-  quitármelo quítamelo quítomelo quítemelo
+: quitárselo  quitarse éste  ;
+' quitárselo synonyms{
+  quitÁrselo
+  quitártelo quitÁrtelo quitáoslo quitÁoslo quíteselo quÍteselo
+  quitármelo quitÁrmelo quítamelo quÍtamelo quítomelo quÍtomelo quítemelo quÍtemelo
   }synonyms
-: quítarsela  quitarse ésta  ;
-' quítarsela synonyms{
-  quitártela quitáosla quítesela
-  quitármela quítamela quítomela quítemela
+: quitársela  quitarse ésta  ;
+' quitársela synonyms{
+  quitÁrsela
+  quitártela quitÁrtela quitáosla quitÁosla quítesela quÍtesela
+  quitármela quitÁrmela quítamela quÍtamela quítomela quÍtomela quítemela quÍtemela
   }synonyms
-: quítarselos  quitarse éstos  ;
-' quítarselos synonyms{
-  quitártelos quitáoslos quíteselos
-  quitármelos quítamelos quítomelos quítemelos
+: quitárselos  quitarse éstos  ;
+' quitárselos synonyms{
+  quitÁrselos
+  quitártelos quitÁrtelos quitáoslos quitÁoslos quíteselos quÍteselos
+  quitármelos quitÁrmelos quítamelos quÍtamelos quítomelos quÍtomelos quítemelos quÍtemelos
   }synonyms
-: quítarselas  quitarse éstas  ;
-' quítarselas synonyms{
-  quitártelas quitáoslas quíteselas
-  quitármelas quítamelas quítomelas quítemelas
+: quitárselas  quitarse éstas  ;
+' quitárselas synonyms{
+  quitÁrselas
+  quitártelas quitÁrtelas quitáoslas quitÁoslas quíteselas quÍteselas
+  quitármelas quitÁrmelas quítamelas quÍtamelas quítomelas quÍtomelas quítemelas quÍtemelas
   }synonyms
 
 : ponerse  ['] do_put_on action!  ;
 ' ponerse synonyms{
-  póngase poneos
-  ponerme ponme póngome póngame
-  ponerte ponte póngote póngate
-  colocarse colocaos colóquese
-  colocarte colócate colóquete
-  colocarme colócame colócome colóqueme
+  póngase pÓngase poneos
+  ponerme ponme póngome pÓngome póngame pÓngame
+  ponerte ponte póngote pÓngote póngate pÓngate
+  colocarse colocaos colóquese colÓquese
+  colocarte colócate colÓcate colóquete colÓquete
+  colocarme colócame colÓcame colócome colÓcome colóqueme colÓqueme
   }synonyms
 \ Crear acción!!! vestir [con], parte como sinónimo y parte independiente
 : ponérselo  ponerse éste  ;
 ' ponérselo synonyms{
-  póngaselo ponéoslo
-  ponérmelo pónmelo póngomelo póngamelo
-  ponértelo póntelo póngotelo póngatelo
-  colocórselo colocáoslo colóqueselo
-  colocártelo colócatelo colóquetelo
-  colocármelo colócamelo colócomelo colóquemelo 
+  ponÉrselo
+  póngaselo pÓngaselo ponéoslo ponÉoslo
+  ponérmelo ponÉrmelo pónmelo pÓnmelo póngomelo pÓngomelo póngamelo pÓngamelo
+  ponértelo ponÉrtelo póntelo pÓntelo póngotelo pÓngotelo póngatelo pÓngatelo
+  colocórselo colocÓrselo colocáoslo colocÁoslo colóqueselo colÓqueselo
+  colocártelo colocÁrtelo colócatelo colÓcatelo colóquetelo colÓquetelo
+  colocármelo colocÁrmelo colócamelo colÓcamelo colócomelo colÓcomelo colóquemelo colÓquemelo 
   }synonyms
 : ponérsela  ponerse ésta  ;
 ' ponérsela synonyms{
-  póngasela ponéosla
-  ponérmela pónmela póngomela póngamela
-  ponértela póntela póngotela póngatela
-  colocórsela colocáosla colóquesela
-  colocártela colócatela colóquetela
-  colocármela colócamela colócomela colóquemela 
+  ponÉrsela
+  póngasela pÓngasela ponéosla ponÉosla
+  ponérmela ponÉrmela pónmela pÓnmela póngomela pÓngomela póngamela pÓngamela
+  ponértela ponÉrtela póntela pÓntela póngotela pÓngotela póngatela pÓngatela
+  colocórsela colocÓrsela colocáosla colocÁosla colóquesela colÓquesela
+  colocártela colocÁrtela colócatela colÓcatela colóquetela colÓquetela
+  colocármela colocÁrmela colócamela colÓcamela colócomela colÓcomela colóquemela colÓquemela 
   }synonyms
 : ponérselos  ponerse éstos  ;
 ' ponérselos synonyms{
-  póngaselos ponéoslos
-  ponérmelos pónmelos póngomelos póngamelos
-  ponértelos póntelos póngotelos póngatelos
-  colocórselos colocáoslos colóqueselos
-  colocártelos colócatelos colóquetelos
-  colocármelos colócamelos colócomelos colóquemelos 
+  ponÉrselos
+  póngaselos pÓngaselos ponéoslos ponÉoslos
+  ponérmelos ponÉrmelos pónmelos pÓnmelos póngomelos pÓngomelos póngamelos pÓngamelos
+  ponértelos ponÉrtelos póntelos pÓntelos póngotelos pÓngotelos póngatelos pÓngatelos
+  colocórselos colocÓrselos colocáoslos colocÁoslos colóqueselos colÓqueselos
+  colocártelos colocÁrtelos colócatelos colÓcatelos colóquetelos colÓquetelos
+  colocármelos colocÁrmelos colócamelos colÓcamelos colócomelos colÓcomelos colóquemelos colÓquemelos 
   }synonyms
 : ponérselas  ponerse éstas  ;
 ' ponérselas synonyms{
-  póngaselas ponéoslas
-  ponérmelas pónmelas póngomelas póngamelas
-  ponértelas póntelas póngotelas póngatelas
-  colocórselas colocáoslas colóqueselas
-  colocártelas colócatelas colóquetelas
-  colocármelas colócamelas colócomelas colóquemelas 
+  ponÉrselas
+  póngaselas pÓngaselas ponéoslas ponÉoslas
+  ponérmelas ponÉrmelas pónmelas pÓnmelas póngomelas pÓngomelas póngamelas pÓngamelas
+  ponértelas ponÉrtelas póntelas pÓntelas póngotelas pÓngotelas póngatelas pÓngatelas
+  colocórselas colocÓrselas colocáoslas colocÁoslas colóqueselas colÓqueselas
+  colocártelas colocÁrtelas colócatelas colÓcatelas colóquetelas colÓquetelas
+  colocármelas colocÁrmelas colócamelas colÓcamelas colócomelas colÓcomelas colóquemelas colÓquemelas 
   }synonyms
  
 
@@ -11767,27 +11768,27 @@ o sustantivos.
   }synonyms
 : matarlo  matar éste  ;
 ' matarlo synonyms{
-  mátalo matadlo mátolo mátelo
-  asesinarlo asesínalo asesinadlo asesínolo asesínelo
-  aniquilarlo aniquínalo aniquinadlo aniquínolo aniquínelo
+  mátalo mÁtalo matadlo mátolo mÁtolo mátelo mÁtelo
+  asesinarlo asesínalo asesÍnalo asesinadlo asesínolo asesÍnolo asesínelo asesÍnelo
+  aniquilarlo aniquínalo aniquÍnalo aniquinadlo aniquínolo aniquÍnolo aniquínelo aniquÍnelo
   }synonyms
 : matarla  matar ésta  ;
 ' matarla synonyms{
-  mátala matadla mátola mátela
-  asesinarla asesínala asesinadla asesínola asesínela
-  aniquilarla aniquínala aniquinadla aniquínola aniquínela
+  mátala mÁtala matadla mátola mÁtola mátela mÁtela
+  asesinarla asesínala asesÍnala asesinadla asesínola asesÍnola asesínela asesÍnela
+  aniquilarla aniquínala aniquÍnala aniquinadla aniquínola aniquÍnola aniquínela aniquÍnela
   }synonyms
 : matarlos  matar éstos  ;
 ' matarlos synonyms{
-  mátalos matadlos mátolos mátelos
-  asesinarlos asesínalos asesinadlos asesínolos asesínelos
-  aniquilarlos aniquínalos aniquinadlos aniquínolos aniquínelos
+  mátalos mÁtalos matadlos mátolos mÁtolos mátelos mÁtelos
+  asesinarlos asesínalos asesÍnalos asesinadlos asesínolos asesÍnolos asesínelos asesÍnelos
+  aniquilarlos aniquínalos aniquÍnalos aniquinadlos aniquínolos aniquÍnolos aniquínelos aniquÍnelos
   }synonyms
 : matarlas  matar éstas  ;
 ' matarlas synonyms{
-  mátalas matadlas mátolas mátelas
-  asesinarlas asesínalas asesinadlas asesínolas asesínelas
-  aniquilarlas aniquínalas aniquinadlas aniquínolas aniquínelas
+  mátalas mÁtalas matadlas mátolas mÁtolas mátelas mÁtelas
+  asesinarlas asesínalas asesÍnalas asesinadlas asesínolas asesÍnolas asesínelas asesÍnelas
+  aniquilarlas aniquínalas aniquÍnalas aniquinadlas aniquínolas aniquÍnolas aniquínelas aniquÍnelas
   }synonyms
 
 : golpear  ['] do_hit action!  ;
@@ -11797,18 +11798,18 @@ o sustantivos.
   }synonyms
 : golpearla  golpear ésta  ;
 ' golpearla synonyms{
-  golpéala golpeadla golpéola golpéela
-  sacudirla sacúdela sacudidla sacúdola sacúdala
+  golpéala golpÉala golpeadla golpéola golpÉola golpéela golpÉela
+  sacudirla sacúdela sacÚdela sacudidla sacúdola sacÚdola sacúdala sacÚdala
   }synonyms
 : golpearlos  golpear éstos  ;
 ' golpearlos synonyms{
-  golpéalos golpeadlos golpéolos golpéelos
-  sacudirlos sacúdelos sacudidlos sacúdolos sacúdalos
+  golpéalos golpÉalos golpeadlos golpéolos golpÉolos golpéelos golpÉelos
+  sacudirlos sacúdelos sacÚdelos sacudidlos sacúdolos sacÚdolos sacúdalos sacÚdalos
   }synonyms
 : golpearlas  golpear éstas  ;
 ' golpearlas synonyms{
-  golpéalas golpeadlas golpéolas golpéelas
-  sacudirlas sacúdelas sacudidlas sacúdolas sacúdalas
+  golpéalas golpÉalas golpeadlas golpéolas golpÉolas golpéelas golpÉelas
+  sacudirlas sacúdelas sacÚdelas sacudidlas sacúdolas sacÚdolas sacúdalas sacÚdalas
   }synonyms
 
 : atacar  ['] do_attack action!  ;
@@ -11818,23 +11819,23 @@ o sustantivos.
   }synonyms
 : atacarlo  atacar éste  ;
 ' atacarlo synonyms{  
-  atácalo atacadlo atácolo atáquelo
-  agredirlo agrédelo agredidlo agrédolo agrédalo
+  atácalo atÁcalo atacadlo atácolo atÁcolo atáquelo atÁquelo
+  agredirlo agrédelo agrÉdelo agredidlo agrédolo agrÉdolo agrédalo agrÉdalo
   }synonyms
 : atacarla  atacar ésta  ;
 ' atacarla synonyms{  
-  atácala atacadla atácola atáquela
-  agredirla agrédela agredidla agrédola agrédala
+  atácala atÁcala atacadla atácola atÁcola atáquela atÁquela
+  agredirla agrédela agrÉdela agredidla agrédola agrÉdola agrédala agrÉdala
   }synonyms
 : atacarlos  atacar éstos  ;
 ' atacarlos synonyms{  
-  atácalos atacadlos atácolos atáquelos
-  agredirlos agrédelos agredidlos agrédolos agrédalos
+  atácalos atÁcalos atacadlos atácolos atÁcolos atáquelos atÁquelos
+  agredirlos agrédelos agrÉdelos agredidlos agrédolos agrÉdolos agrédalos agrÉdalos
   }synonyms
 : atacarlas  atacar éstas  ;
 ' atacarlas synonyms{  
-  atácalas atacadlas atácolas atáquelas
-  agredirlas agrédelas agredidlas agrédolas agrédalas
+  atácalas atÁcalas atacadlas atácolas atÁcolas atáquelas atÁquelas
+  agredirlas agrédelas agrÉdelas agredidlas agrédolas agrÉdolas agrédalas agrÉdalas
   }synonyms
 
 : romper  ['] do_break action!  ;
@@ -11847,35 +11848,35 @@ o sustantivos.
   }synonyms
 : romperlo  romper éste  ;
 ' romperlo synonyms{
-  rómpelo rompedlo rómpolo rómpalo
-  despedazarlo despedazalo despedazadlo despedázolo despedácelo
-  destrozarlo destrázalo destrozadlo destrózolo destrócelo
-  dividirlo divídelo divididlo divídolo divídalo
-  cortarlo cortalo cortadlo córtolo córtelo
+  rómpelo rÓmpelo rompedlo rómpolo rÓmpolo rómpalo rÓmpalo
+  despedazarlo despedazalo despedazadlo despedázolo despedÁzolo despedácelo despedÁcelo
+  destrozarlo destrázalo destrÁzalo destrozadlo destrózolo destrÓzolo destrócelo destrÓcelo
+  dividirlo divídelo divÍdelo divididlo divídolo divÍdolo divídalo divÍdalo
+  cortarlo cortalo cortadlo córtolo cÓrtolo córtelo cÓrtelo
   }synonyms
 : romperla  romper ésta  ;
 ' romperla synonyms{
-  rómpela rompedla rómpola rómpala
-  despedazarla despedazala despedazadla despedázola despedácela
-  destrozarla destrázala destrozadla destrózola destrócela
-  dividirla divídela divididla divídola divídala
-  cortarla córtala cortadla córtola córtela
+  rómpela rÓmpela rompedla rómpola rÓmpola rómpala rÓmpala
+  despedazarla despedazala despedazadla despedázola despedÁzola despedácela despedÁcela
+  destrozarla destrázala destrÁzala destrozadla destrózola destrÓzola destrócela destrÓcela
+  dividirla divídela divÍdela divididla divídola divÍdola divídala divÍdala
+  cortarla córtala cÓrtala cortadla córtola cÓrtola córtela cÓrtela
   }synonyms
 : romperlos  romper éstos  ;
 ' romperlos synonyms{
-  rómpelos rompedlos rómpolos rómpalos
-  despedazarlos despedazalos despedazadlos despedázolos despedácelos
-  destrozarlos destrázalos destrozadlos destrózolos destrócelos
-  dividirlos divídelos divididlos divídolos divídalos
-  cortarlos córtalos cortadlos córtolos córtelos
+  rómpelos rÓmpelos rompedlos rómpolos rÓmpolos rómpalos rÓmpalos
+  despedazarlos despedazalos despedazadlos despedázolos despedÁzolos despedácelos despedÁcelos
+  destrozarlos destrázalos destrÁzalos destrozadlos destrózolos destrÓzolos destrócelos destrÓcelos
+  dividirlos divídelos divÍdelos divididlos divídolos divÍdolos divídalos divÍdalos
+  cortarlos córtalos cÓrtalos cortadlos córtolos cÓrtolos córtelos cÓrtelos
   }synonyms
 : romperlas  romper éstas  ;
 ' romperlas synonyms{
-  rómpelas rompedlas rómpolas rómpalas
-  despedazarlas despedazalas despedazadlas despedázolas despedácelas
-  destrozarlas destrázalas destrozadlas destrózolas destrócelas
-  dividirlas divídelas divididlas divídolas divídalas
-  cortarlas córtalas cortadlas córtolas córtelas
+  rómpelas rÓmpelas rompedlas rómpolas rÓmpolas rómpalas rÓmpalas
+  despedazarlas despedazalas despedazadlas despedázolas despedÁzolas despedácelas despedÁcelas
+  destrozarlas destrázalas destrÁzalas destrozadlas destrózolas destrÓzolas destrócelas destrÓcelas
+  dividirlas divídelas divÍdelas divididlas divídolas divÍdolas divídalas divÍdalas
+  cortarlas córtalas cÓrtalas cortadlas córtolas cÓrtolas córtelas cÓrtelas
   }synonyms
 
 \ quebrar \ Pendiente!!!
@@ -11890,55 +11891,55 @@ o sustantivos.
   }synonyms
 : asustarlo  asustar éste  ;
 ' asustarlo synonyms{
-  asústolo asústalo asustadlo asústelo
-  amedrentarlo amedréntolo amedréntalo amedrentadlo amedréntelo
-  acojonarlo acojónolo acojónalo acojonadlo acojónelo
-  atemorizarlo atemorízalo atemorizadlo atemorízolo atemorícelo
+  asústolo asÚstolo asústalo asÚstalo asustadlo asústelo asÚstelo
+  amedrentarlo amedréntolo amedrÉntolo amedréntalo amedrÉntalo amedrentadlo amedréntelo amedrÉntelo
+  acojonarlo acojónolo acojÓnolo acojónalo acojÓnalo acojonadlo acojónelo acojÓnelo
+  atemorizarlo atemorízalo atemorÍzalo atemorizadlo atemorízolo atemorÍzolo atemorícelo atemorÍcelo
   }synonyms
 : asustarla  asustar ésta  ;
 ' asustarla synonyms{
-  asústola asústala asustadla asústela
-  amedrentarla amedréntola amedréntala amedrentadla amedréntela
-  acojonarla acojónola acojónala acojonadla acojónela
-  atemorizarla atemorízala atemorizadla atemorízola atemorícela
+  asústola asÚstola asústala asÚstala asustadla asústela asÚstela
+  amedrentarla amedréntola amedrÉntola amedréntala amedrÉntala amedrentadla amedréntela amedrÉntela
+  acojonarla acojónola acojÓnola acojónala acojÓnala acojonadla acojónela acojÓnela
+  atemorizarla atemorízala atemorÍzala atemorizadla atemorízola atemorÍzola atemorícela atemorÍcela
   }synonyms
 : asustarlos  asustar éstos  ;
 ' asustarlos synonyms{
-  asústolos asústalos asustadlos asústelos
-  amedrentarlos amedréntolos amedréntalos amedrentadlos amedréntelos
-  acojonarlos acojónolos acojónalos acojonadlos acojónelos
-  atemorizarlos atemorízalos atemorizadlos atemorízolos atemorícelos
+  asústolos asÚstolos asústalos asÚstalos asustadlos asústelos asÚstelos
+  amedrentarlos amedréntolos amedrÉntolos amedréntalos amedrÉntalos amedrentadlos amedréntelos amedrÉntelos
+  acojonarlos acojónolos acojÓnolos acojónalos acojÓnalos acojonadlos acojónelos acojÓnelos
+  atemorizarlos atemorízalos atemorÍzalos atemorizadlos atemorízolos atemorÍzolos atemorícelos atemorÍcelos
   }synonyms
 : asustarlas  asustar éstas  ;
 ' asustarlas synonyms{
-  asústolas asústalas asustadlas asústelas
-  amedrentarlas amedréntolas amedréntalas amedrentadlas amedréntelas
-  acojonarlas acojónolas acojónalas acojonadlas acojónelas
-  atemorizarlas atemorízalas atemorizadlas atemorízolas atemorícelas
+  asústolas asÚstolas asústalas asÚstalas asustadlas asústelas asÚstelas
+  amedrentarlas amedréntolas amedrÉntolas amedréntalas amedrÉntalas amedrentadlas amedréntelas amedrÉntelas
+  acojonarlas acojónolas acojÓnolas acojónalas acojÓnalas acojonadlas acojónelas acojÓnelas
+  atemorizarlas atemorízalas atemorÍzalas atemorizadlas atemorízolas atemorÍzolas atemorícelas atemorÍcelas
   }synonyms
 
 : afilar  ['] do_sharpen action!  ;
 ' afilar synonyms{  afila afilad afilo afile  }synonyms
 : afilarlo  afilar éste  ;
-' afilarlo synonyms{  afílalo afiladlo afílolo afílelo  }synonyms
+' afilarlo synonyms{  afílalo afÍlalo afiladlo afílolo afÍlolo afílelo afÍlelo  }synonyms
 : afilarla  afilar ésta  ;
-' afilarla synonyms{  afílala afiladla afílola afílela  }synonyms
+' afilarla synonyms{  afílala afÍlala afiladla afílola afÍlola afílela afÍlela  }synonyms
 : afilarlos  afilar éstos  ;
-' afilarlos synonyms{  afílalos afiladlos afílolos afílelos  }synonyms
+' afilarlos synonyms{  afílalos afÍlalos afiladlos afílolos afÍlolos afílelos afÍlelos  }synonyms
 : afilarlas  afilar éstas  ;
-' afilarlas synonyms{  afílalas afiladlas afílolas afílelas  }synonyms
+' afilarlas synonyms{  afílalas afÍlalas afiladlas afílolas afÍlolas afílelas afÍlelas  }synonyms
 
 : partir  ['] do_go|do_break action!  ;
 ' partir synonyms{  parto partid parta  }synonyms
 \ «parte» está en la sección final de ambigüedades
 : partirlo  partir éste  ;
-' partirlo synonyms{  pártelo pártolo partidlo pártalo  }synonyms
+' partirlo synonyms{  pártelo pÁrtelo pártolo pÁrtolo partidlo pártalo pÁrtalo  }synonyms
 : partirla  partir ésta  ;
-' partirla synonyms{  pártela pártola partidla pártala  }synonyms
+' partirla synonyms{  pártela pÁrtela pártola pÁrtola partidla pártala pÁrtala  }synonyms
 : partirlos  partir éstos  ;
-' partirlos synonyms{  pártelos pártolos partidlos pártalos  }synonyms
+' partirlos synonyms{  pártelos pÁrtelos pártolos pÁrtolos partidlos pártalos pÁrtalos  }synonyms
 : partirlas  partir éstas  ;
-' partirlas synonyms{  pártelas pártolas partidlas pártalas  }synonyms
+' partirlas synonyms{  pártelas pÁrtelas pártolas pÁrtolas partidlas pártalas pÁrtalas  }synonyms
 
 : esperar  \ Pendiente!!!
   ;
@@ -11948,23 +11949,23 @@ o sustantivos.
   }synonyms
 : esperarlo  esperar éste  ;
 ' esperarlo synonyms{
-  esperadlo espérolo espérelo
-  aguardarlo aguárdalo aguardadlo aguárdolo aguárdelo
+  esperadlo espérolo espÉrolo espérelo espÉrelo
+  aguardarlo aguárdalo aguÁrdalo aguardadlo aguárdolo aguÁrdolo aguárdelo aguÁrdelo
   }synonyms
 : esperarla  esperar ésta  ;
 ' esperarla synonyms{
-  esperadla espérola espérela
-  aguardarla aguárdala aguardadla aguárdola aguárdela
+  esperadla espérola espÉrola espérela espÉrela
+  aguardarla aguárdala aguÁrdala aguardadla aguárdola aguÁrdola aguárdela aguÁrdela
   }synonyms
 : esperarlos  esperar éstos  ;
 ' esperarlos synonyms{
-  esperadlos espérolos espérelos
-  aguardarlos aguárdalos aguardadlos aguárdolos aguárdelos
+  esperadlos espérolos espÉrolos espérelos espÉrelos
+  aguardarlos aguárdalos aguÁrdalos aguardadlos aguárdolos aguÁrdolos aguárdelos aguÁrdelos
   }synonyms
 : esperarlas  esperar éstas  ;
 ' esperarlas synonyms{
-  esperadlas espérolas espérelas
-  aguardarlas aguárdalas aguardadlas aguárdolas aguárdelas
+  esperadlas espérolas espÉrolas espérelas espÉrelas
+  aguardarlas aguárdalas aguÁrdalas aguardadlas aguárdolas aguÁrdolas aguárdelas aguÁrdelas
   }synonyms
 
 \ Pendiente!!!:
@@ -11975,33 +11976,33 @@ o sustantivos.
 : ambrosio  (ambrosio) complement!  ;
 ' ambrosio synonyms{ Ambrosio }synonyms
 : hombre  (man) complement!  ;
-' hombre synonyms{  señor tipo individuo persona  }synonyms
+' hombre synonyms{  señor seÑor tipo individuo persona  }synonyms
 : hombres  (men) complement!  ;
 ' hombres synonyms{ gente personas }synonyms
 \ Ambigüedad!!!:
 \ «jefe» podría ser también el jefe de los enemigos durante la batalla:
 : jefe  leader% complement!  ;
 ' jefe synonyms{
-  líder viejo anciano abuelo
+  líder lÍder viejo anciano abuelo
   }synonyms
 : soldados  soldiers% complement!  ;
 ' soldados synonyms{
   guerreros luchadores combatientes camaradas
-  compañeros oficiales suboficiales militares
+  compañeros compaÑeros oficiales suboficiales militares
   guerrero luchador combatiente camarada
-  compañero oficial suboficial militar
+  compañero compaÑero oficial suboficial militar
   }synonyms
 : multitud  refugees% complement!  ;
 ' multitud synonyms{
-  niño niños niña niñas
+  niño niÑo niños niÑos niña niÑa niñas niÑas
   muchacho muchachos muchacha muchachas
   adolescente adolescentes 
   ancianos anciana ancianas mayores viejos vieja viejas
-  joven jóvenes
+  joven jóvenes jÓvenes
   abuela abuelos abuelas
   nieto nietos nieta nietas
-  padre padres madre madres mamá mamás papás
-  bebé bebés beba bebas bebito bebitos bebita bebitas
+  padre padres madre madres mamá mamÁ mamás mamÁs papás papÁs
+  bebé bebÉ bebés bebÉs beba bebas bebito bebitos bebita bebitas
   pobres desgraciados desafortunados
   desgraciadas desafortunadas
   muchedumbre masa enjambre
@@ -12024,15 +12025,15 @@ o sustantivos.
 : derrumbe fallen_away% complement!  ;
 : banderas  flags% complement!  ;
 ' banderas synonyms{
-    bandera pendones enseñas pendón enseña
-    mástil mástiles
+    bandera pendones enseñas enseÑas pendón pendÓn enseña enseÑa
+    mástil mÁstil mástiles mÁstiles
     estandarte estandartes 
   }synonyms \ pendiente: estandarte, enseña... otro género!!!
 : dragones  flags% is_known? ?? banderas ;
-' dragones synonyms{ dragón }synonyms
+' dragones synonyms{ dragón dragÓn }synonyms
 : pedernal  flint% complement!  ;
 : ídolo  idol% complement!  ;
-' ídolo synonyms{  ojo orificio agujero  }synonyms
+' ídolo synonyms{  Ídolo ojo orificio agujero  }synonyms
 \ pendiente!!! separar los sinónimos de ídolo
 : llave  key% complement!  ;
 : lago  lake% complement!  ;
@@ -12040,7 +12041,7 @@ o sustantivos.
 : candado  lock% complement!  ;
 ' candado synonyms{  cerrojo  }synonyms
 : tronco  log% complement!  ;
-' tronco synonyms{  leño madero  }synonyms
+' tronco synonyms{  leño leÑo madero  }synonyms
 \ pendiente!!! madera
 : trozo  piece% complement!  ;
 ' trozo synonyms{  pedazo retal tela  }synonyms
@@ -12080,10 +12081,10 @@ o sustantivos.
 : hiedras  s" hiedras" grass% fnames! grass% complement!  ;
 
 : n  ['] do_go_north north% action|complement!  ;
-' n synonyms{  norte septentrión  }synonyms
+' n synonyms{  norte septentrión septentriÓn  }synonyms
 
 : s  ['] do_go_south south% action|complement!  ;
-' s synonyms{  sur meridión  }synonyms
+' s synonyms{  sur meridión meridiÓn  }synonyms
 
 : e  ['] do_go_east east% action|complement!  ;
 ' e synonyms{  este oriente levante  }synonyms
@@ -12096,22 +12097,22 @@ o sustantivos.
 : subir  ['] do_go_up action!  ;
 ' subir synonyms{  sube subid subo suba  }synonyms
 ' subir synonyms{  ascender asciende ascended asciendo ascienda  }synonyms
-' subir synonyms{  subirse subíos súbese súbase  }synonyms
-' subir synonyms{  subirte súbete súbote súbate  }synonyms
+' subir synonyms{  subirse subíos subÍos súbese sÚbese súbase sÚbase  }synonyms
+' subir synonyms{  subirte súbete sÚbete súbote sÚbote súbate sÚbate  }synonyms
 
 : b  ['] do_go_down down% action|complement!  ;
 ' b synonyms{  abajo  }synonyms
 : bajar  ['] do_go_down action!  ;
 ' bajar synonyms{  baja bajad bajo baje  }synonyms
-' bajar synonyms{  bajarse bajaos bájase bájese  }synonyms
-' bajar synonyms{  bajarte bájate bájote bájete  }synonyms
+' bajar synonyms{  bajarse bajaos bájase bÁjase bájese bÁjese  }synonyms
+' bajar synonyms{  bajarte bájate bÁjate bájote bÁjote bájete bÁjete  }synonyms
 ' bajar synonyms{  descender desciende descended desciendo descienda  }synonyms
 
 : salir  ['] do_go_out action!  ;
 ' salir synonyms{  sal salid salgo salga  }synonyms
 \ ambigüedad!!! sal
 ' salir synonyms{  salirse }synonyms
-' salir synonyms{  salirme sálgome  }synonyms
+' salir synonyms{  salirme sálgome sÁlgome  }synonyms
 ' salir synonyms{  salirte }synonyms
 \ ambigüedad!!! salte
 : fuera  ['] do_go_out out% action|complement!  ;
@@ -12119,8 +12120,8 @@ o sustantivos.
 : exterior  out% complement!  ;
 : entrar ['] do_go_in action!  ;
 ' entrar synonyms{  entra entrad entro entre  }synonyms
-' entrar synonyms{  entrarse entraos éntrese éntrase  }synonyms
-' entrar synonyms{  entrarte éntrete éntrate  }synonyms
+' entrar synonyms{  entrarse entraos éntrese Éntrese éntrase Éntrase  }synonyms
+' entrar synonyms{  entrarte éntrete Éntrete éntrate Éntrate  }synonyms
 : dentro  ['] do_go_in in% action|complement!  ;
 ' dentro synonyms{  adentro  }synonyms
 : interior  in% complement!  ;
@@ -12134,28 +12135,28 @@ o sustantivos.
 \ Pendiente!!! Separar matices.
 ' hablar synonyms{
   habla hablad hablo hable 
-  hablarle háblale háblole háblele
+  hablarle háblale hÁblale háblole hÁblole háblele hÁblele
   conversar conversa conversad converso converse
   charlar charla charlad charlo charle
   decir di decid digo diga
-  decirle dile decidle dígole dígale
+  decirle dile decidle dígole dÍgole dígale dÍgale
   platicar platica platicad platico platique
-  platicarle platícale platicadle platícole platíquele
+  platicarle platícale platÍcale platicadle platícole platÍcole platíquele platÍquele
   }synonyms
   \ contar cuenta cuento cuente  \ !!!
-  \ contarle cuéntale cuéntole cuéntele  \ !!!
+  \ contarle cuéntale cuÉntale cuéntole cuÉntole cuéntele cuÉntele  \ !!!
 
 : presentarse  ['] do_introduce_yourself action!  ;
 ' presentarse synonyms{
-  preséntase preséntese
-  presentarte preséntate presentaos preséntete
+  preséntase presÉntase preséntese presÉntese
+  presentarte preséntate presÉntate presentaos preséntete presÉntete
   }synonyms
 
 \ Términos asociados a entes globales o virtuales
 
 : nubes  clouds% complement!  ;
 \ Pendiente!!! ¿cúmulo-nimbos?, ¿nimbos?
-' nubes synonyms{  nube estratocúmulo estratocúmulos cirro cirros  }synonyms
+' nubes synonyms{  nube estratocúmulo estratocÚmulo estratocúmulos estratocÚmulos cirro cirros  }synonyms
 : suelo  floor% complement!  ;
 ' suelo synonyms{  suelos tierra firme  }synonyms
 \ Pendiente!!! Añadir «piso», que es ambiguo
@@ -12168,7 +12169,7 @@ o sustantivos.
 \ Pendiente!!! ¿Implementar cambio de nombre y/o género gramatical? (entrada, acceso):
 ' entrada synonyms{  acceso }synonyms
 : enemigo  enemy% complement!  ;
-' enemigo synonyms{ enemigos sajón sajones }synonyms
+' enemigo synonyms{ enemigos sajón sajÓn sajones }synonyms
 : todo ;  \ Pendiente!!!
 \ Pendiente!!! ¿Implementar cambio de nombre y/o género gramatical? (pared/es, muro/s):
 : pared  (wall) complement!  ;
@@ -12242,21 +12243,21 @@ false [if]  \ Descartado!!! Pendiente!!!
 
 \ Comandos del sistema
 
-: COLOREAR
+: #colorear
   \ Restaura los colores predeterminados.
   init_colors  new_page  my_location describe
   ;
-' COLOREAR synonyms{
-  COLOREA COLOREO
-  RECOLOREAR RECOLOREA RECOLOREO
-  PINTAR PINTA PINTO
-  LIMPIAR LIMPIA LIMPIO
+' #colorear synonyms{
+  #colorea #coloreo
+  #recolorear #recolorea #recoloreo
+  #pintar #pinta #pinto
+  #limpiar #limpia #limpio
   }synonyms
-' get_config alias CONFIGURAR  \ Restaura la configuración predeterminada y después carga el fichero de configuración
-' CONFIGURAR synonyms{
-  CONFIGURA CONFIGURO
+' get_config alias #configurar  \ Restaura la configuración predeterminada y después carga el fichero de configuración
+' #configurar synonyms{
+  #configura #configuro
   }synonyms
-: GRABAR  ( "name" -- )
+: #grabar  ( "name" -- )
   \ Graba el estado de la partida en un fichero.
   [debug_parsing] [??] ~~
   parse-name >sb
@@ -12264,13 +12265,13 @@ false [if]  \ Descartado!!! Pendiente!!!
   ['] do_save_the_game action!
   [debug_parsing] [??] ~~
   ;  immediate
-' GRABAR immediate_synonyms{
-  GRABA GRABO
-  EXPORTAR EXPORTA EXPORTO
-  SALVAR SALVA SALVO
-  GUARDAR GUARDA GUARDO
+' #grabar immediate_synonyms{
+  #graba #grabo
+  #exportar #exporta #exporto
+  #salvar #salva #salvo
+  #guardar #guarda #guardo
   }synonyms
-: CARGAR  ( "name" -- )
+: #cargar  ( "name" -- )
   \ Carga el estado de la partida de un fichero.
   [debug_parsing] [??] ~~
   parse-name
@@ -12280,33 +12281,33 @@ false [if]  \ Descartado!!! Pendiente!!!
   ['] do_load_the_game action!
   [debug_parsing] [??] ~~
   ;  immediate
-' CARGAR immediate_synonyms{
-  CARGA CARGO
-  IMPORTAR IMPORTA IMPORTO
-  LEER LEE LEO
-  RECARGAR RECARGA RECARGO
-  RECUPERAR RECUPERA RECUPERO
-  RESTAURAR RESTAURA RESTAURO
+' #cargar immediate_synonyms{
+  #carga #cargo
+  #importar #importa #importo
+  #leer #lee #leo
+  #recargar #recarga #recargo
+  #recuperar #recupera #recupero
+  #restaurar #restaura #restauro
   }synonyms
-: FIN  do_finish  ;  \ Abandonar la partida
-' FIN synonyms{
-  ACABAR ACABA ACABO 
-  ADIÓS
-  APAGAR APAGA APAGO
-  CERRAR CIERRA CIERRO
-  CONCLUIR CONCLUYE CONCLUYO
-  FINALIZAR FINALIZA FINALIZO
-  SALIR SAL SALGO
-  TERMINAR TERMINA TERMINO 
+: #fin  do_finish  ;  \ Abandonar la partida
+' #fin synonyms{
+  #acabar #acaba #acabo 
+  #adiós #adiÓs
+  #apagar #apaga #apago
+  #cerrar #cierra #cierro
+  #concluir #concluye #concluyo
+  #finalizar #finaliza #finalizo
+  #salir #sal #salgo
+  #terminar #termina #termino 
   }synonyms
-: AYUDA
+: #ayuda
   \ Pendiente!!! 
   ;
-' AYUDA synonyms{
-  AYUDAR AYUDITA AYUDAS
-  INSTRUCCIONES MANUAL GUÍA MAPA PLANO MENÚ
-  PISTA PISTAS
-  SOCORRO AUXILIO FAVOR
+' #ayuda synonyms{
+  #ayudar #ayudita #ayudas
+  #instrucciones #manual #guía #guÍa #mapa #plano #menú #menÚ
+  #pista #pistas
+  #socorro #auxilio #favor
   }synonyms
 
 \ Comandos para usar durante el desarrollo!!!:
