@@ -7,7 +7,7 @@ CR .( Asalto y castigo )  \ {{{
 \ Copyright (C) 2011,2012 Marcos Cruz (programandala.net)
 
 only forth definitions
-: version$  ( -- a u )  s" A-04-201205151630"  ;
+: version$  ( -- a u )  s" A-05-2012051600"  ;
 version$ type cr
 
 \ 'Asalto y castigo' is free software; you can redistribute
@@ -1885,6 +1885,9 @@ variable indent_pause_prompts?  \ ¿Hay que indentar también los prestos?
 \ El fallo es que cuando se interrumpe una pausa con el teclado,
 \ el cursor se mueve varias líneas hacia abajo. Es muy misterioso.
 
+\ Ya lo averigüé. Era debido a la forma en que funciona 'xy',
+\ leyendo el teclado. No recuerdo los detalles. No están anotados en el historial.
+
 dtm-create deadline  \ Variable para guardar el momento final de las pausas
 : no_time_left?  ( -- ff )
   \ ¿Se acabó el tiempo?
@@ -1909,8 +1912,8 @@ dtm-create deadline  \ Variable para guardar el momento final de las pausas
 : microseconds  ( u -- )
   \ Espera un número de microsegundos o hasta que se pulse una tecla.
   s>d utime d+
-  begin  2dup time? ( key? 0= or ) until
-  begin  2dup time? ( key? or  ) until
+  begin  2dup time? key? 0= or  until
+  begin  2dup time? key? or  until
   2drop  ;
 : miliseconds  ( u -- )  1000 * microseconds  ;
 : seconds  ( u -- )  1000000 * microseconds  ;
@@ -2527,6 +2530,7 @@ código más conciso y legible.
   flags%
   rocks%
   table%
+  [else]  false
   [then]
   ;
 : talked_to_the_leader?  ( -- ff )
@@ -2537,8 +2541,7 @@ código más conciso y legible.
   \ ¿Llevas algo prohibido?
   \ Cálculo usado en varios lugares del programa,
   \ en relación a los refugiados.
-  sword% is_accessible?
-  stone% is_accessible? or
+  sword% is_accessible?  stone% is_accessible?  or
   ;
 : no_torch?  ( -- ff )
   \ ¿La antorcha no está accesible y encendida?
@@ -3131,10 +3134,15 @@ defer 'entities  \ Dirección de los entes; vector que después será redirigido
   postpone literal  \ Compilar el identificador de ente en la palabra de descripción recién creada, para que '[:description]' lo guarde en 'self%' en tiempo de ejecución
   ;
 : noname-roll  ( a xt colon-sys -- colon-sys a xt )
-  \ Mueve los parámetros que nos interesan a la parte alta de la pila.
+  \ Mueve los parámetros que nos interesan a la parte alta de la pila;
+  \ se usa tras crear con ':noname' una palabra relativa a un ente.
   \ Esta palabra es necesaria porque ':noname' deja en la pila
   \ sus valores de control (colon-sys), que en el caso de Gforth
-  \ son tres elementos.
+  \ son tres elementos, para ser consumidos al finalizar la compilación de la
+  \ palabra creada.
+  \ a = Ente para el que se creó la palabra
+  \ xt = Dirección de ejecución de la palabra sin nombre creada por ':noname'
+  \ colon-sys = Valores de control dejados por ':noname'
   5 roll 5 roll
   ;
 : :attributes  ( a -- )
@@ -3142,8 +3150,6 @@ defer 'entities  \ Dirección de los entes; vector que después será redirigido
   :noname noname-roll 
   (:attributes)  \ Crear la palabra y hacer las operaciones preliminares
   postpone [:attributes]  \ Compilar la palabra '[:attributes]' en la palabra creada, para que se ejecute cuando sea llamada
-  \ lina necesita guardar una copia del puntero de la pila tras crear una palabra
-  \ ( lo mismo ocurre después con las definiciones de ':description', ':after_describing_location' y ':action'):
   ;
 : ;attributes  ( sys-col -- )  postpone ;  ;  immediate
 : init_entity  ( a -- )
@@ -4986,7 +4992,7 @@ location_07% :attributes
 location_07% :description
   sight case
   self% of
-    s" Abruptamente, del bosque se pasa a un estrecho camino entre altas rocas."
+    s" Abruptamente, el bosque desaparece y deja paso a un estrecho camino entre altas rocas."
     s" El" s& s{ s" inquietante" s" sobrecogedor" }s&
     s" desfiladero" s& s{ s" tuerce" s" gira" }s&
     s" de Este a Sur." s&
@@ -5143,18 +5149,17 @@ location_12% :description
   \ Crear ente!!! agua aquí
   sight case
   self% of
-    s" Una" s{ s" gran" s" amplia" }s
+    s" Una" s{ s" gran" s" amplia" }s&
     s" estancia se abre hacia el Oeste," s&
-    s" y se estrecha hasta" s&
-    s{ s" morir" s" terminar" }s
-    s" , al Este, en una parte de agua." s+
+    s" y se estrecha hasta" s& s{ s" morir" s" terminar" }s&
+    s" , al Este, en una" s+{ s" parte" s" zona" }s& s" de agua." s&
     paragraph
     endof
   east% of
     s{ s" La estancia" s" El lugar" }s
     s" se estrecha hasta " s&
-    s{ s" morir" s" terminar" }s
-    s" en una parte de agua." s&
+    s{ s" morir" s" terminar" }s&
+    s" en una" s&{ s" parte" s" zona" }s& s" de agua." s&
     paragraph
   endof
   west% of
@@ -5174,7 +5179,7 @@ location_13% :description
   sight case
   self% of
     s" La sala se abre en"
-    s{ s" semioscuridad" s" penumbra" }s
+    s{ s" semioscuridad" s" penumbra" }s&
     s" a un puente cubierto de podredumbre" s&
     s" sobre el lecho de un canal, de Este a Oeste." s&
     paragraph
@@ -6617,13 +6622,15 @@ variable current_preposition
   \ Devuelve una variante de «no hay motivo para».
   \ Pendiente!!! Quitar las variantes que no sean adecuadas a todos los casos
   s" No hay" s{
-  s" motivo" s" alguno" s?& s" para"
-  s" nada que justifique"
-  s" necesidad" s" alguna" s?& s" de" s&
-  s" ninguna necesidad de"
-  s" ninguna razón para"
-  s" ningún motivo para"
-  s" razón" s" alguna" s?& s" para"
+    s" nada que justifique"
+    s{  s" necesidad" s" alguna" s?& 
+        s" ninguna necesidad"
+    }s s" de" s&
+    s{  s" ninguna razón"
+        s" ningún motivo"
+        s" motivo" s" alguno" s?& 
+        s" razón" s" alguna" s?& 
+    }s s" para" s&
   }s&
   ;
 : no_reason_for_that  ( a u -- )
@@ -7017,10 +7024,17 @@ variable #elements  \ Total de los elementos de una lista
   \ a3 u3 = Nombre del ente con, si es necesario, el indicador de que se trata de una prenda puesta
   dup  is_worn? if  (worn)$ s&  else  drop  then
   ;
+: full_name_as_direct_complement  ( a -- a1 u1 )
+  \ Devuelve el nombre completo de un ente en función de complemento directo.
+  \ Esto es necesario para añadir la preposición «a» a las personas.
+  dup s" a" rot is_human? and
+  rot full_name s&
+  s" al" s" a el" sreplace
+  ;
 : (content_list)  ( a -- )
   \ Añade a la lista en la cadena dinámica 'print_str' el separador y el nombre de un ente.
   #elements @ #listed @  list_separator
-  dup full_name rot (worn)& »&  #listed ++
+  dup full_name_as_direct_complement rot (worn)& »&  #listed ++
   ;
 : about_to_list  ( a -- u )
   \ Prepara el inicio de una lista.
@@ -7051,7 +7065,50 @@ variable #elements  \ Total de los elementos de una lista
   ;
 
 \ }}} ##########################################################
-section( Herramientas para las tramas asociadas a lugares)  \ {{{
+section( Tramas comunes a todos los escenarios)  \ {{{
+
+\ ------------------------------------------------
+\ Ambrosio nos sigue
+
+(
+
+Pendiente!!!:
+
+Confirmar la función de la llave aquí. En el código original
+solo se distingue que sea manipulable o no, lo que es
+diferente a que esté accesible.
+
+)
+
+: ambrosio_must_follow?
+  \ ¿Ambrosio tiene que estar siguiéndonos?
+  ambrosio% not_vanished?  key% is_accessible? and
+  location_46% am_i_there?  ambrosio_follows? @ or  and
+  ;
+: ambrosio_must_follow
+  \ Ambrosio tiene que estar siguiéndonos.
+  my_location ambrosio% is_there
+  s" Tu benefactor te sigue, esperanzado." narrate  
+  ;
+
+\ ------------------------------------------------
+\ Lanzadores de las tramas comunes a todos los escenarios
+
+: before_describing_any_location
+  \ Trama de entrada común a todos los entes escenario.
+  \ No se usa!!!
+  ;
+: after_describing_any_location
+  \ Trama de entrada común a todos los entes escenario.
+  \ No se usa!!!
+  ;
+: after_listing_entities_of_any_location  ( a -- )
+  \ Trama final de entrada común a todos los entes escenario.
+  ambrosio_must_follow? ?? ambrosio_must_follow
+  ;
+
+\ }}} ##########################################################
+section( Herramientas para las tramas asociadas a escenarios)  \ {{{
 
 : [:location_plot]  ( a -- )
   \ Inicia la definición de trama de un ente escenario
@@ -7166,18 +7223,10 @@ true [if]
   \ Ejecuta un vector de ejecución, si no es cero.
   ?dup ?? execute
   ;
-: before_describing_any_location
-  \ Trama de entrada común a todos los entes escenario.
-  \ No se usa!!!
-  ;
 : before_describing_location  ( a -- )
   \ Trama de entrada a un ente escenario.
   before_describing_any_location
   before_describing_location_xt ?execute 
-  ;
-: after_describing_any_location
-  \ Trama de entrada común a todos los entes escenario.
-  \ No se usa!!!
   ;
 : after_describing_location  ( a -- )
   \ Trama de entrada a un ente escenario.
@@ -7186,6 +7235,7 @@ true [if]
   ;
 : after_listing_entities  ( a -- )
   \ Trama final de entrada a un ente escenario.
+  after_listing_entities_of_any_location
   after_listing_entities_xt ?execute
   ;
 : before_leaving_any_location
@@ -7874,30 +7924,6 @@ section( Trama global)  \ {{{
   ;  ' (lock_found) is lock_found
 
 \ ------------------------------------------------
-\ Ambrosio nos sigue
-
-(
-
-Pendiente!!!:
-
-Confirmar la función de la llave aquí. En el código original
-solo se distingue que sea manipulable o no, lo que es
-diferente a que esté accesible.
-
-)
-
-: ambrosio_must_follow?
-  \ ¿Ambrosio tiene que estar siguiéndonos?
-  ambrosio% not_vanished?  key% is_accessible? and
-  location_46% am_i_there?  ambrosio_follows? @ or  and
-  ;
-: ambrosio_must_follow
-  \ Ambrosio tiene que estar siguiéndonos.
-  my_location ambrosio% is_there
-  s" Tu benefactor te sigue, esperanzado." narrate  
-  ;
-
-\ ------------------------------------------------
 \ Gestor de la trama global
 
 : plot
@@ -7907,7 +7933,7 @@ diferente a que esté accesible.
   \ invocada desde aquí. Aquí quedarían solo las tramas generales que no dependen de 
   \ ningún escenario.
   battle? if  battle exit  then
-  ambrosio_must_follow? ?? ambrosio_must_follow
+  \ ambrosio_must_follow? ?? ambrosio_must_follow
   ;
 
 \ }}} ##########################################################
@@ -8564,7 +8590,7 @@ condicionales anidadas.
   \ Provoca un error si un ente no puede ser tomado.
   \ Nota: los errores apuntados por el campo ~TAKE_ERROR# no reciben parámetros salvo en WHAT
   dup what !
-  ~take_error# @ throw  \ Error específico del ente
+  dup take_error# throw  \ Error específico del ente
   can_be_taken? 0= nonsense_error# and throw  \ Condición general de error
   ;
 : ?{takeable}  ( a | 0 -- )
@@ -9394,7 +9420,7 @@ subsection( Agredir)  \ {{{
   main_complement{required}
   main_complement{accessible}
   main_complement @ can_be_sharpened?
-  if  main_complement @ (do_sharpen)
+  if    main_complement @ (do_sharpen)
   else  nonsense
   then
   ;action
@@ -9601,7 +9627,7 @@ subsection( Nadar)  \ {{{
   \ Devuelve mensaje sobre hundirse con la coraza.
   ['] (you_sink_0)$
   ['] (you_sink_1)$
-  2 choose period+
+  2 choose execute period+
   ;
 : you_swim_with_cuirasse$  ( -- a u )
   \  Devuelve mensaje inicial sobre nadar con coraza.
@@ -9703,7 +9729,7 @@ subsection( Escalar)  \ {{{
 : do_climb_if_possible  ( a -- )
   \ Escalar el ente indicado si es posible.
   \ Inacabado!!!
-  dup is_here? if  dup s" [escalar eso]" narrate
+  dup is_here? if  drop s" [escalar eso]" narrate
   else  drop s" [no está aquí eso para escalarlo]" narrate
   then
   ;
@@ -10187,11 +10213,11 @@ subsection( Hablar y presentarse)  \ {{{
   period+ s& speak
   scene_break
   s" Por" s" primera" s" vez" rnd2swap s& s& s" en" s&
-  s{ s" mucho" s" largo" }s& s" tiempo, te sientas"
-  s" y" s& s" le" s?& s{ s" cuentas" s" narras" }s&
-  s" a alguien todo lo que ha" s&{ s" pasado." s" ocurrido." }s&
+  s{ s" mucho" s" largo" }s& s" tiempo, te sientas y" s&
+  s" le" s?& s{ s" cuentas" s" narras" }s&
+  s" a alguien todo lo que ha" s&{ s" sucedido" s" pasado." s" ocurrido." }s&
   s" Y, tras tanto acontecido, lloras" s&
-  s{ s" desconsoladamente." s" sin consuelo" }s&
+  s{ s" desconsoladamente" s" sin consuelo" }s& period+
   narrate scene_break
   s" Ambrosio te propone un trato, que aceptas:"
   s" por ayudarle a salir de la cueva," s&
@@ -10255,40 +10281,19 @@ subsection( Hablar y presentarse)  \ {{{
   ;
 : (talk_to_ambrosio)
   \ Hablar con Ambrosio.
-  \ Método nuevo en pruebas!!!:
+  \ Pendiente!!! ¿Hacer con una tabla?
   ambrosio% conversations case
     0 of  conversation_0_with_ambrosio  endof
     1 of  conversation_1_with_ambrosio  endof
     2 of  conversation_2_with_ambrosio  endof
     \ Aquí faltaría algo!!!
   endcase
-  \ Métodos antiguos!!!:
-  [false] [if]
-  my_location case
-    location_19% of  conversation_0_with_ambrosio  endof
-    location_46% of  conversation_1_with_ambrosio  endof
-  endcase
-  [then]
-  [false] [if]
-  my_location case
-    location_45% of  conversation_2_with_ambrosio  endof
-    location_46% of  conversation_2_with_ambrosio  endof
-    location_47% of  conversation_2_with_ambrosio  endof
-  endcase
-  [then]
-  [false] [if]  \ Método alternativo poco legible, inacabado!!!
-  location_45% 1- location_47% 1+ my_location within if
-    conversation_2_with_ambrosio
-  then
-  [then]
   ;
 : talk_to_ambrosio
   \ Hablar con Ambrosio, si se puede.
   \ Provisional!!! Esto debería comprobarse en 'do_speak' o 'do_speak_if_possible'.
   ambrosio% is_here?
-  if  (talk_to_ambrosio)
-  else  ambrosio% is_not_here
-  then
+  if  (talk_to_ambrosio)  else  ambrosio% is_not_here  then
   ;
 
 \ ------------------------------------------------
@@ -11394,6 +11399,16 @@ adecuada.
     false swap
   endcase
   ;
+: (bridge)  ( -- a )
+  \ Devuelve el ente adecuado a la palabra «puente».
+  true case
+    location_13% am_i_there? of  bridge%  endof
+    location_18% am_i_there? of  arch%  endof
+    bridge% is_known? of bridge%  endof
+    arch% is_known? of arch%  endof
+    false swap
+  endcase
+  ;
 
 \ }}} ##########################################################
 section( Vocabulario del juego)  \ {{{
@@ -12071,7 +12086,7 @@ o sustantivos.
 ' velas synonyms{  vela  }synonyms
 : mesa  table% complement!  ;
 ' mesa synonyms{  mesita pupitre  }synonyms
-: puente  bridge% complement!  ;
+: puente  (bridge) complement!  ;
 : alguien  (somebody) complement!  ;
 : hierba  s" hierba" grass% fname! grass% complement!  ;
 : hierbas  s" hierbas" grass% fnames! grass% complement!  ;
@@ -12890,7 +12905,9 @@ section( Principal)  \ {{{
 
   \ Activar esto selectivamente para depuración!!!:
   \ location_08% enter_location  \ Emboscada 
+  \ location_11% enter_location  \ Lago
   \ location_17% enter_location  \ Antes de la cueva oscura
+  \ location_19% enter_location  \ Encuentro con Ambrosio
   \ location_28% enter_location  \ Refugiados
   \ location_47% enter_location  \ casa de Ambrosio
   \ snake% is_here
