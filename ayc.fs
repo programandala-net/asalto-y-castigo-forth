@@ -7,7 +7,7 @@ CR .( Asalto y castigo )  \ {{{
 \ Copyright (C) 2011,2012 Marcos Cruz (programandala.net)
 
 only forth definitions
-: version$  ( -- a u )  s" A-04-2012051323"  ;
+: version$  ( -- a u )  s" A-04-2012051516"  ;
 version$ type cr
 
 \ 'Asalto y castigo' is free software; you can redistribute
@@ -202,8 +202,6 @@ true value [debug_map] immediate  \ ¿Mostrar el número de escenario del juego 
 
 true constant [old_method]  immediate
 [old_method] 0= constant [new_method]  immediate
-\ Pendiente!!! hacer este cambio definitivo:
-false constant [ambush_in_global_plot?]  immediate
 
 \ Títulos de sección
 
@@ -256,7 +254,6 @@ vocabulary menu_vocabulary  \ palabras del menú \ Aún no se usa!!!
 \ para crear un vocabulario sensible a mayúsculas,
 \ con la palabra 'table':
 table value (player_vocabulary)
-\ : player_vocabulary  (player_vocabulary) >order  ;  \ Versión antigua!!!
 : player_vocabulary
   \ Reemplaza el vocabulario superior con el del jugador.
   \ Código adaptado de Gforth (compat/vocabulary.fs).
@@ -2258,7 +2255,7 @@ campos.
 
 )
 
-\ Obtener el contenido de los campos
+\ Obtener el contenido de un campo a partir de un identificador de ente
 
 : break_error#  ( a -- u )  ~break_error# @  ;
 : conversations  ( a -- u )  ~conversations @  ;
@@ -2315,7 +2312,7 @@ campos.
 : out_exit  ( a1 -- a2 )  ~out_exit @  ;
 : in_exit  ( a1 -- a2 )  ~in_exit @  ;
 
-\ Modificar el contenido de los campos más habituales
+\ Modificar el contenido de un campo a partir de un identificador de ente
 
 : conversations++  ( a -- )  ~conversations ?++  ;
 : familiar++  ( a -- )  ~familiar ?++  ;
@@ -7180,6 +7177,15 @@ true [if]
   \ Ejecuta un vector de ejecución, si no es cero.
   ?dup ?? execute
   ;
+: before_describing_any_location
+  \ Trama de entrada común a todos los entes escenario.
+  \ No se usa!!!
+  ;
+: before_describing_location  ( a -- )
+  \ Trama de entrada a un ente escenario.
+  before_describing_any_location
+  before_describing_location_xt ?execute 
+  ;
 : after_describing_any_location
   \ Trama de entrada común a todos los entes escenario.
   \ No se usa!!!
@@ -7276,8 +7282,6 @@ section( Recursos de las tramas asociadas a lugares)  \ {{{
   narrate
   ;
 
-[ambush_in_global_plot?] 0= [if]  \ Experimental!!!
- 
 \ ------------------------------------------------
 \ Persecución
 
@@ -7697,8 +7701,6 @@ here swap - cell / constant battle_phases  \ Fases de la batalla
   officers_talk_to_you
   ;
 
-[then]
-
 \ ------------------------------------------------
 \ Oscuridad en la cueva
 
@@ -7798,9 +7800,7 @@ location_07% :after_describing_location
 location_08% :after_describing_location
   soldiers% is_here
   going_home
-  [ [ambush_in_global_plot?] 0= ] [if]
-    pass_still_open? ?? ambush
-  [then]
+  pass_still_open? ?? ambush
   ;after_describing_location
 location_09% :after_describing_location
   soldiers% is_here
@@ -7884,389 +7884,6 @@ section( Trama global)  \ {{{
   lock% familiar++
   ;  ' (lock_found) is lock_found
 
-[ambush_in_global_plot?] [if]
-
-\ !!! Anulado también con barras para evitar confundirlo
- 
-\ \ ------------------------------------------------
-\ \ Persecución
-\ 
-\ : pursued
-\   \ Perseguido por los sajones.
-\   s{
-\   s" El tiempo apremia"
-\   s" Hay que apresurarse"
-\   s" No hay mucho tiempo"
-\   s" No hay tiempo que perder"
-\   s" No sabes cuánto tiempo te queda"
-\   s" No te queda mucho tiempo"
-\   s" No tienes mucho tiempo"
-\   s" No tienes tiempo que perder"
-\   s" Sabes que debes darte prisa"
-\   s" Sabes que no puedes perder tiempo"
-\   s" Te queda poco tiempo"
-\   s" Tienes que apresurarte"
-\   }s s" ..." s+  narrate
-\   ;
-\ : pursue_location?  ( -- ff )
-\   \ ¿En un escenario en que los sajones pueden perseguir al protagonista?
-\   my_location location_12% <
-\   ;
-\ 
-\ \ ------------------------------------------------
-\ \ Batalla
-\ 
-\ : all_your_men  ( -- a u ff )
-\   \ Devuelve una variante de «Todos tus hombres», y un indicador de número.
-\   \ a u = Cadena
-\   \ ff = ¿El texto está en plural?
-\   2 random dup
-\   if  s{ s" Todos" s" Todos y cada uno de" }s
-\   else  s" Hasta el último de"
-\   then  your_soldiers$ s&  rot
-\   ;
-\ : ?plural_verb  ( a1 u1 ff -- a1 u1 | a2 u2 )
-\   \ Pone un verbo en plural si es preciso.
-\   if  s" n" s+  then
-\   ;
-\ : fight/s$  ( ff -- a u )
-\   \ Devuelve una variante de «lucha/n».
-\   \ ff = ¿El resultado debe estar en plural?
-\   \ a u = Resultado
-\   s{ s" lucha" s" combate" s" pelea" s" se bate" }s
-\   rot ?plural_verb
-\   ;
-\ : resist/s$  ( ff -- a u )
-\   \ Devuelve una variante de «resiste/n».
-\   \ ff = ¿El resultado debe estar en plural?
-\   \ a u = Resultado
-\   s{ s" resiste" s" aguanta" s" contiene" }s
-\   rot ?plural_verb
-\   ;
-\ : heroe$  ( -- a u )
-\   \ Devuelve una variante de «héroe».
-\   s{ s" héroe" s" valiente" s" jabato" }s
-\   ;
-\ : heroes$  ( -- a u )
-\   \ Devuelve una variante de «héroes».
-\   heroe$ s" s" s+
-\   ;
-\ : like_a_heroe$ ( -- a u )
-\   \ Devuelve una variante de «como un héroe».
-\   s" como un" s" auténtico" s?& heroe$ s&
-\   ;
-\ : like_heroes$ ( -- a u )
-\   \ Devuelve una variante de «como héroes».
-\   s" como" s" auténticos" s?& heroes$ s&
-\   ;
-\ : (bravery)$  ( -- a u )
-\   \ Devuelve una variante de «con denuedo».
-\   s{ s" con denuedo" s" con bravura" s" con coraje"
-\   s" heroicamente" s" esforzadamente" s" valientemente" }s
-\   ;
-\ : bravery$  ( ff -- a u )
-\   \ Devuelve una variante de «con denuedo», en singular o plural.
-\   \ ff = ¿El resultado debe estar en plural?
-\   \ a u = Resultado
-\   (bravery)$  rot
-\   if  like_heroes$  else  like_a_heroe$  then
-\   2 schoose 
-\   ;
-\ : step_by_step$  ( -- a u )
-\   \ Devuelve una variante de «poco a poco».
-\   s{ s" por momentos" s" palmo a palmo" s" poco a poco" }s
-\   ;
-\ : field$  ( -- a u )
-\   \ Devuelve «terreno» o «posiciones».
-\   s{ s" terreno" s" posiciones" }s
-\   ;
-\ : last(fp)$  ( -- a u )
-\   \ Devuelve una variante de «últimas».
-\   s{ s" últimas" s" postreras" }s
-\   ;
-\ : last$  ( -- a u )
-\   \ Devuelve una variante de «último».
-\ \ Nota!!! Confirmar «postrer»
-\   s{ s" último" s" postrer" }s
-\   ;
-\ : last_energy(fp)$  ( -- a u )
-\   \ Devuelve una variante de «últimas energías».
-\   last(fp)$ s{ s" energías" s" fuerzas" }s&
-\   ;
-\ : battle_phase_00$  ( -- a u )
-\   \ Devuelve la descripción del combate (fase 00)
-\   s" A pesar de" s{
-\   s" haber sido" s{ s" atacados por sorpresa" s" sorprendidos" }s&
-\   s" la sorpresa" s" inicial" s?&
-\   s" lo" s{ s" inesperado" s" sorpresivo" s" sorprendente" s" imprevisto" }s&
-\   s" del ataque" s& }s& comma+ your_soldiers$ s&
-\   s{ s" responden" s" reaccionan" }s&
-\   s{ s" con prontitud" s" sin perder un instante"
-\   s" rápidamente" s" como si fueran uno solo"
-\   }s& s" y" s&{
-\   s" adoptan una formación defensiva"
-\   s" organizan la defensa"
-\   s" se" s{ s" preparan" s" aprestan" }s& s" para" s&
-\   s{ s" defenderse" s" la defensa" }s&
-\   }s& period+ 
-\   ;
-\ : battle_phase_00
-\   \ Combate (fase 00).
-\   battle_phase_00$ narrate
-\   ;
-\ : battle_phase_01$  ( -- a u )
-\   \ Devuelve la descripción del combate (fase 01)
-\   all_your_men  dup resist/s$  rot bravery$  s& s&
-\   s{  s{ s" el ataque" s" el empuje" s" la acometida" }s
-\       s" inicial" s&
-\       s" el primer" s{ s" ataque" s" empuje" }s&
-\       s" la primera acometida"
-\   }s& of_the_enemy|enemies$ s& period+ 
-\   ;
-\ : battle_phase_01
-\   \ Combate (fase 01).
-\   battle_phase_01$ narrate
-\   ;
-\ : battle_phase_02$  ( -- a u )
-\   \ Devuelve la descripción del combate (fase 02)
-\   all_your_men  dup fight/s$  rot bravery$  s& s&
-\   s" contra" s&  the_enemy|enemies$ s&  period+
-\   ;
-\ : battle_phase_02
-\   \ Combate (fase 02).
-\   battle_phase_02$ narrate
-\   ;
-\ : battle_phase_03$  ( -- a u )
-\   \ Devuelve la descripción del combate (fase 03)
-\   \ Inacabado!!!
-\   ^your_soldiers$
-\   s" empiezan a acusar" s&
-\   s{ "" s" visiblemente" s" notoriamente" }s&
-\   s" el" s&{ s" titánico" s" enorme" }s?&
-\   s" esfuerzo." s&
-\   ;
-\ : battle_phase_03
-\   \ Combate (fase 03).
-\   battle_phase_03$ narrate
-\   ;
-\ : battle_phase_04$  ( -- a u )
-\   \ Devuelve la descripción del combate (fase 04)
-\   ^the_enemy|enemies
-\   s" parece que empieza* a" rot *>verb_ending s&
-\   s{ s" dominar" s" controlar" }s&
-\   s{ s" el campo" s" el combate" s" la situación" s" el terreno" }s&
-\   period+ 
-\   ;
-\ : battle_phase_04
-\   \ Combate (fase 04).
-\   battle_phase_04$ narrate
-\   ;
-\ : battle_phase_05$  ( -- a u )
-\   \ Devuelve la descripción del combate (fase 05)
-\   \ Inacabado!!!?
-\   ^the_enemy|enemies s{
-\   s" está* haciendo retroceder a" your_soldiers$ s&
-\   s" está* obligando a" your_soldiers$ s& s" a retroceder" s&
-\   }s rot *>verb_ending s&
-\   step_by_step$ s& period+
-\   ;
-\ : battle_phase_05
-\   \ Combate (fase 05).
-\   battle_phase_05$ narrate
-\   ;
-\ : battle_phase_06$  ( -- a u )
-\   \ Devuelve la descripción del combate (fase 06)
-\   \ Inacabado!!!
-\   ^the_enemy|enemies s{
-\   s" va* ganando" field$ s&
-\   s" va* adueñándose del terreno"
-\   s" va* conquistando" field$ s&
-\   s" se va* abriendo paso"
-\   }s rot *>verb_ending s&
-\   step_by_step$ s& period+
-\   ;
-\ : battle_phase_06
-\   \ Combate (fase 06).
-\   battle_phase_06$ narrate
-\   ;
-\ : battle_phase_07$  ( -- a u )
-\   \ Devuelve la descripción del combate (fase 07)
-\   ^your_soldiers$
-\   s{ s" caen" s" van cayendo," }s&
-\   s" uno tras otro," s?&
-\   s{ s" vendiendo cara su vida" s" defendiéndose" }s&
-\   like_heroes$ s& period+
-\   ;
-\ : battle_phase_07
-\   \ Combate (fase 07).
-\   battle_phase_07$ narrate
-\   ;
-\ : battle_phase_08$  ( -- a u )
-\   \ Devuelve la descripción del combate (fase 08)
-\   ^the_enemy|enemies
-\   s{ s" aplasta* a" s" acaba* con" }s
-\   rot *>verb_ending s&
-\   s" los últimos de" s" entre" s?& s&
-\   your_soldiers$ s& s" que," s&
-\   s{ s" heridos" s{ s" extenuados" s" exhaustos" s" agotados" }s both?
-\   s{ s" apurando" s" con" }s s" sus" s& last_energy(fp)$ s&
-\   s" con su" last$ s& s" aliento" s&
-\   s" haciendo un" last$ s& s" esfuerzo" s&
-\   }s& comma+ still$ s&
-\   s{ s" combaten" s" resisten"
-\   s{ s" se mantienen" s" aguantan" s" pueden mantenerse" }s
-\   s" en pie" s&
-\   s{ s" ofrecen" s" pueden ofrecer" }s s" alguna" s?&
-\   s" resistencia" s&
-\   }s& period+
-\   ;
-\ : battle_phase_08
-\   \ Combate (fase 08).
-\   battle_phase_08$ narrate
-\   ;
-\ create 'battle_phases  \ Tabla para las fases del combate
-\ here \ Dirección libre actual, para calcular después el número de fases
-\   \ Compilar la dirección de ejecución de cada fase: 
-\   ' battle_phase_00 ,
-\   ' battle_phase_01 ,
-\   ' battle_phase_02 ,
-\   ' battle_phase_03 ,
-\   ' battle_phase_04 ,
-\   ' battle_phase_05 ,
-\   ' battle_phase_06 ,
-\   ' battle_phase_07 ,
-\   ' battle_phase_08 ,
-\ here swap - cell / constant battle_phases  \ Fases de la batalla
-\ : (battle_phase)  ( u -- )
-\   \ Ejecuta una fase del combate.
-\   \ u = Fase del combate (la primera es la cero)
-\   cells 'battle_phases + perform  
-\   ;
-\ : battle_phase
-\   \ Ejecuta la fase en curso del combate.
-\   battle# @ 1- (battle_phase)
-\   ;
-\ : battle_location?  ( -- ff )
-\   \ ¿En el escenario de la batalla?
-\   my_location location_10% <  \ ¿Está el protagonista en un escenario menor que el 10?
-\   pass_still_open? 0=  and  \ ¿Y el paso del desfiladero está cerrado?
-\   ;
-\ : battle_phase++
-\   \ Incrementar la fase de la batalla (salvo una de cada diez veces, al azar).
-\   10 random if  battle# ++  then
-\   ;
-\ : battle
-\   \ Batalla y persecución.
-\   battle_location? ?? battle_phase
-\   pursue_location? ?? pursued
-\   battle_phase++
-\   ;
-\ : battle?  ( -- ff )
-\   \ ¿Ha empezado la batalla?
-\   battle# @ 0>
-\   ;
-\ : the_battle_ends
-\   \ Termina la batalla.
-\   battle# off
-\   ;
-\ : the_battle_begins
-\   \ Comienza la batalla.
-\   1 battle# !
-\   ;
-\ 
-\ \ ------------------------------------------------
-\ \ Emboscada de los sajones
-\ 
-\ : ambush?  ( -- ff )
-\   \ ¿Ha caído el protagonista en la emboscada?
-\   my_location location_08% =  \ ¿Está en el escenario 8?
-\   pass_still_open?  and  \ ¿Y además el paso está abierto?
-\   ;
-\ : the_pass_is_closed
-\   \ Cerrar el paso, la salida norte.
-\   no_exit location_08% ~north_exit !
-\   ;
-\ : the_ambush_begins
-\   \ Comienza la emboscada.
-\   s" Una partida sajona aparece por el Este."
-\   s" Para cuando" s&
-\   s{ s" te vuelves" s" intentas volver" }s&
-\   toward_the(m)$ s& s" Norte," s&
-\   s" ya no" s& s{ s" te" s? s" queda" s& s" tienes" }s&
-\   s{ s" duda:" s" duda alguna:" s" ninguna duda:" }s&
-\   s{
-\     s" es" s" se trata de"
-\     s{ s" te" s" os" }s s" han tendido" s&
-\   }s& s" una" s&
-\   s{ s" emboscada" s" celada" s" encerrona" s" trampa" }s&
-\   period+  narrate narration_break
-\   ;
-\ 
-\ : they_win_0$  ( -- a u )
-\   \ Devuelve la primera versión de la parte final de las palabras de los oficiales.
-\   s{ s" su" s{ s" victoria" s" triunfo" }s&
-\   s" nuestra" s{ s" derrota" s" humillación" }s&
-\   }s s" será" s&{ s" doble" s" mayor" }s&
-\   ;
-\ : they_win_1$  ( -- a u )
-\   \ Devuelve la segunda versión de la parte final de las palabras de los oficiales.
-\   s{ s" ganan" s" nos ganan" s" vencen"
-\   s" perdemos" s" nos vencen" s" nos derrotan" }s
-\   s{ s" doblemente" s" por partida doble" }s&
-\   ;
-\ : they_win$  ( -- a u )
-\   \ Devuelve la parte final de las palabras de los oficiales.
-\   they_win_0$ they_win_1$ 2 schoose period+
-\   ;
-\ : taking_prisioner$  ( -- a u )
-\   \ Devuelve una parte de las palabras de los oficiales.
-\   s" si" s{ s" capturan" s" hacen prisionero" s" toman prisionero" }s&
-\   ;
-\ : officers_speach
-\   \ Palabras de los oficiales.
-\   sire,$ s?  dup taking_prisioner$
-\   rot 0= ?? ^uppercase s&
-\   s" a un general britano" s& they_win$ s&  speak
-\   ;
-\ : officers_talk_to_you
-\   \ Los oficiales hablan con el protagonista.
-\   s" Tus oficiales te"
-\   s{ s" conminan a huir."
-\   s" conminan a ponerte a salvo."
-\   s" piden que te pongas a salvo."
-\   s" piden que huyas." }s&  narrate
-\   officers_speach
-\   s{ s" Sabes" s" Comprendes" }s s" que" s&
-\   s{ s" es cierto" s" llevan razón"
-\   s" están en lo cierto" }s&
-\   s" , y te duele." s+  narrate
-\   ;
-\ : the_enemy_is_stronger
-\   \ El enemigo es superior.
-\   s" En el" narrow(m)$ s& s" paso es posible" s&
-\   s{ s" resistir," s" defenderse," }s& but$ s&
-\   s{ s" por desgracia" s" desgraciadamente" }s&
-\   s{
-\   s" los sajones son muy superiores en número"
-\   s" los sajones son mucho más numerosos"
-\   s" sus soldados son más numerosos que los tuyos"
-\   s" sus tropas son más numerosas que las tuyas"
-\   s" sus hombres son más numerosos que los tuyos"
-\   s" ellos son muy superiores en número"
-\   s" ellos son mucho más numerosos"
-\   }s& period+  narrate scene_break
-\   ;
-\ : ambush
-\   \ Emboscada.
-\   the_pass_is_closed
-\   the_ambush_begins
-\   the_battle_begins
-\   the_enemy_is_stronger
-\   officers_talk_to_you
-\   ;
-
-[then]
-
 \ ------------------------------------------------
 \ Ambrosio nos sigue
 
@@ -8297,9 +7914,6 @@ diferente a que esté accesible.
 : plot
   \ Trama global.
   \ Nota: Las subtramas deben comprobarse en orden cronológico:
-  [ambush_in_global_plot?] [if] 
-    ambush? if  ambush exit  then
-  [then]
   \ Pendiente!!! La trama de la batalla sería adecuada para una trama global de escenario,
   \ invocada desde aquí. Aquí quedarían solo las tramas generales que no dependen de 
   \ ningún escenario.
@@ -12837,8 +12451,11 @@ svariable command  \ Zona de almacenamiento del comando
   ;
 : wait_for_input  ( -- a u )
   \ Espera y devuelve el comando introducido por el jugador.
-  input_color  command /command accept
+  only player_vocabulary
+  input_color
+  command /command accept
   command swap  str+strip  \ Eliminar espacios laterales
+  restore_vocabularies
   ;
 : .command_prompt
   \ Imprime un presto para la entrada de comandos.
@@ -13267,12 +12884,12 @@ section( Principal)  \ {{{
   init_parser/game
   init_entities init_plot get_config
   \ Anular esto para depuración!!!:
-  \ about cr intro  
-  \ location_01% enter_location
+  about cr intro  
+  location_01% enter_location
 
   \ Activar esto selectivamente para depuración!!!:
   \ location_08% enter_location  \ Emboscada 
-  location_17% enter_location  \ Antes de la cueva oscura
+  \ location_17% enter_location  \ Antes de la cueva oscura
   \ location_28% enter_location  \ Refugiados
   \ location_47% enter_location  \ casa de Ambrosio
   \ snake% is_here
@@ -13505,6 +13122,14 @@ do_take_off
 
 \ }}} ########################################################## 
 \ Tareas pendientes: programación {{{
+
+...........................
+2012-05-14:
+
+Hacer mensajes genéricos en respuesta a comandos imposibles,
+que dependan de las circunstancias:
+«el jaleo de la batalla te hace desvariar»,
+«la falta de aire...»
 
 ...........................
 2012-03-01:
