@@ -7,7 +7,7 @@ CR .( Asalto y castigo )  \ {{{
 \ Copyright (C) 2011,2012 Marcos Cruz (programandala.net)
 
 only forth definitions
-: version$  ( -- a u )  s" A-05-2012051600"  ;
+: version$  ( -- a u )  s" A-05-2012051800"  ;
 version$ type cr
 
 \ 'Asalto y castigo' is free software; you can redistribute
@@ -190,13 +190,14 @@ false to halto?
 false value [debug] immediate  \ ¿Depuración global?
 false value [debug_init] immediate  \ ¿Depurar la inicialización?
 false value [debug_parsing] immediate  \ ¿Depurar el analizador?
+true value [debug_parsing_result] immediate  \ ¿Mostrar el resultado del analizador?
 false value [debug_filing] immediate  \ ¿Depurar operaciones de ficheros? 
 false value [debug_do_exits] immediate  \ ¿Depurar la acción 'do_exits'?
 false value [debug_catch] immediate  \ ¿Depurar 'catch' y 'throw'?
 false value [debug_save] immediate  \ ¿Depurar la grabación de partidas?
 true value [debug_info] immediate  \ ¿Mostrar info sobre el presto de comandos? 
 false value [debug_pause] immediate  \ ¿Hacer pausa en puntos de depuración?
-true value [debug_map] immediate  \ ¿Mostrar el número de escenario del juego original?
+false value [debug_map] immediate  \ ¿Mostrar el número de escenario del juego original?
 
 \ Indicadores para poder elegir alternativas que aún son experimentales
 
@@ -649,13 +650,13 @@ http://en.wikipedia.org/wiki/ANSI_escape_code
 : light_cyan  ( -- u )  cyan lighter  ;
 : green  ( -- u )  trm.foreground-green  ;
 : light_green  ( -- u )  green lighter  ;
-: gray  ( -- u )  trm.foreground-white  ;
-: dark_gray  ( -- u )  black lighter  ;
+: gray  ( -- u )  black lighter  ;
+: light_gray  ( -- u )  trm.foreground-white  ;
 : magenta  ( -- u )  trm.foreground-magenta  ;
 : light_magenta  ( -- u )  magenta lighter  ;
 : red  ( -- u )  trm.foreground-red  ;
 : light_red  ( -- u )  red lighter  ;
-: white  ( -- u )  gray lighter  ;
+: white  ( -- u )  light_gray lighter  ;
 : yellow  ( -- u )  brown lighter  ;
 
 : ink ( u -- )  1 sgr  ;
@@ -672,63 +673,68 @@ http://en.wikipedia.org/wiki/ANSI_escape_code
   \ a2 = Dirección del color de tinta
   @ swap @ swap colors
   ;
+
 \ }}}---------------------------------------------
 subsection( Colores utilizados)  \ {{{
 
 \ Variables para guardar cada color de papel y de tinta
 
-variable background_paper  \ Experimental!!!
 variable about_ink
 variable about_paper
+variable background_paper  \ Experimental!!!
 variable command_prompt_ink
 variable command_prompt_paper
 variable debug_ink
 variable debug_paper
 variable description_ink
 variable description_paper
-variable error_ink
-variable error_paper
 variable input_ink
 variable input_paper
+variable language_error_ink
+variable language_error_paper
 variable location_description_ink
 variable location_description_paper
 variable location_name_ink
 variable location_name_paper
 variable narration_ink
 variable narration_paper
-variable scroll_prompt_ink
-variable scroll_prompt_paper
+variable narration_prompt_ink
+variable narration_prompt_paper
 variable question_ink
 variable question_paper
 variable scene_prompt_ink
 variable scene_prompt_paper
+variable scroll_prompt_ink
+variable scroll_prompt_paper
 variable speech_ink
 variable speech_paper
-variable narration_prompt_ink
-variable narration_prompt_paper
+variable system_error_ink
+variable system_error_paper
+variable command_error_ink
+variable command_error_paper
 
 : init_colors
   \ Asigna los colores predeterminados.
   [defined] background_paper [if]
-    magenta background_paper !  \ Experimental!!!
+    black background_paper !  \ Experimental!!!
   [then] 
-  dark_gray about_ink !
+  gray about_ink !
   black about_paper !
   cyan command_prompt_ink !
   black command_prompt_paper !
   white debug_ink !
   red debug_paper !
-  dark_gray description_ink !
+  gray description_ink !
   black description_paper !
-  light_red error_ink !
-  black error_paper !
+  light_red language_error_ink !
+  black language_error_paper !
   light_cyan input_ink !
   black input_paper !
   green location_description_ink !
   black location_description_paper !
   black location_name_ink !
   green location_name_paper !
-  dark_gray narration_ink !
+  gray narration_ink !
   black narration_paper !
   green scroll_prompt_ink !
   black scroll_prompt_paper !
@@ -736,8 +742,10 @@ variable narration_prompt_paper
   black question_paper !
   green scene_prompt_ink !
   black scene_prompt_paper !
-  brown speech_ink !
+  light_gray speech_ink !
   black speech_paper !
+  light_red system_error_ink !
+  black system_error_paper !
   green narration_prompt_ink !
   black narration_prompt_paper !
   ;
@@ -778,9 +786,17 @@ variable narration_prompt_paper
   \ Pone el color de texto de las descripciones de los entes que no son escenarios.
   description_paper description_ink @colors
   ;
-: error_color
-  \ Pone el color de texto de los errores.
-  error_paper error_ink @colors
+: system_error_color
+  \ Pone el color de texto de los errores del sistema.
+  system_error_paper language_error_ink @colors
+  ;
+: command_error_color
+  \ Pone el color de texto de los errores de comando.
+  command_error_paper language_error_ink @colors
+  ;
+: language_error_color
+  \ Pone el color de texto de los errores lingüísticos.
+  language_error_paper language_error_ink @colors
   ;
 : input_color
   \ Pone el color de texto para la entrada de comandos.
@@ -815,7 +831,7 @@ variable narration_prompt_paper
   speech_paper speech_ink @colors
   ;
 : narration_prompt_color
-  \ Pone el color de texto del presto de pausa .
+  \ Pone el color de texto del presto de pausa.
   narration_prompt_paper narration_prompt_ink @colors
   ;
 
@@ -826,14 +842,14 @@ subsection( Demo de colores)  \ {{{
 
 : color_bar  ( u -- )
   \ Imprime una barra de 64 espacios con el color indicado.
-  paper cr 64 spaces  black paper space
+  paper cr 32 spaces  black paper space
   ;
 : color_demo
   \ Prueba los colores.
   cr ." Colores descritos como se ven en Debian"
   black color_bar ." negro"
-  dark_gray color_bar ." gris oscuro"
   gray color_bar ." gris"
+  light_gray color_bar ." gris claro"
   blue color_bar ." azul"
   light_blue color_bar ." azul claro"
   cyan color_bar ." cian"
@@ -847,11 +863,10 @@ subsection( Demo de colores)  \ {{{
   brown color_bar ." marrón"
   yellow color_bar ." amarillo"
   white color_bar ." blanco"
-  cr
-  red color_bar ." rojo"
-  brown color_bar ." marrón"
-  red color_bar ." rojo"
-  brown color_bar ." marrón"
+  \ red color_bar ." rojo"
+  \ brown color_bar ." marrón"
+  \ red color_bar ." rojo"
+  \ brown color_bar ." marrón"
   system_color cr
   ;
 
@@ -903,7 +918,7 @@ subsection( Borrado de pantalla)  \ {{{
   [false] [if]  \ Por líneas, más lento
     rows 0 do  i ?? cr [ cols ] literal spaces  loop
   [else]  \ Pantalla entera, más rápido
-    rows cols * spaces
+    form * spaces
   [then]
   ;
 : color_background
@@ -911,13 +926,12 @@ subsection( Borrado de pantalla)  \ {{{
   background_paper @ dup 0>=
   if  (color_background)  else  drop  then
   ;
+[else]
+' trm+erase-display alias color_background
 [then]
 : new_page
   \ Borra la pantalla y sitúa el cursor en su origen.
-  [defined] background_paper
-  [if]    color_background \ Experimental!!!
-  [else]  trm+erase-display
-  [then]  print_home
+  color_background print_home
   ;
 
 : clear_screen_for_location
@@ -926,8 +940,7 @@ subsection( Borrado de pantalla)  \ {{{
   ;
 : init_screen
   \ Prepara la pantalla la primera vez.
-  trm+reset system_color print_home
-  init_colors
+  trm+reset init_colors 
   ;
 
 \ }}}
@@ -1134,6 +1147,22 @@ de cadena creadas con 'sconstant'.
 
 )
 
+: that(m)$  ( -- a u )
+  s{ s" que" s" cual" }s
+  ;
+: the_that(m)$  ( -- a u )
+  s{ s" que" s" el cual" }s
+  ;
+: this|the(f)$  ( -- a u )
+  s{ s" esta" s" la" }s
+  ;
+: this|the(m)$  ( -- a u )
+  \ No se usa!!!
+  s{ s" este" s" el" }s
+  ;
+: your|the(f)$  ( -- a u )
+  s{ s" tu" s" la" }s
+  ;
 : old_man$  ( -- a u )
   \ Devuelve una forma de llamar al líder de los refugiados.
   s{ s" hombre" s" viejo" s" anciano" }s
@@ -1306,7 +1335,7 @@ de cadena creadas con 'sconstant'.
   s{ "" s" que queda" s" que quedó" }s s" de" s&
   s{ s" lo" s" la" }s& s" que" s& s" antes" s?&
   s{ s" era" s" fue" s" fuera" }s&
-  s{ s" tu" s" la" }s& s{ s" negra" s" oscura" }s?&
+  your|the(f)$ s& s{ s" negra" s" oscura" }s?&
   s" capa" s& s" de lana" s?& period+
   ;
 : but$  ( -- a u )
@@ -1845,6 +1874,22 @@ variable indent_first_line_too?  \ ¿Se indentará también la línea superior d
   \ Indenta si es necesario.
   indentation? ?? (indent)
   ;
+: background_line
+  \ Colorea una línea con el color de fondo.
+  background_color cols spaces
+  ;
+: ((print_cr))
+  \ Salto de línea alternativo para los párrafos justificados.
+  \ Colorea la nueva línea con el color de fondo, lo que parchea
+  \ el problema de que las nuevas líneas volvían a aparecer
+  \ con el color predeterminado de la terminal. 
+  \ Pendiente!!! Inacabado!!! en pruebas
+  \ background_color cols #printed @ - spaces  \ final de línea
+  \ blue paper cols #printed @ - spaces key drop  \ depuración!!!
+  cr trm+save-current-state background_line
+  trm+restore-current-state
+  ;
+' ((print_cr)) is (print_cr)  \ Redefinir '(print_cr)' (de ghoul/print.fs)
 : cr+
   \ Hace un salto de línea y una indentación, para el sistema
   \ de impresión de textos justificados.
@@ -1861,9 +1906,13 @@ variable indent_first_line_too?  \ ¿Se indentará también la línea superior d
   cr+ print
   ;
 
-: report  ( a u -- )
-  \ Imprime una cadena como un informe de error.
-  error_color paragraph system_color
+: command_error  ( a u -- )
+  \ Imprime una cadena como un informe de error de un commando.
+  command_error_color paragraph system_color
+  ;
+: system_error  ( a u -- )
+  \ Imprime una cadena como un informe de error del sistema.
+  system_error_color paragraph system_color
   ;
 : narrate  ( a u -- )
   \ Imprime una cadena como una narración.
@@ -1874,9 +1923,13 @@ variable indent_first_line_too?  \ ¿Se indentará también la línea superior d
 subsection( Pausas y prestos en la narración)  \ {{{
 
 variable indent_pause_prompts?  \ ¿Hay que indentar también los prestos?
+: indent_prompt
+  \ Indenta antes de un presto, si es necesario.
+  indent_pause_prompts? @ ?? indent 
+  ;
 : .prompt  ( a u -- )
   \ Imprime un presto.
-  print_cr indent_pause_prompts? @ ?? indent print
+  print_cr indent_prompt print
   ;
 
 [false] [if]  \ Primera versión, con fallo extraño!!!
@@ -1887,6 +1940,7 @@ variable indent_pause_prompts?  \ ¿Hay que indentar también los prestos?
 
 \ Ya lo averigüé. Era debido a la forma en que funciona 'xy',
 \ leyendo el teclado. No recuerdo los detalles. No están anotados en el historial.
+\ Está algo explicado en ghoul/print.fs.
 
 dtm-create deadline  \ Variable para guardar el momento final de las pausas
 : no_time_left?  ( -- ff )
@@ -1944,10 +1998,15 @@ svariable narration_prompt  \ Guardará el presto usado en las pausas de la narr
   \ borra la línea en que se ha mostrado el presto de pausa
   \ y restaura la situación de impresión para no afectar
   \ al siguiente párrafo.
-  wait  trm+erase-line print_start_of_line
+  [false] [if]  \ Antiguo!!! Versión primera, que no coloreaba la línea
+    wait  trm+erase-line print_start_of_line
+  [else]
+    wait  print_start_of_line
+    trm+save-current-state background_line trm+restore-current-state
+  [then]
   ;
 : (narration_break)  ( n -- )
-  \ Alto en la narración: Muestra un presto y hace una pausa .
+  \ Alto en la narración: Muestra un presto y hace una pausa.
   \ n = Segundos (o un número negativo para hacer una pausa indefinida hasta la pulsación de una tecla)
   .narration_prompt (break)
   ;
@@ -2105,8 +2164,9 @@ terminan con «_xt»; los que contienen códigos de error terminan con
 
 0 \ Valor inicial de desplazamiento para el primer campo
 
+\ Identificación
 cell +field ~name_str  \ Dirección de una cadena dinámica que contendrá el nombre del ente
-cell +field ~init_xt  \ Dirección de ejecución de la palabra que inicializa las propiedades de un ente (experimental!!!)
+cell +field ~init_xt  \ Dirección de ejecución de la palabra que inicializa las propiedades de un ente
 cell +field ~description_xt  \ Dirección de ejecución de la palabra que describe el ente
 cell +field ~direction  \ Desplazamiento del campo de dirección al que corresponde el ente (solo se usa en los entes que son direcciones)
 
@@ -2384,6 +2444,10 @@ código más conciso y legible.
   \ a1 = Ente que será la localización de a2
   \ a2 = Ente cuya localización será a1
   ~location !
+  ;
+: taken  ( a -- )
+  \ Hace que el protagonista sea la localización de un ente.
+  protagonist% swap is_there
   ;
 : was_there  ( a1 a2 -- )
   \ Hace que un ente sea la localización previa de otro.
@@ -2832,49 +2896,61 @@ de datos de su ficha.
   \ a1 = Ente
   name_str str-set
   ;
-: names!  ( a u a1 -- )
+: p-name!  ( a u a1 -- )
   \ Guarda el nombre de un ente, y lo marca como plural.
   \ a u = Nombre
   \ a1 = Ente
-  dup has_plural_name  name!
+  dup has_plural_name name!
   ;
-: fname!  ( a u a1 -- )
-  \ Guarda el nombre de un ente,
-  \ indicando también que es de género gramatical femenino.
+: s-name!  ( a u a1 -- )
+  \ Guarda el nombre de un ente, y lo marca como singular.
   \ a u = Nombre
   \ a1 = Ente
-  dup has_feminine_name
-  dup has_singular_name  name!
+  dup has_singular_name name!
   ;
-: fnames!  ( a u a1 -- )
+: fs-name!  ( a u a1 -- )
+  \ Guarda el nombre de un ente,
+  \ indicando también que es de género gramatical femenino y singular.
+  \ a u = Nombre
+  \ a1 = Ente
+  dup has_feminine_name s-name!
+  ;
+: fp-name!  ( a u a1 -- )
   \ Guarda el nombre de un ente,
   \ indicando también que es de género gramatical femenino y plural.
   \ a u = Nombre
   \ a1 = Ente
-  dup has_feminine_name  
-  dup has_plural_name  name!
+  dup has_feminine_name p-name!
   ;
-: mname!  ( a u a1 -- )
+: ms-name!  ( a u a1 -- )
   \ Guarda el nombre de un ente,
-  \ indicando también que es de género gramatical masculino. 
+  \ indicando también que es de género gramatical masculino y singular. 
   \ a u = Nombre
   \ a1 = Ente
-  dup has_masculine_name
-  dup has_singular_name  name!
+  dup has_masculine_name s-name!
   ;
-: mnames!  ( a u a1 -- )
+: mp-name!  ( a u a1 -- )
   \ Guarda el nombre de un ente,
   \ indicando también que es de género gramatical masculino y plural.
   \ a u = Nombre
   \ a1 = Ente
-  dup has_masculine_name
-  dup has_plural_name  name!
+  dup has_masculine_name p-name!
   ;
 : name  ( a -- a1 u1 )
   \ Devuelve el nombre de un ente.
   \ a = Ente
   \ a1 u1 = Nombre
   name_str str-get
+  ;
+: ?name  ( a|0 -- a1 u1|0 )
+  \ Devuelve el nombre de un ente, si es tal; una cadena vacía si es cero.
+  \ Solo se usa para depuración!!!
+  ?dup if  name  else  ""  then
+  ;
+: ?.name  ( a|0 -- )
+  \ Imprime el nombre de un ente, si es tal; una cadena vacía si es cero.
+  \ Solo se usa para depuración!!!
+  ?name type
   ;
 : ^name  ( a -- a1 u1 )
   \ Devuelve el nombre de un ente, con la primera letra mayúscula.
@@ -3230,6 +3306,12 @@ false value sight  \ Guarda el ente dirección al que se mira en un escenario (o
   ;
 : .location_name  ( a -- )
   \ Imprime el nombre de un ente escenario, como cabecera de su descripción.
+  \ Pendiente!!! Añadir el artículo correspondiente o no, dependiendo de un indicador de la ficha:
+  \     pasaje de la serpiente -- el pasaje de la serpiente
+  \     el paso del Perro -- el paso del Perro
+  \     un tramo de cueva -- un tramo de cueva
+  \     un lago interior -- el lago interior
+  \     hogar de Ambrosio -- el hogar de Ambrosio
   [debug_map] [if]  dup  [then]
   name ^uppercase location_name_color paragraph 
   [debug_map] [if]
@@ -4281,7 +4363,7 @@ create 'cave_descriptions
 : it's_your_last_hope$  ( -- a u )
   s{ s" te das cuenta de que" s" sabes que" }s?
   s{ s" es" s" se trata de" }s& ^uppercase 
-  s{ s" la" s" tu" }s& s{ s" única" s" última" }s&
+  your|the(f)$ s& s{ s" única" s" última" }s&
   s{ s" salida" s" opción" s" esperanza" s" posibilidad" }s&
   s{ s" de" s" para" }s
   s{  s" escapar" s" huir"
@@ -4335,7 +4417,7 @@ section( Atributos y descripciones de entes)  \ {{{
 
 \ cr .( antes de ulfius) .s \ Depuración!!!
 ulfius% :attributes
-  s" Ulfius" self% mname!
+  s" Ulfius" self% ms-name!
   self% is_human
   self% has_personal_name
   self% has_no_article
@@ -4350,7 +4432,7 @@ ulfius% :description
 \ Entes personaje
 
 ambrosio% :attributes
-  s" hombre" self% mname!  \ El nombre cambiará a «Ambrosio» durante el juego
+  s" hombre" self% ms-name!  \ El nombre cambiará a «Ambrosio» durante el juego
   self% is_character
   self% is_human
   location_19% self% is_there
@@ -4363,7 +4445,7 @@ ambrosio% :description
   then  paragraph
   ;description
 leader% :attributes
-  s" anciano" self% mname!
+  s" anciano" self% ms-name!
   self% is_character
   self% is_human
   self% is_not_listed
@@ -4380,7 +4462,7 @@ leader% :description
   paragraph
   ;description
 soldiers% :attributes
-  s" soldados" self% mnames!
+  s" soldados" self% mp-name!
   self% is_human
   self% familiar++
   self% is_decoration
@@ -4395,7 +4477,7 @@ soldiers% :description
   soldiers_description
   ;description
 officers% :attributes
-  s" oficiales" self% mnames!
+  s" oficiales" self% mp-name!
   self% is_human
   self% familiar++
   self% is_decoration
@@ -4410,7 +4492,7 @@ officers% :description
   officers_description
   ;description
 refugees% :attributes
-  s" refugiados" self% mnames!
+  s" refugiados" self% mp-name!
   self% is_human
   self% is_decoration
   ;attributes
@@ -4427,7 +4509,7 @@ refugees% :description
 \ Entes objeto
 
 altar% :attributes
-  s" altar" self% mname!
+  s" altar" self% ms-name!
   self% is_decoration
   impossible_error# self% ~take_error# !
   location_18% self% is_there
@@ -4441,7 +4523,7 @@ altar% :description
   paragraph
   ;description
 arch% :attributes
-  s" arco" self% mname!
+  s" arco" self% ms-name!
   self% is_decoration
   location_18% self% is_there
   ;attributes
@@ -4451,7 +4533,7 @@ arch% :description
   paragraph
   ;description
 bed% :attributes
-  s" catre" self% mname!
+  s" catre" self% ms-name!
   location_46% self% is_there
   self% ambrosio% belongs
   ;attributes
@@ -4462,7 +4544,7 @@ bed% :description
   paragraph
   ;description
 bridge% :attributes
-  s" puente" self% mname!
+  s" puente" self% ms-name!
   self% is_decoration
   location_13% self% is_there
   ;attributes
@@ -4472,7 +4554,7 @@ bridge% :description
   paragraph
   ;description
 candles% :attributes
-  s" velas" self% fnames!
+  s" velas" self% fp-name!
   location_46% self% is_there
   self% ambrosio% belongs
   ;attributes
@@ -4481,7 +4563,7 @@ candles% :description
   paragraph
   ;description
 cave_entrance% :attributes
-  s" entrada a una cueva" self% fname!
+  s" entrada a una cueva" self% fs-name!
   ;attributes
 cave_entrance% :description
   the_cave_entrance_is_hidden$
@@ -4490,11 +4572,11 @@ cave_entrance% :description
   paragraph
   ;description
 cloak% :attributes
-  s" capa" self% fname!
+  s" capa" self% fs-name!
   self% is_cloth
   self% belongs_to_protagonist
   self% is_worn
-  ulfius% self% is_there
+  self% taken
   ;attributes
 cloak% :description
   s" Tu capa de general, de fina lana"
@@ -4502,14 +4584,14 @@ cloak% :description
   paragraph
   ;description
 cuirasse% :attributes
-  s" coraza" self% fname!
+  s" coraza" self% fs-name!
   self% is_cloth
   self% belongs_to_protagonist
   self% is_worn
-  ulfius% self% is_there
+  self% taken
   ;attributes
 door% :attributes
-  s" puerta" self% fname!
+  s" puerta" self% fs-name!
   self% is_closed
   impossible_error# self% ~take_error# !
   location_47% self% is_there
@@ -4527,7 +4609,7 @@ door% :description
   s" Está" s& door% «open»|«closed» s& period+ paragraph
   ;description
 emerald% :attributes
-  s" esmeralda" self% fname!
+  s" esmeralda" self% fs-name!
   location_39% self% is_there
   ;attributes
 emerald% :description
@@ -4535,7 +4617,7 @@ emerald% :description
   paragraph
   ;description
 fallen_away% :attributes
-  s" derrumbe" self% mname!
+  s" derrumbe" self% ms-name!
   self% is_decoration
   nonsense_error# self% ~take_error# !
   location_09% self% is_there
@@ -4567,7 +4649,7 @@ fallen_away% :description
   s" [Yo no lo haría]." narrate
   ;
 flags% :attributes
-  s" banderas" self% fnames!
+  s" banderas" self% fp-name!
   self% is_decoration
   ['] don't_take_the_flags self% ~take_error# !
   location_28% self% is_there
@@ -4578,14 +4660,14 @@ flags% :description
   paragraph
   ;description
 flint% :attributes
-  s" pedernal" self% mname!
+  s" pedernal" self% ms-name!
   ;attributes
 flint% :description
   s" Es dura y afilada." 
   paragraph
   ;description
 grass% :attributes
-  s" hierba" self% fname!
+  s" hierba" self% fs-name!
   self% is_decoration
   ;attributes
 grass% :description
@@ -4607,7 +4689,7 @@ grass% :description
   then  paragraph
   ;description
 idol% :attributes
-  s" ídolo" self% mname!
+  s" ídolo" self% ms-name!
   self% is_decoration
   impossible_error# self% ~take_error# !
   location_41% self% is_there
@@ -4617,7 +4699,7 @@ idol% :description
   paragraph
   ;description
 key% :attributes
-  s" llave" self% fname!
+  s" llave" self% fs-name!
   location_46% self% is_there
   self% ambrosio% belongs
   ;attributes
@@ -4627,7 +4709,7 @@ key% :description
   paragraph
   ;description
 lake% :attributes
-  s" lago" self% mname!
+  s" lago" self% ms-name!
   self% is_decoration
   nonsense_error# self% ~take_error# !
   location_44% self% is_there
@@ -4638,7 +4720,7 @@ lake% :description
   paragraph
   ;description
 lock% :attributes
-  s" candado" self% mname!
+  s" candado" self% ms-name!
   self% is_decoration
   self% is_closed
   impossible_error# self% ~take_error# !
@@ -4652,7 +4734,7 @@ lock% :description
   paragraph
   ;description
 log% :attributes
-  s" tronco" self% mname!
+  s" tronco" self% ms-name!
   location_15% self% is_there
   ;attributes
 log% :description
@@ -4662,7 +4744,7 @@ log% :description
   paragraph
   ;description
 piece% :attributes
-  s" trozo de tela" self% mname!
+  s" trozo de tela" self% ms-name!
   \ Nota!!! Ojo con este «de tela»: «Tela» es sinónimo de trozo;
   \ hay que contemplar estos casos en el cálculo de los genitivos.
   ;attributes
@@ -4672,7 +4754,7 @@ piece% :description
   paragraph
   ;description
 rags% :attributes
-  s" harapo" self% mname!
+  s" harapo" self% ms-name!
   ;attributes
 rags% :description
   s" Un" s{ s" retal" s" pedazo" s" trozo" }s&
@@ -4681,7 +4763,7 @@ rags% :description
   paragraph
   ;description
 ravine_wall% :attributes
-  s" pared" rocky(f)$ s& self% fname!
+  s" pared" rocky(f)$ s& self% fs-name!
   location_08% self% is_there
   self% is_not_listed  \ Innecesario!!!
   self% is_decoration
@@ -4702,7 +4784,7 @@ ravine_wall% :description
   then
   ;description
 rocks% :attributes
-  s" rocas" self% fnames!
+  s" rocas" self% fp-name!
   self% is_decoration
   location_31% self% is_there
   ;attributes
@@ -4713,7 +4795,7 @@ rocks% :description
   then  period+ paragraph
   ;description
 snake% :attributes
-  s" serpiente" self% fname!
+  s" serpiente" self% fs-name!
   self% is_animal
   dangerous_error# self% ~take_error# !
   location_43% self% is_there
@@ -4725,7 +4807,7 @@ snake% :description
   paragraph
   ;description
 stone% :attributes
-  s" piedra" self% fname!
+  s" piedra" self% fs-name!
   location_18% self% is_there
   ;attributes
 stone% :description
@@ -4733,9 +4815,9 @@ stone% :description
   paragraph
   ;description
 sword% :attributes
-  s" espada" self% fname!
+  s" espada" self% fs-name!
   self% belongs_to_protagonist
-  ulfius% self% is_there
+  self% taken
   ;attributes
 sword% :description
   s{ s" Legado" s" Herencia" }s s" de tu padre," s&
@@ -4745,7 +4827,7 @@ sword% :description
   paragraph
   ;description
 table% :attributes
-  s" mesa" self% fname!
+  s" mesa" self% fs-name!
   location_46% self% is_there
   self% ambrosio% belongs
   ;attributes
@@ -4754,7 +4836,7 @@ table% :description
   paragraph
   ;description
 thread% :attributes
-  s" hilo" self% mname!
+  s" hilo" self% ms-name!
   ;attributes
 thread% :description
   \ Mover esto al evento de cortar la capa!!!
@@ -4763,7 +4845,7 @@ thread% :description
   paragraph
   ;description
 torch% :attributes
-  s" antorcha" self% fname!
+  s" antorcha" self% fs-name!
   self% is_light
   self% is_not_lit
   ;attributes
@@ -4773,7 +4855,7 @@ torch% :description
   paragraph
   ;description
 waterfall% :attributes
-  s" cascada" self% fname!
+  s" cascada" self% fs-name!
   self% is_decoration
   nonsense_error# self% ~take_error# !
   location_38% self% is_there
@@ -4798,7 +4880,7 @@ allá de cada escenario en cualquier dirección.
 )
 
 location_01% :attributes
-  s" aldea sajona" self% fname!
+  s" aldea sajona" self% fs-name!
   0 location_02% 0 0 0 0 0 0 self% init_location
   ;attributes
 location_01% :description
@@ -4848,7 +4930,7 @@ location_01% :description
   endcase
   ;description
 location_02% :attributes
-  s" cima de la colina" self% fname!
+  s" cima de la colina" self% fs-name!
   location_01% 0 0 location_03% 0 0 0 0 self% init_location
   ;attributes
 location_02% :description
@@ -4884,7 +4966,7 @@ location_02% :description
   endcase
   ;description
 location_03% :attributes
-  s" camino entre colinas" self% mname!
+  s" camino entre colinas" self% ms-name!
   0 0 location_02% location_04% 0 0 0 0 self% init_location
   ;attributes
 location_03% :description
@@ -4907,7 +4989,7 @@ location_03% :description
   endcase
   ;description
 location_04% :attributes
-  s" cruce de caminos" self% mname!
+  s" cruce de caminos" self% ms-name!
   location_05% 0 location_03% location_09% 0 0 0 0 self% init_location
   ;attributes
 location_04% :description
@@ -4931,7 +5013,7 @@ location_04% :description
   endcase
   ;description
 location_05% :attributes
-  s" linde del bosque" self% fname!
+  s" linde del bosque" self% fs-name!
   0 location_04% 0 location_06% 0 0 0 0 self% init_location
   ;attributes
 location_05% :description
@@ -4958,7 +5040,7 @@ location_05% :description
   endcase
   ;description
 location_06% :attributes
-  s" bosque" self% mname!
+  s" bosque" self% ms-name!
   0 0 location_05% location_07% 0 0 0 0 self% init_location
   ;attributes
 location_06% :description
@@ -4986,7 +5068,7 @@ location_06% :description
   endcase
   ;description
 location_07% :attributes
-  s" paso del Perro" self% mname!
+  s" paso del Perro" self% ms-name!
   0 location_08% location_06% 0 0 0 0 0 self% init_location
   ;attributes
 location_07% :description
@@ -5013,7 +5095,7 @@ location_07% :description
   endcase
   ;description
 location_08% :attributes
-  s" desfiladero" self% mname!
+  s" desfiladero" self% ms-name!
   location_07% 0 0 0 0 0 0 0 self% init_location
   ;attributes
 location_08% :description
@@ -5053,7 +5135,7 @@ location_08% :description
   endcase
   ;description
 location_09% :attributes
-  s" derrumbe" self% mname!
+  s" derrumbe" self% ms-name!
   0 0 location_04% 0 0 0 0 0 self% init_location
   ;attributes
 location_09% :description
@@ -5078,7 +5160,7 @@ location_09% :description
   endcase
   ;description
 location_10% :attributes
-  s" gruta de entrada" self% fname!
+  s" gruta de entrada" self% fs-name!
   self% is_indoor_location
   location_08% 0 0 location_11% 0 0 0 0 self% init_location
   ;attributes
@@ -5098,7 +5180,7 @@ location_10% :description
   endcase
   ;description
 location_11% :attributes
-  s" gran lago" self% mname!
+  s" gran lago" self% ms-name!
   self% is_indoor_location
   0 0 location_10% 0 0 0 0 0 self% init_location
   ;attributes
@@ -5141,7 +5223,7 @@ location_11% :description
   endcase
   ;description
 location_12% :attributes
-  s" salida del paso secreto" self% fname!
+  s" salida del paso secreto" self% fs-name!
   self% is_indoor_location
   0 0 0 location_13% 0 0 0 0 self% init_location
   ;attributes
@@ -5170,7 +5252,7 @@ location_12% :description
   endcase
   ;description
 location_13% :attributes
-  s" puente semipodrido" self% mname!
+  s" puente semipodrido" self% ms-name!
   self% is_indoor_location
   0 0 location_12% location_14% 0 0 0 0 self% init_location
   ;attributes
@@ -5196,7 +5278,7 @@ location_13% :description
   endcase
   ;description
 location_14% :attributes
-  s" recodo de la cueva" self% mname!
+  s" recodo de la cueva" self% ms-name!
   self% is_indoor_location
   0 location_15% location_13% 0 0 0 0 0 self% init_location
   ;attributes
@@ -5216,7 +5298,7 @@ location_14% :description
   endcase
   ;description
 location_15% :attributes
-  s" pasaje arenoso" self% mname!
+  s" pasaje arenoso" self% ms-name!
   self% is_indoor_location
   location_14% location_17% location_16% 0 0 0 0 0 self% init_location
   ;attributes
@@ -5248,7 +5330,7 @@ location_15% :description
   endcase
   ;description
 location_16% :attributes
-  s" pasaje del agua" self% mname!
+  s" pasaje del agua" self% ms-name!
   self% is_indoor_location
   0 0 0 location_15% 0 0 0 0 self% init_location
   ;attributes
@@ -5276,7 +5358,7 @@ location_16% :description
   endcase
   ;description
 location_17% :attributes
-  s" estalactitas" self% fname!
+  s" estalactitas" self% fs-name!
   self% is_indoor_location
   location_15% location_20% location_18% 0 0 0 0 0 self% init_location
   ;attributes
@@ -5300,7 +5382,7 @@ location_17% :description
   endcase
   ;description
 location_18% :attributes
-  s" puente de piedra" self% mname!
+  s" puente de piedra" self% ms-name!
   self% is_indoor_location
   0 0 location_19% location_17% 0 0 0 0 self% init_location
   ;attributes
@@ -5332,7 +5414,7 @@ location_18% :description
   endcase
   ;description
 location_19% :attributes
-  s" recodo arenoso del canal" self% mname!
+  s" recodo arenoso del canal" self% ms-name!
   self% is_indoor_location
   0 0 0 location_18% 0 0 0 0 self% init_location
   ;attributes
@@ -5340,7 +5422,7 @@ location_19% :description
   sight case
   self% of
     \ Pendiente!!! Hacer variaciones
-    the_water_current$ comma+
+    ^the_water_current$ comma+
     s" que discurre" s?&
     s" de Norte a Este," s& (it)_blocks$ s&
     s" el paso, excepto al Oeste." s&
@@ -5363,7 +5445,7 @@ location_19% :description
   endcase
   ;description
 location_20% :attributes
-  s" tramo de cueva" self% mname!
+  s" tramo de cueva" self% ms-name!
   self% is_indoor_location
   location_17% location_22% location_25% 0 0 0 0 0 self% init_location
   ;attributes
@@ -5387,7 +5469,7 @@ location_20% :description
   endcase
   ;description
 location_21% :attributes
-  s" tramo de cueva" self% mname!
+  s" tramo de cueva" self% ms-name!
   self% is_indoor_location
   0 location_27% location_23% location_20% 0 0 0 0 self% init_location
   ;attributes
@@ -5409,7 +5491,7 @@ location_21% :description
   endcase
   ;description
 location_22% :attributes
-  s" tramo de cueva" self% mname!
+  s" tramo de cueva" self% ms-name!
   self% is_indoor_location
   0 location_24% location_27% location_22% 0 0 0 0 self% init_location
   ;attributes
@@ -5431,7 +5513,7 @@ location_22% :description
   endcase
   ;description
 location_23% :attributes
-  s" tramo de cueva" self% mname!
+  s" tramo de cueva" self% ms-name!
   self% is_indoor_location
   0 location_25% 0 location_21% 0 0 0 0 self% init_location
   ;attributes
@@ -5450,7 +5532,7 @@ location_23% :description
   endcase
   ;description
 location_24% :attributes
-  s" tramo de cueva" self% mname!
+  s" tramo de cueva" self% ms-name!
   self% is_indoor_location
   location_22% 0 location_26% 0 0 0 0 0 self% init_location
   ;attributes
@@ -5469,7 +5551,7 @@ location_24% :description
   endcase
   ;description
 location_25% :attributes
-  s" tramo de cueva" self% mname!
+  s" tramo de cueva" self% ms-name!
   self% is_indoor_location
   location_22% location_28% location_23% location_21% 0 0 0 0 self% init_location
   ;attributes
@@ -5488,7 +5570,7 @@ location_25% :description
   endcase
   ;description
 location_26% :attributes
-  s" tramo de cueva" self% mname!
+  s" tramo de cueva" self% ms-name!
   self% is_indoor_location
   location_26% 0 location_20% location_27% 0 0 0 0 self% init_location
   ;attributes
@@ -5511,7 +5593,7 @@ location_26% :description
   endcase
   ;description
 location_27% :attributes
-  s" tramo de cueva" self% mname!
+  s" tramo de cueva" self% ms-name!
   self% is_indoor_location
   location_27% 0 0 location_25% 0 0 0 0 self% init_location
   ;attributes
@@ -5533,7 +5615,7 @@ location_27% :description
   endcase
   ;description
 location_28% :attributes
-  s" amplia estancia" self% fname!
+  s" amplia estancia" self% fs-name!
   self% is_indoor_location
   location_26% 0 0 0 0 0 0 0 self% init_location
   ;attributes
@@ -5576,7 +5658,7 @@ location_28% :description
   endcase
   ;description
 location_29% :attributes
-  s" espiral" self% fname!
+  s" espiral" self% fs-name!
   self% is_indoor_location
   0 0 0 location_28% 0 location_30% 0 0 self% init_location
   ;attributes
@@ -5601,7 +5683,7 @@ location_29% :description
   endcase
   ;description
 location_30% :attributes
-  s" inicio de la espiral" self% mname!
+  s" inicio de la espiral" self% ms-name!
   self% is_indoor_location
   0 0 location_31% 0 location_29% 0 0 0 self% init_location
   ;attributes
@@ -5625,7 +5707,7 @@ location_30% :description
   endcase
   ;description
 location_31% :attributes
-  s" puerta norte" self% fname!
+  s" puerta norte" self% fs-name!
   self% is_indoor_location
   0 0 0 location_30% 0 0 0 0 self% init_location
   ;attributes
@@ -5650,7 +5732,7 @@ location_31% :description
   endcase
   ;description
 location_32% :attributes
-  s" precipicio" self% mname!
+  s" precipicio" self% ms-name!
   self% is_indoor_location
   0 location_33% 0 location_31% 0 0 0 0 self% init_location
   ;attributes
@@ -5674,7 +5756,7 @@ location_32% :description
   endcase
   ;description
 location_33% :attributes
-  s" pasaje de salida" self% mname!
+  s" pasaje de salida" self% ms-name!
   self% is_indoor_location
   location_32% 0 location_34% 0 0 0 0 0 self% init_location
   ;attributes
@@ -5703,7 +5785,7 @@ location_33% :description
   ;description
 location_34% :attributes
   \ Crear ente!!! gravilla
-  s" pasaje de gravilla" self% mname!
+  s" pasaje de gravilla" self% ms-name!
   self% is_indoor_location
   location_35% 0 0 location_33% 0 0 0 0 self% init_location
   ;attributes
@@ -5727,7 +5809,7 @@ location_34% :description
   endcase
   ;description
 location_35% :attributes
-  s" puente sobre el acueducto" self% mname!
+  s" puente sobre el acueducto" self% ms-name!
   self% is_indoor_location
   location_40% location_34% 0 location_36% 0 location_36% 0 0 self% init_location
   ;attributes
@@ -5755,7 +5837,7 @@ location_35% :description
   endcase
   ;description
 location_36% :attributes
-  s" remanso" self% mname!
+  s" remanso" self% ms-name!
   self% is_indoor_location
   0 0 location_35% location_37% location_35% 0 0 0 self% init_location
   ;attributes
@@ -5782,7 +5864,7 @@ location_36% :description
   endcase
   ;description
 location_37% :attributes
-  s" canal de agua" self% mname!
+  s" canal de agua" self% ms-name!
   self% is_indoor_location
   0 0 location_36% location_38% 0 0 0 0 self% init_location
   ;attributes
@@ -5814,7 +5896,7 @@ location_37% :description
   endcase
   ;description
 location_38% :attributes
-  s" gran cascada" self% fname!
+  s" gran cascada" self% fs-name!
   self% is_indoor_location
   0 0 location_37% location_39% 0 0 0 0 self% init_location
   ;attributes
@@ -5844,7 +5926,7 @@ location_38% :description
   endcase
   ;description
 location_39% :attributes
-  s" interior de la cascada" self% mname!
+  s" interior de la cascada" self% ms-name!
   self% is_indoor_location
   0 0 location_38% 0 0 0 0 0 self% init_location
   ;attributes
@@ -5868,7 +5950,7 @@ location_39% :description
   endcase
   ;description
 location_40% :attributes
-  s" explanada" self% fname!
+  s" explanada" self% fs-name!
   self% is_indoor_location
   0 location_35% location_41% 0 0 0 0 0 self% init_location
   ;attributes
@@ -5906,7 +5988,7 @@ location_40% :description
 location_41% :attributes
   \ Pendiente!!! Cambiar el nombre. No se puede pasar a mayúscula un carácter pluriocteto en UTF-8.
   self% is_indoor_location
-  s" ídolo" self% mname!
+  s" ídolo" self% ms-name!
   0 0 0 location_40% 0 0 0 0 self% init_location
   ;attributes
 location_41% :description
@@ -5930,7 +6012,7 @@ location_41% :description
   endcase
   ;description
 location_42% :attributes
-  s" pasaje estrecho" self% mname!
+  s" pasaje estrecho" self% ms-name!
   self% is_indoor_location
   location_41% location_43% 0 0 0 0 0 0 self% init_location
   ;attributes
@@ -5957,7 +6039,7 @@ location_42% :description
   endcase
   ;description
 location_43% :attributes
-  s" pasaje de la serpiente" self% mname!
+  s" pasaje de la serpiente" self% ms-name!
   self% is_indoor_location
   location_42% 0 0 0 0 0 0 0 self% init_location
   ;attributes
@@ -5982,7 +6064,7 @@ location_43% :description
   endcase
   ;description
 location_44% :attributes
-  s" lago interior" self% mname!
+  s" lago interior" self% ms-name!
   self% is_indoor_location
   location_43% 0 0 location_45% 0 0 0 0 self% init_location
   ;attributes
@@ -6008,7 +6090,7 @@ location_44% :description
   endcase
   ;description
 location_45% :attributes
-  s" cruce de pasajes" self% mname!
+  s" cruce de pasajes" self% ms-name!
   self% is_indoor_location
   0 location_47% location_44% location_46% 0 0 0 0 self% init_location
   ;attributes
@@ -6041,7 +6123,7 @@ location_45% :description
   endcase
   ;description
 location_46% :attributes
-  s" hogar de Ambrosio" self% mname!
+  s" hogar de Ambrosio" self% ms-name!
   self% is_indoor_location
   0 0 location_45% 0 0 0 0 0 self% init_location
   ;attributes
@@ -6062,7 +6144,7 @@ location_46% :description
   endcase
   ;description
 location_47% :attributes
-  s" salida de la cueva" self% fname!
+  s" salida de la cueva" self% fs-name!
   self% is_indoor_location
   location_45% 0 0 0 0 0 0 0 self% init_location
   ;attributes
@@ -6101,7 +6183,7 @@ location_47% :description
   endcase
   ;description
 location_48% :attributes
-  s" bosque a la entrada" self% mname!
+  s" bosque a la entrada" self% ms-name!
   0 0 location_47% location_49% 0 0 0 0 self% init_location
   ;attributes
 : when_the_door$  ( -- a u )
@@ -6142,7 +6224,7 @@ location_48% :description
   endcase
   ;description
 location_49% :attributes
-  s" sendero del bosque" self% mname!
+  s" sendero del bosque" self% ms-name!
   0 0 location_48% location_50% 0 0 0 0 self% init_location
   ;attributes
 location_49% :description
@@ -6166,7 +6248,7 @@ location_49% :description
   endcase
   ;description
 location_50% :attributes
-  s" camino norte" self% mname!
+  s" camino norte" self% ms-name!
   0 location_51% location_49% 0 0 0 0 0 self% init_location
   ;attributes
 location_50% :description
@@ -6189,7 +6271,7 @@ location_50% :description
   endcase
   ;description
 location_51% :attributes
-  s" Westmorland" self% fname!
+  s" Westmorland" self% fs-name!
   self% has_no_article
   location_50% 0 0 0 0 0 0 0 self% init_location
   ;attributes
@@ -6212,7 +6294,7 @@ location_51% :description
 \ Entes globales
 
 cave% :attributes
-  s" cueva" self% fname!
+  s" cueva" self% fs-name!
   \ self% is_global_indoor \ !!!
   ;attributes
 cave% :description
@@ -6221,7 +6303,7 @@ cave% :description
   paragraph
   ;description
 ceiling% :attributes
-  s" techo" self% mname!
+  s" techo" self% ms-name!
   self% is_global_indoor
   ;attributes
 ceiling% :description
@@ -6230,7 +6312,7 @@ ceiling% :description
   paragraph
   ;description
 clouds% :attributes
-  s" nubes" self% fnames!
+  s" nubes" self% fp-name!
   self% is_global_outdoor
   ;attributes
 clouds% :description
@@ -6243,7 +6325,7 @@ clouds% :description
   2 random if  paragraph  else  2drop sky% describe  then  \ comprobar!!!
   ;description
 floor% :attributes
-  s" suelo" self% mname!
+  s" suelo" self% ms-name!
   self% is_global_indoor
   self% is_global_outdoor
   ;attributes
@@ -6258,7 +6340,7 @@ floor% :description
   then
   ;description
 sky% :attributes
-  s" cielo" self% mname!
+  s" cielo" self% ms-name!
   self% is_global_outdoor
   ;attributes
 sky% :description
@@ -6267,7 +6349,7 @@ sky% :description
   paragraph
   ;description
 wall% :attributes
-  s" pared" self% mname!
+  s" pared" self% ms-name!
   self% is_global_indoor
   ;attributes
 wall% :description
@@ -6279,7 +6361,7 @@ wall% :description
 \ Entes virtuales
 
 exits% :attributes
-  s" salida" self% fname!
+  s" salida" self% fs-name!
   self% is_global_outdoor
   self% is_global_indoor
   ;attributes
@@ -6290,7 +6372,7 @@ inventory% :attributes
   ;attributes
 enemy% :attributes
   \ Inacabado!!!
-  s" enemigos" self% mnames!
+  s" enemigos" self% mp-name!
   self% is_human
   self% is_decoration
   ;attributes
@@ -6313,17 +6395,17 @@ enemy% :description
 \ y para hacer los cálculos en las acciones de movimiento.
 
 north% :attributes
-  s" Norte" self% mname!
+  s" Norte" self% ms-name!
   self% has_definite_article
   north_exit> self% ~direction !
   ;attributes
 south% :attributes
-  s" Sur" self% mname!
+  s" Sur" self% ms-name!
   self% has_definite_article
   south_exit> self% ~direction !
   ;attributes
 east% :attributes
-  s" Este" self% mname!
+  s" Este" self% ms-name!
   self% has_definite_article
   east_exit> self% ~direction !
   ;attributes
@@ -6376,9 +6458,11 @@ variable action  \ Código de la acción del comando
 \ Entes complemento:
 variable main_complement  \ Principal (complemento directo o destino)
 variable secondary_complement  \ Secundario (complemento indirecto, destino u origen)
-defer tool_complement  \ Herramienta
+defer tool_complement  \ Herramienta (indicada con «con» o «usando»)
+defer actual_tool_complement  \ Herramienta estricta (indicada con «usando»)
+defer company_complement  \ Compañía (indicado con «con»)
+defer actual_company_complement  \ Compañía estricta (indicada con «con» en presencia de «usando»)
 false [if]  \ Descartado!!! Pendiente!!!
-variable tool_complement  \ Herramienta 
 variable to_complement  \ Destino \ No utilizado!!!
 variable from_complement  \ Origen \ No utilizado!!!
 variable into_complement  \ Destino dentro \ No utilizado!!!
@@ -7652,6 +7736,9 @@ here swap - cell / constant battle_phases  \ Fases de la batalla
 : suddenly$  ( -- a u)
   s" de" s{ s" repente" s" pronto" }s&
   ;
+: suddenly|then$  ( -- a u )
+  s{ suddenly$ s" entonces" }s
+  ;
 : the_ambush_begins
   \ Comienza la emboscada.
   s{  suddenly$ s" ," s?+ a_group_of_saxons$ s& s" aparece" s&
@@ -7846,7 +7933,7 @@ location_09% :after_describing_location
   going_home
   ;after_describing_location
 location_10% :after_describing_location
-  s" entrada a la cueva" cave_entrance% fname!
+  s" entrada a la cueva" cave_entrance% fs-name!
   cave_entrance% familiar++
   location_08% my_previous_location = if  \ Venimos del exterior
     self% visits
@@ -8129,27 +8216,31 @@ section( Errores del intérprete de comandos)  \ {{{
   \ Devuelve mensaje de acompañamiento para los errores lingüísticos, con la primera letra mayúscula.
   error_comment$ ^uppercase
   ;
+: (language_error)  ( a u -- )
+  \ Imprime una cadena como un informe de error lingüístico.
+  language_error_color paragraph system_color
+  ;
 : verbose_language_error  ( a u -- )
   \ Muestra un mensaje detallado sobre un error lingüístico,
   \ combinándolo con una frase común.
   \ a u = Mensaje de error detallado
   \ Inacabado!!! Hacer que use coma o punto y coma, al azar
   in_the_sentence$ s&  3 random
-  if  ^uppercase period+ ^error_comment$
+  if    ^uppercase period+ ^error_comment$
   else  ^error_comment$ comma+ 2swap
-  then  period+ s&  report
+  then  period+ s&  (language_error)
   ;
 : short_language_error
   \ Muestra un mensaje breve y genérico sobre un error lingüístico.
   \ Inacabado!!!
-  s" Frase incorrecta" period+ report
+  s" Frase incorrecta" period+ (language_error)
   ;
 : language_error  ( a u -- )
   \ Muestra un mensaje sobre un error lingüístico,
   \ detallado o breve según la configuración.
   \ a u = Mensaje de error detallado
   verbose_language_errors? @
-  if  verbose_language_error
+  if    verbose_language_error
   else  2drop short_language_error
   then
   ;
@@ -8453,11 +8544,22 @@ condicionales anidadas.
   \ a = Ente
   tool_complement @ swap over different?
   ;
+: different_actual_tool?  ( a -- ff )
+  \ ¿Es el ente diferente a la herramienta estricta usada, si la hay?
+  \ a = Ente
+  actual_tool_complement @ swap over different?
+  ;
 : tool_complement{this_only}  ( a -- )
   \ Provoca un error (lingüístico)
   \ si hay complemento instrumental y no es el indicado.
   \ a = Ente que será aceptado como complemento instrumental
   different_tool? not_allowed_tool_complement_error# and throw
+  ;
+: actual_tool_complement{this_only}  ( a -- )
+  \ Provoca un error (lingüístico)
+  \ si hay complemento instrumental estricto y no es el indicado.
+  \ a = Ente que será aceptado como complemento instrumental
+  different_actual_tool? not_allowed_tool_complement_error# and throw
   ;
 : tool{not_this}  ( a -- )
   \ Provoca un error (narrativo) si se usa cierta herramienta.
@@ -8466,21 +8568,45 @@ condicionales anidadas.
   dup what !
   different_tool? 0= useless_what_tool_error# and throw
   ;
+: actual_tool{not_this}  ( a -- )
+  \ Provoca un error (narrativo) si se usa cierta herramienta estricta.
+  \ a = Ente que no será aceptado como herramienta estricta
+  \ No se usa!!!
+  dup what !
+  different_actual_tool? 0= useless_what_tool_error# and throw
+  ;
 : tool{this_only}  ( a -- )
   \ Provoca un error (narrativo) si no se usa cierta herramienta.
   \ a = Ente que será aceptado como herramienta
   tool_complement @ what !
   different_tool? useless_what_tool_error# and throw
   ;
+: actual_tool{this_only}  ( a -- )
+  \ Provoca un error (narrativo) si no se usa cierta herramienta estricta.
+  \ a = Ente que será aceptado como herramienta estricta
+  actual_tool_complement @ what !
+  different_actual_tool? useless_what_tool_error# and throw
+  ;
 : tool_complement{unnecessary}
   \ Provoca un error si hay un complemento instrumental.
   tool_complement @ ?dup ?? unnecessary_tool
+  ;
+: actual_tool_complement{unnecessary}
+  \ Provoca un error si hay un complemento instrumental estricto.
+  actual_tool_complement @ ?dup ?? unnecessary_tool
   ;
 : tool_complement{unnecessary_for_that}  ( a u -- )
   \ Provoca un error si hay un complemento instrumental.
   \ a u = Acción para la que sobra el complemento
   \       (una frase con verbo en infinitivo)
   tool_complement @ ?dup
+  if  unnecessary_tool_for_that  else  2drop  then
+  ;
+: actual_tool_complement{unnecessary_for_that}  ( a u -- )
+  \ Provoca un error si hay un complemento instrumental estricto.
+  \ a u = Acción para la que sobra el complemento
+  \       (una frase con verbo en infinitivo)
+  actual_tool_complement @ ?dup
   if  unnecessary_tool_for_that  else  2drop  then
   ;
 : {hold}  ( a -- )
@@ -8667,7 +8793,6 @@ condicionales anidadas.
   main_complement @ ?{direction}
   ;
 
-
 \ }}}
 \ }}} ##########################################################
 section( Acciones)  \ {{{
@@ -8706,7 +8831,7 @@ action: do_do
 action: do_drop
 action: do_examine
 action: (do_exits)  ' (do_exits) is do_exits
-action: do_fear  \ Confirmar traducción!!!
+action: do_frighten  \ Confirmar traducción!!!
 action: do_finish  \ Esta acción se define en la sección de finales
 action: do_go
 action: do_go_ahead
@@ -9206,7 +9331,7 @@ subsection( Cerrar y abrir)  \ {{{
 : open_the_door
   \ Abrir la puerta, si es posible.
   door% is_open?
-  if  door% it_is_already_open tool_complement{unnecessary}
+  if    door% it_is_already_open tool_complement{unnecessary}
   else  (open_the_door)
   then
   ;
@@ -9275,7 +9400,7 @@ subsection( Agredir)  \ {{{
   tool_complement{hold}
   main_complement @ (do_attack)
   ;action
-:action do_fear
+:action do_frighten
   \ Acción de asustar.
   \ Pendiente!!! Distinguir de las demás en grado o requisitos
   main_complement{required}
@@ -9320,8 +9445,25 @@ subsection( Agredir)  \ {{{
   tool_complement{hold}
   main_complement @ (do_kill)
   ;action
+: cloak_piece  ( a -- )
+  \ Hace aparecer un resto de la capa rota de forma aleatoria:
+  \ en el escenario o en el inventario.
+  2 random if  is_here  else  taken  then
+  ;
+: cloak_pieces
+  \ Hace aparecer los restos de la capa rota de forma aleatoria:
+  \ en el escenario o en el inventario.
+  rags% cloak_piece  thread% cloak_piece  piece% cloak_piece
+  ;
 : break_the_cloak
   \ Romper la capa.
+  \ Inacabado
+  sword% {accessible}
+  sword% taken
+  s{ s" Con la ayuda de" s" Sirviéndote de" s" Usando" s" Empleando" }s
+  sword% full_name s& comma+
+  s" rasgas" s& cloak% full_name s& period+ narrate
+  cloak_pieces
   ;
 : (do_break)  ( a -- )
   \ Romper un ente.
@@ -9339,9 +9481,24 @@ subsection( Agredir)  \ {{{
   tool_complement{hold}
   main_complement @ (do_break)
   ;action
+: hit_the_flint
+  \ Inacabado!!!
+  ;
+: (do_hit)  ( a -- )
+  \ Golpear un ente. 
+  case
+    snake% of  kill_the_snake  endof
+    cloak% of  break_the_cloak  endof
+    flint% of  hit_the_flint  endof
+    do_not_worry
+  endcase
+  ;
 :action do_hit
   \ Acción de golpear.
-  s" golpear"  main_complement+is_nonsense
+  main_complement{required}
+  main_complement{accessible}
+  main_complement @ (do_hit)
+  \ s" golpear"  main_complement+is_nonsense \ Provisional!!!
   ;action
 : can_be_sharpened?  ( a -- ff )
   \ ¿Puede un ente ser afilado?
@@ -9400,7 +9557,7 @@ subsection( Agredir)  \ {{{
   \ Afila el tronco.
   \ Inacabado!!! Distinguir herramientas
   hacked_the_log? @
-  if  log_already_sharpened
+  if    log_already_sharpened
   else  hacked_the_log? on  well_done
   then
   ;
@@ -9444,7 +9601,7 @@ subsection( Movimiento)  \ {{{
   \ Inacabado!!! Añadir una tercera variante «ir en esa dirección»; y otras específicas como «no es posible subir»
   ^is_impossible$ s" ir" s&  rot
   3 random 
-  if  toward_that_direction
+  if    toward_that_direction
   else  drop that_way$
   then  s& period+ narrate
   ;
@@ -9960,7 +10117,7 @@ subsection( Hablar y presentarse)  \ {{{
           s" os" s{ s" apropiés" s" apoderéis" s" adueñéis" }s& s" de" s&
       }s&
   }s& s" la" s" piedra del druida" 
-  2dup stone% fname!  \ Nuevo nombre para la piedra
+  2dup stone% fs-name!  \ Nuevo nombre para la piedra
   s& s& period+
   ;
 : gesture_about_the_stone$  ( -- a u )
@@ -10066,7 +10223,7 @@ subsection( Hablar y presentarse)  \ {{{
   s" todos" s? s" nosotros" s? rnd2swap s&
   s" somos refugiados de" s& ^uppercase
   s{ s" la gran" s" esta terrible" }s& s" guerra." s&
-  s" refugio" location_28% mname!
+  s" refugio" location_28% ms-name!
   ;
 : we_are_refugees
   \ Somos refugiados.
@@ -10201,59 +10358,163 @@ subsection( Hablar y presentarse)  \ {{{
 : is_ambrosio's_name  ( a u -- )
   \ Le pone a ambrosio su nombre de pila.
   \ a u = Nombre.
-  ambrosio% mname!
+  ambrosio% ms-name!
   ambrosio% has_no_article
   ambrosio% has_personal_name
+  ;
+: ambrosio_introduces_himself
+  s" Hola, Ulfius." 
+  my_name_is$ s& s" Ambrosio" 2dup is_ambrosio's_name  
+  period+ s& speak
+  ;
+: you_cry
+  s" Por" s" primera" s" vez" rnd2swap s& s& s" en" s&
+  s{ s" mucho" s" largo" }s& s" tiempo, te sientas y" s&
+  s" le" s?& s{ s" cuentas" s" narras" s" relatas" }s&
+  s" a alguien todo lo que ha" s&
+  s{ s" sucedido" s" pasado" s" ocurrido" }s& period+
+  s" Y, tras tanto" s& s" pesar" s?& s{ s" acontecido" s" vivido" }s&
+  s" , lloras" s+{ s" desconsoladamente" s" sin consuelo" }s&
+  period+ narrate
+  ;
+: ambrosio_proposes_a_deal
+  s" Ambrosio te propone un" s{ s" trato" s" acuerdo" }s& comma+
+  s{  the_that(m)$ s" aceptas" s&
+      s" con el" that(m)$ s&{ s" consientes" s" estás de acuerdo" }s&
+      the_that(m)$ s" te parece justo" s&
+  }s& colon+
+  s" por ayudarlo a salir de" s&{ s" la" s" esta" }s& s" cueva," s&
+  s{ s" objetos" s" útiles" }s& comma+
+  s{ s" vitales" s" imprescindibles" s" necesarios" }s&
+  s" para" s& s" el éxito de" s?&
+  s{ s" la" s" tal" s" dicha" }s& s{ s" misión" s" empresa" }s&
+  s" , te son entregados." s+ narrate
+  torch% is_hold  flint% is_hold
+  ;
+: ambrosio_let's_go
+  s{  s" Bien"
+      s{ s" Venga" s" Vamos" }s s" pues" s?&
+  }s comma+ s" Ambrosio," s&
+  s{  s{ s" iniciemos" s" emprendamos" }s{ s" la marcha" s" el camino" }s&
+      s" pongámonos en" s{ s" marcha" s" camino" }s&
+  }s& period+  speak
+  location_46% ambrosio% is_there
+  s" Te" s{ s" giras" s" das la vuelta" }s& s" para" s&
+  s{  s{ s" comprobar" s" ver" }s s" si" s&
+      s{ s" cerciorarte" s" asegurarte" }s s" de que" s&
+  }s& s" Ambrosio te sigue," s& but$ s& s" ..." s+
+  s{  s" ha desaparecido"
+      s" se ha esfumado"
+      s" no hay" s" ni" s?& s" rastro de él" s&
+      s" ya" s? s" no está" s&
+      s" ya" s? s" no hay nadie" s&
+      s" ya" s? s" no ves a nadie" s&
+      s" es como si se lo hubiera tragado la tierra"
+  }s& period+ narrate 
+  ;
+: ambrosio_is_gone
+  s{  suddenly|then$ s" piensas" rnd2swap s& s" en el" s&
+      suddenly|then$ s" caes en la cuenta" rnd2swap s& s" del" s&
+  }s ^uppercase s" hecho" s" curioso" rnd2swap s& s& s" de que" s&
+  s{  s{ s" supiera" s" conociera" }s{ s" cómo te llamas" s" tu nombre" }s&
+      s" te llamara por tu nombre"
+  }s& s" ..." s+ narrate 
   ;
 : (conversation_0_with_ambrosio)
   \ Primera conversación con Ambrosio.
   s" Hola, buen hombre." speak
-  s" Hola, Ulfius." 
-  my_name_is$ s& s" Ambrosio" 2dup is_ambrosio's_name  
-  period+ s& speak
-  scene_break
-  s" Por" s" primera" s" vez" rnd2swap s& s& s" en" s&
-  s{ s" mucho" s" largo" }s& s" tiempo, te sientas y" s&
-  s" le" s?& s{ s" cuentas" s" narras" }s&
-  s" a alguien todo lo que ha" s&{ s" sucedido" s" pasado." s" ocurrido." }s&
-  s" Y, tras tanto acontecido, lloras" s&
-  s{ s" desconsoladamente" s" sin consuelo" }s& period+
-  narrate scene_break
-  s" Ambrosio te propone un trato, que aceptas:"
-  s" por ayudarle a salir de la cueva," s&
-  s" objetos, vitales para la empresa, te son entregados." s&
-  narrate narration_break
-  torch% is_hold  flint% is_hold
-  s{ s" Bien," s" Venga," s" Vamos," }s
-  s" Ambrosio," s&
-  s{ s" emprendamos la marcha"
-  s" pongámonos en" s{ s" marcha" s" camino" }s&
-  }s& period+  speak
-  location_46% ambrosio% is_there
-  s" Te das la vuelta"
-  s" para ver si Ambrosio te sigue," s&
-  s" pero... ha desaparecido." s&
-  narrate narration_break
-  s" Piensas entonces en el hecho curioso"
-  s" de que supiera tu nombre." s&
-  narrate scene_break  talked_to_ambrosio
+  ambrosio_introduces_himself scene_break
+  you_cry scene_break
+  ambrosio_proposes_a_deal narration_break
+  ambrosio_let's_go narration_break
+  ambrosio_is_gone
+  talked_to_ambrosio
   ;
 : conversation_0_with_ambrosio
   \ Primera conversación con Ambrosio, si se dan las condiciones.
   location_19% am_i_there?
   ?? (conversation_0_with_ambrosio)
   ;
+: i_am_stuck_in_the_cave$  ( -- a u )
+  s{  s" por desgracia" s" desgraciadamente" s" desafortunadamente"
+      s" tristemente" s" lamentablemente"
+  }s? s{ s" estoy" s" me encuentro" s" me hallo" }s& ^uppercase
+  s{ s" atrapado" s" encerrado" }s&
+  s" en" s&{ s" la" s" esta" }s& s" cueva" s&
+  s{ s" debido a" s" por causa de" s" por influjo de" }s&
+  s{ s" una" s" cierta" }s& s" magia de" s&
+  s{ s" maligno" s" maléfico" s" malvado" s" terrible" }s&
+  s" poder." s&
+  ;
+: you_must_follow_your_way$  ( -- a u )
+  s{ s" En cuanto" s" Por lo que respecta" }s&
+  s" al camino, vos" s&
+  s{ s" habéis de" s" debéis" s" habréis de" }s&
+  s{ s" recorrer" s" seguir" s" hacer " }s& s" el vuestro," s&
+  s{ s" ver" s" mirar" s" contemplar" }s s" lo" s?+
+  s" todo con vuestros" s& s" propios" s?& s" ojos." s&
+  ;
+: ambrosio_explains
+  s" Ambrosio"
+  s{  s" parece meditar un instante"
+      s" asiente ligeramente con la cabeza"
+  }s& s" y" s&
+  s{  s" te" s{ s" dice" s" explica" }s&
+      s" se explica"
+  }s& 
+  colon+ narrate
+  i_am_stuck_in_the_cave$ you_must_follow_your_way$ s& speak
+  ;
+: i_can_not_understand_it$  ( -- a u )
+  s" no"
+  s{  s" lo" s? s{ s" entiendo" s" comprendo" }s&
+      s{ s" alcanzo" s" acierto" }s s" a" s&
+         s{ s" entender" s" comprender" }s& s" lo" s?+
+  }s&
+  ;
+: you_shake_your_head
+  s{ s" Sacudes" s" Mueves" s" Haces un gesto con" }s s" la cabeza" s&
+  s{  s{ s" poniendo"  s" dejando" }s
+        s{ s" clara" s" de manifiesto" s" patente" s" manifiesta" }s&
+      s{ s" manifestando" s" delatando" s" mostrando" }s s" claramente" s?&
+  }s s" tu" s&
+  s{ s" sorpresa" s" perplejidad" s" resignación" s" incredulidad" }s&? s&
+  colon+ narrate
+  ;
+: you_don't_understand
+  s{  i_can_not_understand_it$ s" , la verdad" s?+
+      s{ s" la verdad" s" lo cierto" }s s" es que" s&
+        i_can_not_understand_it$ s&
+      s{ s" en verdad" s" realmente" s" verdaderamente" }s
+        i_can_not_understand_it$ s&
+  }s ^uppercase speak
+  ;
+: you_already_had_the_key$  ( -- a u )
+  \ Pendiente!!! Ampliar y variar
+  s{ 
+    s" La llave, Ambrosio, estaba ya en vuestro poder."
+    s" Vos, Ambrosio, estabais ya en posesión de la llave."
+    s" Vos, Ambrosio, ya teníais la llave en vuestro poder."
+  }s
+  ;
+: you_know_other_way$  ( -- a u )
+  s" Y" s{ s" por lo demás" s" por otra parte" }s?&
+  s{ s" es" s" parece" }s&
+  s{ s" obvio" s" evidente" s" claro" s" indudable" }s&
+  s" que" s&{ s" conocéis" s" sabéis" s" no desconocéis" }s&
+  s{ s" un" s" algún" s" otro" }s& s" camino" s&
+  s{  s" más" s{ s" corto" s" directo" s" fácil" s" llevadero" }s&
+      s" menos" s{ s" largo" s" luengo" s" difícil" s" pesado" }s&
+  }s& period+
+  ;
+: you_reproach_ambrosio
+  \ Reprochas a Ambrosio acerca de la llave y el camino.
+  you_already_had_the_key$ you_know_other_way$ s& speak 
+  ;
 : (conversation_1_with_ambrosio)
   \ Segunda conversación con Ambrosio.
-  s" La llave, Ambrosio, estaba ya en vuestro poder."
-  s" Y es obvio que conocéis un camino más corto." s&
-  speak
-  s" Estoy atrapado en la cueva debido a magia de maligno poder."
-  s" En cuanto al camino, vos debéis hacer el vuestro," s&
-  s" verlo todo con vuestros ojos." s&
-  speak
-  s" Sacudes la cabeza." narrate
-  s" No lo entiendo, la verdad." speak
+  you_reproach_ambrosio ambrosio_explains
+  you_shake_your_head you_don't_understand
   talked_to_ambrosio
   ;
 : conversation_1_with_ambrosio
@@ -10262,33 +10523,49 @@ subsection( Hablar y presentarse)  \ {{{
   ambrosio_follows? 0=  and
   ?? (conversation_1_with_ambrosio)
   ;
-: (conversation_2_with_ambrosio)
-  \ Tercera conversación con Ambrosio.
+: ambrosio_gives_you_the_key
   s{ s" Por favor," s" Os lo ruego," }s
   s" Ulfius," s&
   s" cumplid vuestra" s{ s" promesa." s" palabra." }s&
-  s" Tomad la llave" s&
+  s" Tomad" this|the(f)$ s& s" llave" s&
   s{ "" s" en vuestra mano" s" en vuestras manos" s" con vos" }s&
-  s" y abrid la puerta de la cueva." s&  speak
+  s" y abrid" s& s" la puerta de" s?& this|the(f)$ s& s" cueva." s&
+  speak
   key% is_hold
+  ;
+: (conversation_2_with_ambrosio)
+  \ Tercera conversación con Ambrosio.
   \ aquí en SuperBASIC: do_takeable the_key \ pendiente!!!
+  ambrosio_gives_you_the_key
   ambrosio_follows? on  talked_to_ambrosio  
   ;
 : conversation_2_with_ambrosio
   \ Tercera conversación con Ambrosio, si se dan las condiciones.
+  \ Pendiente!!! simplificar la condición
   location_45% 1- location_47% 1+ my_location within 
   ?? (conversation_2_with_ambrosio)
   ;
+false [if]  \ Primera versión, con una estructura 'case'
 : (talk_to_ambrosio)
   \ Hablar con Ambrosio.
-  \ Pendiente!!! ¿Hacer con una tabla?
   ambrosio% conversations case
     0 of  conversation_0_with_ambrosio  endof
     1 of  conversation_1_with_ambrosio  endof
     2 of  conversation_2_with_ambrosio  endof
-    \ Aquí faltaría algo!!!
+    \ Inacabado!!! Implementar qué hacer cuando ya no hay más conversaciones
   endcase
   ;
+[else]  \ Segunda versión, más «estilo Forth»
+create conversations_with_ambrosio
+' (conversation_0_with_ambrosio) ,
+' (conversation_1_with_ambrosio) ,
+' (conversation_2_with_ambrosio) ,
+' noop , \ Inacabado!!! Implementar qué hacer cuando ya no hay más conversaciones
+: (talk_to_ambrosio)
+  \ Hablar con Ambrosio.
+  ambrosio% conversations cells conversations_with_ambrosio + perform
+  ;
+[then]
 : talk_to_ambrosio
   \ Hablar con Ambrosio, si se puede.
   \ Provisional!!! Esto debería comprobarse en 'do_speak' o 'do_speak_if_possible'.
@@ -10303,14 +10580,14 @@ subsection( Hablar y presentarse)  \ {{{
   \ Hablar con un ente que no es un personaje .
   \ Pendiente!!!
   2 random
-  if  drop nonsense
+  if    drop nonsense
   else  full_name s" hablar con" 2swap s& is_nonsense 
   then
   ;
 : talk_to_yourself$  ( -- a u )
   \ Devuelve una variante de «hablar solo».
-  s{ s" hablar" s{ s" solo" s" con uno mismo" }s&
-  s" hablarse" s{ s" a sí" s" a uno" }s& s" mismo" s?&
+  s{  s" hablar" s{ s" solo" s" con uno mismo" }s&
+      s" hablarse" s{ s" a sí" s" a uno" }s& s" mismo" s?&
   }s 
   ;
 : talk_to_yourself
@@ -10335,6 +10612,7 @@ subsection( Hablar y presentarse)  \ {{{
   ?dup if  do_speak_if_possible  else  talk_to_yourself  then
   ;
 : (you_speak_to)  ( a -- )
+  dup familiar++
   s" Hablas con" rot full_name s& colon+ narrate
   ;
 : you_speak_to  ( a | 0 -- )
@@ -10342,16 +10620,18 @@ subsection( Hablar y presentarse)  \ {{{
   ;
 :action do_speak
   \ Acción de hablar.
-  [debug] [if]  s" En DO_SPEAK" debug  [then]  \ Depuración!!!
-  main_complement @ ?dup 0=  \ Si no hay complemento...
-  if    whom dup you_speak_to  \ ...buscar y mostrar el más probable.
-  then  (do_speak)
+  [debug] [??] debug  \ Depuración!!!
+  main_complement{forbidden}
+  actual_tool_complement{unnecessary}
+  company_complement @ ?dup 0=  \ Si no hay complemento...
+  ?? whom dup you_speak_to  \ ...buscar y mostrar el más probable.
+  (do_speak)
   ;action
 :action do_introduce_yourself
   \ Acción de presentarse a alguien.
   main_complement @ ?dup 0=  \ Si no hay complemento...
-  if  unknown_whom  \ ...buscar el (desconocido) más probable.
-  then  (do_speak)
+  ?? unknown_whom  \ ...buscar el (desconocido) más probable.
+  (do_speak)
   ;action
 
 \ }}}---------------------------------------------
@@ -10711,6 +10991,7 @@ con un error.
 \ Constantes para los identificadores de (seudo)preposiciones:
 1  \ Valor del primer identificador
 enum «con»_preposition
+enum «usando»_preposition
 false [if]  \ Inacabado!!!
 enum «a»_preposition
 enum «contra»_preposition
@@ -10720,8 +11001,7 @@ enum «hacia»_preposition
 enum «para»_preposition
 enum «por»_preposition
 [then]
-( u1 )
-  \ Número de (seudo)preposiciones +1
+( u1 )  \ Número de (seudo)preposiciones +1
 1- dup constant prepositions#  \ Número de (seudo)preposiciones
 cells dup constant /prepositions  \ Octetos necesarios para guardarlas
 ( u2 )
@@ -10772,7 +11052,7 @@ dicha [seudo]preposición, o bien cero si la
   \ de complementos (seudo)preposicionales.
   \ u = Identificador de la preposición
   \ a = Dirección en la tabla de complementos (seudo)preposicionales
-  1- prepositional_complements +
+  1- cells prepositional_complements +
   ;
 : current_prepositional_complement  ( -- a )
   \ Devuelve la dirección del elemento de la tabla
@@ -10781,13 +11061,39 @@ dicha [seudo]preposición, o bien cero si la
   \ a = Dirección en la tabla de complementos (seudo)preposicionales
   current_preposition @ prepositional_complement
   ;
+: (company_complement)  ( -- a )
+  \ Devuelve la dirección del elemento de la tabla
+  \ de complementos (seudo)preposicionales
+  \ correspondiente al complemento de compañía
+  \ (complemento que puede ser cero si no existe).
+  «con»_preposition prepositional_complement
+  ;
+' (company_complement) is company_complement
+: (actual_company_complement)  ( -- a|0 )
+  \ Devuelve la dirección del elemento de la tabla
+  \ de complementos (seudo)preposicionales
+  \ correspondiente al complemento de compañía estricto
+  \ (complemento que puede ser cero si no existe).
+  \ Inacabado!!! Experimental!!! Ojo: Puede devolver cero.
+  «usando»_preposition prepositional_complement @ dup 0<>
+  if  drop company_complement  then
+  ;
+' (actual_company_complement) is actual_company_complement
+: (actual_tool_complement)  ( -- a )
+  \ Devuelve la dirección del elemento de la tabla
+  \ de complementos (seudo)preposicionales
+  \ correspondiente al complemento instrumental estricto
+  \ (complemento que puede ser cero si no existe).
+  «usando»_preposition prepositional_complement
+  ;
+' (actual_tool_complement) is actual_tool_complement
 : (tool_complement)  ( -- a )
   \ Devuelve la dirección del elemento de la tabla
   \ de complementos (seudo)preposicionales
   \ correspondiente al complemento instrumental
   \ (complemento que puede ser cero si no existe).
-  \ Sistema provisional!!!
-  «con»_preposition prepositional_complement
+  actual_tool_complement dup @ 0=
+  if  drop company_complement  then
   ;
 ' (tool_complement) is tool_complement
 : prepositions_off
@@ -10799,12 +11105,6 @@ dicha [seudo]preposición, o bien cero si la
   \ Inicializa los complementos.
   main_complement off
   secondary_complement off
-  [false] [if]  \ Descartado!!!
-  tool_complement off
-  to_complement off
-  into_complement off
-  from_complement off
-  [then]
   prepositions_off
   ;
 : init_parsing
@@ -10855,6 +11155,15 @@ dicha [seudo]preposición, o bien cero si la
   a_preposition_is_open? dup
   unresolved_preposition_error# and ?wrong  0=
   ;
+[debug_parsing_result] [if]
+  : .complement?  ( a1 u1 a2 -- )  \ Depuración!!!
+    \ Imprime un nombre de complemento, con un texto previo, si existe.
+    @ ?dup 
+    if    name s& paragraph
+    else  2drop
+    then  
+    ;
+[then]
 : valid_parsing?  ( a u -- ff )
   \ Evalúa un comando con el vocabulario del juego.
   \ a u = Comando
@@ -10875,6 +11184,14 @@ dicha [seudo]preposición, o bien cero si la
   restore_vocabularies
   no_parsing_error_left? and
   [debug_parsing] [??] ~~
+  [debug_parsing_result] [if]
+    s" Main           : " main_complement .complement?
+    s" Secondary      : " secondary_complement .complement?
+    s" Tool           : " tool_complement .complement?
+    s" Actual tool    : " actual_tool_complement .complement?
+    s" Company        : " company_complement .complement?
+    \ s" Actual company : " actual_company_complement .complement? \ Experimental!!!
+   [then]
   ;
 
 : >but_one!  ( a -- )
@@ -10905,8 +11222,7 @@ dicha [seudo]preposición, o bien cero si la
   \ Evalúa un comando con el vocabulario del juego.
   [debug_parsing] [??] ~~
   dup if
-    init_parsing valid_parsing?
-    ?? execute_action
+    init_parsing valid_parsing? ?? execute_action
   else  2drop
   then
   [debug_parsing] [??] ~~
@@ -10937,7 +11253,7 @@ dicha [seudo]preposición, o bien cero si la
 : preposition!  ( u -- )
   \ Almacena una (seudo)preposición recién hallada en la frase.
   \ u = Identificador de la preposición
-  a_preposition_is_open?
+  a_preposition_is_open?  \ ¿Hay ya una preposición abierta?
   unresolved_preposition_error# and throw  \ Si es así, error
   current_preposition !
   ;
@@ -10973,7 +11289,7 @@ dicha [seudo]preposición, o bien cero si la
   \ a = Identificador de ente 
   \ Pendiente!!! Esta palabra sobrará cuando las (seudo)preposiciones estén implementadas completamente.
   main_complement @
-  if  secondary_complement!
+  if    secondary_complement!
   else  main_complement!
   then
   ;
@@ -10981,8 +11297,8 @@ dicha [seudo]preposición, o bien cero si la
   \ Comprueba y almacena un complemento.
   \ a = Identificador de ente
   [debug_parsing] [??] ~~
-  current_preposition @  \ ¿Hay una (seudo)preposición abierta?
-  if  prepositional_complement!  \ Sí: complemento (seudo)preposicional
+  a_preposition_is_open?  \ ¿Hay una (seudo)preposición abierta?
+  if    prepositional_complement!  \ Sí: complemento (seudo)preposicional
   else  non_prepositional_complement!  \ No: complemento principal o secundario
   then
   ;
@@ -10999,7 +11315,7 @@ dicha [seudo]preposición, o bien cero si la
   \ a1 = Dirección de ejecución de la palabra de la acción
   \ a2 = Identificador de ente
   action @  \ ¿Hay ya una acción reconocida...
-  current_preposition @ or  \ ...o bien una (seudo)preposición abierta?
+  a_preposition_is_open? or  \ ...o bien una (seudo)preposición abierta?
   if    nip complement!  \ Sí: lo tomamos como complemento
   else  drop action!  \ No: lo tomamos como acción
   then
@@ -11025,7 +11341,7 @@ partida.
 
 : config_file$  ( -- a u )
   \ Fichero de configuración.
-  s" ~/forth/ayc/ayc.ini"   \ Provisional!!! Debería encontrarlo en el directorio del programa, ¿pero cómo?
+  s" ayc/ayc.ini"   \ Provisional!!! Pendiente!!! Debería encontrarlo en el directorio del programa, ¿por qué no lo hace si '.' está en 'fpath' en mi Gforth?
   ;
 
 svariable command_prompt
@@ -11112,7 +11428,7 @@ immediate
 ' green alias verde
 ' light_green alias verde_claro
 ' gray alias gris
-' dark_gray alias gris_oscuro
+' light_gray alias gris_claro
 ' magenta alias magenta
 ' light_magenta alias magenta_claro
 ' red alias rojo
@@ -11132,8 +11448,12 @@ immediate
 : papel_de_depuración  ( u -- )  debug_paper !  ;
 : tinta_de_descripción  ( u -- )  description_ink !  ;
 : papel_de_descripción  ( u -- )  description_paper !  ;
-: tinta_de_error  ( u -- )  error_ink !  ;
-: papel_de_error  ( u -- )  error_paper !  ;
+: tinta_de_error_lingüístico  ( u -- )  language_error_ink !  ;
+: papel_de_error_lingüístico  ( u -- )  language_error_paper !  ;
+: tinta_de_error_de_comando  ( u -- )  command_error_ink !  ;
+: papel_de_error_de_comando  ( u -- )  command_error_paper !  ;
+: tinta_de_error_del_sistema  ( u -- )  system_error_ink !  ;
+: papel_de_error_del_sistema  ( u -- )  system_error_paper !  ;
 : tinta_de_entrada  ( u -- )  input_ink !  ;
 : papel_de_entrada  ( u -- )  input_paper !  ;
 : tinta_de_descripción_de_escenario  ( u -- )  location_description_ink !  ;
@@ -11148,13 +11468,15 @@ immediate
 : papel_de_pregunta  ( u -- )  question_paper !  ;
 : tinta_de_presto_de_escena  ( u -- )  scene_prompt_ink !  ;
 : papel_de_presto_de_escena  ( u -- )  scene_prompt_paper !  ;
+: tinta_de_presto_de_pausa_de_narración  ( u -- )  narration_prompt_ink !  ;
+: papel_de_presto_de_pausa_de_narración  ( u -- )  narration_prompt_paper !  ;
 : tinta_de_diálogos  ( u -- )  speech_ink !  ;
 : papel_de_diálogos  ( u -- )  speech_paper !  ;
 
 \ Prestos
 ' s" alias s"
 : presto_de_pantalla_llena  ( a u -- )  scroll_prompt place  ;
-: presto_de_narración  ( a u -- )  narration_prompt place  ;
+: presto_de_pausa_de_narración  ( a u -- )  narration_prompt place  ;
 : presto_de_fin_de_escena  ( a u -- )  scene_prompt place  ;
 : presto_de_comando  ( a u -- )  command_prompt place  ;
 : espacio_tras_presto_de_comando  ( ff -- )  space_after_command_prompt? !  ;
@@ -11198,7 +11520,7 @@ restore_vocabularies
   ;
 : read_config_error
   s" Se ha producido un error leyendo el fichero de configuración."
-  report wait
+  system_error wait
   ;
 : read_config
   \ Lee el fichero de configuración.
@@ -11897,7 +12219,7 @@ o sustantivos.
 \ quebrar \ Pendiente!!!
 \ desgarrar \ Pendiente!!!
 
-: asustar  ['] do_fear action!  ;
+: asustar  ['] do_frighten action!  ;
 ' asustar synonyms{
   asusto asusta asustad asuste
   amedrentar amedrento amedrenta amedrentad amedrente
@@ -11987,9 +12309,7 @@ o sustantivos.
 \ meter introducir insertar colar encerrar
 
 : ulfius  ulfius% complement!  ;
-' ulfius synonyms{ Ulfius }synonyms
 : ambrosio  (ambrosio) complement!  ;
-' ambrosio synonyms{ Ambrosio }synonyms
 : hombre  (man) complement!  ;
 ' hombre synonyms{  señor seÑor tipo individuo persona  }synonyms
 : hombres  (men) complement!  ;
@@ -12079,21 +12399,21 @@ o sustantivos.
 : antorcha  torch% complement!  ;
 : cascada  waterfall% complement!  ;
 ' cascada synonyms{  catarata  }synonyms
-: catre  s" catre" bed% mname! bed% complement!  ;
+: catre  s" catre" bed% ms-name! bed% complement!  ;
 ' catre synonyms{  camastro  }synonyms
-: cama s" cama" bed% fname! bed% complement!  ;
+: cama s" cama" bed% fs-name! bed% complement!  ;
 : velas  candles% complement!  ;
 ' velas synonyms{  vela  }synonyms
 : mesa  table% complement!  ;
 ' mesa synonyms{  mesita pupitre  }synonyms
 : puente  (bridge) complement!  ;
 : alguien  (somebody) complement!  ;
-: hierba  s" hierba" grass% fname! grass% complement!  ;
-: hierbas  s" hierbas" grass% fnames! grass% complement!  ;
-: hierbajo  s" hierbajo" grass% mname! grass% complement!  ;
-: hierbajos  s" hierbajos" grass% mnames! grass% complement!  ;
-: hiedra  s" hiedra" grass% fname! grass% complement!  ;
-: hiedras  s" hiedras" grass% fnames! grass% complement!  ;
+: hierba  s" hierba" grass% fs-name! grass% complement!  ;
+: hierbas  s" hierbas" grass% fp-name! grass% complement!  ;
+: hierbajo  s" hierbajo" grass% ms-name! grass% complement!  ;
+: hierbajos  s" hierbajos" grass% mp-name! grass% complement!  ;
+: hiedra  s" hiedra" grass% fs-name! grass% complement!  ;
+: hiedras  s" hiedras" grass% fp-name! grass% complement!  ;
 
 : n  ['] do_go_north north% action|complement!  ;
 ' n synonyms{  norte septentrión septentriÓn  }synonyms
@@ -12208,16 +12528,20 @@ o sustantivos.
 \ y pronombres demostrativos sin tilde; salvo «este», que siempre
 \ será interpretado como punto cardinal.
 
-: esta ;
+: esta  ;
 ' esta synonyms{ estas estos }synonyms
 
 \ (Seudo)preposiciones 
 
 : con
-  \ Uso: Herramienta
+  \ Uso: Herramienta o compañía
   «con»_preposition preposition!
   ;
-' con synonyms{ usando empleando utilizando mediante }synonyms
+: usando
+  \ Uso: Herramienta
+  «usando»_preposition preposition!
+  ;
+' usando synonyms{ utilizando empleando mediante }synonyms
 false [if]  \ Descartado!!! Pendiente!!!
 : a
   \ Uso: Destino de movimiento, objeto indirecto
@@ -12898,16 +13222,17 @@ section( Principal)  \ {{{
   \ Preparativos que hay que hacer antes de cada partida.
   randomize
   init_parser/game
-  init_entities init_plot get_config
+  init_entities init_plot
+  get_config new_page
   \ Anular esto para depuración!!!:
   about cr intro  
-  location_01% enter_location
+  \ location_01% enter_location
 
   \ Activar esto selectivamente para depuración!!!:
   \ location_08% enter_location  \ Emboscada 
   \ location_11% enter_location  \ Lago
   \ location_17% enter_location  \ Antes de la cueva oscura
-  \ location_19% enter_location  \ Encuentro con Ambrosio
+  location_19% enter_location  \ Encuentro con Ambrosio
   \ location_28% enter_location  \ Refugiados
   \ location_47% enter_location  \ casa de Ambrosio
   \ snake% is_here
@@ -13104,7 +13429,7 @@ do_examine:
 
 salidas
 
-do_fear  
+do_frighten  
 do_finish
 do_go
 do_go_ahead
@@ -13140,6 +13465,15 @@ do_take_off
 
 \ }}} ########################################################## 
 \ Tareas pendientes: programación {{{
+
+...........................
+2012-05-16:
+
+> deja espada
+> s
+> mira espada
+No ves eso. [y variantes]
+===> Aquí no está tu espada.
 
 ...........................
 2012-05-14:
@@ -13235,15 +13569,6 @@ Implementar tres niveles en mirar:
 
 2011-12:
 
-Grave: los comandos no vacíos y sin verbo reconocido
-hacen saltar el sistema.
-
-2012-01-30: No pasa en Gforth.
-
-...........................
-
-2011-12:
-
 Poner de un color diferente, configurable, el presto y el
 texto de las respuestas al sistema (preguntas sí/no).
 
@@ -13264,7 +13589,7 @@ de una acción que no haga nada!
 No! Lo que hay que hacer es ejecutar las acciones de
 configuración como el resto de acciones, metiendo su xt en
 'action'.  Y si después queremos seguir (dependerá de la
-acción de sistema de que se trata) basta poner ACTION a cero
+acción de sistema de que se trata) basta poner 'action' a cero
 otra vez. O se puede leer el resto del comando, para
 anularlo!
 
@@ -13285,15 +13610,6 @@ se pida entrada a un comando.
 
 Hacer un comando que lea el fichero de
 configuración en medio de una partida.
-
-...........................
-
-2011-12:
-
-Evitar mensaje «todos tus hombres siguen tus pasos» en la
-aldea, nada más empezar. Usar otra frase mientras dura el
-saqueo. Reescribir ese texto bien, entre la intro y la
-aldea.
 
 ...........................
 
@@ -13458,7 +13774,7 @@ Añadir a la ficha con su xt.
 
 2011-12:
 
-Solucionar el eterno problema de los sinónimos que no tienen
+Solucionar el problema de los sinónimos que no tienen
 el mismo género o número...
 
 La palabra del vocabulario podría ponerse a sí misma como
@@ -13508,10 +13824,9 @@ alguien o algo».
 
 2011-12:
 
-Implementar pronombres. Para empezar, que la forma «mírate»
-sea compatible con «mírate la capa». Para esto habría que
-distiguir dos variantes de complemento principal, y que al
-asignar cualquiera de ellas se compruebe si había ya otro
+Hacer que la forma «mírate» sea compatible con «mírate la capa». Para
+esto habría que distiguir dos variantes de complemento principal, y que
+al asignar cualquiera de ellas se compruebe si había ya otro
 complemento principal del otro tipo.
 
 ...........................
