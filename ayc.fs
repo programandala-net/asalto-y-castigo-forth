@@ -11,7 +11,7 @@ CR .( Asalto y castigo )  \ {{{
 \ Copyright (C) 2011,2012 Marcos Cruz (programandala.net)
 
 only forth definitions
-: version$  ( -- a u )  s" A-05-20120928"  ;
+: version$  ( -- a u )  s" A-05-2012100801"  ;
 version$ type cr
 
 \ 'Asalto y castigo' is free software; you can redistribute
@@ -6448,6 +6448,28 @@ in% :attributes
   ;attributes
   
 \ }}} ##########################################################
+section( Mensaje de acción completada)  \ {{{
+
+variable silent_well_done?  \ xxx no se usa todavía
+
+: (well_done)  ( -- )
+  \ Informa, con un mensaje genérico, de que una acción se ha realizado.
+  s{ s" Hecho." s" Bien." }s narrate
+  ;
+: well_done  ( -- )
+  \ Informa, con un mensaje genérico, de que una acción se ha realizado,
+  \ si es preciso.
+  silent_well_done? @ 0= ?? (well_done)
+  silent_well_done? off
+  ;
+: well_done_this  ( a u -- )
+  \ Informa, con un mensaje específico, de que una acción se ha realizado,
+  \ si es preciso.
+  silent_well_done? @ 0= if  narrate  else  2drop  then
+  silent_well_done? off
+  ;
+
+\ }}} ##########################################################
 section( Errores de las acciones)  \ {{{
 
 variable action  \ Código de la acción del comando
@@ -6481,19 +6503,21 @@ variable current_preposition
   \ Muestra el mensaje de error operativo para el nivel 1.
   action_error_general_message$ action_error
   ;
-: action_error:  ( n xt "name1" "name2" -- xt2 )
+: unerror  ( i*j pfa -- )
+  \ Borra de la pila los parámetros de un error operativo.
+  cell+ @ drops
+  ;
+: action_error:  ( n xt "name1" -- xt2 )
   \ Crea un error operativo.
   \ n = número de parámetros del error operativo efectivo
   \ xt = dirección de ejecución del error operativo efectivo
-  \ xt2 = dirección de ejecución de la palabra creada
   \ "name1" = nombre de la palabra de error a crear
-  \ "name2" = nombre del identificador del error, previamente
-  \   definido con 'value'.
-  create , , latestxt postpone to
+  \ xt2 = dirección de ejecución de la palabra de error creada
+  create , , latestxt 
   does>  ( pfa )
     action_errors_verbosity @ case
-      0 of  cell+ @ drops  endof
-      1 of  cell+ @ drops action_error_general_message  endof
+      0 of  unerror  endof
+      1 of  unerror action_error_general_message  endof
       2 of  perform  endof
     endcase
   ;
@@ -6514,28 +6538,30 @@ variable current_preposition
   dup is_familiar?
   if    known_entity_is_not_here$
   else  unknown_entity_is_not_here$
-  then  period+ narrate
+  then  period+ action_error
   ;
 1 ' (is_not_here) action_error: is_not_here
-constant is_not_here_error#
+to is_not_here_error#
 : (is_not_here_what)  ( -- )
   \  Informa de que el ente 'what' no está presente.
-  what @ is_not_here
+  what @ (is_not_here)
   ;
 0 ' (is_not_here_what) action_error: is_not_here_what
-constant is_not_here_what_error#
+to is_not_here_what_error#
 : (cannot_see)  ( a -- )
   \ Informa de que un ente no puede ser mirado.
   ^cannot_see$
   rot subjective_negative_name_as_direct_object s&
-  period+ narrate
+  period+ action_error
   ;
-1 ' (cannot_see) action_error: cannot_see cannot_see_error#
+1 ' (cannot_see) action_error: cannot_see
+to cannot_see_error#
 : (cannot_see_what)  ( -- )
   \ Informa de que el ente 'what' no puede ser mirado.
-  what @ cannot_see
+  what @ (cannot_see)
   ;
-0 ' (cannot_see_what) action_error: cannot_see_what cannot_see_what_error#
+0 ' (cannot_see_what) action_error: cannot_see_what
+to cannot_see_what_error#
 : like_that$  ( -- a u )
   \ xxx no se usa
   s{ s" así" s" como eso" }s
@@ -6578,19 +6604,20 @@ constant is_not_here_what_error#
   \ Devuelve una variante de «Es imposible x».
   ^is_impossible$ 2swap s& 
   ;
-: is_impossible  ( a u -- )
+: (is_impossible)  ( a u -- )
   \ Informa de que una acción indicada (en infinitivo) es imposible.
   \ a u = Acción imposible, en infinitivo, o una cadena vacía
   ['] x_is_impossible$
   ['] it_is_impossible_x$
-  2 choose execute  period+ narrate
+  2 choose execute  period+ action_error
   ;
-: impossible  ( -- )
+2 ' (is_impossible) action_error: is_impossible drop
+: (impossible)  ( -- )
   \ Informa de que una acción no especificada es imposible.
-  something_like_that$ is_impossible
+  something_like_that$ (is_impossible)
   ;
-' impossible constant (impossible_error#)
-' (impossible_error#) is impossible_error#
+0 ' (impossible) action_error: impossible
+to impossible_error#
 : try$  ( -- a u )
   \ Devuelve una variante de «intentar» (o vacía).
   s{ "" "" s" intentar" }s
@@ -6629,21 +6656,22 @@ constant is_not_here_what_error#
   \ Devuelve una variante de «No tiene sentido x».
   ^nonsense$ try$ s& 2swap s& 
   ;
-: is_nonsense  ( a u -- )
+: (is_nonsense)  ( a u -- )
   \ Informa de que una acción dada no tiene sentido.
   \ a u = Acción que no tiene sentido;
   \       es un verbo en infinitivo, un sustantivo o una cadena vacía
   ['] x_is_nonsense$
   ['] it_is_nonsense_x$ 
-  2 choose execute  period+ narrate
+  2 choose execute  period+ action_error
   ;
-: nonsense  ( -- )
+2 ' (is_nonsense) action_error: is_nonsense drop
+: (nonsense)  ( -- )
   \ Informa de que alguna acción no especificada no tiene sentido.
   \ xxx provisional
-  s" eso" is_nonsense 
+  s" eso" (is_nonsense)
   ;
-' nonsense constant (nonsense_error#)
-' (nonsense_error#) is nonsense_error#
+0 ' (nonsense) action_error: nonsense
+to nonsense_error#
 : dangerous$  ( -- a u )
   \ Devuelve una variante de «es peligroso», que formará parte de mensajes personalizados por cada acción.
   \ xxx pendiente. quitar las variantes que no sean adecuadas a todos los casos y unificar 
@@ -6678,20 +6706,21 @@ constant is_not_here_what_error#
   \ Devuelve una variante de «Es peligroso x».
   ^dangerous$ try$ s& 2swap s& 
   ;
-: is_dangerous  ( a u -- )
+: (is_dangerous)  ( a u -- )
   \ Informa de que una acción dada (en infinitivo)
   \ no tiene sentido.
   \ a u = Acción que no tiene sentido, en infinitivo, o una cadena vacía
   ['] x_is_dangerous$
   ['] it_is_dangerous_x$ 
-  2 choose execute  period+ narrate
+  2 choose execute  period+ action_error
   ;
-: dangerous  ( -- )
+2 ' (is_dangerous) action_error: is_dangerous drop
+: (dangerous)  ( -- )
   \ Informa de que alguna acción no especificada no tiene sentido.
-  something_like_that$ is_dangerous
+  something_like_that$ (is_dangerous)
   ;
-' dangerous constant (dangerous_error#)
-' (dangerous_error#) is dangerous_error#
+0 ' (dangerous) action_error: dangerous
+to dangerous_error#
 : ?full_name&  ( a1 u1 a2 -- )
   \ Añade a una cadena el nombre de un posible ente.
   \ xxx no se usa
@@ -6699,30 +6728,33 @@ constant is_not_here_what_error#
   \ a2 = Ente (o cero)
   ?dup if  full_name s&  then
   ;
-: +is_nonsense  ( a u a1 -- )
+: (+is_nonsense)  ( a u a1 -- )
   \ Informa de que una acción dada (en infinitivo)
   \ ejecutada sobre un ente no tiene sentido.
   \ a u = Acción en infinitivo
   \ a1 = Ente al que se refiere la acción y cuyo objeto directo es (o cero)
   ?dup
-  if full_name s& is_nonsense
+  if full_name s& (is_nonsense)
   else  2drop nonsense
   then
   ;
-: main_complement+is_nonsense  ( a u -- )
+3 ' (+is_nonsense) action_error +is_nonsense drop
+: (main_complement+is_nonsense)  ( a u -- )
   \ Informa de que una acción dada (en infinitivo),
   \ que hay que completar con el nombre del complemento principal,
   \ no tiene sentido.
   \ a u = Acción que no tiene sentido, en infinitivo
-  main_complement @ +is_nonsense
+  main_complement @ (+is_nonsense)
   ;
-: secondary_complement+is_nonsense  ( a u -- )
+2 ' (main_complement+is_nonsense) action_error: main_complement+is_nonsense drop
+: (secondary_complement+is_nonsense)  ( a u -- )
   \ Informa de que una acción dada (en infinitivo),
   \ que hay que completar con el nombre del complemento secundario,
   \ no tiene sentido.
   \ a u = Acción que no tiene sentido, en infinitivo
-  secondary_complement @ +is_nonsense
+  secondary_complement @ (+is_nonsense)
   ;
+2 ' secondary_complement+is_nonsense action_error: secondary_complement+is_nonsense drop
 : no_reason_for$  ( -- a u )
   \ Devuelve una variante de «no hay motivo para».
   \ xxx pendiente. quitar las variantes que no sean adecuadas a todos los casos
@@ -6738,41 +6770,27 @@ constant is_not_here_what_error#
     }s s" para" s&
   }s&
   ;
-: no_reason_for_that  ( a u -- )
+: (no_reason_for_that)  ( a u -- )
   \ Informa de que no hay motivo para una acción (en infinitivo).
   \ a u = Acción para la que no hay razón, en infinitivo, o una cadena vacía
   \ xxx pendiente
-  no_reason_for$ 2swap s& period+ narrate
+  no_reason_for$ 2swap s& period+ action_error
   ;
-: no_reason  ( -- )
+2 ' (no_reason_for_that) action_error: no_reason_for_that
+: (no_reason)  ( -- )
   \ Informa de que no hay motivo para una acción no especificada.
   \ xxx pendiente
-  something_like_that$ no_reason_for_that
+  something_like_that$ (no_reason_for_that)
   ;
-: nonsense|no_reason  ( -- )
+0 ' (no_reason) action_error: no_reason drop
+: (nonsense|no_reason)  ( -- )
   \ Informa de que una acción no especificada no tiene sentido o no tiene motivo.
   \ xxx no se usa todavía
   ['] nonsense
   ['] no_reason
   2 choose execute
   ;
-variable silent_well_done?  \ xxx no se usa todavía
-: (well_done)  ( -- )
-  \ Informa, con un mensaje genérico, de que una acción se ha realizado.
-  s{ s" Hecho." s" Bien." }s narrate
-  ;
-: well_done  ( -- )
-  \ Informa, con un mensaje genérico, de que una acción se ha realizado,
-  \ si es preciso.
-  silent_well_done? @ 0= ?? (well_done)
-  silent_well_done? off
-  ;
-: well_done_this  ( a u -- )
-  \ Informa, con un mensaje específico, de que una acción se ha realizado,
-  \ si es preciso.
-  silent_well_done? @ 0= if  narrate  else  2drop  then
-  silent_well_done? off
-  ;
+0 ' (nonsense|no_reason) action_error: nonsense|no_reason drop
 : (do_not_worry_0)$  ( -- a u)
   \ Primera versión posible del mensaje de 'do_not_worry'.
   s{
@@ -6810,21 +6828,21 @@ variable silent_well_done?  \ xxx no se usa todavía
   \ xxx provisional, no se usa
   ['] (do_not_worry_0)$
   ['] (do_not_worry_1)$ 2 choose execute
-  now_$ s&  period+ narrate
+  now_$ s&  period+ action_error
   ;
 
-: unnecessary_tool_for_that  ( a1 u1 a2 -- )
+: (unnecessary_tool_for_that)  ( a1 u1 a2 -- )
   \ Informa de que un ente es innecesario como herramienta
   \ para ejecutar una acción.
   \ a1 u1 = Acción (una frase con verbo en infinitivo)
   \ a2 = Ente innecesario
   \ xxx inacabado
   full_name s" No necesitas" 2swap s& s" para" s& 2swap s&
-  period+ narrate
+  period+ action_error
   ;
-' unnecessary_tool_for_that constant (unnecessary_tool_for_that_error#)
-' (unnecessary_tool_for_that_error#) is unnecessary_tool_for_that_error#
-: unnecessary_tool  ( a -- )
+3 ' (unnecessary_tool_for_that) action_error: unnecessary_tool_for_that
+to unnecessary_tool_for_that_error#
+: (unnecessary_tool)  ( a -- )
   \ Informa de que un ente es innecesario como herramienta
   \ para ejecutar una acción sin especificar.
   \ a = Ente innecesario
@@ -6836,11 +6854,11 @@ variable silent_well_done?  \ xxx no se usa todavía
   s" precisas" s" se precisa"
   s" hay necesidad de" s{ s" usar" s" emplear" s" utilizar" }s?&
   }s&  2swap s&
-  s{ s" para nada" s" para eso" }s?&  period+ narrate
+  s{ s" para nada" s" para eso" }s?&  period+ action_error
   \ xxx inacabado. añadir coletilla "aunque la/lo/s tuvieras"?
   ;
-' unnecessary_tool constant (unnecessary_tool_error#)
-' (unnecessary_tool_error#) is unnecessary_tool_error#
+1 ' (unnecessary_tool) action_error: unnecessary_tool
+to unnecessary_tool_error#
 
 0 [if]  \ xxx error «no tiene nada especial», inacabado. 
 
@@ -6848,15 +6866,15 @@ variable silent_well_done?  \ xxx no se usa todavía
   \ Devuelve una variante de «no tiene nada especial x».
   ^normal$ try$ s& 2swap s& 
   ;
-: is_normal  ( a -- )
+: (is_normal)  ( a -- )
   \ Informa de que un ente no tiene nada especial.
   \ a u = Acción que no tiene nada especial; es un verbo en infinitivo, un sustantivo o una cadena vacía
   ['] x_is_normal$
   ['] it_is_normal_x$ 
-  2 choose execute  period+ narrate
+  2 choose execute  period+ action_error
   ;
-' is_normal constant (is_normal_error#)
-' (is_normal_error#) is is_normal_error#
+1 ' (is_normal) action_error: is_normal
+drop is_normal_error#
 
 [then]
 
@@ -6880,23 +6898,23 @@ variable silent_well_done?  \ xxx no se usa todavía
   \ (variante 2, solo para entes no citados en el comando).
   s" No" you_carry$ s& rot full_name s& with_you$ s&
   ;
-: you_do_not_have_it  ( a -- )
+: (you_do_not_have_it)  ( a -- )
   \ Informa de que el protagonista no tiene un ente.
   dup is_known? if
     ['] you_do_not_have_it_(0)$
     ['] you_do_not_have_it_(1)$
     2 choose execute
   else  you_do_not_have_it_(0)$
-  then  period+ narrate
+  then  period+ action_error
   ;
-' you_do_not_have_it constant (you_do_not_have_it_error#)
-' (you_do_not_have_it_error#) is you_do_not_have_it_error#
-: you_do_not_have_what  ( -- )
+1 ' (you_do_not_have_it) action_error: you_do_not_have_it
+to you_do_not_have_it_error#
+: (you_do_not_have_what)  ( -- )
   \ Informa de que el protagonista no tiene el ente 'what'.
-  what @ you_do_not_have_it
+  what @ (you_do_not_have_it)
   ;
-' you_do_not_have_what constant (you_do_not_have_what_error#)
-' (you_do_not_have_what_error#) is you_do_not_have_what_error#
+0 ' (you_do_not_have_what) action_error: you_do_not_have_what
+to you_do_not_have_what_error#
 
 : it_seems$  ( -- a u )
   s{ "" s" parece que" s" por lo que parece," }s
@@ -6956,7 +6974,7 @@ variable silent_well_done?  \ xxx no se usa todavía
   }s
   ;
 : not_by_hand_1$  ( -- a u )
-  \ Devuelve la segunda versión del mensaje de NOT_BY_HAND.
+  \ Devuelve la segunda versión del mensaje de 'not_by_hand'.
   it_seems$
   s{
     s{ s" hará" s" haría" s" hace" }s s" falta" s&
@@ -6967,28 +6985,30 @@ variable silent_well_done?  \ xxx no se usa todavía
   }s& some_tool$ s& period+ ^uppercase
   ;
 : not_by_hand$  ( -- a u )
-  \ Devuelve mensaje de NOT_BY_HAND.
+  \ Devuelve mensaje de 'not_by_hand'.
   ['] not_by_hand_0$
   ['] not_by_hand_1$
   2 choose execute ^uppercase
   ;
-: not_by_hand  ( -- )
+: (not_by_hand)  ( -- )
   \ Informa de que la acción no puede hacerse sin una herramienta.
-  not_by_hand$ narrate
+  not_by_hand$ action_error
   ;
-: you_need  ( a -- )
+0 ' (not_by_hand) action_error: not_by_hand drop
+: (you_need)  ( a -- )
   \ Informa de que el protagonista no tiene un ente necesario.
   2 random
-  if  you_do_not_have_it_(2)$ period+ narrate
-  else  drop not_by_hand
+  if  you_do_not_have_it_(2)$ period+ action_error
+  else  drop (not_by_hand)
   then
   ;
-: you_need_what  ( -- )
-  \ Informa de que el protagonista no tiene el ente WHAT necesario.
-  what @ you_need
+1 ' (you_need) action_error: you_need drop
+: (you_need_what)  ( -- )
+  \ Informa de que el protagonista no tiene el ente 'what' necesario.
+  what @ (you_need)
   ;
-' you_need_what constant (you_need_what_error#)
-' (you_need_what_error#) is you_need_what_error#
+0 ' (you_need_what) action_error:  you_need_what
+to you_need_what_error#
 : you_already_have_it_(0)$  ( a -- )
   \ Devuelve mensaje de que el protagonista ya tiene un ente (variante 0).
   s" Ya" you_carry$ s& rot that$ s& with_you$ s&
@@ -6997,82 +7017,85 @@ variable silent_well_done?  \ xxx no se usa todavía
   \ Devuelve mensaje de que el protagonista ya tiene un ente (variante 1, solo para entes conocidos).
   s" Ya" rot direct_pronoun s& you_carry$ s& with_you$ s&
   ;
-: you_already_have_it  ( a -- )
+: (you_already_have_it)  ( a -- )
   \ Informa de que el protagonista ya tiene un ente.
   dup familiar over belongs_to_protagonist? or   if
     ['] you_already_have_it_(0)$
     ['] you_already_have_it_(1)$
     2 choose execute
   else  you_already_have_it_(0)$
-  then  period+ narrate
+  then  period+ action_error
   ;
-' you_already_have_it constant (you_already_have_it_error#)
-' (you_already_have_it_error#) is you_already_have_it_error#
-: you_already_have_what  ( a -- )
+1 ' (you_already_have_it) action_error: you_already_have_it
+to you_already_have_it_error#
+: (you_already_have_what)  ( a -- )
   \ Informa de que el protagonista ya tiene el ente 'what'.
-  what @ you_already_have_it
+  what @ (you_already_have_it)
   ;
-' you_already_have_what constant (you_already_have_what_error#)
-' (you_already_have_what_error#) is you_already_have_what_error#
-: (you_do_not_wear_it)  ( a -- )
+1 ' (you_already_have_what) action_error: you_already_have_what
+to you_already_have_what_error#
+: ((you_do_not_wear_it))  ( a -- )
   \ Informa de que el protagonista no lleva puesto un ente prenda.
   >r s" No llevas puest" r@ noun_ending+
-  r> full_name s& period+ narrate
+  r> full_name s& period+ action_error
   ;
-: you_do_not_wear_it  ( a -- )
+: (you_do_not_wear_it)  ( a -- )
   \ Informa de que el protagonista no lleva puesto un ente prenda, según lo lleve o no consigo.
   dup is_hold?
-  if  you_do_not_have_it
-  else  (you_do_not_wear_it) 
-  then
+  if  (you_do_not_have_it)  else  ((you_do_not_wear_it))  then
   ;
-: you_do_not_wear_what  ( -- )
+1 ' (you_do_not_wear_it) action_error: you_do_not_wear_it drop
+: (you_do_not_wear_what)  ( -- )
   \ Informa de que el protagonista no lleva puesto el ente 'what', según lo lleve o no consigo.
-  what @ you_do_not_wear_it
+  what @ (you_do_not_wear_it)
   ;
-' you_do_not_wear_what constant (you_do_not_wear_what_error#)
-' (you_do_not_wear_what_error#) is you_do_not_wear_what_error#
-: you_already_wear_it  ( a -- )
+0 ' (you_do_not_wear_what) action_error: you_do_not_wear_what
+to you_do_not_wear_what_error#
+: (you_already_wear_it)  ( a -- )
   \ Informa de que el protagonista lleva puesto un ente prenda.
   >r s" Ya llevas puest" r@ noun_ending+
-  r> full_name s& period+ narrate
+  r> full_name s& period+ action_error
   ;
-: you_already_wear_what  ( -- )
+1 ' (you_already_wear_it) action_error: you_already_wear_it drop
+: (you_already_wear_what)  ( -- )
   \ Informa de que el protagonista lleva puesto el ente 'what'.
-  what @ you_already_wear_it
+  what @ (you_already_wear_it)
   ;
-' you_already_wear_what constant (you_already_wear_what_error#)
-' (you_already_wear_what_error#) is you_already_wear_what_error#
+0 ' (you_already_wear_what) action_error: you_already_wear_what
+to you_already_wear_what_error#
 : not_with_that$  ( -- a u )
   \ Devuelve mensaje de NOT_WITH_THAT.
   s" Con eso no..." 
   s" No con eso..." 
   2 schoose
   ;
-: not_with_that  ( -- )
+: (not_with_that)  ( -- )
   \ Informa de que la acción no puede hacerse con la herramienta elegida.
-  not_with_that$ narrate
+  not_with_that$ action_error
   ;
-: it_is_already_open  ( a -- )
+0 ' (not_with_that) action_error not_with_that drop
+: (it_is_already_open)  ( a -- )
   \ Informa de que un ente ya está abierto.
-  s" Ya está abiert" rot noun_ending+ period+ narrate
+  s" Ya está abiert" rot noun_ending+ period+ action_error
   ;
-: what_is_already_open  ( -- )
-  \ Informa de que el ente WHAT ya está abierto.
-  what @ it_is_already_open
+1 ' (it_is_already_open) action_error: it_is_already_open drop
+: (what_is_already_open)  ( -- )
+  \ Informa de que el ente 'what' ya está abierto.
+  what @ (it_is_already_open)
   ;
-' what_is_already_open constant (what_is_already_open_error#)
-' (what_is_already_open_error#) is what_is_already_open_error#
-: it_is_already_closed  ( a -- )
+0 ' (what_is_already_open) action_error: what_is_already_open
+to what_is_already_open_error#
+: (it_is_already_closed)  ( a -- )
   \ Informa de que un ente ya está cerrado.
-  s" Ya está cerrad" r@ noun_ending+ period+ narrate
+  s" Ya está cerrad" r@ noun_ending+ period+ action_error
   ;
-: what_is_already_closed  ( -- )
-  \ Informa de que el ente WHAT ya está cerrado.
-  what @ it_is_already_closed
+1 ' (it_is_already_closed) action_error: it_is_already_closed drop
+: (what_is_already_closed)  ( -- )
+  \ Informa de que el ente 'what' ya está cerrado.
+  what @ (it_is_already_closed)
   ;
-' what_is_already_closed constant (what_is_already_closed_error#)
-' (what_is_already_closed_error#) is what_is_already_closed_error#
+0 ' (what_is_already_closed) action_error: what_is_already_closed
+to what_is_already_closed_error#
 
 \ }}} ##########################################################
 section( Listas)  \ {{{
@@ -8415,7 +8438,7 @@ create 'language_error_verbosity_xt
 ' (useless_tool_error#) is useless_tool_error# 
 : useless_what_tool  ( -- )
   \ Informa de que se ha producido un error
-  \ porque el ente WHAT no es la herramienta adecuada.
+  \ porque el ente 'what' no es la herramienta adecuada.
   \ xxx inacabado
   \ xxx distinguir si la llevamos, si está presente, si es conocida...
   s" [Con" what @ full_name s& s" no puedes]" s&
