@@ -1,28 +1,31 @@
-#! /usr/bin/gforth
+#! /usr/bin/env gforth 
+
 \ ##############################################################
 CR .( Asalto y castigo )  \ {{{
 
-\ Una aventura conversacional en castellano, escrita en Forth.
-\ A text adventure in Spanish, written in Forth.
+\ Una aventura conversacional en castellano,
+\ escrita en Forth con Gforth.
+
+\ A text adventure in Spanish,
+\ written in Forth with Gforth.
 
 \ Proyecto en desarrollo.
 \ Project under development.
 
-\ Copyright (C) 2011,2012 Marcos Cruz (programandala.net)
+\ Copyright (C) 2011,2012,2013 Marcos Cruz (programandala.net)
 
 only forth definitions
-: version$  ( -- a u )  s" A-05-2012100801"  ;
+: version$  ( -- a u )  s" A-05-2013092900"  ;
 version$ type cr
 
 \ 'Asalto y castigo' is free software; you can redistribute
 \ it and/or modify it under the terms of the GNU General
 \ Public License as published by the Free Software
 \ Foundation; either version 2 of the License, or (at your
-\ option) any later version.
+\ option) any later version. See:
 
 \ http://gnu.org/licenses/
-\ http://gnu.org/licenses/gpl.html
-\ http://www.gnu.org/licenses/gpl-2.0.html
+\ http://gnu.org/licenses/gpl-2.0.html
 
 \ «Asalto y castigo» es un programa libre; puedes
 \ distribuirlo y/o modificarlo bajo los términos de la
@@ -47,12 +50,12 @@ Información
 Juegos conversacionales:
   http://caad.es
 Forth:
-  http://programandala.net/es.artículo.2009.04.27.libros_forth
   http://forth.org
   http://www.forthfreak.net
   http://groups.google.com/group/comp.lang.forth/
+  http://programandala.net/es.artículo.2009.04.27.libros_forth
 Gforth:
-  http://www.jwdt.com/~paysan/gforth.html
+  http://gnu.org/software/gforth/
   http://lists.gnu.org/mailman/listinfo/gforth
 
 )
@@ -69,8 +72,8 @@ Gforth:
 
 (
 
-En este programa usamos las siguientes abreviaturas para
-describir los elementos de la pila:
+Abreviaturas usadas en este programa para describir los
+elementos de la pila:
 
 +n        = número de 32 bitios positivo
 -n        = número de 32 bitios negativo
@@ -100,9 +103,9 @@ xt        = «execution token», identificador de ejecución de una palabra;
             notación de ANS Forth análoga a «cfa»
             [«code field addrees»] en Forth clásico
 
-Como es costumbre, los diferentes elementos del mismo tipo
-se distinguirán con un sufijo, casi siempre un dígito,
-o bien un apóstrofo, según los casos.
+Como es costumbre, los diferentes elementos del mismo tipo se
+distinguirán con un sufijo, casi siempre un dígito, o bien un
+apóstrofo, según los casos.
 
 )
 
@@ -153,34 +156,39 @@ require galope/sb.fs \ Almacén circular de cadenas de texto
 
 require galope/2choose.fs  \ '2schoose', selección aleatoria de un elemento doble de la pila
 ' 2choose alias schoose
-require galope/choose.fs  \ 'choose', selección aleatoria de un elemento de la pila
-require galope/drops.fs  \ 'drops', eliminación de varios elementos de la pila
-require galope/random_strings.fs  \ Selección aleatoria de cadenas de texto
-require galope/xy.fs  \ Posición actual del cursor
-require galope/print.fs  \ Impresión de textos ajustados
-require galope/sconstant.fs \ Constantes de cadenas de texto
-require galope/seconds.fs \ 'seconds', pausa en segundos acortable con una pulsación de tecla
-require galope/svariable.fs \ Variables de cadenas de texto
-require galope/randomize.fs  \ 'randomize'
+require galope/at-x.fs  \ xxx 'at-x' provisional, para depuración
+require galope/backslash-end-of-file.fs  \ '\eof'
 require galope/between.fs  \ 'between' (variante habitual de 'within')
-require galope/home.fs  \ 'home'
+require galope/bracket-false.fs  \ '[false]'
+require galope/bracket-or.fs  \ '[or]'
+require galope/bracket-question-question.fs  \ '[??]'
+require galope/bracket-true.fs  \ '[true]'
+require galope/choose.fs  \ 'choose', selección aleatoria de un elemento de la pila
+require galope/colors.fs
+require galope/column.fs  \ 'column'
+require galope/drops.fs  \ 'drops', eliminación de varios elementos de la pila
 require galope/enum.fs  \ 'enum'
-require galope/plus-plus.fs  \ '++'
+require galope/home.fs  \ 'home'
+require galope/ink.fs
 require galope/minus-minus.fs  \ '--'
+require galope/paper.fs
+require galope/plus-plus.fs  \ '++'
+require galope/print.fs  \ Impresión de textos ajustados
+require galope/sourcepath.fs
 require galope/question-empty.fs  \ '?empty'
 require galope/question-keep.fs  \ '?keep'
 require galope/question-question.fs  \ '??'
-require galope/bracket-question-question.fs  \ '[??]'
-require galope/bracket-true.fs  \ '[true]'
-require galope/bracket-false.fs  \ '[false]'
-require galope/bracket-or.fs  \ '[or]'
-require galope/backslash-end-of-file.fs  \ '\eof'
-require galope/column.fs  \ 'column'
+require galope/random_strings.fs  \ Selección aleatoria de cadenas de texto
+require galope/randomize.fs  \ 'randomize'
 require galope/row.fs  \ 'row'
-require galope/at-x.fs  \ xxx 'at-x' provisional, para depuración
-require galope/tilde-tilde.fs  \ improved '~~'
+require galope/sconstant.fs \ Constantes de cadenas de texto
+require galope/seconds.fs \ 'seconds', pausa en segundos acortable con una pulsación de tecla
+require galope/svariable.fs \ Variables de cadenas de texto
+require galope/system_colors.fs
+require galope/tilde-tilde.fs  \ '~~' mejorado
 require galope/x-c-store.fs  \ 'xc!'
-require galope/xcase_es.fs  \ cambio de caja para caracteres propios del castellano en UTF-8
+require galope/xcase_es.fs  \ Cambio de caja para caracteres propios del castellano en UTF-8
+require galope/xy.fs  \ Posición actual del cursor
 
 \ Otras herramientas
 
@@ -277,6 +285,7 @@ pad 0 2constant ""  \ Simula una cadena vacía.
   \ de 'create' en Gforth; probablemente hay otra forma
   \ más directa de crear una palabra a partir de 
   \ de un xt y una cadena con su nombre.
+  \ xxx pendiente. simplificar con 'nextname'
   name-too-short? header, reveal dovar: cfa, ,
   does> perform
   ;
@@ -468,7 +477,7 @@ false [if]  \ Ejemplo de código:
 
 [then]  \ Fin del ejemplo
 
-\ false constant no_error# \ xxx no se usa
+\ 0 constant no_error# \ xxx no se usa
 
 0 value cannot_see_error#
 0 value cannot_see_what_error#
@@ -607,6 +616,8 @@ section( Pantalla)  \ {{{
 \ ------------------------------------------------
 subsection( Variables y constantes)  \ {{{
 
+false [if]  \ xxx obsoleto, movido a galope/sgr.fs
+
 \ Parámetros SGR (Select Graphic Rendition)
 \ que no están incluidos en el módulo trm de Forth Foundation library.
 \ Referencia:
@@ -633,8 +644,12 @@ subsection( Variables y constantes)  \ {{{
 
 ' trm+set-attributes alias sgr
 
+[then]
+
 \ }}}---------------------------------------------
 subsection( Colores)  \ {{{
+
+false [if]  \ xxx obsoleto, movido a galope/colors.fs
 
 (
 
@@ -675,6 +690,9 @@ http://en.wikipedia.org/wiki/ANSI_escape_code
 
 : ink ( u -- )  1 sgr  ;
 : paper  ( u -- )  10 + ink  ;
+
+[then]
+
 : colors  ( u1 u2 -- )
   \ Pone los colores de papel y tinta.
   \ u1 = Color de papel
@@ -776,6 +794,7 @@ variable action_error_paper
   \ Pone el color de texto usado en los mensajes de depuración.
   debug_paper debug_ink @colors
   ;
+false [if]  \ xxx obsoleto, movido a galope/system_colors.fs
 : system_background_color  ( -- )
   \ Pone el color de papel predeterminado en el sistema.
   trm.background-default 1 sgr
@@ -789,6 +808,7 @@ variable action_error_paper
   system_background_color system_foreground_color
   trm.reset 1 sgr 
   ;
+[then]
 : background_color  ( -- )
   \ Pone el color de fondo.
   [defined] background_paper
@@ -881,7 +901,7 @@ subsection( Demo de colores)  \ {{{
   \ brown color_bar ." marrón"
   \ red color_bar ." rojo"
   \ brown color_bar ." marrón"
-  system_color cr
+  system_colors cr
   ;
 
 \ }}}---------------------------------------------
@@ -1912,19 +1932,19 @@ variable indent_first_line_too?  \ ¿Se indentará también la línea superior d
 : (language_error)  ( a u -- )
   \ Imprime una cadena como un informe de error lingüístico.
   \ xxx renombrar
-  language_error_color paragraph system_color
+  language_error_color paragraph system_colors
   ;
 : action_error  ( a u -- )
   \ Imprime una cadena como un informe de error de un comando.
-  action_error_color paragraph system_color
+  action_error_color paragraph system_colors
   ;
 : system_error  ( a u -- )
   \ Imprime una cadena como un informe de error del sistema.
-  system_error_color paragraph system_color
+  system_error_color paragraph system_colors
   ;
 : narrate  ( a u -- )
   \ Imprime una cadena como una narración.
-  narration_color paragraph system_color
+  narration_color paragraph system_colors
   ;
 
 \ }}}---------------------------------------------
@@ -2065,7 +2085,7 @@ false [if]  \ xxx obsoleto
   ;
 : speak  ( a u -- )
   \ Imprime una cita de un diálogo.
-  quoted speech_color paragraph system_color
+  quoted speech_color paragraph system_colors
   ;
 
 \ }}}
@@ -6494,6 +6514,8 @@ variable what
 
 \ Código de la (seudo)preposición abierta, o cero:
 variable current_preposition
+\ Máscara de bitios de las (seudo)preposiciones usadas en la frase:
+variable used_prepositions
 
 : action_error_general_message$  ( -- a u )
   \ Devuelve el mensaje de error operativo para el nivel 1.
@@ -6734,11 +6756,11 @@ to dangerous_error#
   \ a u = Acción en infinitivo
   \ a1 = Ente al que se refiere la acción y cuyo objeto directo es (o cero)
   ?dup
-  if full_name s& (is_nonsense)
+  if    full_name s& (is_nonsense)
   else  2drop nonsense
   then
   ;
-3 ' (+is_nonsense) action_error +is_nonsense drop
+3 ' (+is_nonsense) action_error: +is_nonsense drop
 : (main_complement+is_nonsense)  ( a u -- )
   \ Informa de que una acción dada (en infinitivo),
   \ que hay que completar con el nombre del complemento principal,
@@ -6754,7 +6776,7 @@ to dangerous_error#
   \ a u = Acción que no tiene sentido, en infinitivo
   secondary_complement @ (+is_nonsense)
   ;
-2 ' secondary_complement+is_nonsense action_error: secondary_complement+is_nonsense drop
+2 ' (secondary_complement+is_nonsense) action_error: secondary_complement+is_nonsense drop
 : no_reason_for$  ( -- a u )
   \ Devuelve una variante de «no hay motivo para».
   \ xxx pendiente. quitar las variantes que no sean adecuadas a todos los casos
@@ -6776,7 +6798,7 @@ to dangerous_error#
   \ xxx pendiente
   no_reason_for$ 2swap s& period+ action_error
   ;
-2 ' (no_reason_for_that) action_error: no_reason_for_that
+2 ' (no_reason_for_that) action_error: no_reason_for_that drop
 : (no_reason)  ( -- )
   \ Informa de que no hay motivo para una acción no especificada.
   \ xxx pendiente
@@ -6874,7 +6896,7 @@ to unnecessary_tool_error#
   2 choose execute  period+ action_error
   ;
 1 ' (is_normal) action_error: is_normal
-drop is_normal_error#
+to is_normal_error#
 
 [then]
 
@@ -7073,7 +7095,7 @@ to you_already_wear_what_error#
   \ Informa de que la acción no puede hacerse con la herramienta elegida.
   not_with_that$ action_error
   ;
-0 ' (not_with_that) action_error not_with_that drop
+0 ' (not_with_that) action_error: not_with_that drop
 : (it_is_already_open)  ( a -- )
   \ Informa de que un ente ya está abierto.
   s" Ya está abiert" rot noun_ending+ period+ action_error
@@ -9733,6 +9755,7 @@ subsection( Agredir)  \ {{{
 \ }}}---------------------------------------------
 subsection( Movimiento)  \ {{{
 
+\ xxx mover a la sección de errores
 : toward_that_direction  ( a -- a2 u2 )
   \ Devuelve «al/hacia la dirección indicada».
   \ a = Ente dirección
@@ -9743,7 +9766,7 @@ subsection( Movimiento)  \ {{{
     toward_the(m)$ r> ^name
   then  s&
   ;
-: impossible_move  ( a -- )
+: (impossible_move)  ( a -- )
   \ El movimiento es imposible.
   \ a = Ente dirección
   \ xxx inacabado. añadir una tercera variante «ir en esa dirección»; y otras específicas como «no es posible subir»
@@ -9751,8 +9774,9 @@ subsection( Movimiento)  \ {{{
   3 random 
   if    toward_that_direction
   else  drop that_way$
-  then  s& period+ narrate
+  then  s& period+ action_error
   ;
+1 ' (impossible_move) action_error: impossible_move drop
 : do_go_if_possible  ( a -- )
   \ Comprueba si el movimiento es posible y lo efectúa.
   \ a = Ente supuestamente de tipo dirección
@@ -10725,7 +10749,7 @@ create conversations_with_ambrosio
 \ Conversaciones sin éxito
 
 : talk_to_something  ( a -- )
-  \ Hablar con un ente que no es un personaje .
+  \ Hablar con un ente que no es un personaje.
   \ xxx pendiente
   2 random
   if    drop nonsense
@@ -11136,26 +11160,44 @@ con un error.
 
 )
 
-\ Constantes para los identificadores de (seudo)preposiciones:
-1  \ Valor del primer identificador
-enum «con»_preposition
-enum «usando»_preposition
-false [if]  \ xxx inacabado
-enum «a»_preposition
-enum «contra»_preposition
-enum «de»_preposition
-enum «en»_preposition
-enum «hacia»_preposition
-enum «para»_preposition
-enum «por»_preposition
-[then]
-( u1 )  \ Número de (seudo)preposiciones +1
-1- dup constant prepositions#  \ Número de (seudo)preposiciones
-cells dup constant /prepositions  \ Octetos necesarios para guardarlas
-( u2 )
+variable 'prepositions#  \ Número de (seudo)preposiciones
+: prepositions#  ( -- n )
+  \ Número de (seudo)preposiciones.
+  'prepositions# @
+  ;
+: >bit  ( u1 -- u2 )
+  \ u2 = número cuyo único bitio activo es aquel cuyo orden
+  \ indica u1 (ej. 1->1, 2->2, 3->4, 4->8...)
+  1 swap lshift
+  ;
+: preposition:  ( "name1" "name2" -- )
+  \ Crea los identificadores de una (seudo)preposición
+  \ y actualiza el contador.
+  \ "name1" = nombre del identificador para usar como máscara de bitios
+  \ "name2" = nombre del identificador para usar como índice de tabla
+  prepositions# >bit constant
+  'prepositions# ++ prepositions# constant
+  ;
 
+\ Constantes para los identificadores de (seudo)preposiciones:
+preposition: «con»_preposition_bit «con»_preposition#
+preposition: «usando»_preposition_bit «usando»_preposition#
+false [if]  \ xxx inacabado
+preposition: «a»_preposition_bit «a»_preposition#
+preposition: «contra»_preposition_bit «contra»_preposition#
+preposition: «de»_preposition_bit «de»_preposition#
+preposition: «en»_preposition_bit «en»_preposition#
+preposition: «hacia»_preposition_bit «hacia»_preposition#
+preposition: «para»_preposition_bit «para»_preposition#
+preposition: «por»_preposition_bit «por»_preposition#
+preposition: «sin»_preposition_bit «sin»_preposition#  \ xxx para dejar cosas antes de la acción
+[then]
+( n )
+\ Octetos necesarios para guardar las (seudo)preposiciones en la
+\ tabla:
+prepositions# cells constant /prepositional_complements
 \ Tabla de complementos (seudo)preposicionales:
-create prepositional_complements  cells allot
+create prepositional_complements /prepositional_complements allot
 
 (
 
@@ -11164,10 +11206,9 @@ tener usos diferentes, y algunos de ellos dependen del
 ente al que se refieran, por lo que su análisis hay que
 hacerlo en varios niveles.
 
-Decimos «[seudo]preposiciones» porque algunos de los
-términos usados como preposiciones no lo son [como por
-ejemplo «usando», que es una forma verbal] pero se usan como
-si lo fueran.
+Decimos «[seudo]preposiciones» porque algunos de los términos
+usados como preposiciones no lo son [como por ejemplo «usando»,
+que es un gerundio] pero se usan como si lo fueran.
 
 Los identificadores creados arriba se refieren a
 [seudo]preposiciones del vocabulario de juego [por ejemplo,
@@ -11193,12 +11234,12 @@ dicha [seudo]preposición, o bien cero si la
 
 : erase_prepositional_complements  ( -- )
   \ Borra la tabla de complementos (seudo)preposicionales.
-  prepositional_complements /prepositions erase
+  prepositional_complements /prepositional_complements erase
   ;
 : prepositional_complement  ( u -- a )
   \ Devuelve la dirección de un elemento de la tabla
   \ de complementos (seudo)preposicionales.
-  \ u = Identificador de la preposición
+  \ u = Número de la preposición
   \ a = Dirección en la tabla de complementos (seudo)preposicionales
   1- cells prepositional_complements +
   ;
@@ -11214,7 +11255,7 @@ dicha [seudo]preposición, o bien cero si la
   \ de complementos (seudo)preposicionales
   \ correspondiente al complemento de compañía
   \ (complemento que puede ser cero si no existe).
-  «con»_preposition prepositional_complement
+  «con»_preposition# prepositional_complement
   ;
 ' (company_complement) is company_complement
 : (actual_company_complement)  ( -- a|0 )
@@ -11222,8 +11263,8 @@ dicha [seudo]preposición, o bien cero si la
   \ de complementos (seudo)preposicionales
   \ correspondiente al complemento de compañía estricto
   \ (complemento que puede ser cero si no existe).
-  \ xxx inacabado, experimenta, ojo: puede devolver cero
-  «usando»_preposition prepositional_complement @ dup 0<>
+  \ xxx inacabado, experimental, ojo: puede devolver cero
+  «usando»_preposition# prepositional_complement @ dup 0<>
   if  drop company_complement  then
   ;
 ' (actual_company_complement) is actual_company_complement
@@ -11232,7 +11273,7 @@ dicha [seudo]preposición, o bien cero si la
   \ de complementos (seudo)preposicionales
   \ correspondiente al complemento instrumental estricto
   \ (complemento que puede ser cero si no existe).
-  «usando»_preposition prepositional_complement
+  «usando»_preposition# prepositional_complement
   ;
 ' (actual_tool_complement) is actual_tool_complement
 : (tool_complement)  ( -- a )
@@ -11248,6 +11289,7 @@ dicha [seudo]preposición, o bien cero si la
   \ Inicializa las preposiciones.
   erase_prepositional_complements
   current_preposition off
+  used_prepositions off
   ;
 : complements_off  ( -- )
   \ Inicializa los complementos.
@@ -11270,12 +11312,16 @@ dicha [seudo]preposición, o bien cero si la
   ?wrong
   [debug_catch] [debug_parsing] [or] [??] ~~
   ;
+: (execute_previous_action)  ( -- )
+  \ Ejecuta la acción previa, si es posible
+  \ (no es posible la primera vez, cuando su valor aún es cero).
+  \ xxx otra solución posible: inicializar la variable con una acción que nada haga.
+  previous_action @ ?dup if  (execute_action)  then
+  ;
 : execute_previous_action  ( -- )
-  \ Ejecuta la acción del comando previa, si es posible.
+  \ Ejecuta la acción previa, si así está configurado.
   repeat_previous_action? @
-  if    previous_action @ (execute_action)
-  else  no_verb_error# ?wrong
-  then
+  if    (execute_previous_action)  else  no_verb_error# ?wrong  then
   ;
 : execute_action  ( -- )
   \ Ejecuta la acción del comando, si es posible.
@@ -11423,7 +11469,8 @@ dicha [seudo]preposición, o bien cero si la
   repeated_preposition_error# and throw  \ Si es así, error
   dup new_last_complement
   current_prepositional_complement !
-  current_preposition off  \ Cerrar la preposición
+  current_preposition @ >bit used_prepositions +!  \ Añadir la preposición a las usadas
+  current_preposition off  \ Cerrar la preposición en curso
   [debug_parsing] [??] ~~
   ;
 : secondary_complement!  ( a -- )
@@ -11497,6 +11544,8 @@ partida.
 
 )
 
+sourcepath 2constant path$
+
 : config_file$  ( -- a u )
   \ Fichero de configuración.
   \ xxx fixme
@@ -11504,7 +11553,8 @@ partida.
   \ s" ./ayc.ini.fs" \ lo encuentra al arrancar desde el dir del programa; no desde otro
   \ s" ayc.ini.fs" \ ídem
   \ Tras hacer un enlace /usr/share/gforth/site-forth/ayc al dir del proyecto:
-  s" ayc/ayc.ini.fs" \ lo encuentra desde cualquier dir
+  \ s" ayc/ayc.ini.fs" \ lo encuentra desde cualquier dir
+  path$ s" ayc.ini.fs" s+
   ;
 
 svariable command_prompt
@@ -11714,7 +11764,7 @@ restore_vocabularies
   \ xxx pendiente. atrapar errores al leerlo
   base @ decimal
   only config_vocabulary
-  config_file$ ['] included catch  ( x1 x2 n | 0 )
+  config_file$ 2dup type ['] included catch  ( x1 x2 n | 0 )
   if  2drop  read_config_error  then
   restore_vocabularies  base !
   ;
@@ -12730,38 +12780,38 @@ o sustantivos.
 
 : con  ( -- )
   \ Uso: Herramienta o compañía
-  «con»_preposition preposition!
+  «con»_preposition# preposition!
   ;
 : usando  ( -- )
   \ Uso: Herramienta
-  «usando»_preposition preposition!
+  «usando»_preposition# preposition!
   ;
 ' usando synonyms{ utilizando empleando mediante }synonyms
 false [if]  \ xxx descartado, pendiente
 : a  ( -- )
   \ Uso: Destino de movimiento, objeto indirecto
-  «a»_preposition preposition!
+  «a»_preposition# preposition!
   ;
 ' a synonyms{ al }synonyms
 : de  ( -- )
   \ Uso: Origen de movimiento, propiedad
-  «de»_preposition preposition!
+  «de»_preposition# preposition!
   ;
 : hacia  ( -- )
   \ Uso: Destino de movimiento, destino de lanzamiento
-  «hacia»_preposition preposition!
+  «hacia»_preposition# preposition!
   ;
 : contra  ( -- )
   \ Uso: Destino de lanzamiento
-  «contra»_preposition preposition!
+  «contra»_preposition# preposition!
   ;
 : para  ( -- )
   \ Uso: Destino de movimiento, destino de lanzamiento
-  «para»_preposition preposition!
+  «para»_preposition# preposition!
   ;
 : por  ( -- )
   \ Uso: Destino de movimiento 
-  «por»_preposition preposition!
+  «por»_preposition# preposition!
   ;
 [then]
 
@@ -13276,7 +13326,7 @@ false [if]  \ xxx no se usa
   ;
 :action (do_finish)
   \ Abandonar el juego.
-  restore_vocabularies system_color cr .forth quit
+  restore_vocabularies system_colors cr .forth quit
   ;action
 :action do_finish
   \ Acción de abandonar el juego.
@@ -13569,6 +13619,19 @@ true [if]
   battle_phases 0 do
     i test_battle_phase
   loop
+  ;
+
+: check_prepos
+  s" mira espada usando capa"
+  ~~
+  init_parsing
+  ~~
+  valid_parsing?
+  ~~
+  0= abort" parsing failed"
+  ~~
+  used_prepositions ?
+  ~~
   ;
 
 [then]
