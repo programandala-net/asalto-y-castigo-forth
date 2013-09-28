@@ -15,7 +15,7 @@ CR .( Asalto y castigo )  \ {{{
 \ Copyright (C) 2011,2012,2013 Marcos Cruz (programandala.net)
 
 only forth definitions
-: version$  ( -- a u )  s" A-05-2013092900"  ;
+: version$  ( -- a u )  s" A-05-2013092935"  ;
 version$ type cr
 
 \ 'Asalto y castigo' is free software; you can redistribute
@@ -91,13 +91,13 @@ colon-sys = valores internos de control durante la compilación de una palabra
             [en el caso de Gforth se trata de tres elementos]
 f         = indicador lógico: cero es «falso»; otro valor es «cierto»
 false     = 0
-ff        = indicador puro de ANS Forth: 0 es «falso»; -1 es «cierto»
-            [-1 es un valor de 32 bitios con todos los bitios a uno]
 i*x       = grupo de elementos sin especificar; puede estar vacío
 j*x       = grupo de elementos sin especificar; puede estar vacío
 n         = número de 32 bitios con signo
 true      = -1 [valor de 32 bitios con todos los bitios a uno]
 u         = número de 32 bitios sin signo
+wf        = indicador lógico bien formado: 0 es «falso»; -1 es «cierto»
+            [-1 es un valor de 32 bitios con todos los bitios a uno]
 x         = elemento indeterminado
 xt        = «execution token», identificador de ejecución de una palabra;
             notación de ANS Forth análoga a «cfa»
@@ -298,7 +298,7 @@ pad 0 2constant ""  \ Simula una cadena vacía.
   \ xxx pendiente. confirmar este cálculo, pues depende de si el número se considera con signo o no
   dup @ 1+ ?dup if  swap !  else  drop  then
   ;
-: different?  ( x1 x2 x1 -- ff )
+: different?  ( x1 x2 x1 -- wf )
   \ ¿Es x2 distinto de x1, y es x1 distinto de cero?
   \ Este cálculo se usa en dos lugares del programa.
   <> swap 0<> and
@@ -348,7 +348,7 @@ variable bit#  \ Contador de máscara de bitio para los campos buleanos.
   \ a = Dirección del campo
   rot if  bit_on  else  bit_off  then
   ;
-: bit@  ( u a -- ff )
+: bit@  ( u a -- wf )
   \ Devuelve el contenido de un campo de bitio.
   \ u = Máscara del bitio 
   \ a = Dirección del campo
@@ -613,85 +613,8 @@ variable recent_talks_to_the_leader  \ Contador de intentos de hablar con el lí
 \ }}} ##########################################################
 section( Pantalla)  \ {{{
 
-\ ------------------------------------------------
-subsection( Variables y constantes)  \ {{{
-
-false [if]  \ xxx obsoleto, movido a galope/sgr.fs
-
-\ Parámetros SGR (Select Graphic Rendition)
-\ que no están incluidos en el módulo trm de Forth Foundation library.
-\ Referencia:
-\ http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
-
-003 constant trm.italic-on
-023 constant trm.italic-off
-090 constant trm.foreground-black-high
-091 constant trm.foreground-red-high
-092 constant trm.foreground-green-high
-093 constant trm.foreground-brown-high
-094 constant trm.foreground-blue-high
-095 constant trm.foreground-magenta-high
-096 constant trm.foreground-cyan-high
-097 constant trm.foreground-white-high
-100 constant trm.background-black-high
-101 constant trm.background-red-high
-102 constant trm.background-green-high
-103 constant trm.background-brown-high
-104 constant trm.background-blue-high
-105 constant trm.background-magenta-high
-106 constant trm.background-cyan-high
-107 constant trm.background-white-high
-
-' trm+set-attributes alias sgr
-
-[then]
-
 \ }}}---------------------------------------------
 subsection( Colores)  \ {{{
-
-false [if]  \ xxx obsoleto, movido a galope/colors.fs
-
-(
-
-Notas sobre las pruebas realizadas en Debian
-con el módulo trm de Forth Foundation Library:
-
-TRM.HALF-BRIGHT causa subrayado, igual que TRM.UNDERSCORE-ON 
-TRM.ITALIC-ON causa vídeo inverso, igual que TRM.REVERSE-ON
-TRM.FOREGROUND-WHITE pone un blanco apagado diferente al predeterminado.
-
-Referencia:
-http://en.wikipedia.org/wiki/ANSI_escape_code
-
-)
-
-: lighter  ( u1 -- u2 )
-  \ Incrementa el brillo de un color (entre los colores normales y los brillantes
-  \ hay una diferencia numérica fija).
-  [ trm.foreground-black-high trm.foreground-black - ] literal +
-  ;
-
-: black  ( -- u )  trm.foreground-black  ;
-: blue  ( -- u )  trm.foreground-blue  ;
-: light_blue  ( -- u )  blue lighter  ;
-: brown  ( -- u )  trm.foreground-brown  ;
-: cyan  ( -- u )  trm.foreground-cyan  ;
-: light_cyan  ( -- u )  cyan lighter  ;
-: green  ( -- u )  trm.foreground-green  ;
-: light_green  ( -- u )  green lighter  ;
-: gray  ( -- u )  black lighter  ;
-: light_gray  ( -- u )  trm.foreground-white  ;
-: magenta  ( -- u )  trm.foreground-magenta  ;
-: light_magenta  ( -- u )  magenta lighter  ;
-: red  ( -- u )  trm.foreground-red  ;
-: light_red  ( -- u )  red lighter  ;
-: white  ( -- u )  light_gray lighter  ;
-: yellow  ( -- u )  brown lighter  ;
-
-: ink ( u -- )  1 sgr  ;
-: paper  ( u -- )  10 + ink  ;
-
-[then]
 
 : colors  ( u1 u2 -- )
   \ Pone los colores de papel y tinta.
@@ -794,21 +717,6 @@ variable action_error_paper
   \ Pone el color de texto usado en los mensajes de depuración.
   debug_paper debug_ink @colors
   ;
-false [if]  \ xxx obsoleto, movido a galope/system_colors.fs
-: system_background_color  ( -- )
-  \ Pone el color de papel predeterminado en el sistema.
-  trm.background-default 1 sgr
-  ;
-: system_foreground_color  ( -- )
-  \ Pone el color de texto predeterminado en el sistema.
-  trm.foreground-default 1 sgr
-  ;
-: system_color  ( -- )
-  \ Pone los colores predeterminados en el sistema.
-  system_background_color system_foreground_color
-  trm.reset 1 sgr 
-  ;
-[then]
 : background_color  ( -- )
   \ Pone el color de fondo.
   [defined] background_paper
@@ -911,23 +819,23 @@ subsection( Otros atributos tipográficos)  \ {{{
   \ Activa la negrita.
   trm.bold 1 sgr
   ;
-: underline  ( ff -- )
+: underline  ( wf -- )
   \ Activa o desactiva el subrayado.
   if  trm.underscore-on  else  trm.underline-off  then  1 sgr
   ;
 ' underline alias underscore
-: inverse  ( ff -- )
+: inverse  ( wf -- )
   \ Activa o desactiva la inversión de colores (papel y tinta).
   if  trm.reverse-on  else  trm.reverse-off  then  1 sgr
   ;
 true [if]  \ xxx pendiente
-: blink ( ff -- )
+: blink ( wf -- )
   \ Activa o desactiva el parpadeo.
   \ xxx no funciona
   if  trm.blink-on  else  trm.blink-off  then  1 sgr
   ;
 [then]
-: italic  ( ff -- )
+: italic  ( wf -- )
   \ Activa o desactiva la cursiva.
   \ Nota: tiene el mismo efecto que 'inverse'.
   if  trm.italic-on  else  trm.italic-off  then  1 sgr
@@ -981,10 +889,10 @@ subsection( Borrado de pantalla)  \ {{{
 \ }}} ##########################################################
 section( Depuración)  \ {{{
 
-: fatal_error  ( ff a u -- )
+: fatal_error  ( wf a u -- )
   \ Informa de un error y sale del sistema, si el indicador de error es distinto de cero.
   \ xxx no se usa
-  \ ff = Indicador de error
+  \ wf = Indicador de error
   \ a u = Mensaje de error
   rot if  ." Error fatal: " type cr bye  else  2drop  then
   ;
@@ -1048,12 +956,13 @@ str-create tmp_str  \ Cadena dinámica de texto temporal para usos variados
   [then]
   ;
 : ^uppercase  ( a1 u -- a2 u )
-  \ Hace una copia de una cadena en el almacén circular y la devuelve con la primera letra en mayúscula.
+  \ Hace una copia de una cadena en el almacén circular
+  \ y la devuelve con la primera letra en mayúscula.
   \ Nota: Se necesita para los casos en que no queremos
   \ modificar la cadena original.
   >sb 2dup (^uppercase)
   ;
-: ?^uppercase  ( a1 u ff -- a1 u | a2 u )
+: ?^uppercase  ( a1 u wf -- a1 u | a2 u )
   \ Hace una copia de una cadena en el almacén circular
   \ y la devuelve con la primera letra en mayúscula,
   \ dependiendo del valor de un indicador.
@@ -1085,24 +994,24 @@ str-create tmp_str  \ Cadena dinámica de texto temporal para usos variados
   \ a4 u4 = Resultado
   2rot tmp_str!  tmp_str str-replace  tmp_str@
   ;
-: *>verb_ending  ( a u ff -- )
+: *>verb_ending  ( a u wf -- )
   \ Cambia por «n» (terminación verbal en plural)
   \ los asteriscos de un texto, o los quita.
   \ Se usa para convertir en plural o singular los verbos de una frase.
   \ a u = Texto
-  \ ff = ¿Hay que poner los verbos en plural?
+  \ wf = ¿Hay que poner los verbos en plural?
   [false] [if]  \ Versión al estilo de BASIC:
     if  s" n"  else  s" "  then  s" *" sreplace 
   [else]  \ Versión sin estructuras condicionales, al estilo de Forth:
     s" n" rot and  s" *" sreplace 
   [then]
   ;
-: *>plural_ending  ( a u ff -- )
+: *>plural_ending  ( a u wf -- )
   \ Cambia por «s» (terminación plural)
   \ los asteriscos de un texto, o los quita.
   \ Se usa para convertir en plural o singular los verbos de una frase.
   \ a u = Expresión
-  \ ff = ¿Hay que poner los verbos en plural?
+  \ wf = ¿Hay que poner los verbos en plural?
   \ xxx no se usa
   [false] [if]  \ Versión al estilo de BASIC:
     if  s" s"  else  s" "  then  s" *" sreplace 
@@ -1115,6 +1024,7 @@ str-create tmp_str  \ Cadena dinámica de texto temporal para usos variados
   \ c = Carácter
   \ u = Longitud de la cadena
   \ a = Dirección de la cadena
+  \ xxx mover a la librería galope
   dup sb_allocate swap 2dup 2>r  rot fill  2r>
   ;
 
@@ -1327,10 +1237,10 @@ de cadena creadas con 'sconstant'.
   s{ s" la tropa" s" la hueste" }s
   s{ s" enemiga" s" sajona" }s& }s
   ;
-: (the_enemy|enemies)  ( -- a u ff )
+: (the_enemy|enemies)  ( -- a u wf )
   \ Devuelve una variante de «el/los enemigo/s», y un indicador del número.
   \ a u = Cadena con el texto
-  \ ff = ¿El texto está en plural?
+  \ wf = ¿El texto está en plural?
   2 random dup if  the_enemies$  else  the_enemy$  then  rot
   ;
 : the_enemy|enemies$  ( -- a u )
@@ -1347,10 +1257,10 @@ de cadena creadas con 'sconstant'.
   s" de" 2swap s&
   r> 0= ?? «de_el»>«del»
   ;
-: ^the_enemy|enemies  ( -- a u ff )
+: ^the_enemy|enemies  ( -- a u wf )
   \ Devuelve una variante de «El/Los enemigo/s», y un indicador del número.
   \ a u = Cadena con el texto
-  \ ff = ¿El texto está en plural?
+  \ wf = ¿El texto está en plural?
   (the_enemy|enemies) >r  ^uppercase  r>
   ;
 : of_your_ex_cloak$  ( -- a u )
@@ -1772,7 +1682,7 @@ str-create print_str  \ Cadena dinámica para almacenar el texto antes de imprim
   \ Añade un carácter al final de la cadena dinámica 'print_str'.
   print_str str-append-char
   ;
-: «»bl+?  ( u -- ff )
+: «»bl+?  ( u -- wf )
   \ ¿Se debe añadir un espacio al concatenar una cadena a la cadena dinámica 'print_str'?
   \ u = Longitud de la cadena que se pretende unir a la cadena dinámica 'print_str'
   0<> print_str str-length@ 0<> and
@@ -1850,14 +1760,14 @@ svariable scroll_prompt  \ Guardará el presto de pausa
   scroll_prompt$ type  scroll_prompt_key
   trm+erase-line  trm+restore-cursor
   ;
-: (scroll_prompt?)  ( u -- ff )
+: (scroll_prompt?)  ( u -- wf )
   \ ¿Se necesita imprimir un presto para la línea actual?
   \ u = Línea actual del párrafo que se está imprimiendo
   \ Se tienen que cumplir dos condiciones:
   dup 1+ #lines @ <>  \ ¿Es distinta de la última?
   swap /scroll_prompt mod 0=  and  \ ¿Y el intervalo es correcto?
   ;
-: scroll_prompt?  ( u -- ff )
+: scroll_prompt?  ( u -- wf )
   \ ¿Se necesita imprimir un presto para la línea actual?
   \ u = Línea actual del párrafo que se está imprimiendo
   \ Si el valor de 'scroll' es «verdadero», se devuelve «falso»;
@@ -1881,11 +1791,11 @@ subsection( Impresión de párrafos ajustados)  \ {{{
 variable /indentation  \ En curso
 
 variable indent_first_line_too?  \ ¿Se indentará también la línea superior de la pantalla, si un párrafo empieza en ella?
-: not_first_line?  ( -- ff )
+: not_first_line?  ( -- wf )
   \ ¿El cursor no está en la primera línea?
   row 0>
   ;
-: indentation?  ( -- ff )
+: indentation?  ( -- wf )
   \ ¿Indentar la línea actual?
   not_first_line? indent_first_line_too? @ or
   ;
@@ -2029,12 +1939,12 @@ s" —" sconstant dash$  \ Raya (código Unicode 2014 en hexadecimal, 8212 en de
 s" «" sconstant lquote$ \ Comilla castellana de apertura
 s" »" sconstant rquote$  \ Comilla castellana de cierre
 
-: str-with-rquote-only?  ( a -- ff )
+: str-with-rquote-only?  ( a -- wf )
   \ ¿Hay en una cadena dinámica una comilla castellana de cierre pero no una de apertura?
   >r rquote$ 0 r@ str-find -1 >  \ ¿Hay una comilla de cierre en la cita?
   lquote$ 0 r> str-find -1 = and  \ ¿Y además falta la comilla de apertura? 
   ;
-: str-with-period?  ( a -- ff )
+: str-with-period?  ( a -- wf )
   \ ¿Termina una cadena dinámica con un punto?
   \ xxx fallo: no se pone punto tras puntos suspensivos 
   dup str-get-last-char [char] . =  \ ¿El último carácter es un punto?
@@ -2277,7 +2187,7 @@ last_exit> cell+ first_exit> - constant /exits
 \ Marcador para direcciones sin salida en un ente dirección:
 0 constant no_exit
 
-: exit?  ( a -- ff )
+: exit?  ( a -- wf )
   \ ¿Está abierta una dirección de salida de un ente escenario?
   \ a = Contenido de un campo de salida de un ente (que será el ente de destino, o cero)
   no_exit <>
@@ -2302,36 +2212,36 @@ campos.
 : direction  ( a -- u )  ~direction @  ;
 : familiar  ( a -- u )  ~familiar @  ;
 : flags_0  ( a -- x )  ~flags_0 @  ;
-: has_definite_article?  ( a -- ff )  ~has_definite_article? bit@  ;
-: has_feminine_name?  ( a -- ff )  ~has_feminine_name? bit@  ;
-: has_masculine_name?  ( a -- ff )  has_feminine_name? 0=  ;
-: has_no_article?  ( a -- ff )  ~has_no_article? bit@  ;
-: has_personal_name?  ( a -- ff )  ~has_personal_name? bit@  ;
-: has_plural_name?  ( a -- ff )  ~has_plural_name? bit@  ;
-: has_singular_name?  ( a -- ff )  has_plural_name? 0=  ;
+: has_definite_article?  ( a -- wf )  ~has_definite_article? bit@  ;
+: has_feminine_name?  ( a -- wf )  ~has_feminine_name? bit@  ;
+: has_masculine_name?  ( a -- wf )  has_feminine_name? 0=  ;
+: has_no_article?  ( a -- wf )  ~has_no_article? bit@  ;
+: has_personal_name?  ( a -- wf )  ~has_personal_name? bit@  ;
+: has_plural_name?  ( a -- wf )  ~has_plural_name? bit@  ;
+: has_singular_name?  ( a -- wf )  has_plural_name? 0=  ;
 : init_xt  ( a -- xt )  ~init_xt @  ;
-: is_animal?  ( a -- ff )  ~is_animal? bit@  ;
-: is_character?  ( a -- ff )  ~is_character? bit@  ;
-: is_cloth?  ( a -- ff )  ~is_cloth? bit@  ;
-: is_decoration?  ( a -- ff )  ~is_decoration? bit@  ;
-: is_global_indoor?  ( a -- ff )  ~is_global_indoor? bit@  ;
-: is_global_outdoor?  ( a -- ff )  ~is_global_outdoor? bit@  ;
-: is_human?  ( a -- ff )  ~is_human? bit@  ;
-: is_light?  ( a -- ff )  ~is_light? bit@  ;
-: is_not_listed?  ( a -- ff )  ~is_not_listed? bit@  ;
-: is_listed?  ( a -- ff )  is_not_listed? 0=  ;
-: is_lit?  ( a -- ff )  ~is_lit? bit@  ;
-: is_not_lit?  ( a -- ff )  is_lit? 0=  ;
-: is_location?  ( a -- ff )  ~is_location? bit@  ;
-: is_indoor_location?  ( a -- ff )  is_location? ~is_indoor_location? bit@ and  ;
-: is_outdoor_location?  ( a -- ff )  is_indoor_location? 0=  ;
-: is_open?  ( a -- ff )  ~is_open? bit@  ;
-: is_closed?  ( a -- ff )  is_open? 0=  ;
+: is_animal?  ( a -- wf )  ~is_animal? bit@  ;
+: is_character?  ( a -- wf )  ~is_character? bit@  ;
+: is_cloth?  ( a -- wf )  ~is_cloth? bit@  ;
+: is_decoration?  ( a -- wf )  ~is_decoration? bit@  ;
+: is_global_indoor?  ( a -- wf )  ~is_global_indoor? bit@  ;
+: is_global_outdoor?  ( a -- wf )  ~is_global_outdoor? bit@  ;
+: is_human?  ( a -- wf )  ~is_human? bit@  ;
+: is_light?  ( a -- wf )  ~is_light? bit@  ;
+: is_not_listed?  ( a -- wf )  ~is_not_listed? bit@  ;
+: is_listed?  ( a -- wf )  is_not_listed? 0=  ;
+: is_lit?  ( a -- wf )  ~is_lit? bit@  ;
+: is_not_lit?  ( a -- wf )  is_lit? 0=  ;
+: is_location?  ( a -- wf )  ~is_location? bit@  ;
+: is_indoor_location?  ( a -- wf )  is_location? ~is_indoor_location? bit@ and  ;
+: is_outdoor_location?  ( a -- wf )  is_indoor_location? 0=  ;
+: is_open?  ( a -- wf )  ~is_open? bit@  ;
+: is_closed?  ( a -- wf )  is_open? 0=  ;
 : name_str  ( a1 -- a2 )  ~name_str @  ;
 : times_open  ( a -- u )  ~times_open @  ;
 : owner  ( a1 -- a2 )  ~owner @  ;
-: is_vegetal?  ( a -- ff )  ~is_vegetal? bit@  ;
-: is_worn?  ( a -- ff )  ~is_worn? bit@  ;
+: is_vegetal?  ( a -- wf )  ~is_vegetal? bit@  ;
+: is_worn?  ( a -- wf )  ~is_worn? bit@  ;
 : location  ( a1 -- a2 )  ~location @  ;
 : can_i_enter_location?_xt  ( a -- xt )  ~can_i_enter_location?_xt @  ;
 : before_describing_location_xt  ( a -- xt )  ~before_describing_location_xt @  ;
@@ -2365,7 +2275,7 @@ campos.
 : is_character  ( a -- )  ~is_character? bit_on  ;
 : is_animal  ( a -- )  ~is_animal? bit_on  ;
 : is_light  ( a -- )  ~is_light? bit_on  ;
-: is_not_listed  ( a -- ff )  ~is_not_listed? bit_on  ;
+: is_not_listed  ( a -- wf )  ~is_not_listed? bit_on  ;
 : is_lit  ( a -- )  ~is_lit? bit_on  ;
 : is_not_lit  ( a -- )  ~is_lit? bit_off  ;
 : is_cloth  ( a -- )  ~is_cloth? bit_on  ;
@@ -2404,25 +2314,25 @@ código más conciso y legible.
 
 )
 
-: is_direction?  ( a -- ff )  direction 0<>  ;
-: is_familiar?  ( a -- ff )  familiar 0>  ;
-: is_visited?  ( a -- ff )  visits 0>  ;
-: is_not_visited?  ( a -- ff )  visits 0=  ;
-: conversations?  ( a -- ff )  conversations 0<>  ;
-: no_conversations?  ( a -- ff )  conversations 0=  ;
-: has_north_exit?  ( a -- ff )  north_exit exit?  ;
-: has_east_exit?  ( a -- ff )  east_exit exit?  ;
-: has_south_exit?  ( a -- ff )  south_exit exit?  ;
+: is_direction?  ( a -- wf )  direction 0<>  ;
+: is_familiar?  ( a -- wf )  familiar 0>  ;
+: is_visited?  ( a -- wf )  visits 0>  ;
+: is_not_visited?  ( a -- wf )  visits 0=  ;
+: conversations?  ( a -- wf )  conversations 0<>  ;
+: no_conversations?  ( a -- wf )  conversations 0=  ;
+: has_north_exit?  ( a -- wf )  north_exit exit?  ;
+: has_east_exit?  ( a -- wf )  east_exit exit?  ;
+: has_south_exit?  ( a -- wf )  south_exit exit?  ;
 
-: owns?  ( a1 a2 -- ff )  owner =  ;
-: belongs?  ( a1 a2 -- ff )  swap owns?  ;
+: owns?  ( a1 a2 -- wf )  owner =  ;
+: belongs?  ( a1 a2 -- wf )  swap owns?  ;
 : owns  ( a1 a2 -- )  ~owner !  ;
 : belongs  ( a1 a2 -- )  swap owns  ;
 
-: belongs_to_protagonist?  ( a -- ff )  owner protagonist% =  ;
+: belongs_to_protagonist?  ( a -- wf )  owner protagonist% =  ;
 : belongs_to_protagonist  ( a -- )  ~owner protagonist% swap !  ;
 
-: is_living_being?  ( a -- ff )
+: is_living_being?  ( a -- wf )
   \ ¿El ente es un ser vivo (aunque esté muerto)?
   dup is_vegetal?  over is_animal? or  swap is_human? or
   ;
@@ -2442,19 +2352,19 @@ código más conciso y legible.
   \ a2 = Ente cuya localización previa será a1
   ~previous_location !
   ;
-: is_there?  ( a1 a2 -- ff )
+: is_there?  ( a1 a2 -- wf )
   \ ¿Está un ente localizado en otro?
   \ a1 = Ente que actúa de localización
   \ a2 = Ente cuya localización se comprueba
   location =
   ;
-: was_there?  ( a1 a2 -- ff )
+: was_there?  ( a1 a2 -- wf )
   \ ¿Estuvo un ente localizado en otro?
   \ a1 = Ente que actúa de localización
   \ a2 = Ente cuya localización se comprueba
   previous_location =
   ;
-: is_global?  ( a -- ff )
+: is_global?  ( a -- wf )
   \ ¿Es el ente un ente global?
   dup is_global_outdoor?
   swap is_global_indoor? or
@@ -2471,33 +2381,33 @@ código más conciso y legible.
   \ Mueve el protagonista al ente indicado.
   protagonist% is_there
   ;
-: am_i_there?  ( a -- ff )
+: am_i_there?  ( a -- wf )
   \ ¿Está el protagonista en la localización indicada?
   \ a = Ente que actúa de localización
   my_location =
   ;
-: is_outdoor_location?  ( a -- ff )
+: is_outdoor_location?  ( a -- wf )
   \ ¿Es el ente un escenario al aire libre?
   \ xxx cálculo provisional
   drop 0
   ;
-: is_indoor_location?  ( a -- ff )
+: is_indoor_location?  ( a -- wf )
   \ ¿Es el ente un escenario cerrado, no al aire libre?
   is_outdoor_location? 0=
   ;
-: am_i_outdoor?  ( -- ff )
+: am_i_outdoor?  ( -- wf )
   \ ¿Está el protagonista en un escenario al aire libre?
   my_location is_outdoor_location?
   ;
-: am_i_indoor?  ( -- ff )
+: am_i_indoor?  ( -- wf )
   \ ¿Está el protagonista en un escenario cerrado, no al aire libre?
   am_i_outdoor? 0=
   ;
-: is_hold?  ( a -- ff )
+: is_hold?  ( a -- wf )
   \ ¿Es el protagonista la localización de un ente?
   location protagonist% =
   ;
-: is_not_hold?  ( a -- ff )
+: is_not_hold?  ( a -- wf )
   \ ¿No es el protagonista la localización de un ente?
   is_hold? 0=
   ;
@@ -2509,30 +2419,30 @@ código más conciso y legible.
   \ ¿El protagonista lleva puesto el ente indicado?
   dup is_hold?  swap is_worn?  and
   ;
-: is_known?  ( a -- ff )
+: is_known?  ( a -- wf )
   \ ¿El protagonista ya conoce el ente?
   dup belongs_to_protagonist?  \ ¿Es propiedad del protagonista?
   over is_visited? or  \ ¿O es un escenario ya visitado? (si no es un escenario, la comprobación no tendrá efecto)
   over conversations? or  \ ¿O ha hablado ya con él? (si no es un personaje, la comprobación no tendrá efecto)
   swap is_familiar?  or  \ ¿O ya le es familiar?
   ;
-: is_unknown?  ( a -- ff )
+: is_unknown?  ( a -- wf )
   \ ¿El protagonista aún no conoce el ente?
   is_known? 0=
   ;
-: is_here?  ( a -- ff )
+: is_here?  ( a -- wf )
   \ ¿Está un ente en la misma localización que el protagonista?
   \ El resultado depende de cualquiera de tres condiciones:
   dup location am_i_there?  \ ¿Está efectivamente en la misma localización?
   over is_global_outdoor? am_i_outdoor? and or \ ¿O es un «global exterior» y estamos en un escenario exterior?
   swap is_global_indoor? am_i_indoor? and or  \ ¿O es un «global interior» y estamos en un escenario interior?
   ;
-: is_not_here?  ( a -- ff )
+: is_not_here?  ( a -- wf )
   \ ¿Está un ente en otra localización que la del protagonista?
   \ xxx no se usa
   is_here? 0=
   ;
-: is_here_and_unknown?  ( a -- ff )
+: is_here_and_unknown?  ( a -- wf )
   \ ¿Está un ente en la misma localización que el protagonista y aún no es conocido por él?
   dup is_here? swap is_unknown? and
   ;
@@ -2540,15 +2450,15 @@ código más conciso y legible.
   \ Hace que un ente esté en la misma localización que el protagonista.
   my_location swap is_there
   ;
-: is_accessible?  ( a -- ff )
+: is_accessible?  ( a -- wf )
   \ ¿Es un ente accesible para el protagonista?
   dup is_hold?  swap is_here?  or
   ;
-: is_not_accessible?  ( a -- ff )
+: is_not_accessible?  ( a -- wf )
   \ ¿Un ente no es accesible para el protagonista?
   is_accessible? 0=
   ;
-: can_be_looked_at?  ( a -- ff )
+: can_be_looked_at?  ( a -- wf )
   \ ¿El ente puede ser mirado?
   [false] [if]  \ Primera versión
     dup my_location =  \ ¿Es la localización del protagonista?
@@ -2566,7 +2476,7 @@ código más conciso y legible.
     endcase
   [then]
   ;
-: can_be_taken?  ( a -- ff )
+: can_be_taken?  ( a -- wf )
   \ ¿El ente puede ser tomado?
   \ Se usa como norma general, para aquellos entes
   \ que no tienen un error específico indicado en el campo '~take_error#'
@@ -2574,7 +2484,7 @@ código más conciso y legible.
   over is_human? or
   swap is_character? or 0=
   ;
-: may_be_climbed?  ( a -- ff )
+: may_be_climbed?  ( a -- wf )
   \ ¿El ente podría ser escalado? (Aunque en la práctica no sea posible).
   \ xxx inacabado. hacerlo mejor con un indicador en la ficha
   [false] [if]
@@ -2588,17 +2498,17 @@ código más conciso y legible.
   [else]  false
   [then]
   ;
-: talked_to_the_leader?  ( -- ff )
+: talked_to_the_leader?  ( -- wf )
   \ ¿El protagonista ha hablado con el líder?
   leader% conversations 0<>
   ;
-: do_you_hold_something_forbidden?  ( -- ff )
+: do_you_hold_something_forbidden?  ( -- wf )
   \ ¿Llevas algo prohibido?
   \ Cálculo usado en varios lugares del programa,
   \ en relación a los refugiados.
   sword% is_accessible?  stone% is_accessible?  or
   ;
-: no_torch?  ( -- ff )
+: no_torch?  ( -- wf )
   \ ¿La antorcha no está accesible y encendida?
   torch% is_not_accessible?  torch% is_not_lit?  or
   ;
@@ -3095,11 +3005,11 @@ definir la trama.
 defer lock_found  \ Encontrar el candado; la definición está en '(lock_found)'
 
 0 constant limbo \ Marcador para usar como localización de entes inexistentes
-: vanished?  ( a -- ff )
+: vanished?  ( a -- wf )
   \ ¿Está un ente desaparecido?
   location limbo =
   ;
-: not_vanished?  ( a -- ff )
+: not_vanished?  ( a -- wf )
   \ ¿No está un ente desaparecido?
   vanished? 0=
   ;
@@ -7147,7 +7057,7 @@ variable #elements  \ Total de los elementos de una lista
   \ u2 = Elementos listados hasta el momento
   ?dup if  (list_separator)  else  drop  then
   ;
-: can_be_listed?  ( a -- ff )
+: can_be_listed?  ( a -- wf )
   \ ¿El ente puede ser incluido en las listas?
   \ xxx inacabado
   dup protagonist% <>  \ ¿No es el protagonista?
@@ -7428,12 +7338,12 @@ true [if]
   dup familiar++  .present
   after_listing_entities 
   ;
-: enter_location?  ( a -- ff )
+: enter_location?  ( a -- wf )
   \ Ejecuta la trama previa a la entrada de un escenario,
   \ que devolverá un indicador de que puede entrarse en el escenario;
   \ si esta trama no está definida para el ente, el indicador será 'true'.
   \ a = Ente escenario
-  \ ff = ¿Hay que entrar en él? 
+  \ wf = ¿Hay que entrar en él? 
   can_i_enter_location?_xt ?dup if  execute  else  true  then
   ;
 : enter_location  ( a -- )
@@ -7447,16 +7357,16 @@ section( Recursos de las tramas asociadas a lugares)  \ {{{
 \ ------------------------------------------------
 \ Regreso a casa
 
-: pass_still_open?  ( -- ff )
+: pass_still_open?  ( -- wf )
   \ ¿El paso del desfiladero está abierto por el Norte?
   location_08% has_north_exit?
   ;
-: still_in_the_village?  ( -- ff )
+: still_in_the_village?  ( -- wf )
   \ ¿Los soldados no se han movido aún de la aldea sajona?
   my_location location_01% =
   location_02% is_not_visited? and
   ;
-: back_to_the_village?  ( -- ff )
+: back_to_the_village?  ( -- wf )
   \ ¿Los soldados han regresado a la aldea sajona?
   \ xxx no se usa
   my_location location_01% =
@@ -7502,7 +7412,7 @@ section( Recursos de las tramas asociadas a lugares)  \ {{{
   s" Tienes que apresurarte"
   }s s" ..." s+  narrate
   ;
-: pursue_location?  ( -- ff )
+: pursue_location?  ( -- wf )
   \ ¿En un escenario en que los sajones pueden perseguir al protagonista?
   my_location location_12% <
   ;
@@ -7542,29 +7452,29 @@ section( Recursos de las tramas asociadas a lugares)  \ {{{
 \ ------------------------------------------------
 \ Batalla
 
-: all_your_men  ( -- a u ff )
+: all_your_men  ( -- a u wf )
   \ Devuelve una variante de «Todos tus hombres», y un indicador de número.
   \ a u = Cadena
-  \ ff = ¿El texto está en plural?
+  \ wf = ¿El texto está en plural?
   2 random dup
   if  s{ s" Todos" s" Todos y cada uno de" }s
   else  s" Hasta el último de"
   then  your_soldiers$ s&  rot
   ;
-: ?plural_verb  ( a1 u1 ff -- a1 u1 | a2 u2 )
+: ?plural_verb  ( a1 u1 wf -- a1 u1 | a2 u2 )
   \ Pone un verbo en plural si es preciso.
   if  s" n" s+  then
   ;
-: fight/s$  ( ff -- a u )
+: fight/s$  ( wf -- a u )
   \ Devuelve una variante de «lucha/n».
-  \ ff = ¿El resultado debe estar en plural?
+  \ wf = ¿El resultado debe estar en plural?
   \ a u = Resultado
   s{ s" lucha" s" combate" s" pelea" s" se bate" }s
   rot ?plural_verb
   ;
-: resist/s$  ( ff -- a u )
+: resist/s$  ( wf -- a u )
   \ Devuelve una variante de «resiste/n».
-  \ ff = ¿El resultado debe estar en plural?
+  \ wf = ¿El resultado debe estar en plural?
   \ a u = Resultado
   s{ s" resiste" s" aguanta" s" contiene" }s
   rot ?plural_verb
@@ -7590,9 +7500,9 @@ section( Recursos de las tramas asociadas a lugares)  \ {{{
   s{ s" con denuedo" s" con bravura" s" con coraje"
   s" heroicamente" s" esforzadamente" s" valientemente" }s
   ;
-: bravery$  ( ff -- a u )
+: bravery$  ( wf -- a u )
   \ Devuelve una variante de «con denuedo», en singular o plural.
-  \ ff = ¿El resultado debe estar en plural?
+  \ wf = ¿El resultado debe estar en plural?
   \ a u = Resultado
   (bravery)$  rot
   if  like_heroes$  else  like_a_heroe$  then
@@ -7772,7 +7682,7 @@ here swap - cell / constant battle_phases  \ Fases de la batalla
   \ Ejecuta la fase en curso del combate.
   battle# @ 1- (battle_phase)
   ;
-: battle_location?  ( -- ff )
+: battle_location?  ( -- wf )
   \ ¿En el escenario de la batalla?
   my_location location_10% <  \ ¿Está el protagonista en un escenario menor que el 10?
   pass_still_open? 0=  and  \ ¿Y el paso del desfiladero está cerrado?
@@ -7787,7 +7697,7 @@ here swap - cell / constant battle_phases  \ Fases de la batalla
   pursue_location? ?? pursued
   battle_phase++
   ;
-: battle?  ( -- ff )
+: battle?  ( -- wf )
   \ ¿Ha empezado la batalla?
   battle# @ 0>
   ;
@@ -7965,7 +7875,7 @@ here swap - cell / constant battle_phases  \ Fases de la batalla
 \ ------------------------------------------------
 \ Albergue de los refugiados
 
-: the_old_man_is_angry?  ( -- ff )
+: the_old_man_is_angry?  ( -- wf )
   \ ¿El anciano se enfada porque llevas algo prohibido?
   stone% is_accessible?
   sword% is_accessible?  or
@@ -8075,7 +7985,7 @@ location_16% :after_describing_location
   s" la salida que encontraste por casualidad." s&
   narrate
   ;after_describing_location
-location_20% :can_i_enter_location?  ( -- ff )
+location_20% :can_i_enter_location?  ( -- wf )
   location_17% am_i_there? no_torch? and
   dup 0= swap ?? dark_cave
   ;can_i_enter_location?
@@ -8661,12 +8571,12 @@ condicionales anidadas.
   main_complement @ swap over different?
   not_allowed_main_complement_error# and throw
   ;
-: different_tool?  ( a -- ff )
+: different_tool?  ( a -- wf )
   \ ¿Es el ente diferente a la herramienta usada, si la hay?
   \ a = Ente
   tool_complement @ swap over different?
   ;
-: different_actual_tool?  ( a -- ff )
+: different_actual_tool?  ( a -- wf )
   \ ¿Es el ente diferente a la herramienta estricta usada, si la hay?
   \ a = Ente
   actual_tool_complement @ swap over different?
@@ -9670,7 +9580,7 @@ subsection( Agredir)  \ {{{
   main_complement @ (do_hit)
   \ s" golpear"  main_complement+is_nonsense \ xxx provisional
   ;action
-: can_be_sharpened?  ( a -- ff )
+: can_be_sharpened?  ( a -- wf )
   \ ¿Puede un ente ser afilado?
   \ xxx pendiente. mover esta palabra junto con los demás seudo-campos
   dup log% =  swap sword% =  or  \ ¿Es el tronco o la espada?
@@ -9910,9 +9820,9 @@ subsection( Nadar)  \ {{{
   s{ s" avanzar," s" huir," s" escapar,"  s" salir," }s&
   s" aunque" s&{ s" perdido." s" desorientado." }s&
   ;
-: drop_the_cuirasse$  ( ff -- a u )
+: drop_the_cuirasse$  ( wf -- a u )
   \ Devuelve mensaje sobre deshacerse de la coraza dentro del agua.
-  \ ff = ¿Inicio de frase?
+  \ wf = ¿Inicio de frase?
   s{ s" te desprendes de ella" s" te deshaces de ella"
   s" la dejas caer" s" la sueltas" }s
   rot if  \ ¿Inicio de frase?
@@ -10356,7 +10266,7 @@ subsection( Hablar y presentarse)  \ {{{
       s" pronuncia las siguientes palabras"
   }s& colon+ narrate
   ;
-: something_had_been_forbidden?  ( -- ff )
+: something_had_been_forbidden?  ( -- wf )
   \ Se le prohibió alguna vez al protagonista pasar con algo prohibido?
   sword_forbidden? @ stone_forbidden? @ or
   ;
@@ -10944,11 +10854,11 @@ restore_vocabularies
   \ Escribe una cadena en el fichero de la partida.
   bs| s" | 2swap s+ bs| "| s+ >file
   ;
-: f>string  ( ff -- a u )
+: f>string  ( wf -- a u )
   \ Convierte un indicador binario en su nombre de constante.
   if  s" true"  else  s" false"  then
   ;
-: f>file  ( ff -- )
+: f>file  ( wf -- )
   \ Escribe un indicador binario en el fichero de la partida.
   f>string >file
   ;
@@ -11345,16 +11255,16 @@ dicha [seudo]preposición, o bien cero si la
   ['] (evaluate_command) execute-parsing
   ;
 
-: a_preposition_is_open?  ( -- ff )
+: a_preposition_is_open?  ( -- wf )
   \ ¿Hay un complemento (seudo)preposicional abierto?
   current_preposition @ 0<>
   ;
-: no_parsing_error_left?  ( -- ff )
+: no_parsing_error_left?  ( -- wf )
   \ ¿No quedó algún error pendiente tras el análisis?
   \ Comprueba si quedó un complemento (seudo)preposicional
   \ incompleto, algo que no puede detectarse en el análisis
   \ principal.
-  \ ff = ¿No quedó error pendiente tras el análisis?
+  \ wf = ¿No quedó error pendiente tras el análisis?
   \      (true=ningún error pendiente; false=algún error pendiente)
   a_preposition_is_open? dup
   unresolved_preposition_error# and ?wrong  0=
@@ -11368,10 +11278,10 @@ dicha [seudo]preposición, o bien cero si la
     then  
     ;
 [then]
-: valid_parsing?  ( a u -- ff )
+: valid_parsing?  ( a u -- wf )
   \ Evalúa un comando con el vocabulario del juego.
   \ a u = Comando
-  \ ff = ¿El comando se analizó sin error?
+  \ wf = ¿El comando se analizó sin error?
   -punctuation 
   [debug_parsing] [??] ~~
   \ Dejar solo el diccionario PLAYER_VOCABULARY activo
@@ -11432,7 +11342,7 @@ dicha [seudo]preposición, o bien cero si la
   [debug_parsing] [??] ~~
   ; 
 
-: second?  ( x1 x2 -- x1 ff )
+: second?  ( x1 x2 -- x1 wf )
   \ ¿La acción o el complemento son los segundos que se encuentran?
   \ Los dos valores representan una acción (xt) o un ente (a).
   \ x1 = Acción o complemento recién encontrado
@@ -11600,7 +11510,7 @@ immediate
   woman_player? on
   ;
 ' mujer alias femenino
-: comillas  ( ff -- )
+: comillas  ( wf -- )
   \ Configura si se usan las comillas castellanas en las citas.
   castilian_quotes? !
   ;
@@ -11608,23 +11518,23 @@ immediate
   \ Fija la indentación de los párrafos.
   max_indentation min /indentation !
   ;
-: indentar_primera_línea_de_pantalla  ( ff -- )
+: indentar_primera_línea_de_pantalla  ( wf -- )
   \ Configura si se indentará también la línea superior de la pantalla, si un párrafo empieza en ella.
   indent_first_line_too? !
   ;
-: indentar_prestos_de_pausa  ( ff -- )
+: indentar_prestos_de_pausa  ( wf -- )
   \ Configura si se indentarán los prestos.
   indent_pause_prompts? !
   ;
-: borrar_pantalla_para_escenarios  ( ff -- )
+: borrar_pantalla_para_escenarios  ( wf -- )
   \ Configura si se borra la pantalla al entrar en un escenario o describirlo.
   location_page? !
   ;
-: borrar_pantalla_para_escenas  ( ff -- )
+: borrar_pantalla_para_escenas  ( wf -- )
   \ Configura si se borra la pantalla tras la pausa de fin de escena.
   scene_page? !
   ;
-: separar_párrafos  ( ff -- )
+: separar_párrafos  ( wf -- )
   \ Configura si se separan los párrafos con un línea en blanco.
   cr? !
   ;
@@ -11696,8 +11606,8 @@ immediate
 : presto_de_pausa_de_narración  ( a u -- )  narration_prompt place  ;
 : presto_de_fin_de_escena  ( a u -- )  scene_prompt place  ;
 : presto_de_comando  ( a u -- )  command_prompt place  ;
-: espacio_tras_presto_de_comando  ( ff -- )  space_after_command_prompt? !  ;
-: nueva_línea_tras_presto_de_comando  ( ff -- )  cr_after_command_prompt? !  ;
+: espacio_tras_presto_de_comando  ( wf -- )  space_after_command_prompt? !  ;
+: nueva_línea_tras_presto_de_comando  ( wf -- )  cr_after_command_prompt? !  ;
 
 : detalle_de_los_mensajes_de_error_lingüístico  ( n -- )
   \ Configura el nivel de detalle de los mensajes de error lingüístico.
@@ -11715,7 +11625,7 @@ immediate
   \ Configura el mensaje genérico para los mensajes de error operativo.
   'action_error_general_message$ place
   ;
-: repetir_la_última_acción  ( ff -- )
+: repetir_la_última_acción  ( wf -- )
   \ Configura si hay que usar acción anterior cuando no se
   \ especifica otra en el comando.
   repeat_previous_action? !
@@ -11804,11 +11714,11 @@ vocabulario del jugador.
   repeat
   \ 2dup ." sinónimo: " type space \ xxx depuración
   ;
-: (another_synonym?)  ( a u -- ff )
+: (another_synonym?)  ( a u -- wf )
   \ ¿No se ha terminado la lista de sinónimos?
   s" }synonyms" compare
   ;
-: another_synonym?  ( -- a u ff )
+: another_synonym?  ( -- a u wf )
   \ Toma la siguiente palabra en el flujo de entrada
   \ y comprueba si es el final de la lista de sinónimos.
   parse_synonym 2dup (another_synonym?)
@@ -11816,14 +11726,14 @@ vocabulario del jugador.
 : synonyms{  (  xt "name#0" ... "name#n" "}synonyms" -- )
   \ Crea uno o varios sinónimos de una palabra.
   \ xt = Dirección de ejecución de la palabra a clonar
-  begin  dup another_synonym? ( xt xt a u ff )
+  begin  dup another_synonym? ( xt xt a u wf )
   while  (alias)
   repeat  2drop 2drop
   ;
 : immediate_synonyms{  (  xt "name#0" ... "name#n" "}synonyms" -- )
   \ Crea uno o varios sinónimos inmediatos de una palabra.
   \ xt = Dirección de ejecución de la palabra a clonar
-  begin  dup another_synonym?  ( xt xt a u ff )
+  begin  dup another_synonym?  ( xt xt a u wf )
   while  (alias)  immediate
   repeat  2drop 2drop
   ;
@@ -13092,16 +13002,16 @@ svariable question
     .question listen  yes|no ?dup
   until
   ;
-: yes?  ( a u -- ff )
+: yes?  ( a u -- wf )
   \ ¿Es afirmativa la respuesta a una pregunta?
   \ a u = Pregunta
-  \ ff = ¿Es la respuesta positiva?
+  \ wf = ¿Es la respuesta positiva?
   answer 0>
   ;
-: no?  ( a u -- ff )
+: no?  ( a u -- wf )
   \ ¿Es negativa la respuesta a una pregunta?
   \ a u = Pregunta
-  \ ff = ¿Es la respuesta negativa?
+  \ wf = ¿Es la respuesta negativa?
   answer 0<
   ;
 
@@ -13133,16 +13043,16 @@ svariable question
     dup .question listen  yes|no ?dup
   until  nip
   ;
-: yes?  ( xt -- ff )
+: yes?  ( xt -- wf )
   \ ¿Es afirmativa la respuesta a una pregunta?
   \ xt = Dirección de ejecución que devuelve una cadena con la pregunta
-  \ ff = ¿Es la respuesta positiva?
+  \ wf = ¿Es la respuesta positiva?
   answer 0>
   ;
-: no?  ( xt -- ff )
+: no?  ( xt -- wf )
   \ ¿Es negativa la respuesta a una pregunta?
   \ xt = Dirección de ejecución que devuelve una cadena con la pregunta
-  \ ff = ¿Es la respuesta negativa?
+  \ wf = ¿Es la respuesta negativa?
   answer 0<
   ;
 
@@ -13152,7 +13062,7 @@ svariable question
 \ }}} ##########################################################
 section( Fin)  \ {{{
 
-: success?  ( -- ff )
+: success?  ( -- wf )
   \ ¿Ha completado con éxito su misión el protagonista?
   my_location location_51% =
   ;
@@ -13162,7 +13072,7 @@ false [if]  \ xxx no se usa
   5 random 7 +  \ Número al azar, de 8 a 11
   ;
 [then]
-: failure?  ( -- ff )
+: failure?  ( -- wf )
   \ ¿Ha fracasado el protagonista?
   battle# @ battle_phases >
   ;
@@ -13195,7 +13105,7 @@ false [if]  \ xxx no se usa
   s{ retry?0$ retry?1$ }s s" para" s&
   s{ s" jugar" s" probar" s" intentarlo" }s& again?$ s&
   ;
-: enough?  ( -- ff )
+: enough?  ( -- wf )
   \ ¿Prefiere el jugador no jugar otra partida?
   \ xxx pendiente. hacer que la pregunta varíe si la respuesta es incorrecta
   \ Para ello, pasar como parámetro el xt que crea la cadena.
@@ -13216,11 +13126,11 @@ false [if]  \ xxx no se usa
   s" abandonar?"
   }s&
   ;
-: surrender?  ( -- ff )
+: surrender?  ( -- wf )
   \ ¿Quiere el jugador dejar el juego?
   ['] surrender?$ yes?
   ;
-: game_over?  ( -- ff )
+: game_over?  ( -- wf )
   \ ¿Se terminó ya el juego?
   success? failure? or
   ;
@@ -14283,7 +14193,7 @@ la entrada de matorrales.
 
 2011..2012:
 
-Hace que el líder de los refugiados nos deje pasar si
+Hacer que el líder de los refugiados nos deje pasar si
 dejamos el objeto (piedra o espada) allí o se lo damos.
 
 Hacer que la espada corte en más pedazos la capa si ha sido
