@@ -12,11 +12,11 @@ CR .( Asalto y castigo )  \ {{{
 \ Proyecto en desarrollo.
 \ Project under development.
 
-\ Copyright (C) 2011,2012,2013 Marcos Cruz (programandala.net)
+\ Copyright (C) 2011,2012,2013,2014 Marcos Cruz (programandala.net)
 
 only forth definitions
-: version$  ( -- a u )  s" A-05-2013092935"  ;
-version$ type cr
+s" A-05-201403162336"  2constant version  
+version type cr
 
 \ 'Asalto y castigo' is free software; you can redistribute
 \ it and/or modify it under the terms of the GNU General
@@ -43,28 +43,24 @@ version$ type cr
 \ http://caad.es/baltasarq/
 \ http://baltasarq.info
 
-(
-
-Información
-
-Juegos conversacionales:
-  http://caad.es
-Forth:
-  http://forth.org
-  http://www.forthfreak.net
-  http://groups.google.com/group/comp.lang.forth/
-  http://programandala.net/es.artículo.2009.04.27.libros_forth
-Gforth:
-  http://gnu.org/software/gforth/
-  http://lists.gnu.org/mailman/listinfo/gforth
-
-)
+\ Información:
+\ 
+\ Juegos conversacionales:
+\   http://caad.es
+\ Forth:
+\   http://forth.org
+\   http://www.forthfreak.net
+\   http://groups.google.com/group/comp.lang.forth/
+\   http://programandala.net/es.artículo.2009.04.27.libros_forth
+\ Gforth:
+\   http://gnu.org/software/gforth/
+\   http://lists.gnu.org/mailman/listinfo/gforth
 
 \ ##############################################################
 \ Documentación
 
 \ El historial de desarrollo está en:
-\ http://programandala.net/es.programa.asalto_y_castigo.forth.historial
+\ http://programandala.net/es.programa.asalto_y_castigo.forth.historia.html
 
 \ La lista de tareas pendientes está al final de este fichero.
 
@@ -135,7 +131,7 @@ ejemplo: los nombres de las palabras proporcionadas por el
 módulo «str» empiezan por «str», como 'str-create',
 'str+columns' o 'str.version'.
 
-)
+*)
 
 require ffl/str.fs  \ Cadenas de texto dinámicas
 require ffl/trm.fs  \ Manejo de terminal ANSI
@@ -172,6 +168,7 @@ require galope/home.fs  \ 'home'
 require galope/ink.fs
 require galope/minus-minus.fs  \ '--'
 require galope/paper.fs
+require galope/paren-star.fs  \ '(*'
 require galope/plus-plus.fs  \ '++'
 require galope/print.fs  \ Impresión de textos ajustados
 require galope/sourcepath.fs
@@ -186,6 +183,7 @@ require galope/seconds.fs \ 'seconds', pausa en segundos acortable con una pulsa
 require galope/svariable.fs \ Variables de cadenas de texto
 require galope/system_colors.fs
 require galope/tilde-tilde.fs  \ '~~' mejorado
+require galope/to-yyyymmddhhmmss.fs  \ '>yyyymmddhhss'
 require galope/x-c-store.fs  \ 'xc!'
 require galope/xcase_es.fs  \ Cambio de caja para caracteres propios del castellano en UTF-8
 require galope/xy.fs  \ Posición actual del cursor
@@ -309,12 +307,12 @@ pad 0 2constant ""  \ Simula una cadena vacía.
 \ }}} ##########################################################
 section( Definición de estructuras)  \ {{{
 
-(
+(*
 
 Creamos herramientas para definir y gestionar campos de datos
 buleanos que usen un solo bitio.
 
-)
+*)
 
 variable bit#  \ Contador de máscara de bitio para los campos buleanos.
 : bitfields  1 bit# !  ;
@@ -358,46 +356,7 @@ variable bit#  \ Contador de máscara de bitio para los campos buleanos.
 \ }}} ##########################################################
 section( Vectores)  \ {{{
 
-(
-
-Algunas palabras se necesitan, como parte de la definición
-de otras palabras, antes de haber sido escritas.  Esto
-ocurre porque no siempre es posible ordenar el código fuente
-de forma que todas las palabras que hay que ejecutar o
-compilar hayan sido definidas con anterioridad.
-
-En estos casos es necesario crear como vectores estas
-palabras que se necesitan antes de tiempo. Los vectores son
-palabras cuya dirección interna de ejecución puede ser
-modificada para que apunte a la de otra palabra.  Así,
-creamos vectores que serán actualizados más adelante en el
-código fuente cuando se defina la palabra con el código que
-deben ejecutar.
-
-'defer' crea una palabra que no hace nada, pero cuya dirección
-de ejecución podrá ser después cambiada usando la palabra 'is'
-como en el siguiente ejemplo:
-
-)
-
-false [if]  \ Ejemplo de código
-
-defer palabrita  \ Crear el vector
-: usar_palabrita  \ Palabra que usa 'palabrita' y que por tanto necesita que esté ya en el diccionario
-  \ La compilación no da error, porque 'palabrita' existe en el diccionario, pues ha sido creada por 'defer',
-  \ pero la ejecución posterior no haría nada porque el vector 'palabrita' no ha sido actualizado.
-  palabrita 
-  ;
-: (palabrita)  ( -- )
-  \ Definición de lo que tiene que hacer 'palabrita'.
-  ." ¡Hola mundo, soy palabrita!"
-  ;
-\ Tomar la dirección de ejecución de '(palabrita)' y ponérsela al vector 'palabrita':
-' (palabrita) is palabrita
-\ Ahora tanto 'palabrita' como 'usar_palabrita'
-\ harán lo mismo que '(palabrita)'.
-
-[then]  \ Fin del ejemplo
+\ xxx todo efecto de pila
 
 defer protagonist%  \ Ente protagonista
 defer sword%  \ Ente espada
@@ -413,7 +372,9 @@ defer exits%  \ Ente "salidas"
 \ }}} ##########################################################
 section( Códigos de error)  \ {{{
 
-(
+\ xxx todo simplificar la explicación
+
+(*
 
 En el estándar ANS Forth los códigos de error de -1 a -255
 están reservados para el propio estándar; el resto de
@@ -437,7 +398,7 @@ En cualquier caso se trata de lo mismo: es el valor que
 devuelven las palabras ''' y '[']' y que sirve de parámetro a
 la palabra 'execute'.
 
-)
+*)
 
 false [if]  \ Ejemplo de código:
 
@@ -448,7 +409,7 @@ false [if]  \ Ejemplo de código:
 
 [then]  \ Fin del ejemplo
 
-(
+(*
 
 Como se ve, usar como códigos de error las direcciones de
 ejecución de las palabras de error tiene la ventaja de que no
@@ -465,7 +426,7 @@ adelantado como vectores y los actualizaremos
 posteriormente, cuando se definan las palabras de error,
 exactamente como se muestra en este ejemplo:
 
-)
+*)
 
 false [if]  \ Ejemplo de código:
 
@@ -515,7 +476,7 @@ false [if]  \ Ejemplo de código:
 section( Herramientas de azar)  \ {{{
 
 \ Desordenar al azar varios elementos de la pila
-\ xxx Pendiente. Extraer a la librería.
+\ xxx Pendiente: mover a la librería Galope.
 
 0 value unsort#
 : unsort  ( x1 ... xu u -- x1' ... xu' )
@@ -531,7 +492,7 @@ section( Herramientas de azar)  \ {{{
 \ Combinar cadenas de forma aleatoria
 
 : rnd2swap  ( a1 u1 a2 u2 -- a1 u1 a2 u2 | a2 u2 a1 u1 )
-  \ Intercambia (con 50% de probabililad) la posición de dos textos.
+  \ Intercambia (con 50% de probabilidad) la posición de dos textos.
   2 random ?? 2swap
   ;
 : (both)  ( a1 u1 a2 u2 -- a1 u1 a3 u3 a2 u2 | a2 u2 a3 u3 a1 u1 )
@@ -885,7 +846,6 @@ subsection( Borrado de pantalla)  \ {{{
   trm+reset init_colors 
   ;
 
-\ }}}
 \ }}} ##########################################################
 section( Depuración)  \ {{{
 
@@ -992,6 +952,7 @@ str-create tmp_str  \ Cadena dinámica de texto temporal para usos variados
   \ a2 u2 = Subcadena buscada
   \ a3 u3 = Subcadena sustituta
   \ a4 u4 = Resultado
+  \ xxx use Galope's 'replaced' instead
   2rot tmp_str!  tmp_str str-replace  tmp_str@
   ;
 : *>verb_ending  ( a u wf -- )
@@ -1062,7 +1023,7 @@ str-create tmp_str  \ Cadena dinámica de texto temporal para usos variados
 \ }}} ##########################################################
 section( Textos aleatorios)  \ {{{
 
-(
+(*
 
 Casi todas las palabras de esta sección devuelven una cadena
 calculada al azar. Las restantes palabras son auxiliares.
@@ -1072,7 +1033,7 @@ una cadena sin recibir parámetros en la pila tienen el signo
 «$» al final de su nombre.  También por tanto las constantes
 de cadena creadas con 'sconstant'.
 
-)
+*)
 
 : at_least$  ( a u -- )
   s{ s" al" s" por lo" }s s" menos" s&
@@ -1643,14 +1604,14 @@ s" de Westmorland" sconstant of_westmorland$
 \ }}} ##########################################################
 section( Cadena dinámica para impresión)  \ {{{
 
-(
+(*
 
 Usamos una cadena dinámica llamada 'print_str' para guardar
 los párrafos enteros que hay que mostrar en pantalla. En
 esta sección creamos la cadena y palabras útiles para
 manipularla.
 
-)
+*)
 
 str-create print_str  \ Cadena dinámica para almacenar el texto antes de imprimirlo justificado
 
@@ -1700,7 +1661,7 @@ str-create print_str  \ Cadena dinámica para almacenar el texto antes de imprim
 \ }}} ##########################################################
 section( Herramientas para sonido)  \ {{{
 
-(
+(*
 
 Las herramientas para proveer de sonido al juego están
 apenas esbozadas aquí y de momento solo para Gforth.
@@ -1711,7 +1672,7 @@ GNU/Linux, que es el que usamos en las pruebas. Los comandos
 para la consola del sistema operativo se pasan con la
 palabra SYSTEM de Gforth.
 
-)
+*)
 
 : clear_sound_track  ( -- )
   \ Limpia la lista de sonidos. 
@@ -2002,7 +1963,7 @@ false [if]  \ xxx obsoleto
 \ }}} ##########################################################
 section( Definición de la ficha de un ente)  \ {{{
 
-(
+(*
 
 Denominamos «ente» a cualquier componente del mundo virtual
 del juego que es manipulable por el programa.  «Entes» por
@@ -2057,7 +2018,7 @@ una interrogación, «?»;  los que contienen direcciones de ejecución
 terminan con «_xt»; los que contienen códigos de error terminan con
 «_error#».
 
-)
+*)
 
 0 \ Valor inicial de desplazamiento para el primer campo
 
@@ -2142,7 +2103,7 @@ constant /entity  \ Tamaño de cada ficha
 \ }}} ##########################################################
 section( Interfaz de campos)  \ {{{
 
-(
+(*
   
 Las palabras de esta sección facilitan la tarea de
 interactuar con los campos de las fichas, evitando repetir
@@ -2159,7 +2120,7 @@ calculado.
 Otras actúan como procedimientos para realizar operaciones
 frecuentes con los entes.
 
-)
+*)
 
 \ ------------------------------------------------
 \ Herramientas para los campos de dirección
@@ -2196,13 +2157,13 @@ last_exit> cell+ first_exit> - constant /exits
 \ ------------------------------------------------
 \ Interfaz básica para leer y modificar los campos
 
-(
+(*
 
 Las palabras que siguen permiten hacer las operaciones
 básicas de obtención y modificación del contenido de los
 campos. 
 
-)
+*)
 
 \ Obtener el contenido de un campo a partir de un identificador de ente
 
@@ -2263,6 +2224,7 @@ campos.
 
 \ Modificar el contenido de un campo a partir de un identificador de ente
 
+\ xxx todo rename is_... to be_...
 : conversations++  ( a -- )  ~conversations ?++  ;
 : familiar++  ( a -- )  ~familiar ?++  ;
 : has_definite_article  ( a -- )  ~has_definite_article? bit_on  ;
@@ -2296,7 +2258,7 @@ campos.
 \ ------------------------------------------------
 \ Campos calculados o seudo-campos
 
-(
+(*
 
 Los seudo-campos devuelven un cálculo. Sirven para añadir
 una capa adicional de abstracción y simplificar el código.
@@ -2312,7 +2274,7 @@ falta recordar si la propiedad real y por tanto el campo de
 la ficha del ente era «abierto» o «cerrado»] y hace el
 código más conciso y legible.
 
-)
+*)
 
 : is_direction?  ( a -- wf )  direction 0<>  ;
 : is_familiar?  ( a -- wf )  familiar 0>  ;
@@ -2516,7 +2478,7 @@ código más conciso y legible.
 \ ------------------------------------------------
 \ Herramientas de artículos y pronombres
 
-(
+(*
 
 La selección del artículo adecuado para el nombre de un ente
 tiene su complicación. Depende por supuesto del número y
@@ -2537,7 +2499,7 @@ Utilizamos una tabla de cadenas de longitud variable, apuntada por una
 segunda tabla con sus direcciones.  Esto unifica y simplifica los
 cálculos.
 
-)
+*)
 
 : hs,  ( a u -- a1 )
   \ Compila una cadena en el diccionario y devuelve su dirección.
@@ -2800,7 +2762,7 @@ cell constant /article_gender_set  \ De femenino a masculino
 \ ------------------------------------------------
 \ Interfaz para los nombres de los entes
 
-(
+(*
 
 Como ya se explicó, el nombre de cada ente se guarda en una
 cadena dinámica [que se crea en la memoria con 'allocate', no
@@ -2814,7 +2776,7 @@ falta palabras que hagan de interfaz para gestionar los
 nombres de ente de forma análoga a como se hace con el resto
 de datos de su ficha.
 
-)
+*)
 
 : name!  ( a u a1 -- )
   \ Guarda el nombre de un ente.
@@ -2963,11 +2925,11 @@ de datos de su ficha.
 \ }}} ##########################################################
 section( Algunas cadenas calculadas y operaciones con ellas)  \ {{{
 
-(
+(*
 
 xxx nota: ¿Mover a otra sección?
 
-)
+*)
 
 : «open»|«closed»  ( a -- a1 u1 )
   \ Devuelve «abierto/a/s» a «cerrado/a/s» según corresponda a un ente.
@@ -2992,7 +2954,7 @@ xxx nota: ¿Mover a otra sección?
 \ }}} ##########################################################
 section( Operaciones elementales con entes)  \ {{{
 
-(
+(*
 
 Algunas operaciones sencillas relacionadas con la trama.
 
@@ -3000,7 +2962,7 @@ Alguna es necesario crearla como vector porque se usa en las
 descripciones de los entes o en las acciones, antes de
 definir la trama.
 
-)
+*)
 
 defer lock_found  \ Encontrar el candado; la definición está en '(lock_found)'
 
@@ -3026,7 +2988,7 @@ defer lock_found  \ Encontrar el candado; la definición está en '(lock_found)'
 \ }}} ##########################################################
 section( Herramientas para crear las fichas de la base de datos)  \ {{{
 
-(
+(*
 
 No es posible reservar el espacio necesario para las fichas
 hasta saber cuántas necesitaremos [a menos que usáramos una
@@ -3038,7 +3000,7 @@ posteriormente su dirección de ejecución.  Esto permite
 crear un nuevo ente fácilmente, sin necesidad de asignar
 previamente el número de fichas a una constante.
 
-)
+*)
 
 defer 'entities  \ Dirección de los entes; vector que después será redirigido a la palabra real
 0 value #entities  \ Contador de entes, que se actualizará según se vayan creando
@@ -3174,7 +3136,7 @@ defer 'entities  \ Dirección de los entes; vector que después será redirigido
 \ }}} ##########################################################
 section( Herramientas para crear las descripciones)  \ {{{
 
-(
+(*
 
 No almacenamos las descripciones en la base de datos junto
 con el resto de atributos de los entes, sino que para cada
@@ -3191,7 +3153,7 @@ palabra que imprime su descripción.
 Por tanto, para describir un ente basta tomar de su ficha el
 contenido de '~description_xt', y llamar a 'execute'.
 
-)
+*)
 
 false value sight  \ Guarda el ente dirección al que se mira en un escenario (o el propio ente escenario); se usa en las palabras de descripción de escenarios
 : [:description]  ( a -- )
@@ -3293,10 +3255,10 @@ false value sight  \ Guarda el ente dirección al que se mira en un escenario (o
 \ }}} ##########################################################
 section( Identificadores de entes)  \ {{{
 
-(
+(*
 
 Cada ente es identificado mediante una palabra. Los
-identificadores de entes se crean con la palabra ENTITY: .
+identificadores de entes se crean con la palabra 'entity:'.
 Cuando se ejecutan devuelven la dirección en memoria de la
 ficha del ente en la base de datos, que después puede ser
 modificada con un identificador de campo para convertirla en
@@ -3305,18 +3267,18 @@ la dirección de memoria de un campo concreto de la ficha.
 Para reconocer mejor los identificadores de entes usamos el
 sufijo «%» en sus nombres.
 
-Los entes escenario usan como nombre de identificador el
-número el número que tienen en la versión original del
-programa. Esto hace más fácil la adaptación del código
-original en BASIC.  Además, para que algunos cálculos
-tomados del código original funcionen, es preciso que los
-entes escenario se creen ordenados por ese número.
+Los entes escenario usan como nombre de identificador el número
+que tienen en la versión original del programa. Esto hace más
+fácil la adaptación del código original en BASIC.  Además, para
+que algunos cálculos tomados del código original funcionen, es
+preciso que los entes escenario se creen ordenados por ese
+número.
 
 El orden en que se definan los restantes identificadores es
 irrelevante.  Si están agrupados por tipos y en orden
 alfabético es solo por claridad. 
 
-)
+*)
 
 entity: ulfius%
 ' ulfius% is protagonist%  \ Actualizar el vector que apunta al ente protagonista
@@ -3455,15 +3417,15 @@ section( Herramientas para crear conexiones entre escenarios)  \ {{{
 \ de los entes dirección.
 \ Se podría solucionar con vectores, más adelante.
 
-(
+(*
 
 Para crear el mapa hay que hacer dos operaciones con los
 entes escenario: marcarlos como tales, para poder
 distinguirlos como escenarios; e indicar a qué otros entes
 escenario conducen sus salidas.
 
-La primera operación se hace guardando un valor buleano
-«cierto» en el campo ~IS_LOCATION? del ente.  Por ejemplo:
+La primera operación se hace guardando un valor buleano «cierto»
+en el campo '~is_location?' del ente.  Por ejemplo:
 
   cave% ~is_location? bit_on
 
@@ -3485,7 +3447,7 @@ No obstante, para hacer más fácil este segundo paso, hemos
 creado unas palabras que proporcionan una sintaxis específica,
 como mostraremos a continuación.
 
-)
+*)
 
 0 [if]  \ xxx inacabado
 
@@ -3511,7 +3473,7 @@ out% ,
 
 [then]
 
-(
+(*
 
 Necesitamos una tabla que nos permita traducir esto:
 
@@ -3521,7 +3483,7 @@ de salida en la ficha de un ente.
 SALIDA: El identificador del ente dirección al que se
 refiere esa salida.
 
-)
+*)
 
 create exits_table  \ Tabla de traducción de salidas
 #exits cells allot  \ Reservar espacio para tantas celdas como salidas
@@ -3569,11 +3531,11 @@ in% in_exit> exits_table!
   ;
 [then]
 
-(
+(*
 
 A continuación definimos palabras para proporcionar la
-siguiente sintaxis [primero origen y después destino en la
-pila, como es convención en Forth]:
+siguiente sintaxis (primero origen y después destino en la
+pila, como es convención en Forth):
 
   \ Hacer que la salida sur de 'cave%' conduzca a 'path%'
   \ pero sin afectar al sentido contrario:
@@ -3589,7 +3551,7 @@ O en un solo paso:
   \ y al contrario: la salida norte de 'path%' conducirá a 'cave%':
   cave% path% s<-->
 
-)
+*)
 
 : -->  ( a1 a2 u -- )
   \ Conecta el ente a1 con el ente a2 mediante la salida indicada por el desplazamiento u.
@@ -3741,12 +3703,12 @@ O en un solo paso:
   o-->|  i-->|
   ;
 
-(
+(*
 
 Por último, definimos dos palabras para hacer
 todas las asignaciones de salidas en un solo paso. 
 
-)
+*)
 
 : exits!  ( a1 ... a8 a0 -- )
   \ Asigna todas las salidas de un ente escenario.
@@ -3773,14 +3735,14 @@ todas las asignaciones de salidas en un solo paso.
 \ }}} ##########################################################
 section( Recursos para las descripciones de entes)  \ {{{
 
-(
+(*
 
 Las palabras de esta sección se usan para 
 construir las descripciones de los entes.
 Cuando su uso se vuelve más genérico, se mueven
 a la sección de textos calculados.
 
-)
+*)
 
 \ ------------------------------------------------
 \ Albergue de los refugiados
@@ -4794,16 +4756,16 @@ waterfall% :description
 
 \ Entes escenario
 
-(
+(*
 
-Las palabras que describen entes escenario reciben en
-'sight' [variable que está creada con 'value' y por tanto
-devuelve su valor como si fuera una constante] un
-identificador de ente.  Puede ser el mismo ente escenario o
-un ente de dirección.  Esto permite describir lo que hay más
-allá de cada escenario en cualquier dirección.
+Las palabras que describen entes escenario reciben en 'sight'
+(variable que está creada con 'value' y por tanto devuelve su
+valor como si fuera una constante) un identificador de ente.
+Puede ser el mismo ente escenario o un ente de dirección.  Esto
+permite describir lo que hay más allá de cada escenario en
+cualquier dirección.
 
-)
+*)
 
 location_01% :attributes
   s" aldea sajona" self% fs-name!
@@ -6579,10 +6541,8 @@ to impossible_error#
   ;
 : x_is_nonsense$  ( a1 u1 -- a2 u2 )
   \ Devuelve una variante de «X no tiene sentido».
-  dup
-  if  try$ 2swap s& ^uppercase nonsense$ s&
-  else  2drop ^nonsense$
-  then
+  dup if    try$ 2swap s& ^uppercase nonsense$ s&
+      else  2drop ^nonsense$  then
   ;
 : it_is_nonsense_x$  ( a1 u1 -- a2 u2 )
   \ Devuelve una variante de «No tiene sentido x».
@@ -6629,10 +6589,8 @@ to nonsense_error#
   ;
 : x_is_dangerous$  ( a1 u1 -- a2 u2 )
   \ Devuelve una variante de «X es peligroso».
-  dup
-  if  try$ 2swap s& ^uppercase dangerous$ s&
-  else  2drop ^dangerous$
-  then
+  dup if    try$ 2swap s& ^uppercase dangerous$ s&
+      else  2drop ^dangerous$  then
   ;
 : it_is_dangerous_x$  ( a1 u1 -- a2 u2 )
   \ Devuelve una variante de «Es peligroso x».
@@ -6665,10 +6623,8 @@ to dangerous_error#
   \ ejecutada sobre un ente no tiene sentido.
   \ a u = Acción en infinitivo
   \ a1 = Ente al que se refiere la acción y cuyo objeto directo es (o cero)
-  ?dup
-  if    full_name s& (is_nonsense)
-  else  2drop nonsense
-  then
+  ?dup if    full_name s& (is_nonsense)
+       else  2drop nonsense  then
   ;
 3 ' (+is_nonsense) action_error: +is_nonsense drop
 : (main_complement+is_nonsense)  ( a u -- )
@@ -7140,7 +7096,7 @@ section( Tramas comunes a todos los escenarios)  \ {{{
 \ ------------------------------------------------
 \ Ambrosio nos sigue
 
-(
+(*
 
 xxx pendiente:
 
@@ -7148,7 +7104,7 @@ Confirmar la función de la llave aquí. En el código original
 solo se distingue que sea manipulable o no, lo que es
 diferente a que esté accesible.
 
-)
+*)
 
 : ambrosio_must_follow?  ( -- )
   \ ¿Ambrosio tiene que estar siguiéndonos?
@@ -8054,7 +8010,7 @@ section( Trama global)  \ {{{
 \ }}} ##########################################################
 section( Descripciones especiales)  \ {{{
 
-(
+(*
 
 Esta sección contiene palabras que muestran descripciones
 que necesitan un tratamiento especial porque hacen
@@ -8064,7 +8020,7 @@ En lugar de crear vectores para las palabras que estas
 descripciones utilizan, es más sencillo crearlos para las
 descripciones y definirlas aquí, a continuación de la trama.
 
-)
+*)
 
 : officers_forbid_to_steal$  ( -- )
   \ Devuelve una variante de «Tus oficiales detienen el saqueo».
@@ -8414,7 +8370,7 @@ subsection( Pronombres)  \ {{{
 
 variable last_action  \ Última acción utilizada por el jugador
 
-(
+(*
 
 La tabla 'last_complement' que crearemos a continuación sirve para
 guardar los identificadores de entes correspondientes a los últimos
@@ -8442,7 +8398,7 @@ Penúltimo complemento usado:
   +8 Masculino plural.
   +9 Femenino plural.
 
-)
+*)
 
 create last_complement  \ Tabla para últimos complementos usados
 5 cells 2*  \ Octetos necesarios para toda la tabla
@@ -8500,7 +8456,7 @@ dup constant /last_complements  allot
 \ }}}---------------------------------------------
 subsection( Herramientas para la creación de acciones)  \ {{{
 
-(
+(*
 
 Los nombres de las acciones empiezan por el prefijo «do_»
 [algunas palabras secundarias de las acciones 
@@ -8508,7 +8464,7 @@ también usan el mismo prefijo].
 
 xxx pendiente: explicación sobre la sintaxis
 
-)
+*)
 
 : action:  ( "name" -- )
   \ Crear un identificador de acción.
@@ -8534,7 +8490,7 @@ xxx pendiente: explicación sobre la sintaxis
 \ }}}---------------------------------------------
 subsection( Comprobación de los requisitos de las acciones)  \ {{{
 
-(
+(*
 
 En las siguientes palabras usamos las llaves en sus nombres
 como una notación, para hacer más legible y más fácil de
@@ -8548,7 +8504,7 @@ Este sistema de filtros y errores permite simplificar el
 código de las acciones porque ahorra muchas estructuras
 condicionales anidadas.
 
-)
+*)
 
 : main_complement{forbidden}  ( -- )
   \ Provoca un error si hay complemento principal.
@@ -8829,7 +8785,7 @@ condicionales anidadas.
 \ }}} ##########################################################
 section( Acciones)  \ {{{
 
-(
+(*
 
 Para crear una acción, primero es necesario crear su
 identificador con la palabra 'action:', que funciona de forma
@@ -8849,7 +8805,7 @@ definiciones, pues su objetivo es posibilitar que las
 acciones se llamen unas a otras sin importar el orden en que
 estén definidas en el código fuente.
 
-)
+*)
 
 \ ------------------------------------------------
 subsection( Identificadores)  \ {{{
@@ -10719,7 +10675,7 @@ create conversations_with_ambrosio
 \ }}}---------------------------------------------
 subsection( Guardar el juego)  \ {{{
 
-(
+(*
 
 Para guardar el estado de la partida usaremos una solución
 muy sencilla: ficheros de texto que reproduzcan el código
@@ -10727,22 +10683,12 @@ Forth necesario para restaurarlas. Esto permitirá
 restaurar una partida con solo interpretar ese fichero
 como cualquier otro código fuente.
 
-)
+*)
 
 0 [if] \ xxx inacabado, pendiente
-: n>s  ( u -- a1 u1 )
-  \ Convierte un número en una cadena (con dos dígitos como mínimo).
-  s>d <# # #s #> >sb
-  ;
-: n>s+  ( u a1 u1 -- a2 u2 )
-  \ Añade un número a una cadena tras convertirlo en cadena.
-  \ u = Número
-  \ a1 u1 = Cadena original
-  rot n>s s+
-  ;
 : yyyymmddhhmmss$  ( -- a u )
   \ Devuelve la fecha y hora actuales como una cadena en formato «aaaammddhhmmss».
-  time&date n>s n>s+ n>s+ n>s+ n>s+ n>s+
+  time&date >yyyymmddhhmmss
   ;
 : file_name$  ( -- a u )
   \ Devuelve el nombre con que se grabará el juego.
@@ -11026,7 +10972,7 @@ restore_vocabularies
 \ }}} ##########################################################
 section( Intérprete de comandos)  \ {{{
 
-(
+(*
 
 Gracias al uso del propio intérprete de Forth como
 intérprete de comandos del juego, más de la mitad del
@@ -11068,7 +11014,7 @@ tras comprobar si ya ha habido una palabra previa que
 realice la misma función y en su caso deteniendo el proceso
 con un error.
 
-)
+*)
 
 variable 'prepositions#  \ Número de (seudo)preposiciones
 : prepositions#  ( -- n )
@@ -11109,7 +11055,7 @@ prepositions# cells constant /prepositional_complements
 \ Tabla de complementos (seudo)preposicionales:
 create prepositional_complements /prepositional_complements allot
 
-(
+(*
 
 Las [seudo]preposiciones permitidas en el juego pueden
 tener usos diferentes, y algunos de ellos dependen del
@@ -11140,7 +11086,7 @@ identificador del ente que haya sido usado en el comando con
 dicha [seudo]preposición, o bien cero si la
 [seudo]preposición no ha sido utilizada hasta el momento.
 
-)
+*)
 
 : erase_prepositional_complements  ( -- )
   \ Borra la tabla de complementos (seudo)preposicionales.
@@ -11439,7 +11385,7 @@ dicha [seudo]preposición, o bien cero si la
 \ }}} ##########################################################
 section( Fichero de configuración)  \ {{{
 
-(
+(*
 
 El juego tiene un fichero de configuración en que el jugador
 puede indicar sus preferencias. Este fichero es código en
@@ -11452,7 +11398,7 @@ palabra dará error.
 El fichero de configuración se lee al inicio de cada
 partida.
 
-)
+*)
 
 sourcepath 2constant path$
 
@@ -11687,7 +11633,7 @@ restore_vocabularies
 \ }}} ##########################################################
 section( Herramientas para crear el vocabulario del juego)  \ {{{
 
-(
+(*
 
 El vocabulario del juego está implementado como un
 vocabulario de Forth, creado con el nombre de
@@ -11704,7 +11650,7 @@ A continuación definimos palabras que nos proporcionan una sintaxis
 cómoda para crear un número variable de sinónimos de cada palabra del
 vocabulario del jugador.
 
-)
+*)
 
 : parse_synonym  ( -- a u )
   \ Devuelve el siguiente sinónimo de la lista.
@@ -11740,7 +11686,7 @@ vocabulario del jugador.
 
 \ Resolución de entes ambiguos
 
-(
+(*
 
 Algunos términos del vocabulario del jugador pueden
 referirse a varios entes. Por ejemplo, «hombre» puede
@@ -11770,7 +11716,7 @@ tratan como si fueran acciones como las demás, pero que al
 ejecutarse resolverán la ambigüedad y llamarán a la acción
 adecuada.
 
-)
+*)
 
 : (man) ( -- a | false )
   \ Devuelve el ente adecuado a la palabra «hombre» y sus sinónimos
@@ -11887,11 +11833,11 @@ also player_vocabulary definitions
 
 \ Pronombres
 
-(
+(*
 De momento no se implementan las formas sin tilde 
 porque obligarían a distinguir sus usos como adjetivos
 o sustantivos.
-)
+*)
 
 \ xxx Pendiente.
 \ esto/s eso/s y aquello/s podrían implementarse como sinónimos
@@ -12814,7 +12760,7 @@ restore_vocabularies
 \ }}} ##########################################################
 section( Vocabulario para entradas «sí» o «no»)  \ {{{
 
-(
+(*
 
 Para los casos en que el programa hace una pregunta que debe
 ser respondida con «sí» o «no», usamos un truco análogo al
@@ -12834,7 +12780,7 @@ afirmativas o negativas decide el resultado; y si la
 cantidad es la misma, como por ejemplo en «sí sí no no», el
 resultado será el mismo que si no se hubiera escrito nada.
 
-)
+*)
 
 variable #answer  \ Su valor será 0 si no ha habido respuesta válida; negativo para «no»; y positivo para «sí»
 : answer_undefined  ( -- )
@@ -12919,7 +12865,7 @@ restore_vocabularies
 \ }}} ##########################################################
 section( Entrada de comandos)  \ {{{
 
-(
+(*
 
 Para la entrada de comandos se usa la palabra de Forth
 'accept', que permite limitar el número máximo de caracteres
@@ -12927,7 +12873,7 @@ que serán aceptados. Por desgracia ACCEPT permite escribir
 más y después trunca la cadena, por lo que sería mejor
 escribir una alternativa.
 
-)
+*)
 
 svariable command  \ Zona de almacenamiento del comando
 
@@ -13270,7 +13216,7 @@ section( Acerca del programa)  \ {{{
 : program  ( -- )
   \ Muestra el nombre y versión del programa.
   s" «Asalto y castigo» (escrito en Gforth)" paragraph
-  s" Versión " version$ s& paragraph
+  s" Versión " version s& paragraph
   ;
 : about  ( -- )
   \ Muestra información sobre el programa.
@@ -13435,13 +13381,13 @@ also forth definitions
 \ }}} ##########################################################
 section( Pruebas)  \ {{{
 
-(
+(*
 
 Esta sección contiene código para probar el programa
 sin interactuar con el juego, para detectar mejor posibles
 errores.
 
-)
+*)
 
 true [if]
 
@@ -13649,593 +13595,4 @@ do_take|do_eat
 do_take_off
 
 [then]
-
-\ }}} ########################################################## 
-\ Tareas pendientes: programación {{{
-
-0 [if]
-
-...........................
-2012-10-04:
-
-Si falta verbo en el comando, usar el último válido.
-Esta opción será configurable.
-
-...........................
-2012-05-16:
-
-> deja espada
-> s
-> mira espada
-No ves eso. [y variantes]
-===> Aquí no está tu espada.
-
-...........................
-2012-05-14:
-
-Hacer mensajes genéricos en respuesta a comandos imposibles,
-que dependan de las circunstancias:
-«el jaleo de la batalla te hace desvariar»,
-«la falta de aire...»
-
-...........................
-2012-03-01:
-
-Error: «No se ve ningunas velas». No es incorrecto, pero queda mejor
-poner el verbo en plural en ese caso, con velas como sujeto en lugar de
-«se», y «se» como reflexivo.
-
-...........................
-2012-02-29:
-
-Ideas para facilitar la depuración de la futura primera versión beta:
-
-* comando GET para apropiarse de cualquier ente, esté donde esté.
-* comando GO en el fichero de configuración, para elegir escenario por su número
-* mostrar el número de escenario en pantalla
-
-...........................
-2012-02-20:
-
-Añadir «hierba» y «hiedra» al escenario
-location_47% , pues se citan al abrir la puerta.
-Hacer que aparezcan al mencionarlas,
-o al examinar la puerta o el suelo.
-
-...........................
-2012-02-20:
-
-cambiar "tu benefactor te sigue"
-por "tu benefactor te acompaña",
-salvo tras movimientos.
-
-...........................
-2012-02-20:
-
-Mostrar mensajes completos y variables al final de cada
-acción, en lugar de "Hecho".
-
-...........................
-
-2012-02-07:
-
-Hacer x sinónimo de ex cuando no tenga complemento.
-
-Para repetir la última acción con los últimos complementos:
-+ = sigue = continúa = más = r = repite
-...pero no tiene utilidad habiendo historial de comandos!
-
-¿Implementar gerundios?:
-> sigue hablando con X
-Tampoco tiene utilidad, salvo aumentar el rango de
-expresiones comprensibles.
-
-...........................
-2012-01-03:
-
-Tras el análisis, detectar:
-
-Preposición con artículo (al, del) que no concuerde en
-género y número con su ente.
-
-...........................
-
-2011-12:
-
-Hacer que Gforth encuentre ayc.ini en su ruta de búsqueda
-de forma trasparente.
-
-...........................
-
-Desambiguar «hombre» para evitar «no se ve a nadie»
-al decir «m hombre» en presencia de soldados.
-
-...........................
-
-Implementar tres niveles en mirar:
-
-0 = mirar
-1 = examinar
-2 = registrar
-
-¿O hacer que sean acciones efectivas separadas?
-
-...........................
-
-2011-12:
-
-Poner de un color diferente, configurable, el presto y el
-texto de las respuestas al sistema (preguntas sí/no).
-
-...........................
-
-2011-12:
-
-Los comandos de configuración no evitan que el análisis dé
-error por falta de comandos del juego!
-
-Esto es fácil de arreglar:
-
-¿Hacer que anulen todo lo que siga?
-¿O que continúen como si fuera un comando nuevo?
-O mejor: simplemente rellenar ACTION con un xt
-de una acción que no haga nada!
-
-No! Lo que hay que hacer es ejecutar las acciones de
-configuración como el resto de acciones, metiendo su xt en
-'action'.  Y si después queremos seguir (dependerá de la
-acción de sistema de que se trata) basta poner 'action' a cero
-otra vez. O se puede leer el resto del comando, para
-anularlo!
-
-...........................
-
-2011-12:
-
-Comprobar si el hecho de no usar el número máximo de líneas
-causa problemas con diferentes tamaños de consola.
-
-Los textos son cortos, de modo que no hay riesgo de
-que se pierdan antes poder leerlos, antes de que
-se pida entrada a un comando.
-
-...........................
-
-2011-12:
-
-Hacer un comando que lea el fichero de
-configuración en medio de una partida.
-
-...........................
-
-2011-12:
-
-Implementar transcripción en fichero.
-
-...........................
-
-2011-12:
-
-Anotar que ha habido palabras no reconocidas, para variar el error en
-lugar de actuar como si faltaran.  p.e. mirar / mirar xxx.
-
-...........................
-
-2011-12:
-
-Hacer más naturales los mensajes que dicen
-que no hay nada de interés en la dirección indicada,
-p.e.,
-miras hacia...
-intentas vislumbrar (en la cueva oscura)...
-contemplas el cielo...
-miras a tus pies...
-
-...........................
-
-2011-12:
-
-Añadir variante:
-«No observas nada digno de mención al mirar hacia el Este».
-
-...........................
-
-2011-12:
-
-Añadir «tocar».
-
-...........................
-
-2011-12:
-
-Implementar que «todo» pueda usarse
-con examinar y otros verbos, y se cree una lista
-ordenada aleatoriamente de entes que cumplan
-los requisitos.
-
-...........................
-
-2011-12:
-
-Hacer que los objetos (y ambrosio) no estén siempre en el
-mismo sitio. ¿Altar? ¿Serpiente?
-
-...........................
-
-2011-12:
-
-
-Hacer algo así en las tramas del laberinto:
-
-(una vez de x se equivoca)
-
-: this_place_seems_familiar  ( -- )
-  my_location is_visited?
-  if
-    s" Este sitio me suena"
-  then
-  ;
-
-...........................
-
-2011-12:
-
-Respuesta a mirar como en «Pronto»:
-
-Miras, pero no ves eso por aquí. ¿Realmente importa?
-
-...........................
-
-2011-12:
-
-Crear ente «enemigo» con el término ambiguo «sajones» (por
-los sajones muertos en la aldea.
-
-...........................
-
-2011-12:
-
-Crear ente (sub)oficiales, con descripción complementaria a
-la de los soldados.
-
-...........................
-
-2011-12:
-
-Crear ente «general» para el general enemigo, con
-descripción durante la batalla, dependiendo de la fase.
-
-...........................
-
-2011-12:
-
-Implementar «describir», sinónimo de examinar para entes
-presentes pero que funciona con entes no presentes ya
-conocidos!
-
-...........................
-
-2011-12:
-
-Implementar «esperar» («z»)
-
-...........................
-
-2011-12:
-
-Hacer más robusto el analizador con:
-
-«todo», «algo»
-
-«ahora»:
-
->coge libro
->ahora la espada
->y ahora la espada
->y la espada
->también la espada
->y también la espada
->y además la espada
->además la espada
-
-nombres sueltos, ¿mirarlos?:
-
->espada
-Es muy bonita.
-
-...........................
-
-2011-12:
-
-Hace que «examinar» sin más examine todo.
-
-¿Y también «coger» y otros?
-
-coger sin objeto buscaría qué hay.
-si solo hay una cosa para coger, la coge.
-si hay varias, error.
-
-
-...........................
-
-2011-12:
-
-Error nuevo para no coger las cosas de la casa de Ambrosio:
-Es mejor dejar las cosas de Ambrosio donde están.
-
-Añadir a la ficha con su xt.
-
-...........................
-
-2011-12:
-
-Solucionar el problema de los sinónimos que no tienen
-el mismo género o número...
-
-La palabra del vocabulario podría ponerse a sí misma como
-nombre del ente... Pero esto obligaría a usar el género
-y número de la ficha en las descripciones.
-
-Algo relacionado: "arma" es femenina pero usa artículo "el";
-contemplar en los cálculos de artículo.
-
-Mirar cómo lo solucioné en «La legionela del pisto»: con una
-lista de nombres separada de los datos de entes.
-
-...........................
-
-2011-12:
-
-¿Crear un método para dar de alta fácilmente entes
-decorativos? Hay muchos en las descripciones de los
-escenarios.
-
-...........................
-
-2011-12:
-
-Hacer que no salga el presto de pausa si las pausas son
-cero.
-
-...........................
-
-2011-12:
-
-Hacer variantes de CHOOSE y DCHOOSE para elegir un elemento
-con un cálculo en lugar de al azar. 
-
-¿En dónde se necesitaba?
-
-...........................
-
-2011-12:
-
-Crear un mensaje de error más elaborado para las acciones
-que precisan objeto directo, con el infinitivo como
-parámetro: «¿Matar por matar?» «Normalmente hay que matar a
-alguien o algo».
-
-...........................
-
-2011-12:
-
-Hacer que la forma «mírate» sea compatible con «mírate la capa». Para
-esto habría que distiguir dos variantes de complemento principal, y que
-al asignar cualquiera de ellas se compruebe si había ya otro
-complemento principal del otro tipo.
-
-...........................
-
-2011-12:
-
-Limitar los usos de 'print_str' a la impresión. Renombrarla.
-Crear otra cadena dinámica para los usos genéricos con «+ y
-palabras similares.
-
-...........................
-
-2011-12:
-
-Comprobar los usos de 'tmp_str'.
-
-...........................
-
-2011-12:
-
-Poner en fichero de configuración el número de líneas
-necesario para mostrar un presto de pausa.
-
-...........................
-
-2011-12:
-
-Implementar opción para tener en cuenta las palabras no
-reconocidas y detener el análisis.
-
-...........................
-
-2011-12:
-
-Poner en fichero de configuración si las palabras no
-reconocidas deben interrumpir el análisis.
-
-...........................
-
-2011-12:
-
-Poner todos los textos relativos al protagonista en segunda 
-persona.
-
-(Creo que ya está hecho).
-
-...........................
-
-2011-12:
-
-Añadir las salidas hacia fuera y dentro. Y atrás. Y
-adelante. Y seguir.
-
-...........................
-
-2011-12:
-
-Implementar el recuerdo de la dirección del último
-movimiento.
-
-...........................
-
-2011-12:
-
-Hacer que «salir», si no hay dirección de salida en el ente,
-calcule la dirección con la del último movimiento.
-
-...........................
-
-2011-12:
-
-Añadir a la configuración si los errores lingüísticos deben
-ser detallados (técnicos) o vagos (narrativos) o ambos.
-
-...........................
-
-2011-12:
-
-Hacer que primero se muestre la introducción y después
-los créditos y el menú.
-
-...........................
-
-2011:
-
-- Barra de puntuación especial.
-
-- Mensajes de error genéricos, ej.: "Tus ideas parecen confusas, quizá
-debido a la oscuridad".
-
-- Acción de quemar, prender.
-
-...........................
-
-[then]
-
-\ }}} ########################################################## 
-\ Ideas desestimadas para este proyecto {{{
-
-
-0 [if]
-
-...........................
-
-Hacer que los nombres de entes imprimidos con los textos
-actualicen la lista usada por los pronombres, para que
-por ejemplo «mírala» se refiera al último ente citado, tanto
-en el comando como en los textos.
-
-Es fácil de hacer. Basta una palabra central que se ocupe de
-la impresión de nombres. Para ello, la impresión justificada
-de párrafos debe poder hacerse por partes.
-
-...........................
-Lista de puzles completados.
-
-...........................
-
-Hacer que el color de fondo y de texto cambie en los
-escenarios al aire libre.
-
-...........................
-
-Implementar que en las acciones intermedias automáticas,
-como quitarse una prenda antes de dejarla, el mensaje sea
-más natural: «Ulfius se quita la corbata y a continuación la
-deja».
-
-...........................
-
-Crear tramas de escenario separadas: entrar de él, estar en
-él y salir de él.  Hay que distinguir tramas de descripción
-de escenario (como la actual, que se activa en la descripción)
-de tramas de entrada, salida o permanencia en escenario...
-Haría falta un selector similar a SIGHT para seleccionar el
-caso adecuado en la palabra after_describing_location
-
-...........................
-
-Hacer que se acepten los movimientos a entes de decoración o
-mobiliario, o a otros entes presentes, y que se conserve el
-ente junto al que estamos, para ilustrar con ello los
-textos en algunos casos.
-
-...........................
-
-Mensajes de error integrados en la narración.
-
-Contraejemplo de La Mansión:
-> coge libros
-No creo que tenga sentido cargar con eso
-
-Mejor así:
-> coge libros
-Por un momento tienes la absurda tentación de coger los libros,
-pero la descartas.
-
-Y mejor aún si las sucesivas órdenes iguales no tuvieran
-respuesta (o diferente respuesta de forma gradual). Para eso
-hay que implementar una lista de recuerdo...
-
-\ }}} ########################################################## 
-\ Tareas pendientes: trama y puzles {{{
-
-2012-05-12:
-
-Para entrar en la cueva descubierta en el desfiladero hay que limpiar
-la entrada de matorrales.
-
-2011..2012:
-
-Hacer que el líder de los refugiados nos deje pasar si
-dejamos el objeto (piedra o espada) allí o se lo damos.
-
-Hacer que la espada corte en más pedazos la capa si ha sido
-afilada con la piedra. Hacer que su descripción varíe.
-
-Hace que el altar solo aparezca al examinar el puente, y la
-piedra al examinar el altar.
-
-Escenario y subtrama bajo el agua.
-
-Distinguir nadar de bucear.
-
-Quitarse la coraza o la capa antes de nadar (ambas son
-demasiado pesadas para cruzar el lago con 100% de éxito)
-
-No poder nadar si llevamos algo en las manos aparte de la
-espada.
-
-Posibilidad de perder la capa al nadar si no la llevamos
-puesta.
-
-[then]
-
-\ }}} ########################################################## 
-\ Tareas pendientes: código fuente {{{
-
-0 [if]
-
-Unificar los comentarios de palabras que devuelven cadenas de texto:
-
-* Devuelve mensaje de que X...
-* Mensaje de que X...
-* X...
-
-Terminar de cambiar el formato de nombres de palabras en los textos:
-
-De esto: «La palabra ZX , a veces, se usa como ZX2 .»
-A esto: «La palabra 'zx', a veces, se usa como 'zx2'.»
-
-Recortar las líneas para que no sobrepasen los 75 caracteres.
-
-[then]
-
-\ }}}
 
