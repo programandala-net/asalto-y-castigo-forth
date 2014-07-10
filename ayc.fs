@@ -15,7 +15,7 @@ CR .( Asalto y castigo )  \ {{{
 \ Copyright (C) 2011,2012,2013,2014 Marcos Cruz (programandala.net)
 
 only forth definitions
-s" A-05-201403162336"  2constant version  
+s" A-05-201407101226"  2constant version  
 version type cr
 
 \ 'Asalto y castigo' is free software; you can redistribute
@@ -250,11 +250,6 @@ vocabulary game_vocabulary
 
 : restore_vocabularies  ( -- )
   \ Restaura los vocabularios a su orden habitual.
-  \ En lina los vocabularios son inmediatos
-  \ (aunque por alguna razón los creados con 'vocabulary'
-  \ no reciben ese tratamiento de 'postpone'), y además al ejecutarse
-  \ no sustituyen al primero en el orden, sino que se añaden al orden.
-  \ Por ello lina necesita aquí un tratamiento especial:
   only forth also game_vocabulary definitions
   ;
 restore_vocabularies
@@ -1664,7 +1659,7 @@ section( Herramientas para sonido)  \ {{{
 (*
 
 Las herramientas para proveer de sonido al juego están
-apenas esbozadas aquí y de momento solo para Gforth.
+apenas esbozadas aquí.
 
 La idea consiste en utilizar un reproductor externo que
 acepte comandos y no muestre interfaz, como mocp para
@@ -4592,7 +4587,7 @@ key% :attributes
   self% ambrosio% belongs
   ;attributes
 key% :description
-  \ xxx crear ente. hierro, herrumbre y óxido, visibles con la llave en la mano
+  \ XXX TODO crear ente. hierro, herrumbre y óxido, visibles con la llave en la mano
   s" Grande, de hierro herrumboso."
   paragraph
   ;description
@@ -4822,7 +4817,7 @@ location_02% :attributes
   location_01% 0 0 location_03% 0 0 0 0 self% init_location
   ;attributes
 location_02% :description
-  \ xxx crear ente. aldea, niebla
+  \ XXX TODO crear ente. aldea, niebla
   sight case
   self% of
     s" Sobre" s" la cima de" s?&
@@ -5073,7 +5068,7 @@ location_11% :attributes
   0 0 location_10% 0 0 0 0 0 self% init_location
   ;attributes
 location_11% :description
-  \ xxx crear ente. estancia y aguas
+  \ XXX TODO crear ente. estancia y aguas
   sight case
   self% of
     s" Una" s{
@@ -5116,7 +5111,7 @@ location_12% :attributes
   0 0 0 location_13% 0 0 0 0 self% init_location
   ;attributes
 location_12% :description
-  \ xxx crear ente. agua aquí
+  \ XXX TODO crear ente. agua aquí
   sight case
   self% of
     s" Una" s{ s" gran" s" amplia" }s&
@@ -5145,7 +5140,7 @@ location_13% :attributes
   0 0 location_12% location_14% 0 0 0 0 self% init_location
   ;attributes
 location_13% :description
-  \ xxx crear ente. canal, agua, lecho(~catre)
+  \ XXX TODO crear ente. canal, agua, lecho(~catre)
   sight case
   self% of
     s" La sala se abre en"
@@ -5251,7 +5246,7 @@ location_17% :attributes
   location_15% location_20% location_18% 0 0 0 0 0 self% init_location
   ;attributes
 location_17% :description
-  \ xxx crear ente. estalactitas
+  \ XXX TODO crear ente. estalactitas
   sight case
   self% of
     s" Muchas estalactitas se agrupan encima de tu cabeza,"
@@ -5275,7 +5270,7 @@ location_18% :attributes
   0 0 location_19% location_17% 0 0 0 0 self% init_location
   ;attributes
 location_18% :description
-  \ xxx crear ente. puente, arco
+  \ XXX TODO crear ente. puente, arco
   sight case
   self% of
     \ xxx fixme repetición eleva-elevara
@@ -5464,7 +5459,7 @@ location_26% :attributes
   location_26% 0 location_20% location_27% 0 0 0 0 self% init_location
   ;attributes
 location_26% :description
-  \ xxx crear ente. pasaje/camino/senda tramo/cueva (en todos los tramos)
+  \ XXX TODO crear ente. pasaje/camino/senda tramo/cueva (en todos los tramos)
   sight case
   self% of
     north% east% west% 3 exits_cave_description paragraph
@@ -5511,7 +5506,7 @@ location_28% :attributes
 location_28% :description
   sight case
   self% of
-    \ xxx crear ente. estancia(para todos),albergue y refugio (tras hablar con anciano)
+    \ XXX TODO crear ente. estancia(para todos),albergue y refugio (tras hablar con anciano)
     self% ^full_name s" se extiende de Norte a Este." s&
     leader% conversations?
     if  s" Hace de albergue para los refugiados."
@@ -5552,7 +5547,7 @@ location_29% :attributes
   0 0 0 location_28% 0 location_30% 0 0 self% init_location
   ;attributes
 location_29% :description
-  \ xxx crear ente. escalera/espiral, refugiados
+  \ XXX TODO crear ente. escalera/espiral, refugiados
   sight case
   self% of
     s" Cual escalera de caracol gigante,"
@@ -5601,7 +5596,7 @@ location_31% :attributes
   0 0 0 location_30% 0 0 0 0 self% init_location
   ;attributes
 location_31% :description
-  \ xxx crear ente. arco, columnas, hueco/s(entre rocas)
+  \ XXX TODO crear ente. arco, columnas, hueco/s(entre rocas)
   sight case
   self% of
     s" En este pasaje grandes rocas se encuentran entre las columnas de un arco de medio punto."
@@ -5626,7 +5621,7 @@ location_32% :attributes
   0 location_33% 0 location_31% 0 0 0 0 self% init_location
   ;attributes
 location_32% :description
-  \ xxx crear ente. precipicio, abismo, cornisa, camino, roca/s
+  \ XXX TODO crear ente. precipicio, abismo, cornisa, camino, roca/s
   sight case
   self% of
     s" El camino ahora no excede de dos palmos de cornisa sobre un abismo insondable."
@@ -5650,7 +5645,7 @@ location_33% :attributes
   location_32% 0 location_34% 0 0 0 0 0 self% init_location
   ;attributes
 location_33% :description
-  \ xxx crear ente. camino/paso/sendero
+  \ XXX TODO crear ente. camino/paso/sendero
   sight case
   self% of
     s" El paso se va haciendo menos estrecho a medida que se avanza hacia el Sur, para entonces comenzar hacia el Este."
@@ -5673,13 +5668,13 @@ location_33% :description
   endcase
   ;description
 location_34% :attributes
-  \ xxx crear ente. gravilla
+  \ XXX TODO crear ente. gravilla
   s" pasaje de gravilla" self% ms-name!
   self% is_indoor_location
   location_35% 0 0 location_33% 0 0 0 0 self% init_location
   ;attributes
 location_34% :description
-  \ xxx crear ente. camino/paso/sendero, guijarros, moho, roca, suelo..
+  \ XXX TODO crear ente. camino/paso/sendero, guijarros, moho, roca, suelo..
   sight case
   self% of
     s" El paso" gets_wider$ s& s" de Oeste a Norte," s&
@@ -5703,7 +5698,7 @@ location_35% :attributes
   location_40% location_34% 0 location_36% 0 location_36% 0 0 self% init_location
   ;attributes
 location_35% :description
-  \ xxx crear ente. escaleras, puente, río/curso/agua
+  \ XXX TODO crear ente. escaleras, puente, río/curso/agua
   sight case
   self% of
     s" Un puente" s{ s" se tiende" s" cruza" }s& s" de Norte a Sur sobre el curso del agua." s&
@@ -5822,7 +5817,7 @@ location_39% :attributes
 location_39% :description
   sight case
   self% of
-    \ xxx crear ente. musgo, cortina, agua, hueco
+    \ XXX TODO crear ente. musgo, cortina, agua, hueco
     s" Musgoso y rocoso, con la cortina de agua"
     s{ s" tras de ti," s" a tu espalda," }s&
     s{ s" el nivel" s" la altura" }s& s" del agua ha" s&
@@ -5844,7 +5839,7 @@ location_40% :attributes
   0 location_35% location_41% 0 0 0 0 0 self% init_location
   ;attributes
 location_40% :description
-  \ xxx crear ente. losas y losetas, estalactitas, panorama, escalones
+  \ XXX TODO crear ente. losas y losetas, estalactitas, panorama, escalones
   sight case
   self% of
     s" Una gran explanada enlosetada contempla un bello panorama de estalactitas."
@@ -5881,7 +5876,7 @@ location_41% :attributes
   0 0 0 location_40% 0 0 0 0 self% init_location
   ;attributes
 location_41% :description
-  \ xxx crear ente. roca, centinela
+  \ XXX TODO crear ente. roca, centinela
   sight case
   self% of
     s" El ídolo parece un centinela siniestro de una gran roca que se encuentra al Sur."
@@ -5958,7 +5953,7 @@ location_44% :attributes
   location_43% 0 0 location_45% 0 0 0 0 self% init_location
   ;attributes
 location_44% :description
-  \ xxx crear ente. lago, escaleras, pasaje, lago
+  \ XXX TODO crear ente. lago, escaleras, pasaje, lago
   sight case
   self% of
     s" Unas escaleras" s{ s" dan" s" permiten el" }s& s{ s" paso" s" acceso" }s&
@@ -5984,7 +5979,7 @@ location_45% :attributes
   0 location_47% location_44% location_46% 0 0 0 0 self% init_location
   ;attributes
 location_45% :description
-  \ xxx crear ente. pasaje/camino/paso/senda
+  \ XXX TODO crear ente. pasaje/camino/paso/senda
   sight case
   self% of
     ^narrow(mp)$ pass_ways$ s&
@@ -6082,7 +6077,7 @@ location_48% :attributes
   s" , como ahora" s?+
   ;
 location_48% :description
-  \ xxx crear ente. cueva
+  \ XXX TODO crear ente. cueva
   sight case
   self% of
     s{ s" Apenas" s" Casi no" }s
@@ -6165,7 +6160,7 @@ location_51% :attributes
   location_50% 0 0 0 0 0 0 0 self% init_location
   ;attributes
 location_51% :description
-  \ xxx crear ente. mercado, plaza, villa, pueblo, castillo
+  \ XXX TODO crear ente. mercado, plaza, villa, pueblo, castillo
   sight case
   self% of
     ^the_village$ s" bulle de actividad con el mercado en el centro de la plaza," s&
@@ -7478,7 +7473,6 @@ section( Recursos de las tramas asociadas a lugares)  \ {{{
   ;
 : last$  ( -- a u )
   \ Devuelve una variante de «último».
-\ xxx Nota. Confirmar «postrer»
   s{ s" último" s" postrer" }s
   ;
 : last_energy(fp)$  ( -- a u )
@@ -7871,7 +7865,7 @@ here swap - cell / constant battle_phases  \ Fases de la batalla
 \ }}} ##########################################################
 section( Tramas asociadas a lugares)  \ {{{
 
-\ xxx Pendiente. convertir las tramas que corresponda
+\ XXX TODO convertir las tramas que corresponda
 \ de :after_describing_location
 \ en :before_describing_location
 
@@ -9101,7 +9095,7 @@ subsection( Ponerse y quitarse prendas)  \ {{{
 \ }}}---------------------------------------------
 subsection( Tomar y dejar)  \ {{{
 
-\ xxx Antiguo. Puede que aún sirva:
+\ XXX OLD Puede que aún sirva:
 \ : cannot_take_the_altar  \ No se puede tomar el altar
 \   s" [el altar no se toca]" narrate  \ xxx tmp
 \   impossible
@@ -12155,7 +12149,7 @@ o sustantivos.
   colocarte colócate colÓcate colóquete colÓquete
   colocarme colócame colÓcame colócome colÓcome colóqueme colÓqueme
   }synonyms
-\ xxx Crear acción. vestir [con], parte como sinónimo y parte independiente
+\ XXX TODO crear acción. vestir [con], parte como sinónimo y parte independiente
 : ponérselo  ponerse éste  ;
 ' ponérselo synonyms{
   ponÉrselo
@@ -12567,8 +12561,8 @@ o sustantivos.
 ' escalar synonyms{  trepar trepa trepo trepe  }synonyms
 
 : hablar  ['] do_speak action!  ;
-\ xxx Pendiente. Crear nuevas palabras según la preposición que necesiten.
-\ xxx Pendiente. Separar matices.
+\ XXX TODO Crear nuevas palabras según la preposición que necesiten.
+\ XXX TODO Separar matices.
 ' hablar synonyms{
   habla hablad hablo hable 
   hablarle háblale hÁblale háblole hÁblole háblele hÁblele
@@ -12591,23 +12585,23 @@ o sustantivos.
 \ Términos asociados a entes globales o virtuales
 
 : nubes  clouds% complement!  ;
-\ xxx Pendiente. ¿cúmulo-nimbos?, ¿nimbos?
+\ XXX TODO ¿cúmulo-nimbos?, ¿nimbos?
 ' nubes synonyms{  nube estratocúmulo estratocÚmulo estratocúmulos estratocÚmulos cirro cirros  }synonyms
 : suelo  floor% complement!  ;
 ' suelo synonyms{  suelos tierra firme  }synonyms
-\ xxx Pendiente. Añadir «piso», que es ambiguo
+\ XXX TODO Añadir «piso», que es ambiguo
 : cielo  sky% complement!  ;
 ' cielo synonyms{  cielos firmamento  }synonyms
 : techo  ceiling% complement!  ;
 : cueva  (cave) complement!  ;
 ' cueva synonyms{  caverna gruta  }synonyms
 : entrada  (entrance) complement!  ;
-\ xxx Pendiente. ¿Implementar cambio de nombre y/o género gramatical? (entrada, acceso):
+\ XXX TODO ¿Implementar cambio de nombre y/o género gramatical? (entrada, acceso):
 ' entrada synonyms{  acceso }synonyms
 : enemigo  enemy% complement!  ;
 ' enemigo synonyms{ enemigos sajón sajÓn sajones }synonyms
 : todo ;  \ xxx pendiente
-\ xxx Pendiente. ¿Implementar cambio de nombre y/o género gramatical? (pared/es, muro/s):
+\ XXX TODO ¿Implementar cambio de nombre y/o género gramatical? (pared/es, muro/s):
 : pared  (wall) complement!  ;
 ' pared  synonyms{ muro }synonyms
 : paredes  wall% complement!  ;
@@ -12673,7 +12667,7 @@ false [if]  \ xxx descartado, pendiente
 
 \ Meta
 
-\ xxx Antiguo.
+\ XXX OLD
 \ : save  ['] do_save_the_game action!  ;
 
 \ Términos ambiguos
@@ -12750,7 +12744,7 @@ false [if]  \ xxx descartado, pendiente
   #socorro #auxilio #favor
   }synonyms
 
-\ xxx Comandos para usar durante el desarrollo.:
+\ XXX TMP Comandos para usar durante el desarrollo:
 : forth  (do_finish)  ;
 : bye  bye  ;
 : quit  quit  ; 
