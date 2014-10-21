@@ -15,7 +15,7 @@ CR .( Asalto y castigo )  \ {{{
 \ Copyright (C) 2011,2012,2013,2014 Marcos Cruz (programandala.net)
 
 only forth definitions
-s" A-05-201407101903"  2constant version  
+s" A-05-2014102201"  2constant version  
 version type cr
 
 \ 'Asalto y castigo' is free software; you can redistribute
@@ -222,9 +222,7 @@ true constant [old_method]  immediate
   ;
 : .s?  ( -- )
   \ Imprime el contenido de la pila si no está vacía.
-  depth
-  if  depth_warning .s cr  wait 
-  then
+  depth if  depth_warning .s cr  wait  then
   ;
 : section(  ( "text<bracket>" -- )
   \ Notación para los títulos de sección en el código fuente.
@@ -2262,16 +2260,15 @@ campos.
 Los seudo-campos devuelven un cálculo. Sirven para añadir
 una capa adicional de abstracción y simplificar el código.
 
-Por conveniencia, en el caso de algunos de los campos
-binarios creamos también palabras para la propiedad
-contraria.  Por ejemplo, en las fichas existe el campo
-~IS_OPEN? para indicar si un ente está abierto, pero creamos
-las palabras necesarias para examinar y modificar tanto la
-propiedad de «cerrado» como la de «abierto». Esto ayuda a
-escribir posteriormente el código efectivo [pues no hace
-falta recordar si la propiedad real y por tanto el campo de
-la ficha del ente era «abierto» o «cerrado»] y hace el
-código más conciso y legible.
+Por conveniencia, en el caso de algunos de los campos binarios
+creamos también palabras para la propiedad contraria.  Por
+ejemplo, en las fichas existe el campo '~is_open?' para indicar
+si un ente está abierto, pero creamos las palabras necesarias
+para examinar y modificar tanto la propiedad de «cerrado» como
+la de «abierto». Esto ayuda a escribir posteriormente el código
+efectivo (pues no hace falta recordar si la propiedad real y por
+tanto el campo de la ficha del ente era «abierto» o «cerrado») y
+hace el código más conciso y legible.
 
 *)
 
@@ -2990,14 +2987,14 @@ section( Herramientas para crear las fichas de la base de datos)  \ {{{
 (*
 
 No es posible reservar el espacio necesario para las fichas
-hasta saber cuántas necesitaremos [a menos que usáramos una
+hasta saber cuántas necesitaremos (a menos que usáramos una
 estructura un poco más sofisticada con fichas separadas pero
-enlazadas entre sí, muy habitual también y fácil de crear].
-Por ello la palabra 'ENTITIES [que devuelve la dirección de
-la base de datos] se crea como un vector, para asignarle
-posteriormente su dirección de ejecución.  Esto permite
-crear un nuevo ente fácilmente, sin necesidad de asignar
-previamente el número de fichas a una constante.
+enlazadas entre sí, muy habitual también y fácil de crear).  Por
+ello la palabra "'entities" (que devuelve la dirección de la
+base de datos) se crea como un vector, para asignarle
+posteriormente su dirección de ejecución.  Esto permite crear un
+nuevo ente fácilmente, sin necesidad de asignar previamente el
+número de fichas a una constante.
 
 *)
 
@@ -6086,7 +6083,7 @@ location_48% :description
   \ XXX TODO crear ente. cueva
   sight case
   self% of
-    s{ s" Apenas" s" Casi no" }s
+    s{ s" Apenas si" s" Casi no" }s
     s{ s" se puede" s" es posible" }s&
     s" reconocer la entrada de la cueva, al Este." s&
     ^the_path$ s& s{ s" parte" s" sale" }s&
@@ -8459,8 +8456,8 @@ subsection( Herramientas para la creación de acciones)  \ {{{
 (*
 
 Los nombres de las acciones empiezan por el prefijo «do_»
-[algunas palabras secundarias de las acciones 
-también usan el mismo prefijo].
+(algunas palabras secundarias de las acciones 
+también usan el mismo prefijo).
 
 XXX TODO explicación sobre la sintaxis
 
@@ -9767,7 +9764,7 @@ subsection( Nadar)  \ {{{
   s{ s" Consigues" s" Logras" }s
   s{ s" emerger," s" salir a la superficie," }s&
   though$ s& in_a_different_place$ s&
-  s" de la" s& cave$ s& s" ..." s&
+  s" de la" s& cave$ s& s" ..." s+
   ;
 : swiming$  ( -- ca len )
   \ Devuelve mensaje sobre el buceo.
