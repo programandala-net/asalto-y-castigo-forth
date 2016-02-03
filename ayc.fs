@@ -1,9 +1,9 @@
 #! /usr/bin/env gforth
 
-\ ##############################################################
+\ ==============================================================
 CR .( Asalto y castigo )  \ {{{
 
-\ Una aventura conversacional en castellano,
+\ Una aventura conversacional en español,
 \ escrita en Forth con Gforth.
 
 \ A text adventure in Spanish,
@@ -12,10 +12,10 @@ CR .( Asalto y castigo )  \ {{{
 \ Proyecto en desarrollo.
 \ Project under development.
 
-\ Copyright (C) 2011-2015 Marcos Cruz (programandala.net)
+\ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
 
 only forth definitions
-s" A-05-20150809"  2constant version
+s" 0.6.0+201602030309"  2constant version
 version type cr
 
 \ 'Asalto y castigo' is free software; you can redistribute
@@ -62,7 +62,7 @@ version type cr
 \ El historial de desarrollo está en:
 \ http://programandala.net/es.programa.asalto_y_castigo.forth.historia.html
 
-\ La lista de tareas pendientes está al final de este fichero.
+\ La lista de tareas pendientes está en el fichero <TO-DO.adoc>.
 
 \ Notación de la pila
 
@@ -103,15 +103,15 @@ del mismo elemento, modificado.
 
 [then]
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 CR .( Requisitos)  \ {{{
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 \ De Gforth
 
 require random.fs
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 \ De la librería «Forth Foundation Library»
 \ (versión 0.8.0)
 \ http://code.google.com/p/ffl/
@@ -137,7 +137,7 @@ require ffl/chr.fs  \ Herramientas para caracteres
 require ffl/dtm.fs  \ Tipo de datos para fecha y hora
 require ffl/dti.fs  \ Herramientas adicionales para fecha y hora
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 \ De programandala.net
 
 \ Galope (Gforth Accessible Library Of Particular Elements)
@@ -191,7 +191,7 @@ require galope/xy.fs  \ Posición actual del cursor
 require halto2.fs \ XXX TMP -- check points for debugging
 false to halto?
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 \ Meta \ {{{
 
 : wait  key drop  ;
@@ -237,7 +237,7 @@ true constant [old_method]  immediate
   .s?
   ;
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Vocabularios de Forth)  \ {{{
 
 \ Vocabulario principal del programa (no de la aventura)
@@ -258,7 +258,7 @@ vocabulary answer_vocabulary  \ respuestas a preguntas de «sí» o «no»
 vocabulary config_vocabulary  \ palabras de configuración del juego
 vocabulary restore_vocabulary  \ palabras de restauración de una partida
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Palabras genéricas)  \ {{{
 
 true constant [true]  immediate
@@ -295,7 +295,7 @@ pad 0 2constant ""  \ Simula una cadena vacía.
 
 ' bootmessage alias .forth
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Definición de estructuras)  \ {{{
 
 (*
@@ -350,7 +350,7 @@ variable bit#  \ Contador de máscara de bitio para los campos buleanos.
   @ and 0<>
   ;
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Vectores)  \ {{{
 
 \ XXX TODO efecto de pila
@@ -362,11 +362,11 @@ defer torch%  \ Antorcha
 defer leader%  \ Ente líder de los refugiados
 defer location_01%  \ Primer ente escenario
 
-defer do_exits  \ Acción de listar las salidas
+\ defer do_exits  \ Acción de listar las salidas \ XXX OLD
 defer list_exits  \ Crea e imprime la lista de salidas
 defer exits%  \ Ente "salidas"
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Códigos de error)  \ {{{
 
 \ XXX TODO simplificar la explicación
@@ -469,7 +469,7 @@ false [if]  \ Ejemplo de código:
 0 value you_do_not_wear_what_error#
 0 value you_need_what_error#
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Herramientas de azar)  \ {{{
 
 \ Desordenar al azar varios elementos de la pila
@@ -526,7 +526,7 @@ section( Herramientas de azar)  \ {{{
   both? bs+
   ;
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Variables y constantes)  \ {{{
 
 \ Algunas variables de configuración
@@ -568,7 +568,7 @@ variable recent_talks_to_the_leader  \ Contador de intentos de hablar con el lí
   recent_talks_to_the_leader off
   ;
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Pantalla)  \ {{{
 
 \ }}}---------------------------------------------
@@ -843,7 +843,7 @@ subsection( Borrado de pantalla)  \ {{{
   trm+reset init_colors
   ;
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Depuración)  \ {{{
 
 : fatal_error  ( wf ca len -- )
@@ -888,7 +888,7 @@ section( Depuración)  \ {{{
   debug_color .debug_message .system_status debug_pause
   ;
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Manipulación de textos)  \ {{{
 
 str-create tmp_str  \ Cadena dinámica de texto temporal para usos variados
@@ -930,6 +930,8 @@ str-create tmp_str  \ Cadena dinámica de texto temporal para usos variados
   \ Sustituye por espacios todos los signos de puntuación ASCII de una cadena.
   \ XXX TODO recorrer la cadena por caracteres UTF-8
   \ XXX TODO sustituir también signos de puntuación UTF-8
+  exit
+  \ XXX FIXME esto elimina las marcas "#" de los comandos del sistema!
   2dup bounds  ?do
     i c@ chr-punct? if  bl i c!  then
   loop
@@ -1017,7 +1019,7 @@ str-create tmp_str  \ Cadena dinámica de texto temporal para usos variados
   s" o" s&
   ;
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Textos aleatorios)  \ {{{
 
 (*
@@ -1598,7 +1600,7 @@ s" de Westmorland" sconstant of_westmorland$
   s{ s" rocosa" s" de roca" s" s" s?+ }s
   ;
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Cadena dinámica para impresión)  \ {{{
 
 (*
@@ -1655,7 +1657,7 @@ str-create print_str  \ Cadena dinámica para almacenar el texto antes de imprim
   ;
 
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Herramientas para sonido)  \ {{{
 
 (*
@@ -1691,13 +1693,13 @@ operativo se pasan con la palabra SYSTEM de Gforth.
   s" mocp --forward" system
   ;
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Impresión de textos)  \ {{{
 
 variable #lines  \ Número de línea del texto que se imprimirá
 variable scroll  \ Indicador de que la impresión no debe parar
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 subsection( Presto de pausa en la impresión de párrafos)  \ {{{
 
 svariable scroll_prompt  \ Guardará el presto de pausa
@@ -1956,7 +1958,7 @@ false [if]  \ xxx obsoleto
   ;
 
 \ }}}
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Definición de la ficha de un ente)  \ {{{
 
 (*
@@ -2096,7 +2098,7 @@ bitfield: ~is_container?  \ ¿Es un contenedor?
 
 constant /entity  \ Tamaño de cada ficha
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Interfaz de campos)  \ {{{
 
 (*
@@ -2118,7 +2120,7 @@ frecuentes con los entes.
 
 *)
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 \ Herramientas para los campos de dirección
 
 ' ~north_exit alias ~first_exit  \ Primera salida definida en la ficha
@@ -2150,7 +2152,7 @@ last_exit> cell+ first_exit> - constant /exits
   no_exit <>
   ;
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 \ Interfaz básica para leer y modificar los campos
 
 (*
@@ -2251,7 +2253,7 @@ campos.
 : is_not_worn  ( a -- )  ~is_worn? bit_off  ;
 : visits++  ( a -- )  ~visits ?++  ;
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 \ Campos calculados o seudo-campos
 
 (*
@@ -2470,7 +2472,7 @@ hace el código más conciso y legible.
   torch% is_not_accessible?  torch% is_not_lit?  or
   ;
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 \ Herramientas de artículos y pronombres
 
 (*
@@ -2754,7 +2756,7 @@ cell constant /article_gender_set  \ De femenino a masculino
   rot has_plural_name? *>plural_ending
   ;
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 \ Interfaz para los nombres de los entes
 
 (*
@@ -2917,7 +2919,7 @@ de datos de su ficha.
   full_name paragraph
   ;
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Algunas cadenas calculadas y operaciones con ellas)  \ {{{
 
 (*
@@ -2946,7 +2948,7 @@ xxx nota: ¿Mover a otra sección?
   player_gender_ending$ s+
   ;
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Operaciones elementales con entes)  \ {{{
 
 (*
@@ -2980,7 +2982,7 @@ defer lock_found  \ Encontrar el candado; la definición está en `(lock_found)`
   dup is_hold? if  vanish  else  drop  then
   ;
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Herramientas para crear las fichas de la base de datos)  \ {{{
 
 (*
@@ -3128,7 +3130,7 @@ defer 'entities  \ Dirección de los entes; vector que después será redirigido
   loop
   ;
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Herramientas para crear las descripciones)  \ {{{
 
 (*
@@ -3249,7 +3251,7 @@ false value sight  \ Guarda el ente dirección al que se mira en un escenario (o
   uninteresting_direction$ paragraph
   ;
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Identificadores de entes)  \ {{{
 
 (*
@@ -3404,7 +3406,7 @@ create ('entities) /entities allot  \ Reservar el espacio en el diccionario
 ' ('entities) is 'entities  \ Asignar el vector a la palabra real
 'entities /entities erase  \ Llenar la zona con ceros, para mayor seguridad
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Herramientas para crear conexiones entre escenarios)  \ {{{
 
 \ xxx Nota.: Este código quedaría mejor con el resto
@@ -3729,7 +3731,7 @@ todas las asignaciones de salidas en un solo paso.
   dup is_location exits!
   ;
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Recursos para las descripciones de entes)  \ {{{
 
 (*
@@ -3741,7 +3743,7 @@ a la sección de textos calculados.
 
 *)
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 \ Albergue de los refugiados
 
 : the_refugees$  ( -- ca len )
@@ -3879,7 +3881,7 @@ a la sección de textos calculados.
   then  s& period+ narrate
   ;
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 \ Tramos de cueva (laberinto)
 
 \ Elementos básicos usados en las descripciones
@@ -4152,7 +4154,7 @@ create 'cave_descriptions
   2 choose execute period+
   ;
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 \ La aldea sajona
 
 : poor$  ( -- ca len )
@@ -4167,7 +4169,7 @@ create 'cave_descriptions
   s" de la" s& poor_village$ s&
   ;
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 \ Pared del desfiladero
 
 : to_pass_(wall)$  ( -- ca len )
@@ -4194,7 +4196,7 @@ create 'cave_descriptions
   }s cave_entrance% full_name s&
   ;
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 \ Entrada a la cueva
 
 : the_cave_entrance_was_discovered?  ( -- )
@@ -4256,12 +4258,12 @@ create 'cave_descriptions
   }s&? s& period+
   ;
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 \ Entrada a la cueva
 
 
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 \ Otros escenarios
 
 : bridge_that_way$  ( -- ca len )
@@ -4295,7 +4297,7 @@ create 'cave_descriptions
   s" un" narrow(m)$ s& pass_way$ s& s" elevado" s&
   ;
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Atributos y descripciones de entes)  \ {{{
 
 \ Ente protagonista
@@ -6336,7 +6338,7 @@ in% :attributes
   in_exit> self% ~direction !
   ;attributes
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Mensaje de acción completada)  \ {{{
 
 variable silent_well_done?  \ XXX not used yet
@@ -6358,7 +6360,7 @@ variable silent_well_done?  \ XXX not used yet
   silent_well_done? off
   ;
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Errores de las acciones)  \ {{{
 
 variable action  \ Código de la acción del comando
@@ -6982,7 +6984,7 @@ to what_is_already_open_error#
 0 ' (what_is_already_closed) action_error: what_is_already_closed
 to what_is_already_closed_error#
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Listas)  \ {{{
 
 variable #listed  \ Contador de elementos listados, usado en varias acciones
@@ -7087,10 +7089,10 @@ variable #elements  \ Total de los elementos de una lista
   then
   ;
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Tramas comunes a todos los escenarios)  \ {{{
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 \ Ambrosio nos sigue
 
 (*
@@ -7115,7 +7117,7 @@ diferente a que esté accesible.
   s" te sigue, esperanzado." s& narrate
   ;
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 \ Lanzadores de las tramas comunes a todos los escenarios
 
 : before_describing_any_location  ( -- )
@@ -7131,7 +7133,7 @@ diferente a que esté accesible.
   ambrosio_must_follow? ?? ambrosio_must_follow
   ;
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Herramientas para las tramas asociadas a escenarios)  \ {{{
 
 : [:location_plot]  ( a -- )
@@ -7304,10 +7306,10 @@ true [if]
   dup enter_location? and ?dup ?? actually_enter_location
   ;
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Recursos de las tramas asociadas a lugares)  \ {{{
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 \ Regreso a casa
 
 : pass_still_open?  ( -- wf )
@@ -7345,7 +7347,7 @@ section( Recursos de las tramas asociadas a lugares)  \ {{{
   narrate
   ;
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 \ Persecución
 
 : pursued  ( -- )
@@ -7402,7 +7404,7 @@ section( Recursos de las tramas asociadas a lugares)  \ {{{
   }s&
   ;
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 \ Batalla
 
 : all_your_men  ( -- ca len wf )
@@ -7662,7 +7664,7 @@ here swap - cell / constant battle_phases  \ Fases de la batalla
   1 battle# !
   ;
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 \ Emboscada de los sajones
 
 : the_pass_is_closed  ( -- )
@@ -7766,7 +7768,7 @@ here swap - cell / constant battle_phases  \ Fases de la batalla
   officers_talk_to_you
   ;
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 \ Oscuridad en la cueva
 
 : considering_the_darkness$  ( -- ca len )
@@ -7824,7 +7826,7 @@ here swap - cell / constant battle_phases  \ Fases de la batalla
   }s& period+ narrate
   ;
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 \ Albergue de los refugiados
 
 : the_old_man_is_angry?  ( -- wf )
@@ -7864,7 +7866,7 @@ here swap - cell / constant battle_phases  \ Fases de la batalla
   then  period+ s&
   ;
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Tramas asociadas a lugares)  \ {{{
 
 \ XXX TODO convertir las tramas que corresponda
@@ -7979,10 +7981,10 @@ location_48% :after_describing_location
   door% is_here
   ;after_describing_location
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Trama global)  \ {{{
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 \ Varios
 
 : (lock_found)  ( -- )
@@ -7991,7 +7993,7 @@ section( Trama global)  \ {{{
   lock% familiar++
   ;  ' (lock_found) is lock_found
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 \ Gestor de la trama global
 
 : plot  ( -- )
@@ -8003,7 +8005,7 @@ section( Trama global)  \ {{{
   battle? if  battle exit  then
   ;
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Descripciones especiales)  \ {{{
 
 (*
@@ -8135,7 +8137,7 @@ descripciones y definirlas aquí, a continuación de la trama.
   ;
 ' (officers_description) is officers_description
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Errores del intérprete de comandos)  \ {{{
 
 : please$  ( -- ca len )
@@ -8355,10 +8357,10 @@ create 'language_error_verbosity_xt
   \ [debug_catch] [debug_parsing] [or] [??] ~~
   ;
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Herramientas para crear las acciones)  \ {{{
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 subsection( Pronombres)  \ {{{
 
 \ XXX TODO:
@@ -8465,10 +8467,8 @@ XXX TODO explicación sobre la sintaxis
 : action:  ( "name" -- )
   \ Crear un identificador de acción.
   \ "name" = nombre del identificador de la acción, en el flujo de entrada
-  create  \ Crea una palabra con el nombre indicado...
-    ['] noop ,  \ ...y guarda en su campo de datos (pfa) la dirección de ejecución de NOOP
-  does>  ( pfa -- )  \ Cuando la palabra sea llamada tendrá su pfa en la pila...
-    perform  \ ...y ejecutará la dirección de ejecución que contenga
+  create  ['] noop ,
+  does>  ( pfa -- )  perform
   ;
 : :action  ( "name" -- )
   \ Inicia la definición de una palabra que ejecutará una acción.
@@ -8778,8 +8778,10 @@ condicionales anidadas.
   ;
 
 \ }}}
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Acciones)  \ {{{
+
+\ XXX TODO -- usar `defer` en lugar de este sistema
 
 (*
 
@@ -8803,10 +8805,11 @@ estén definidas en el código fuente.
 
 *)
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 subsection( Identificadores)  \ {{{
 
-action: (do_finish)  \ Esta acción se define en la sección de finales; útil solo durante el desarrollo
+\ Acciones del juego
+
 action: do_attack
 action: do_break
 action: do_climb
@@ -8814,9 +8817,9 @@ action: do_close
 action: do_do
 action: do_drop
 action: do_examine
-action: (do_exits)  ' (do_exits) is do_exits
-action: do_frighten  \ xxx confirmar traducción
-action: do_finish  \ Esta acción se define en la sección de finales
+action: (do_exits)
+\ ' (do_exits) is do_exits  \ XXX TODO por qué así?  \ XXX OLD
+action: do_frighten
 action: do_go
 action: do_go_ahead
 action: do_go_back
@@ -8833,14 +8836,12 @@ action: do_hit
 action: do_introduce_yourself
 action: do_inventory
 action: do_kill
-action: do_load_the_game
 action: do_look
 action: do_look_to_direction
 action: do_look_yourself
 action: do_make
 action: do_open
 action: do_put_on
-action: do_save_the_game
 action: do_search
 action: do_sharpen
 action: do_speak
@@ -9168,7 +9169,9 @@ subsection( Tomar y dejar)  \ {{{
       direct_pronoun s& s" quita" object plural_ending+
       s" quita" object plural_ending+ object full_name s&
     }s& s" y" s&
+
   else  ""
+
     [then]
 
     \ xxx método más sencillo:
@@ -9625,7 +9628,7 @@ subsection( Movimiento)  \ {{{
   if  \ no debe llevar artículo
     s" hacia" r> full_name
   else  \ debe llevar artículo
-    toward_the(m)$ r> ^name
+    toward_the(m)$ r> name
   then  s&
   ;
 : (impossible_move)  ( a -- )
@@ -10011,7 +10014,7 @@ subsection( Hacer)  \ {{{
 \ }}}---------------------------------------------
 subsection( Hablar y presentarse)  \ {{{
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 \ Conversaciones con el líder de los refugiados
 
 : a_man_takes_the_stone  ( -- )
@@ -10382,7 +10385,7 @@ subsection( Hablar y presentarse)  \ {{{
   then
   ;
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 \ Conversaciones con Ambrosio
 
 : talked_to_ambrosio  ( -- )
@@ -10607,7 +10610,7 @@ create conversations_with_ambrosio
   if  (talk_to_ambrosio)  else  ambrosio% is_not_here  then
   ;
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 \ Conversaciones sin éxito
 
 : talk_to_something  ( a -- )
@@ -10629,7 +10632,7 @@ create conversations_with_ambrosio
   talk_to_yourself$ is_nonsense
   ;
 
-\ ------------------------------------------------
+\ ----------------------------------------------
 \ Acciones
 
 : do_speak_if_possible  ( a -- )
@@ -10693,10 +10696,14 @@ como cualquier otro código fuente.
   ;
 defer reenter
 svariable filename
-: (do_save_the_game)  ( -- )
+: (save_the_game)  ( -- )
   \ Graba el juego.
+
   \ XXX TODO -- no está decidido el sistema que se usará para salvar las partidas
-  \ 2011-12-01 No funciona bien. Muestra mensajes de gcc con parámetros sacados de textos del programa!
+
+  \ 2011-12-01 No funciona bien. Muestra mensajes de gcc con
+  \ parámetros sacados de textos del programa!
+
 \ false to spf-init?  \ Desactivar la inicialización del sistema
 \ true to console?  \ Activar el modo de consola (no está claro en el manual)
 \ false to gui?  \ Desactivar el modo gráfico (no está claro en el manual)
@@ -10704,11 +10711,12 @@ svariable filename
 \ file_name$ save  new_page
   file_name$ filename place filename count save
   ;
-:action do_save_the_game
+: save_the_game
   \ Acción de salvar el juego.
   main_complement{forbidden}
-  (do_save_the_game)
-  ;action
+  action ? key drop  \ XXX INFORMER
+  (save_the_game)
+  ;
 [then]
 
 svariable game_file_name  \ Nombre del fichero en que se graba la partida
@@ -10909,21 +10917,21 @@ restore_vocabularies
   \ Añade la extensión .fs a un nombre de fichero.
   s" .fs" s+
   ;
-: (do_save_the_game)  ( ca len -- )
+: (save_the_game)  ( ca len -- )
   \ Salva la partida.
   fs+ create_game_file write_game_file close_game_file
   ;
-:action do_save_the_game  ( ca len -- )
+: save_the_game  ( ca len -- )
   \ Acción de salvar la partida.
   \ main_complement{forbidden}
-  (do_save_the_game)
-  ;action
+  (save_the_game)
+  ;
 : continue_the_loaded_game  ( -- )
   \ Continúa el juego en el punto que se acaba de restaurar.
   scene_break new_page
   my_location describe_location
   ;
-:action do_load_the_game  ( ca len -- )
+: load_the_game  ( ca len -- )
   \ Acción de salvar la partida.
   \ XXX TODO no funciona bien
   \ main_complement{forbidden}
@@ -10962,53 +10970,63 @@ restore_vocabularies
   then
   [debug_filing] [??] ~~
   continue_the_loaded_game
-  ;action
+  ;
+
+
+\ }}} ==========================================================
+section( Acciones de configuración)  \ {{{
+
+\ XXX TMP -- esto no soluciona el problema
+
+\ :action do_color  ( -- )
+\   init_colors  new_page  my_location describe
+\   ;action
+
+: recolor  ( -- )
+  init_colors  new_page  my_location describe
+  ;
+
+defer finish
 
 \ }}}
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Intérprete de comandos)  \ {{{
 
 (*
 
-Gracias al uso del propio intérprete de Forth como
-intérprete de comandos del juego, más de la mitad del
-trabajo ya está hecha por anticipado. Para ello
-basta crear las palabras del vocabulario del juego como
-palabras propias de Forth y hacer que Forth interprete
-directamente la entrada del jugador. Creando las palabras
-en un vocabulario de Forth específico para ellas,
-y haciendo que sea el único vocabulario activo en
-el momento de la interpretación, solo las palabras del
-juego serán reconocidas, no las del programa ni las del
+Gracias al uso del propio intérprete de Forth como intérprete de
+comandos del juego, más de la mitad del trabajo ya está hecha por
+anticipado. Para ello basta crear las palabras del vocabulario del
+juego como palabras propias de Forth y hacer que Forth interprete
+directamente la entrada del jugador. Creando las palabras en un
+vocabulario de Forth específico para ellas, y haciendo que sea el
+único vocabulario activo en el momento de la interpretación, solo las
+palabras del juego serán reconocidas, no las del programa ni las del
 sistema Forth.
 
-Sin embargo hay una consideración importante: Al pasarle
-directamente al intérprete de Forth el texto del comando
-escrito por el jugador, Forth ejecutará las palabras que
-reconozca [haremos que las no reconocidas las ignore] en el
-orden en que estén escritas en la frase.  Esto quiere decir
-que, al contrario de lo que ocurre con otros métodos, no
-podremos tener una visión global del comando del jugador: ni
-de cuántas palabras consta ni, en principio, qué viene a
-continuación de la palabra que está siendo interpretada en
-cada momento.
+Sin embargo hay una consideración importante: Al pasarle directamente
+al intérprete de Forth el texto del comando escrito por el jugador,
+Forth ejecutará las palabras que reconozca (haremos que las no
+reconocidas las ignore) en el orden en que estén escritas en la frase.
+Esto quiere decir que, al contrario de lo que ocurre con otros
+métodos, no podremos tener una visión global del comando del jugador:
+ni de cuántas palabras consta ni, en principio, qué viene a
+continuación de la palabra que está siendo interpretada en cada
+momento.
 
 Una solución sería que cada palabra del jugador guardara un
-identificador unívoco en la pila o en una tabla, y
-posteriormente interpretáramos el resultado de una forma
-convencional.
+identificador unívoco en la pila o en una tabla, y posteriormente
+interpretáramos el resultado de una forma convencional.
 
-Sin embargo, hemos optado por dejar a Forth hacer su trabajo
-hasta el final, pues nos parece más sencillo y eficaz
-[también es más propio del espíritu de Forth usar su
-intérprete como intérprete de la aplicación en lugar de
-programar un intérprete adicional específico].  Las palabras
-reconocidas en el comando del jugador se ejecutarán pues en
-el orden en que fueron escritas. Cada una actualizará el
-elemento del comando que represente, verbo o complemento,
-tras comprobar si ya ha habido una palabra previa que
-realice la misma función y en su caso deteniendo el proceso
-con un error.
+Sin embargo, hemos optado por dejar a Forth hacer su trabajo hasta el
+final, pues nos parece más sencillo y eficaz [también es más propio
+del espíritu de Forth usar su intérprete como intérprete de la
+aplicación en lugar de programar un intérprete adicional específico].
+Las palabras reconocidas en el comando del jugador se ejecutarán pues
+en el orden en que fueron escritas. Cada una actualizará el elemento
+del comando que represente, verbo o complemento, tras comprobar si ya
+ha habido una palabra previa que realice la misma función y en su caso
+deteniendo el proceso con un error.
 
 *)
 
@@ -11053,34 +11071,30 @@ create prepositional_complements /prepositional_complements allot
 
 (*
 
-Las [seudo]preposiciones permitidas en el juego pueden
-tener usos diferentes, y algunos de ellos dependen del
-ente al que se refieran, por lo que su análisis hay que
-hacerlo en varios niveles.
+Las (seudo)preposiciones permitidas en el juego pueden tener usos
+diferentes, y algunos de ellos dependen del ente al que se refieran,
+por lo que su análisis hay que hacerlo en varios niveles.
 
-Decimos «[seudo]preposiciones» porque algunos de los términos
-usados como preposiciones no lo son [como por ejemplo «usando»,
-que es un gerundio] pero se usan como si lo fueran.
+Decimos «(seudo)preposiciones» porque algunos de los términos usados
+como preposiciones no lo son [como por ejemplo «usando», que es un
+gerundio] pero se usan como si lo fueran.
 
-Los identificadores creados arriba se refieren a
-[seudo]preposiciones del vocabulario de juego [por ejemplo,
-«a», «con»...] o a sus sinónimos, no a sus posibles usos
-finales como complementos [por ejemplo, destino de
-movimiento, objeto indirecto, herramienta, compañía...]. Por
-ejemplo, el identificador `«a»_preposition` se usa para
-indicar [en la tabla] que se ha encontrado la preposición
-«a» [o su sinónimo «al»], pero el significado efectivo [por
-ejemplo, indicar una dirección o un objeto indirecto o un
-objeto directo de persona, en este caso] se calculará en una
-etapa posterior.
+Los identificadores creados arriba se refieren a (seudo)preposiciones
+del vocabulario de juego (por ejemplo, «a», «con»...) o a sus
+sinónimos, no a sus posibles usos finales como complementos [por
+ejemplo, destino de movimiento, objeto indirecto, herramienta,
+compañía...]. Por ejemplo, el identificador `«a»_preposition` se usa
+para indicar (en la tabla) que se ha encontrado la preposición «a» [o
+su sinónimo «al»], pero el significado efectivo [por ejemplo, indicar
+una dirección o un objeto indirecto o un objeto directo de persona, en
+este caso] se calculará en una etapa posterior.
 
-Cada elemento de la tabla de complementos
-[seudo]preposicionales representa una [seudo]preposición
-[incluidos evidentemente sus sinónimos]; será apuntado pues
-por un identificador de [seudo]preposición y contendrá el
-identificador del ente que haya sido usado en el comando con
-dicha [seudo]preposición, o bien cero si la
-[seudo]preposición no ha sido utilizada hasta el momento.
+Cada elemento de la tabla de complementos (seudo)preposicionales
+representa una (seudo)preposición [incluidos evidentemente sus
+sinónimos]; será apuntado pues por un identificador de
+(seudo)preposición y contendrá el identificador del ente que haya sido
+usado en el comando con dicha (seudo)preposición, o bien cero si la
+(seudo)preposición no ha sido utilizada hasta el momento.
 
 *)
 
@@ -11151,8 +11165,7 @@ dicha [seudo]preposición, o bien cero si la
   ;
 : init_parsing  ( -- )
   \ Preparativos previos a cada análisis.
-  action off
-  complements_off
+  action off  complements_off
   ;
 
 : (execute_action)  ( xt -- )
@@ -11194,6 +11207,7 @@ dicha [seudo]preposición, o bien cero si la
   ;
 : evaluate_command  ( ca len -- )
   \ Analiza el comando, ejecutando las palabras reconocidas que contenga.
+  \ ." comando:" 2dup cr type  \ XXX INFORMER
   ['] (evaluate_command) execute-parsing
   ;
 
@@ -11274,13 +11288,14 @@ dicha [seudo]preposición, o bien cero si la
   \ XXX TODO falta guardar los complementos
   ;
 
-: obey  ( ca len -- )
+: (obey)  ( ca len -- )
   \ Evalúa un comando con el vocabulario del juego.
+  init_parsing valid_parsing? ?? execute_action
+  ;
+: obey  ( ca len -- )
+  \ Evalúa un comando con el vocabulario del juego, si no está vacío.
   [debug_parsing] [??] ~~
-  dup if
-    init_parsing valid_parsing? ?? execute_action
-  else  2drop
-  then
+  dup if  (obey)  else  2drop  then
   [debug_parsing] [??] ~~
   ;
 
@@ -11378,7 +11393,7 @@ dicha [seudo]preposición, o bien cero si la
   then
   ;
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Fichero de configuración)  \ {{{
 
 (*
@@ -11626,7 +11641,7 @@ restore_vocabularies
   init_config read_config
   ;
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Herramientas para crear el vocabulario del juego)  \ {{{
 
 (*
@@ -11820,7 +11835,7 @@ adecuada.
   endcase
   ;
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Vocabulario del juego)  \ {{{
 
 \ Elegir el vocabulario `player_vocabulary` para crear en él las nuevas palabras:
@@ -12015,8 +12030,10 @@ o sustantivos.
 : otear  ['] do_look_to_direction action!  ;
 ' otear synonyms{ oteo otea otead otee }synonyms
 
-: x  ['] do_exits action!  ;
-: salida  ['] do_exits (exits) action|complement!  ;
+\ : x  ['] do_exits action!  ;  \ XXX OLD
+: x  ['] (do_exits) action!  ;
+\ : salida  ['] do_exits (exits) action|complement!  ; \ XXX OLD
+: salida  ['] (do_exits) (exits) action|complement!  ;
 ' salida synonyms{  salidas  }synonyms
 
 : examinar  ['] do_examine action!  ;
@@ -12668,9 +12685,6 @@ false [if]  \ xxx descartado, pendiente
 
 \ Meta
 
-\ XXX OLD
-\ : save  ['] do_save_the_game action!  ;
-
 \ Términos ambiguos
 
 : cierre  action @ if  candado  else  cerrar  then  ;
@@ -12680,7 +12694,7 @@ false [if]  \ xxx descartado, pendiente
 
 : #colorear  ( -- )
   \ Restaura los colores predeterminados.
-  init_colors  new_page  my_location describe
+  ['] recolor action!
   ;
 ' #colorear synonyms{
   #colorea #coloreo
@@ -12688,16 +12702,24 @@ false [if]  \ xxx descartado, pendiente
   #pintar #pinta #pinto
   #limpiar #limpia #limpio
   }synonyms
-' get_config alias #configurar  \ Restaura la configuración predeterminada y después carga el fichero de configuración
+
+: #configurar  ( -- )
+  \ Restaura la configuración predeterminada
+  \ y después carga el fichero de configuración
+  ['] get_config action!
+  ;
 ' #configurar synonyms{
+  #reconfigurar
   #configura #configuro
+  #reconfigura #reconfiguro
   }synonyms
+
 : #grabar  ( "name" -- )
   \ Graba el estado de la partida en un fichero.
   [debug_parsing] [??] ~~
   parse-name >sb
   [debug_parsing] [??] ~~
-  ['] do_save_the_game action!
+  ['] save_the_game action!
   [debug_parsing] [??] ~~
   ;  immediate
 ' #grabar immediate_synonyms{
@@ -12706,6 +12728,7 @@ false [if]  \ xxx descartado, pendiente
   #salvar #salva #salvo
   #guardar #guarda #guardo
   }synonyms
+
 : #cargar  ( "name" -- )
   \ Carga el estado de la partida de un fichero.
   [debug_parsing] [??] ~~
@@ -12713,7 +12736,7 @@ false [if]  \ xxx descartado, pendiente
   [debug_parsing] [??] ~~
   >sb
   [debug_parsing] [??] ~~
-  ['] do_load_the_game action!
+  ['] load_the_game action!
   [debug_parsing] [??] ~~
   ;  immediate
 ' #cargar immediate_synonyms{
@@ -12724,7 +12747,11 @@ false [if]  \ xxx descartado, pendiente
   #recuperar #recupera #recupero
   #restaurar #restaura #restauro
   }synonyms
-: #fin  do_finish  ;  \ Abandonar la partida
+
+: #fin  ( -- )
+  \ Abandonar la partida
+  ['] finish action!
+  ;
 ' #fin synonyms{
   #acabar #acaba #acabo
   #adiós #adiÓs
@@ -12735,8 +12762,10 @@ false [if]  \ xxx descartado, pendiente
   #salir #sal #salgo
   #terminar #termina #termino
   }synonyms
+
 : #ayuda  ( -- )
   \ XXX TODO
+  \ ['] do_help action!
   ;
 ' #ayuda synonyms{
   #ayudar #ayudita #ayudas
@@ -12745,14 +12774,15 @@ false [if]  \ xxx descartado, pendiente
   #socorro #auxilio #favor
   }synonyms
 
+
 \ XXX TMP Comandos para usar durante el desarrollo:
-: forth  (do_finish)  ;
+\ : forth  (finish)  ;
 : bye  bye  ;
 : quit  quit  ;
 
 restore_vocabularies
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Vocabulario para entradas «sí» o «no»)  \ {{{
 
 (*
@@ -12857,7 +12887,7 @@ also answer_vocabulary definitions  \ Las palabras que siguen se crearán en dic
 
 restore_vocabularies
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Entrada de comandos)  \ {{{
 
 (*
@@ -12911,52 +12941,8 @@ svariable command  \ Zona de almacenamiento del comando
   [debug] [if]  cr cr ." <<<" 2dup type ." >>>" cr cr  [then]  \ XXX INFORMER
   ;
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Entrada de respuestas de tipo «sí o no»)  \ {{{
-
-false [if]  \ Primera versión, que recibe y repite un texto fijo
-
-: yes|no  ( ca len -- n )
-  \ Evalúa una respuesta a una pregunta del tipo «sí o no».
-  \ ca len = Respuesta a evaluar
-  \ n = Resultado (un número negativo para «no» y positivo para «sí»; cero si no se ha respondido ni «sí» ni «no», o si se produjo un error)
-  answer_undefined
-  only answer_vocabulary
-  ['] evaluate_command catch
-  dup if  nip nip  then  \ Reajustar la pila si ha habido error
-  dup ?wrong 0=  \ Ejecutar el posible error y preparar su indicador para usarlo en el resultado
-  #answer @ 0= two_options_only_error# and ?wrong  \ Ejecutar error si la respuesta fue irreconocible
-  #answer @ dup 0<> and and  \ Calcular el resultado final
-  restore_vocabularies
-  ;
-svariable question
-: .question  ( -- )
-  \ Imprime la pregunta.
-  question_color question count paragraph
-  ;
-: answer  ( ca len -- n )
-  \ Devuelve la respuesta a una pregunta del tipo «sí o no».
-  \ ca len = Pregunta
-  \ n = Respuesta: un número negativo para «no» y positivo para «sí»
-  question place
-  begin
-    .question listen  yes|no ?dup
-  until
-  ;
-: yes?  ( ca len -- wf )
-  \ ¿Es afirmativa la respuesta a una pregunta?
-  \ ca len = Pregunta
-  \ wf = ¿Es la respuesta positiva?
-  answer 0>
-  ;
-: no?  ( ca len -- wf )
-  \ ¿Es negativa la respuesta a una pregunta?
-  \ ca len = Pregunta
-  \ wf = ¿Es la respuesta negativa?
-  answer 0<
-  ;
-
-[else]  \ Versión nueva, que recibe un xt en lugar de un texto fijo
 
 : yes|no  ( ca len -- n )
   \ Evalúa una respuesta a una pregunta del tipo «sí o no».
@@ -12997,10 +12983,7 @@ svariable question
   answer 0<
   ;
 
-[then]
-
-
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Fin)  \ {{{
 
 : success?  ( -- wf )
@@ -13022,7 +13005,7 @@ false [if]  \ XXX not used
   \ xxx provisional
   s" ¡Adiós!" narrate
   ;
-: bye_bye  ( -- )
+: farewell  ( -- )
   \ Abandona el programa.
   new_page .bye bye
   ;
@@ -13069,7 +13052,9 @@ false [if]  \ XXX not used
   ;
 : surrender?  ( -- wf )
   \ ¿Quiere el jugador dejar el juego?
-  ['] surrender?$ yes?
+  ['] surrender?$
+  yes?
+  ~~
   ;
 : game_over?  ( -- wf )
   \ ¿Se terminó ya el juego?
@@ -13175,19 +13160,19 @@ false [if]  \ XXX not used
   success? if  the_happy_end  else  the_sad_end  then
   scene_break
   ;
-:action (do_finish)
+: (finish)  ( -- )
   \ Abandonar el juego.
   restore_vocabularies system_colors cr .forth quit
-  ;action
-:action do_finish
+  ;
+:noname  ( -- )
   \ Acción de abandonar el juego.
-  surrender? if
-    \ retry?$  cr no? ?? (do_finish)
-    (do_finish)
+  surrender?  if
+    \ retry?$  cr no? ?? (finish)
+    (finish)
   then
-  ;action
+  ; is finish
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Acerca del programa)  \ {{{
 
 : based_on  ( -- )
@@ -13220,7 +13205,7 @@ section( Acerca del programa)  \ {{{
   scene_break
   ;
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Introducción)  \ {{{
 
 : sun$  ( -- ca len )
@@ -13315,10 +13300,10 @@ section( Introducción)  \ {{{
   intro_0 intro_1 intro_2 intro_3 intro_4 intro_5 intro_6
   ;
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Principal)  \ {{{
 
-: init/once  ( -- )
+: init-once  ( -- )
   \ Preparativos que hay que hacer solo una vez, antes de la primera partida.
   restore_vocabularies  init_screen
   ;
@@ -13328,7 +13313,7 @@ section( Principal)  \ {{{
   \ XXX TODO trasladar a su zona
   erase_last_command_elements
   ;
-: init/game  ( -- )
+: init-game  ( -- )
   \ Preparativos que hay que hacer antes de cada partida.
   randomize
   init_parser/game
@@ -13356,9 +13341,9 @@ section( Principal)  \ {{{
   ;
 : main  ( -- )
   \ Bucle principal del juego.
-  init/once
-  begin  init/game game the_end  enough?  until
-  bye_bye
+  init-once
+  begin  init-game game the_end  enough?  until
+  farewell
   ;
 
 also forth definitions
@@ -13367,13 +13352,13 @@ also forth definitions
 
 : i0  ( -- )
   \ XXX hace toda la inicialización; para depuración.
-  init/once init/game
+  init-once init-game
   s" Datos preparados." paragraph
   ;
 
 \ i0 cr  \ XXX para depuración
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 section( Pruebas)  \ {{{
 
 (*
@@ -13491,7 +13476,7 @@ only forth
 
 \eof  \ Ignora el resto del fichero, que se usa para notas
 
-\ }}} ##########################################################
+\ }}} ==========================================================
 \ Notas {{{
 
 0 [if]
@@ -13556,7 +13541,6 @@ do_examine:
 salidas
 
 do_frighten
-do_finish
 do_go
 do_go_ahead
 do_go_back
@@ -13573,14 +13557,12 @@ do_hit
 do_introduce_yourself
 do_inventory
 do_kill
-do_load_the_game
 do_look
 do_look_to_direction
 do_look_yourself
 do_make
 do_open
 do_put_on
-do_save_the_game
 do_search
 do_sharpen
 do_speak
