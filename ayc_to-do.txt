@@ -1,0 +1,683 @@
+\ ayc_to-do.txt
+
+
+
+\ Tareas pendientes: programación {{{
+
+
+2014-10-22:
+
+Fallo:
+
+
+  Recodo de la cueva
+  La iridiscente cueva gira de Este a Sur.
+  >
+  > #fin
+  No es posible ir al Oeste.
+  > #fin
+  No es posible ir al Oeste.
+  > #ruteouo
+  Es imposible ir en esa dirección.
+  > cueorut
+  No es posible ir al Oeste.
+ 
+
+...........................
+2014-07-10:
+
+¿Fallo?:
+  
+  Abruptamente, el bosque desaparece y deja paso a un estrecho camino
+entre altas rocas. El inquietante desfiladero tuerce de Este a Sur.
+  Tus hombres te siguen.
+  > ss
+  No es posible ir al Oeste.
+
+  (...) 
+
+  > ex derrumbe
+  Muchísimas, inalcanzables y grandes rocas, apiladas las unas sobre
+las otras.
+  > sal
+  Es imposible ir hacia afuera.
+  > regresa
+  Es imposible ir hacia afuera.
+  > ucoueortnuseoa
+  Es imposible ir hacia afuera.
+  > urotueou
+  No es posible ir por ahí.
+ 
+
+...........................
+2014-02-16:
+
+Idea: sustituir completamente el actual sistema de grabar y
+restaurar partidas por este otro más sencillo:
+
+Reservar una zona de memoria con 'allocate'.  Guardar su
+dirección y su longitud.
+
+Crea variantes de 'variable', 'value', 'allocate', etc., por
+ejemplo 'gvariable' (por «game variable»), que usen ese
+espacio de memoria como almacenamiento y lo amplíen siempre
+que se haya agotado.  Las variables y demás guardan en su
+propio espacia el índice dentro del espacio común, donde
+reside el dato.
+
+Todas las variables, valores y estructuras son creados antes el inicio
+del juego. Por ello el espacio común no crecerá después, durante el
+juego.
+
+Para grabar o restaurar una partida bastará grabar y leer ese bloque
+de memoria, ¡sin necesidad de manipular nada!
+
+El inconveniente de este método es que el bloque de datos solo
+será compatible con las versiones del juego en que no se haya
+modificado el número u orden de valores almacenados en el
+espacio. Versiones posteriores del juego pueden añadir más
+valores y ampliar el espacio, pero no deben alterar el uso del
+espacio existente. Si una variable se elimina del programa, su
+espacio debe seguir reservado para no descolocar a los que se
+crean después.
+
+2014-07-10: La herramienta para hacerlo ya está escrita en la
+librería Galope: <lodge.fs> y <lodge-colon.fs>. Se usa en el
+proyecto Finto.
+
+...........................
+2012-10-04:
+
+Si falta verbo en el comando, usar el último válido.  Esta
+opción será configurable.
+
+...........................
+2012-09-19:
+
+Error:
+
+  Hecho.
+  > i
+  Llevas contigo tu capa (puesta), tu coraza (puesta), el
+pedernal, tu espada y una antorcha.
+  > ex espada
+  Main : espada
+  Legado de tu padre, fiel herramienta en mil batallas.
+  > déjala
+  Main : espada
+  Hecho.
+  > m
+  Recodo arenoso del canal
+  La fuerte corriente, de Norte a Este, impide el paso, excepto al
+Oeste. Al fondo puede oírse un gran estruendo.
+  Ves tu espada.
+  > cógela
+  Main : pedernal
+  Ya llevas eso contigo.
+  >
+...........................
+2012-05-16:
+
+> deja espada
+> s
+> mira espada
+No ves eso. [y variantes]
+===> Aquí no está tu espada.
+
+...........................
+2012-05-14:
+
+Hacer mensajes genéricos en respuesta a comandos imposibles,
+que dependan de las circunstancias:
+«el jaleo de la batalla te hace desvariar»,
+«la falta de aire...»
+
+...........................
+2012-03-01:
+
+Error: «No se ve ningunas velas». No es incorrecto, pero queda
+mejor poner el verbo en plural en ese caso, con velas como
+sujeto en lugar de «se», y «se» como reflexivo.
+
+...........................
+2012-02-29:
+
+Ideas para facilitar la depuración de la futura primera versión beta:
+
+* comando GET para apropiarse de cualquier ente, esté donde esté.
+* comando GO en el fichero de configuración, para elegir escenario por su número
+* mostrar el número de escenario en pantalla
+
+...........................
+2012-02-20:
+
+Añadir «hierba» y «hiedra» al escenario
+location_47% , pues se citan al abrir la puerta.
+Hacer que aparezcan al mencionarlas,
+o al examinar la puerta o el suelo.
+
+...........................
+2012-02-20:
+
+cambiar "tu benefactor te sigue"
+por "tu benefactor te acompaña",
+salvo tras movimientos.
+
+...........................
+2012-02-20:
+
+Mostrar mensajes completos y variables al final de cada
+acción, en lugar de "Hecho".
+
+...........................
+
+2012-02-07:
+
+Hacer x sinónimo de ex cuando no tenga complemento.
+
+Para repetir la última acción con los últimos complementos:
++ = sigue = continúa = más = r = repite
+...pero no tiene utilidad habiendo historial de comandos!
+
+¿Implementar gerundios?:
+> sigue hablando con X
+Tampoco tiene utilidad, salvo aumentar el rango de
+expresiones comprensibles.
+
+...........................
+2012-01-03:
+
+Tras el análisis, detectar:
+
+Preposición con artículo (al, del) que no concuerde en
+género y número con su ente.
+
+...........................
+
+2011-12:
+
+Hacer que Gforth encuentre ayc.ini en su ruta de búsqueda
+de forma trasparente.
+
+...........................
+
+Desambiguar «hombre» para evitar «no se ve a nadie»
+al decir «m hombre» en presencia de soldados.
+
+...........................
+
+Implementar tres niveles en mirar:
+
+0 = mirar
+1 = examinar
+2 = registrar
+
+¿O hacer que sean acciones efectivas separadas?
+
+...........................
+
+2011-12:
+
+Poner de un color diferente, configurable, el presto y el
+texto de las respuestas al sistema (preguntas sí/no).
+
+...........................
+
+2011-12:
+
+Los comandos de configuración no evitan que el análisis dé
+error por falta de comandos del juego!
+
+Esto es fácil de arreglar:
+
+¿Hacer que anulen todo lo que siga?
+¿O que continúen como si fuera un comando nuevo?
+O mejor: simplemente rellenar ACTION con un xt
+de una acción que no haga nada!
+
+No! Lo que hay que hacer es ejecutar las acciones de
+configuración como el resto de acciones, metiendo su xt en
+'action'.  Y si después queremos seguir (dependerá de la
+acción de sistema de que se trata) basta poner 'action' a cero
+otra vez. O se puede leer el resto del comando, para
+anularlo!
+
+...........................
+
+2011-12:
+
+Comprobar si el hecho de no usar el número máximo de líneas
+causa problemas con diferentes tamaños de consola.
+
+Los textos son cortos, de modo que no hay riesgo de
+que se pierdan antes poder leerlos, antes de que
+se pida entrada a un comando.
+
+...........................
+
+2011-12:
+
+Hacer un comando que lea el fichero de
+configuración en medio de una partida.
+
+...........................
+
+2011-12:
+
+Implementar transcripción en fichero.
+
+2014-02-16: el nombre del fichero puede ser automático, con fecha iso.
+así basta un comando para activar y otro para desactivar la
+trascripción.
+
+...........................
+
+2011-12:
+
+Anotar que ha habido palabras no reconocidas, para variar el error en
+lugar de actuar como si faltaran.  p.e. mirar / mirar xxx.
+
+...........................
+
+2011-12:
+
+Hacer más naturales los mensajes que dicen
+que no hay nada de interés en la dirección indicada,
+p.e.,
+miras hacia...
+intentas vislumbrar (en la cueva oscura)...
+contemplas el cielo...
+miras a tus pies...
+
+...........................
+
+2011-12:
+
+Añadir variante:
+«No observas nada digno de mención al mirar hacia el Este».
+
+...........................
+
+2011-12:
+
+Añadir «tocar».
+
+...........................
+
+2011-12:
+
+Implementar que «todo» pueda usarse
+con examinar y otros verbos, y se cree una lista
+ordenada aleatoriamente de entes que cumplan
+los requisitos.
+
+...........................
+
+2011-12:
+
+Hacer que los objetos (y ambrosio) no estén siempre en el
+mismo sitio. ¿Altar? ¿Serpiente?
+
+...........................
+
+2011-12:
+
+Hacer algo así en las tramas del laberinto:
+
+(una vez de x se equivoca)
+
+: this_place_seems_familiar  ( -- )
+  my_location is_visited?
+  if  s" Este sitio me suena"  then ;
+
+...........................
+
+2011-12:
+
+Respuesta a mirar como en «Pronto»:
+
+Miras, pero no ves eso por aquí. ¿Realmente importa?
+
+...........................
+
+2011-12:
+
+Crear ente «enemigo» con el término ambiguo «sajones» (por
+los sajones muertos en la aldea.
+
+...........................
+
+2011-12:
+
+Crear ente (sub)oficiales, con descripción complementaria a
+la de los soldados.
+
+...........................
+
+2011-12:
+
+Crear ente «general» para el general enemigo, con
+descripción durante la batalla, dependiendo de la fase.
+
+...........................
+
+2011-12:
+
+Implementar «describir», sinónimo de examinar para entes
+presentes pero que funciona con entes no presentes ya
+conocidos!
+
+...........................
+
+2011-12:
+
+Implementar «esperar» («z»)
+
+...........................
+
+2011-12:
+
+Hacer más robusto el analizador con:
+
+«todo», «algo»
+
+«ahora»:
+
+>coge libro
+>ahora la espada
+>y ahora la espada
+>y la espada
+>también la espada
+>y también la espada
+>y además la espada
+>además la espada
+
+nombres sueltos, ¿mirarlos?:
+
+>espada
+Es muy bonita.
+
+...........................
+
+2011-12:
+
+Hace que «examinar» sin más examine todo.
+
+¿Y también «coger» y otros?
+
+coger sin objeto buscaría qué hay.
+si solo hay una cosa para coger, la coge.
+si hay varias, error.
+
+...........................
+
+2011-12:
+
+Error nuevo para no coger las cosas de la casa de Ambrosio:
+Es mejor dejar las cosas de Ambrosio donde están.
+
+Añadir a la ficha con su xt.
+
+...........................
+
+2011-12:
+
+Solucionar el problema de los sinónimos que no tienen
+el mismo género o número...
+
+La palabra del vocabulario podría ponerse a sí misma como
+nombre del ente... Pero esto obligaría a usar el género
+y número de la ficha en las descripciones.
+
+Algo relacionado: "arma" es femenina pero usa artículo "el";
+contemplar en los cálculos de artículo.
+
+Mirar cómo lo solucioné en «La legionela del pisto»: con una
+lista de nombres separada de los datos de entes.
+
+...........................
+
+2011-12:
+
+¿Crear un método para dar de alta fácilmente entes
+decorativos? Hay muchos en las descripciones de los
+escenarios.
+
+...........................
+
+2011-12:
+
+Hacer que no salga el presto de pausa si las pausas son
+cero.
+
+...........................
+
+2011-12:
+
+Hacer variantes de CHOOSE y DCHOOSE para elegir un elemento
+con un cálculo en lugar de al azar.
+
+¿En dónde se necesitaba?
+
+...........................
+
+2011-12:
+
+Crear un mensaje de error más elaborado para las acciones
+que precisan objeto directo, con el infinitivo como
+parámetro: «¿Matar por matar?» «Normalmente hay que matar a
+alguien o algo».
+
+...........................
+
+2011-12:
+
+Hacer que la forma «mírate» sea compatible con «mírate la capa». Para
+esto habría que distiguir dos variantes de complemento principal, y que
+al asignar cualquiera de ellas se compruebe si había ya otro
+complemento principal del otro tipo.
+
+...........................
+
+2011-12:
+
+Limitar los usos de 'print_str' a la impresión. Renombrarla.
+Crear otra cadena dinámica para los usos genéricos con «+ y
+palabras similares.
+
+...........................
+
+2011-12:
+
+Comprobar los usos de 'tmp_str'.
+
+...........................
+
+2011-12:
+
+Poner en fichero de configuración el número de líneas
+necesario para mostrar un presto de pausa.
+
+...........................
+
+2011-12:
+
+Implementar opción para tener en cuenta las palabras no
+reconocidas y detener el análisis.
+
+...........................
+
+2011-12:
+
+Poner en fichero de configuración si las palabras no
+reconocidas deben interrumpir el análisis.
+
+...........................
+
+2011-12:
+
+Poner todos los textos relativos al protagonista en segunda
+persona.
+
+(Creo que ya está hecho).
+
+...........................
+
+2011-12:
+
+Añadir las salidas hacia fuera y dentro. Y atrás. Y
+adelante. Y seguir.
+
+...........................
+
+2011-12:
+
+Implementar el recuerdo de la dirección del último
+movimiento.
+
+...........................
+
+2011-12:
+
+Hacer que «salir», si no hay dirección de salida en el ente,
+calcule la dirección con la del último movimiento.
+
+...........................
+
+2011-12:
+
+Añadir a la configuración si los errores lingüísticos deben
+ser detallados (técnicos) o vagos (narrativos) o ambos.
+
+...........................
+
+2011-12:
+
+Hacer que primero se muestre la introducción y después
+los créditos y el menú.
+
+...........................
+
+2011:
+
+- Barra de puntuación especial.
+
+- Mensajes de error genéricos, ej.: "Tus ideas parecen confusas, quizá
+debido a la oscuridad".
+
+- Acción de quemar, prender.
+
+...........................
+
+\ }}} ##########################################################
+\ Ideas desestimadas para este proyecto {{{
+
+...........................
+
+Hacer que los nombres de entes imprimidos con los textos
+actualicen la lista usada por los pronombres, para que
+por ejemplo «mírala» se refiera al último ente citado, tanto
+en el comando como en los textos.
+
+Es fácil de hacer. Basta una palabra central que se ocupe de
+la impresión de nombres. Para ello, la impresión justificada
+de párrafos debe poder hacerse por partes.
+
+...........................
+Lista de puzles completados.
+
+...........................
+
+Hacer que el color de fondo y de texto cambie en los
+escenarios al aire libre.
+
+...........................
+
+Implementar que en las acciones intermedias automáticas,
+como quitarse una prenda antes de dejarla, el mensaje sea
+más natural: «Ulfius se quita la corbata y a continuación la
+deja».
+
+...........................
+
+Crear tramas de escenario separadas: entrar de él, estar en
+él y salir de él.  Hay que distinguir tramas de descripción
+de escenario (como la actual, que se activa en la descripción)
+de tramas de entrada, salida o permanencia en escenario...
+Haría falta un selector similar a SIGHT para seleccionar el
+caso adecuado en la palabra after_describing_location
+
+...........................
+
+Hacer que se acepten los movimientos a entes de decoración o
+mobiliario, o a otros entes presentes, y que se conserve el
+ente junto al que estamos, para ilustrar con ello los
+textos en algunos casos.
+
+...........................
+
+Mensajes de error integrados en la narración.
+
+Contraejemplo de La Mansión:
+> coge libros
+No creo que tenga sentido cargar con eso
+
+Mejor así:
+> coge libros
+Por un momento tienes la absurda tentación de coger los libros,
+pero la descartas.
+
+Y mejor aún si las sucesivas órdenes iguales no tuvieran
+respuesta (o diferente respuesta de forma gradual). Para eso
+hay que implementar una lista de recuerdo...
+
+\ }}} ##########################################################
+\ Tareas pendientes: trama y puzles {{{
+
+2012-05-12:
+
+Para entrar en la cueva descubierta en el desfiladero hay que limpiar
+la entrada de matorrales.
+
+2011..2012:
+
+Hacer que el líder de los refugiados nos deje pasar si
+dejamos el objeto (piedra o espada) allí o se lo damos.
+
+Hacer que la espada corte en más pedazos la capa si ha sido
+afilada con la piedra. Hacer que su descripción varíe.
+
+Hace que el altar solo aparezca al examinar el puente, y la
+piedra al examinar el altar.
+
+Escenario y subtrama bajo el agua.
+
+Distinguir nadar de bucear.
+
+Quitarse la coraza o la capa antes de nadar (ambas son
+demasiado pesadas para cruzar el lago con 100% de éxito)
+
+No poder nadar si llevamos algo en las manos aparte de la
+espada.
+
+Posibilidad de perder la capa al nadar si no la llevamos
+puesta.
+
+\ }}} ##########################################################
+\ Tareas pendientes: código fuente {{{
+
+Unificar los comentarios de palabras que devuelven cadenas de texto:
+
+* Devuelve mensaje de que X...
+* Mensaje de que X...
+* X...
+
+Terminar de cambiar el formato de los nombres de palabras de Forth en
+los textos:
+
+De esto: «La palabra ZX , a veces, se usa como ZX2 .»
+A esto: «La palabra 'zx', a veces, se usa como 'zx2'.»
+
+Recortar las líneas para que no sobrepasen los 75 caracteres.
+
+\ }}}
