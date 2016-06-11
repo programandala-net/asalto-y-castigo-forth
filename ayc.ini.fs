@@ -2,10 +2,12 @@
 
 \ Fichero de configuración de:
 \ «Asalto y castigo»
-\ Copyright (C) 2011,2012 Marcos Cruz (programandala.net)
+\ Copyright (C) 2011,2012,2013,2016 Marcos Cruz (programandala.net)
 
 \ Página del programa:
 \ http://programandala.net/es.programa.asalto_y_castigo.forth
+
+\ Última modificación: 201602030140
 
 \ --------------------------------------------------------------
 \ Observaciones
@@ -14,16 +16,27 @@
 
 == Formato de este fichero ==
 
-Este fichero contiene código en Forth y será interpretado como
-tal directamente por el intérprete de Forth cada vez que se
-inicie una nueva partida del juego.
+Este fichero contiene código en Forth y será interpretado como tal
+directamente por el intérprete de Forth cada vez que se inicie una
+nueva partida del juego.
 
 Durante la interpretación de este fichero sólo estará activo el
 vocabulario de configuración del juego, que consta de las
-palabras en español creadas para la tarea y las dos palabras
-clásicas de Forth para hacer comentarios: el paréntesis y la
-barra invertida.  Cualquier palabra no reconocida y que no pueda
-ser convertida en un número decimal provocará un error.
+palabras en español creadas para la tarea, así como la palabra
+para crear cadenas de texto y las dos palabras clásicas de Forth
+para hacer comentarios: el paréntesis y la barra invertida.
+
+Cualquier palabra no reconocida y que no pueda ser convertida en
+un número decimal provocará un error.
+
+== Cadenas de texto ==
+
+Para indicar una cadena de texto se usa la palabra estándar de
+Forth `s"`, que como siempre debe ir separada con espacios. La
+propia cadena empieza tras el primer espacio de separación
+posterior, y por ello incluirá otros espacios iniciales si los
+hubiera; termina con las primeras comillas dobles, por lo que no
+puede incluir este signo.
 
 == Comentarios en este fichero ==
 
@@ -61,7 +74,7 @@ las anteriores.
 También es posible anular las configuraciones no deseadas
 encerrándolas entre paréntesis, como se hace en los ejemplos de
 combinaciones de colores alternativas que se ofrecen al final de
-este fichero. 
+este fichero.
 
 )  \ Fin de los comentarios
 
@@ -92,34 +105,36 @@ sí repetir_la_última_acción
 \ Mensajes de error
 \ --------------------------------------------------------------
 
-\ Detalle de los mensajes de error lingüístico.
-\ Opciones: 
+\ Detalle de los mensajes de error lingüístico
+\ (Lo errores lingüísticos son los que se producen durante el
+\ análisis del comando del jugador).
+\ Opciones:
 \   0 = no se mostrará ningún mensaje
 \   1 = se mostrará un mensaje genérico configurable
-\   2 = se mostrará un mensaje específico detallado 
+\   2 = se mostrará un mensaje específico detallado
 
 2 detalle_de_los_mensajes_de_error_lingüístico
 
 \ Mensaje genérico de error lingüístico, usado cuando el detalle
 \ de los mensajes de de error lingüístico es 1.
 
-s" Orden incorrecta." mensaje_genérico_de_error_lingüístico  
+s" Orden incorrecta." mensaje_genérico_de_error_lingüístico
 
 \ Detalle de los mensajes de error operativo.
 \ (Los errores operativos son los que se producen
 \ intentando ejecutar la acción especificada
-\ por el jugador).
-\ Opciones: 
+\ por el comando del jugador).
+\ Opciones:
 \   0 = no se mostrará ningún mensaje
 \   1 = se mostrará un mensaje genérico configurable
-\   2 = se mostrará un mensaje específico detallado 
+\   2 = se mostrará un mensaje específico detallado
 
 2 detalle_de_los_mensajes_de_error_operativo
 
 \ Mensaje genérico de error operativo, usado cuando el detalle
 \ de los mensajes de de error operativo es 1.
 
-s" No es posible hacer eso." mensaje_genérico_de_error_operativo  
+s" No es posible hacer eso." mensaje_genérico_de_error_operativo
 
 \ --------------------------------------------------------------
 \ Formato de las citas de los diálogos
@@ -156,12 +171,10 @@ sí indentar_primera_línea_de_pantalla
 \ Prestos
 \ --------------------------------------------------------------
 
-\ Un presto o inductor (en inglés «prompt»)
-\ es una marca gráfica
-\ convencional que sirve para indicar
-\ que el programa está preparado para
-\ recibir la entrada del usuario y señalar
-\ el lugar de la pantalla en que se mostrará. 
+\ Un presto o inductor (en inglés «prompt») es una marca gráfica
+\ convencional que sirve para indicar que el programa está
+\ preparado para recibir la entrada del usuario y señalar el
+\ lugar de la pantalla en que se mostrará.
 
 \ ¿Indentar los prestos de pausa como si de la primera
 \ línea de un párrafo se tratara o mostrarlos en el margen?
@@ -170,13 +183,7 @@ sí indentar_primera_línea_de_pantalla
 
 sí indentar_prestos_de_pausa
 
-\ Contenido de los prestos.  La cadena se define con la
-\ palabra estándar de Forth S" (que como siempre debe llevar
-\ un espacio detrás). La propia cadena empieza tras ese
-\ primer espacio de separación (y por tanto incluirá otros
-\ espacios iniciales si los hubiera) y termina con las
-\ primeras comillas dobles (por lo que no puede incluir este
-\ signo).
+\ Contenido de los prestos.
 
 s" ..." presto_de_pantalla_llena
 s" ..." presto_de_pausa_de_narración
@@ -214,7 +221,7 @@ no nueva_línea_tras_presto_de_comando
 \ (si es valor es negativo, se mostrará el presto
 \ y habrá que pulsar una tecla para continuar):
 
-8 segundos_en_pausas_de_final_de_escena 
+8 segundos_en_pausas_de_final_de_escena
 
 \ --------------------------------------------------------------
 \ Borrado de la pantalla
@@ -236,8 +243,8 @@ no borrar_pantalla_para_escenas
 \ Combinaciones de colores
 \ --------------------------------------------------------------
 
-\ Se puede elegir colores de pluma y de papel
-\ para cada tipo de texto del juego.
+\ Se puede elegir colores de pluma y de papel para cada tipo de
+\ texto del juego.
 
 \ No es posible cambiar el color del cursor, que será el
 \ configurado en la terminal del sistema operativo. Dependerá de
@@ -250,15 +257,21 @@ no borrar_pantalla_para_escenas
 
 \ Los colores disponibles son los siguientes:
 \     amarillo
-\     azul azul_claro
+\     azul
+\     azul_claro
 \     blanco
-\     cian cian_claro
-\     gris gris_claro
-\     magenta magenta_claro
+\     cian
+\     cian_claro
+\     gris
+\     gris_claro
+\     magenta
+\     magenta_claro
 \     marrón
 \     negro
-\     rojo rojo_claro
-\     verde verde_claro
+\     rojo
+\     rojo_claro
+\     verde
+\     verde_claro
 \ (No se admiten las formas «cyan» y «cyan_claro»).
 
 \ Como ya se ha dicho respecto a la configuración, también los
@@ -425,6 +438,7 @@ negro papel_de_error_del_sistema
 
 \ **** Estilo «monitor de fósforo ámbar» ****
 
+(
 negro papel_de_fondo
 marrón tinta_de_créditos
 negro papel_de_créditos
@@ -456,6 +470,7 @@ marrón tinta_de_error_operativo
 negro papel_de_error_operativo
 marrón tinta_de_error_del_sistema
 negro papel_de_error_del_sistema
+)
 
 \ **** Estilo «desierto» ****
 
@@ -492,3 +507,5 @@ amarillo papel_de_error_operativo
 marrón tinta_de_error_del_sistema
 amarillo papel_de_error_del_sistema
 )
+
+\ vim: textwidth=64
