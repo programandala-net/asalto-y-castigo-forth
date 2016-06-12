@@ -11,7 +11,7 @@ CR .( Asalto y castigo )  \ {{{
 \ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
 
 only forth definitions
-s" 0.6.0+201606121852"  2constant version
+s" 0.7.0+201606121856"  2constant version
 version type cr
 
 \ 'Asalto y castigo' is free software; you can redistribute
@@ -144,6 +144,7 @@ require galope/bracket-question-question.fs  \ `[??]`
 require galope/bracket-true.fs  \ `[true]`
 require galope/choose.fs  \ `choose`, selección aleatoria de un elemento de la pila
 require galope/colors.fs
+require galope/colon-alias.fs  \ `:alias`
 require galope/column.fs  \ `column`
 require galope/drops.fs  \ `drops`, eliminación de varios elementos de la pila
 require galope/enum.fs  \ `enum`
@@ -250,19 +251,6 @@ true constant [true]  immediate
 false constant [false]  immediate
 
 pad 0 2constant ""  \ Simula una cadena vacía.
-
-: (alias)  ( xt ca len -- )
-  \ Crea un alias de una palabra.
-  \ xt = Dirección de ejecución de la palabra de la que hay que crear el alias
-  \ ca len = Nombre del alias
-  \ Para definir esta palabra se ha examinado la definición
-  \ de `create` en Gforth; probablemente hay otra forma
-  \ más directa de crear una palabra a partir de
-  \ de un xt y una cadena con su nombre.
-  \ XXX TODO -- simplificar con `nextname`
-  name-too-short? header, reveal dovar: cfa, ,
-  does> perform
-  ;
 
 : ?++  ( a -- )
   \ Incrementa el contenido de una dirección, si es posible.
@@ -11605,14 +11593,14 @@ cada palabra del vocabulario del jugador.
   \ Crea uno o varios sinónimos de una palabra.
   \ xt = Dirección de ejecución de la palabra a clonar
   begin  dup another_synonym? ( xt xt ca len wf )
-  while  (alias)
+  while  :alias
   repeat  2drop 2drop
   ;
 : immediate_synonyms{  (  xt "name#0" ... "name#n" "}synonyms" -- )
   \ Crea uno o varios sinónimos inmediatos de una palabra.
   \ xt = Dirección de ejecución de la palabra a clonar
   begin  dup another_synonym?  ( xt xt ca len wf )
-  while  (alias)  immediate
+  while  :alias  immediate
   repeat  2drop 2drop
   ;
 
