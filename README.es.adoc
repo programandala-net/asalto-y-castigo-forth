@@ -1,0 +1,37 @@
+= Asalto y Castigo
+:revdate: 2016-06-12
+
+_Asalto y castigo_ es una versión mejorada, en desarrollo, de la
+aventura de texto homónima escrita (para ZX Spectrum y otros micros)
+por http://caad.es/baltasarq/[Baltasar el Arquero].
+
+Esta versión está escrita en http://forth-standard.org[Forth] con
+http://gnu.org/software/gforth/[Gforth].
+
+El proyecto empezó en 2011-07-05. En 2016-06-11 se creó un repositorio
+de Git a partir de las copias de respaldo del desarrollo, para retomar
+éste.
+
+La página del proyecto es
+<http://programandala.net/es.programa.asalto_y_castigo.forth.html>.
+
+== Enlaces
+
+=== Aventuras de texto
+
+- http://caad.es[CAAD, comunidad hispanohablante de aficionados a las
+  aventuras de texto]
+
+=== Forth:
+
+- http://forth-standard.org[Estándar Forth-2012]
+- http://forth.org[FIG]
+- http://groups.google.com/group/comp.lang.forth/[comp.lang.forth]
+- http://programandala.net/es.artículo.2009.04.27.libros_forth.html[Libros
+  sobre Forth].
+
+==== Gforth
+
+- http://gnu.org/software/gforth/[Sede principal de Gforth]
+- http://lists.gnu.org/mailman/listinfo/gforth[Lista de correo sobre
+  Gforth]
