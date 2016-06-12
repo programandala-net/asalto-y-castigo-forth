@@ -3,19 +3,15 @@
 \ ==============================================================
 CR .( Asalto y castigo )  \ {{{
 
-\ Una aventura conversacional en español,
-\ escrita en Forth con Gforth.
-
 \ A text adventure in Spanish,
 \ written in Forth with Gforth.
 
-\ Proyecto en desarrollo.
 \ Project under development.
 
 \ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
 
 only forth definitions
-s" 0.6.0+201602030343"  2constant version
+s" 0.6.0+201606121852"  2constant version
 version type cr
 
 \ 'Asalto y castigo' is free software; you can redistribute
@@ -45,16 +41,6 @@ version type cr
 
 \ Información:
 \
-\ Juegos conversacionales:
-\   http://caad.es
-\ Forth:
-\   http://forth.org
-\   http://www.forthfreak.net
-\   http://groups.google.com/group/comp.lang.forth/
-\   http://programandala.net/es.artículo.2009.04.27.libros_forth
-\ Gforth:
-\   http://gnu.org/software/gforth/
-\   http://lists.gnu.org/mailman/listinfo/gforth
 
 \ ##############################################################
 \ Documentación
@@ -150,8 +136,7 @@ require galope/sb.fs \ Almacén circular de cadenas de texto
 
 require galope/two-choose.fs  \ `2schoose`, selección aleatoria de un elemento doble de la pila
 ' 2choose alias schoose
-require galope/at-x.fs  \ `at-x`  \ XXX TMP for debugging
-require galope/backslash-end-of-file.fs  \ `\eof`
+require galope/at-x.fs  \ `at-x`  \ XXX TMP -- for debugging
 require galope/between.fs  \ `between` (variante habitual de `within`)
 require galope/bracket-false.fs  \ `[false]`
 require galope/bracket-or.fs  \ `[or]`
@@ -274,7 +259,7 @@ pad 0 2constant ""  \ Simula una cadena vacía.
   \ de `create` en Gforth; probablemente hay otra forma
   \ más directa de crear una palabra a partir de
   \ de un xt y una cadena con su nombre.
-  \ XXX TODO simplificar con `nextname`
+  \ XXX TODO -- simplificar con `nextname`
   name-too-short? header, reveal dovar: cfa, ,
   does> perform
   ;
@@ -284,7 +269,7 @@ pad 0 2constant ""  \ Simula una cadena vacía.
   \ En la práctica el límite es inalcanzable
   \ (pues es un número de 32 bitios),
   \ pero así queda mejor hecho.
-  \ XXX TODO confirmar este cálculo, pues depende de si el número se considera con signo o no
+  \ XXX TODO -- confirmar este cálculo, pues depende de si el número se considera con signo o no
   dup @ 1+ ?dup if  swap !  else  drop  then
   ;
 : different?  ( x1 x2 x1 -- wf )
@@ -353,7 +338,7 @@ variable bit#  \ Contador de máscara de bitio para los campos buleanos.
 \ }}} ==========================================================
 section( Vectores)  \ {{{
 
-\ XXX TODO efecto de pila
+\ XXX TODO -- efecto de pila
 
 defer protagonist%  \ Ente protagonista
 defer sword%  \ Ente espada
@@ -368,71 +353,8 @@ defer exits%  \ Ente "salidas"
 \ }}} ==========================================================
 section( Códigos de error)  \ {{{
 
-\ XXX TODO simplificar la explicación
-
-(*
-
-En el estándar ANS Forth los códigos de error de -1 a -255
-están reservados para el propio estándar; el resto de
-números negativos se reservan para que los asigne cada
-sistema Forth a sus propios mensajes de error; del 1 en
-adelante puede usarlos libremente cada programa.
-
-En este programa usamos como códigos de error las
-direcciones de ejecución de las palabras que muestran los
-errores.  En Forth, la dirección de ejecución de una palabra
-se llama tradicionalmente «code field address», o «cfa» en
-notación de la pila. Pero el estándar ANS Forth de 1994, el
-más extendido en la actualidad, utiliza el término
-«execution token», o «xt» en la notación de la pila, pues en
-algunos sistemas Forth no es una dirección de memoria sino
-un código interno. En este programa lo llamamos «dirección
-de ejecución» y en la notación de pila lo representamos
-como «xt».
-
-En cualquier caso se trata de lo mismo: es el valor que
-devuelven las palabras `'` y `[']` y que sirve de parámetro a
-la palabra `execute`.
-
-*)
-
-false [if]  \ Ejemplo de código:
-
-  : palabrita  ." ¡Hola mundo!"  ;
-  variable palabrita_xt
-  ' palabrita palabrita_xt !
-  palabrita_xt @ execute
-
-[then]  \ Fin del ejemplo
-
-(*
-
-Como se ve, usar como códigos de error las direcciones de
-ejecución de las palabras de error tiene la ventaja de que no
-hace falta ningún mecanismo adicional para encontrar las
-palabras de error a partir de sus códigos de error
-correspondientes, como podría ser una estructura `case` o una
-tabla: basta poner el código de error en la pila y llamar a
-`execute`.
-
-Dado que algunos los códigos de error se necesitan antes de
-haber sido creadas las palabras de error, por ejemplo
-durante la creación de los entes, los creamos aquí por
-adelantado como vectores y los actualizaremos
-posteriormente, cuando se definan las palabras de error,
-exactamente como se muestra en este ejemplo:
-
-*)
-
-false [if]  \ Ejemplo de código:
-
-  \ XXX  actualizar
-  defer la_cagaste_error#
-  : la_cagaste  ." ¡La cagaste!"  ;
-  ' la_cagaste constant (la_cagaste_error#)
-  ' (la_cagaste_error#) is la_cagaste_error#
-
-[then]  \ Fin del ejemplo
+\ The execution token of the word that manages the error
+\ is used as `throw` code:
 
 \ 0 constant no_error# \ XXX TODO -- not used
 
@@ -472,7 +394,7 @@ false [if]  \ Ejemplo de código:
 section( Herramientas de azar)  \ {{{
 
 \ Desordenar al azar varios elementos de la pila
-\ XXX TODO mover a la librería Galope.
+\ XXX TODO -- mover a la librería Galope.
 
 0 value unsort#
 : unsort  ( x1 ... xu u -- x1' ... xu' )
@@ -894,12 +816,12 @@ str-create tmp_str  \ Cadena dinámica de texto temporal para usos variados
 
 : str-get-last-char  ( a -- c )
   \ Devuelve el último carácter de una cadena dinámica.
-  \ XXX TODO soporte para UTF-8
+  \ XXX TODO -- soporte para UTF-8
   dup str-length@ 1- swap str-get-char
   ;
 : str-get-last-but-one-char  ( a -- c )
   \ Devuelve el penúltimo carácter de una cadena dinámica.
-  \ XXX TODO soporte para UTF-8
+  \ XXX TODO -- soporte para UTF-8
   dup str-length@ 2 - swap str-get-char
   ;
 
@@ -927,10 +849,10 @@ str-create tmp_str  \ Cadena dinámica de texto temporal para usos variados
   ;
 : -punctuation  ( ca len -- ca len )
   \ Sustituye por espacios todos los signos de puntuación ASCII de una cadena.
-  \ XXX TODO recorrer la cadena por caracteres UTF-8
-  \ XXX TODO sustituir también signos de puntuación UTF-8
+  \ XXX TODO -- recorrer la cadena por caracteres UTF-8
+  \ XXX TODO -- sustituir también signos de puntuación UTF-8
   exit \ XXX TMP
-  \ XXX FIXME esto elimina las marcas "#" de los comandos del sistema!
+  \ XXX FIXME -- esto elimina las marcas "#" de los comandos del sistema!
   2dup bounds  ?do
     i c@ chr-punct? if  bl i c!  then
   loop
@@ -1348,7 +1270,7 @@ de cadena creadas con `sconstant`.
   ;
 : you_glimpse_the_cave$  ( -- a u)
   \ Devuelve un texto usado en varias descripciones de las cuevas.
-  \ XXX TODO distinguir la antorcha encendida
+  \ XXX TODO -- distinguir la antorcha encendida
   in_half-darkness_you_glimpse$ s" la continuación de la cueva." s&
   ;
 : rimarkable$  ( -- ca len )
@@ -1774,7 +1696,7 @@ variable indent_first_line_too?  \ ¿Se indentará también la línea superior d
   \ Colorea la nueva línea con el color de fondo, lo que parchea
   \ el problema de que las nuevas líneas volvían a aparecer
   \ con el color predeterminado de la terminal.
-  \ XXX TODO inacabado, en pruebas
+  \ XXX TODO -- inacabado, en pruebas
   \ background_color cols #printed @ - spaces  \ final de línea
   \ blue paper cols #printed @ - spaces key drop  \ XXX INFORMER
   cr trm+save-current-state background_line
@@ -1786,7 +1708,7 @@ variable indent_first_line_too?  \ ¿Se indentará también la línea superior d
   \ de impresión de textos justificados.
   [false] [if]  \ Primera versión
     print_cr indent
-  [else]  \ XXX TODO pruebas para solucionar problema de la línea en blanco
+  [else]  \ XXX TODO -- pruebas para solucionar problema de la línea en blanco
     \ row last-row <> column or ?? print_cr indent
     column 0<> ?? print_cr indent
   [then]
@@ -2221,7 +2143,7 @@ campos.
 
 \ Modificar el contenido de un campo a partir de un identificador de ente
 
-\ XXX TODO rename is_... to be_...
+\ XXX TODO -- rename is_... to be_...
 : conversations++  ( a -- )  ~conversations ?++  ;
 : familiar++  ( a -- )  ~familiar ?++  ;
 : has_definite_article  ( a -- )  ~has_definite_article? bit_on  ;
@@ -3186,7 +3108,7 @@ false value sight  \ Guarda el ente dirección al que se mira en un escenario (o
   ;
 : .location_name  ( a -- )
   \ Imprime el nombre de un ente escenario, como cabecera de su descripción.
-  \ XXX TODO añadir el artículo correspondiente o no, dependiendo de un indicador de la ficha:
+  \ XXX TODO -- añadir el artículo correspondiente o no, dependiendo de un indicador de la ficha:
   \     pasaje de la serpiente -- el pasaje de la serpiente
   \     el paso del Perro -- el paso del Perro
   \     un tramo de cueva -- un tramo de cueva
@@ -3968,7 +3890,7 @@ false [if]  \ XXX OLD -- código obsoleto
   s" se intuyen" s" pueden intuirse" }s
   ;
 : (paths)_can_be_seen$  ( -- ca len )
-  \ XXX TODO hacer que el texto dependa, por grupos, de si el escenario es conocido
+  \ XXX TODO -- hacer que el texto dependa, por grupos, de si el escenario es conocido
   ['] (paths)_can_be_seen_0$
   ['] (paths)_can_be_seen_1$
   2 choose execute
@@ -4173,7 +4095,7 @@ create 'cave_descriptions
   ;
 : it_looks_impassable$  ( -- ca len )
   \ Mensaje «parece infranqueable».
-  \ XXX TODO ojo: género femenino; generalizar factorizando cuando se use en otro contexto
+  \ XXX TODO -- ojo: género femenino; generalizar factorizando cuando se use en otro contexto
   s{ s" por su aspecto" s" a primera vista" }s?
   s{  s" parece"
       s" diríase que es"
@@ -4334,7 +4256,7 @@ leader% :attributes
   location_28% self% is_there
   ;attributes
 leader% :description
-  \ XXX TODO elaborar esto según la trama
+  \ XXX TODO -- elaborar esto según la trama
   leader% conversations?
   if
     s" Es el jefe de los refugiados."
@@ -4382,7 +4304,7 @@ refugees% :description
   my_location case
   location_28% of  refugees_description  endof
   location_29% of
-    \ XXX TODO provisional
+    \ XXX TODO -- provisional
     s" Todos los refugiados quedaron atrás." paragraph
     endof
   endcase
@@ -4508,7 +4430,7 @@ fallen_away% :description
   s{
     s" Muchas," s" Muchísimas," s" Numerosas,"
     s" Un gran número de" s" Una gran cantidad de"
-    \ XXX TODO si se añade lo que sigue, hay que crear los entes "pared" y "muro":
+    \ XXX TODO -- si se añade lo que sigue, hay que crear los entes "pared" y "muro":
     \ s" Un muro de" s" Una pared de"
   }s
   s{ s" inalcanzables" s" inaccesibles" }s&
@@ -4586,7 +4508,7 @@ key% :attributes
   self% ambrosio% belongs
   ;attributes
 key% :description
-  \ XXX TODO crear ente. hierro, herrumbre y óxido, visibles con la llave en la mano
+  \ XXX TODO -- crear ente. hierro, herrumbre y óxido, visibles con la llave en la mano
   s" Grande, de hierro herrumboso."
   paragraph
   ;description
@@ -4766,7 +4688,7 @@ location_01% :attributes
   0 location_02% 0 0 0 0 0 0 self% init_location
   ;attributes
 location_01% :description
-  \ XXX TODO crear colina en los tres escenarios
+  \ XXX TODO -- crear colina en los tres escenarios
   sight case
   self% of
     s" No ha quedado nada en pie, ni piedra sobre piedra."
@@ -4816,7 +4738,7 @@ location_02% :attributes
   location_01% 0 0 location_03% 0 0 0 0 self% init_location
   ;attributes
 location_02% :description
-  \ XXX TODO crear ente. aldea, niebla
+  \ XXX TODO -- crear ente. aldea, niebla
   sight case
   self% of
     s" Sobre" s" la cima de" s?&
@@ -4902,7 +4824,7 @@ location_05% :description
   sight case
   self% of
     ^toward_the(m)$ s" oeste se extiende" s&
-    s{ s" frondoso" s" exhuberante" }s& \ XXX TODO independizar
+    s{ s" frondoso" s" exhuberante" }s& \ XXX TODO -- independizar
     s" el bosque que rodea la sierra." s&
     s" La salida se abre" s&
     toward_the(m)$ s& s" sur." s&
@@ -4981,17 +4903,17 @@ location_08% :attributes
   location_07% 0 0 0 0 0 0 0 self% init_location
   ;attributes
 location_08% :description
-  \ XXX TODO crear pared y roca y desfiladero
+  \ XXX TODO -- crear pared y roca y desfiladero
   sight case
   self% of
     ^the_pass_way$ s" entre el desfiladero sigue de norte a este" s&
     s" junto a una" s&
     s{  s" pared" rocky(f)$ s& s" rocosa pared" }s& period+
-    \ XXX TODO completar con entrada a caverna, tras ser descubierta
+    \ XXX TODO -- completar con entrada a caverna, tras ser descubierta
     paragraph
     endof
   north% of
-    s" El camino" s{ s" tuerce" s" gira" }s& \ XXX TODO independizar gira/tuerce
+    s" El camino" s{ s" tuerce" s" gira" }s& \ XXX TODO -- independizar gira/tuerce
     s" hacia el inquietante paso del Perro." s&
     paragraph
     endof
@@ -5067,7 +4989,7 @@ location_11% :attributes
   0 0 location_10% 0 0 0 0 0 self% init_location
   ;attributes
 location_11% :description
-  \ XXX TODO crear ente. estancia y aguas
+  \ XXX TODO -- crear ente. estancia y aguas
   sight case
   self% of
     s" Una" s{
@@ -5110,7 +5032,7 @@ location_12% :attributes
   0 0 0 location_13% 0 0 0 0 self% init_location
   ;attributes
 location_12% :description
-  \ XXX TODO crear ente. agua aquí
+  \ XXX TODO -- crear ente. agua aquí
   sight case
   self% of
     s" Una" s{ s" gran" s" amplia" }s&
@@ -5139,7 +5061,7 @@ location_13% :attributes
   0 0 location_12% location_14% 0 0 0 0 self% init_location
   ;attributes
 location_13% :description
-  \ XXX TODO crear ente. canal, agua, lecho(~catre)
+  \ XXX TODO -- crear ente. canal, agua, lecho(~catre)
   sight case
   self% of
     s" La sala se abre en"
@@ -5217,7 +5139,7 @@ location_16% :attributes
   0 0 0 location_15% 0 0 0 0 self% init_location
   ;attributes
 location_16% :description
-\ XXX TODO el examen del agua aquí debe dar más pistas
+\ XXX TODO -- el examen del agua aquí debe dar más pistas
   sight case
   self% of
     s" Como un acueducto, el agua"
@@ -5245,7 +5167,7 @@ location_17% :attributes
   location_15% location_20% location_18% 0 0 0 0 0 self% init_location
   ;attributes
 location_17% :description
-  \ XXX TODO crear ente. estalactitas
+  \ XXX TODO -- crear ente. estalactitas
   sight case
   self% of
     s" Muchas estalactitas se agrupan encima de tu cabeza,"
@@ -5269,7 +5191,7 @@ location_18% :attributes
   0 0 location_19% location_17% 0 0 0 0 self% init_location
   ;attributes
 location_18% :description
-  \ XXX TODO crear ente. puente, arco
+  \ XXX TODO -- crear ente. puente, arco
   sight case
   self% of
     s" Un arco de piedra se extiende,"
@@ -5303,7 +5225,7 @@ location_19% :attributes
 location_19% :description
   sight case
   self% of
-    \ XXX TODO hacer variaciones
+    \ XXX TODO -- hacer variaciones
     ^the_water_current$ comma+
     s" que discurre" s?&
     s" de norte a este," s& (it)_blocks$ s&
@@ -5457,7 +5379,7 @@ location_26% :attributes
   location_26% 0 location_20% location_27% 0 0 0 0 self% init_location
   ;attributes
 location_26% :description
-  \ XXX TODO crear ente. pasaje/camino/senda tramo/cueva (en todos los tramos)
+  \ XXX TODO -- crear ente. pasaje/camino/senda tramo/cueva (en todos los tramos)
   sight case
   self% of
     north% east% west% 3 exits_cave_description paragraph
@@ -5504,7 +5426,7 @@ location_28% :attributes
 location_28% :description
   sight case
   self% of
-    \ XXX TODO crear ente. estancia(para todos),albergue y refugio (tras hablar con anciano)
+    \ XXX TODO -- crear ente. estancia(para todos),albergue y refugio (tras hablar con anciano)
     self% ^full_name s" se extiende de norte a este." s&
     leader% conversations?
     if  s" Hace de albergue para los refugiados."
@@ -5545,7 +5467,7 @@ location_29% :attributes
   0 0 0 location_28% 0 location_30% 0 0 self% init_location
   ;attributes
 location_29% :description
-  \ XXX TODO crear ente. escalera/espiral, refugiados
+  \ XXX TODO -- crear ente. escalera/espiral, refugiados
   sight case
   self% of
     s" Cual escalera de caracol gigante,"
@@ -5594,7 +5516,7 @@ location_31% :attributes
   0 0 0 location_30% 0 0 0 0 self% init_location
   ;attributes
 location_31% :description
-  \ XXX TODO crear ente. arco, columnas, hueco/s(entre rocas)
+  \ XXX TODO -- crear ente. arco, columnas, hueco/s(entre rocas)
   sight case
   self% of
     s" En este pasaje grandes rocas se encuentran entre las columnas de un arco de medio punto."
@@ -5619,7 +5541,7 @@ location_32% :attributes
   0 location_33% 0 location_31% 0 0 0 0 self% init_location
   ;attributes
 location_32% :description
-  \ XXX TODO crear ente. precipicio, abismo, cornisa, camino, roca/s
+  \ XXX TODO -- crear ente. precipicio, abismo, cornisa, camino, roca/s
   sight case
   self% of
     s" El camino ahora no excede de dos palmos de cornisa sobre un abismo insondable."
@@ -5643,7 +5565,7 @@ location_33% :attributes
   location_32% 0 location_34% 0 0 0 0 0 self% init_location
   ;attributes
 location_33% :description
-  \ XXX TODO crear ente. camino/paso/sendero
+  \ XXX TODO -- crear ente. camino/paso/sendero
   sight case
   self% of
     s" El paso se va haciendo menos estrecho a medida que se avanza hacia el sur, para entonces comenzar hacia el este."
@@ -5666,13 +5588,13 @@ location_33% :description
   endcase
   ;description
 location_34% :attributes
-  \ XXX TODO crear ente. gravilla
+  \ XXX TODO -- crear ente. gravilla
   s" pasaje de gravilla" self% ms-name!
   self% is_indoor_location
   location_35% 0 0 location_33% 0 0 0 0 self% init_location
   ;attributes
 location_34% :description
-  \ XXX TODO crear ente. camino/paso/sendero, guijarros, moho, roca, suelo..
+  \ XXX TODO -- crear ente. camino/paso/sendero, guijarros, moho, roca, suelo..
   sight case
   self% of
     s" El paso" gets_wider$ s& s" de oeste a norte," s&
@@ -5696,7 +5618,7 @@ location_35% :attributes
   location_40% location_34% 0 location_36% 0 location_36% 0 0 self% init_location
   ;attributes
 location_35% :description
-  \ XXX TODO crear ente. escaleras, puente, río/curso/agua
+  \ XXX TODO -- crear ente. escaleras, puente, río/curso/agua
   sight case
   self% of
     s" Un puente" s{ s" se tiende" s" cruza" }s& s" de norte a sur sobre el curso del agua." s&
@@ -5799,7 +5721,7 @@ location_38% :description
     water_that_way$ paragraph
     endof
   west% of
-    \ XXX TODO el artículo de «cascada» debe depender también de si se ha visitado el escenario 39 o este mismo 38
+    \ XXX TODO -- el artículo de «cascada» debe depender también de si se ha visitado el escenario 39 o este mismo 38
     ^water_from_there$
     s" , de" s+ waterfall% full_name s& period+
     paragraph
@@ -5815,7 +5737,7 @@ location_39% :attributes
 location_39% :description
   sight case
   self% of
-    \ XXX TODO crear ente. musgo, cortina, agua, hueco
+    \ XXX TODO -- crear ente. musgo, cortina, agua, hueco
     s" Musgoso y rocoso, con la cortina de agua"
     s{ s" tras de ti," s" a tu espalda," }s&
     s{ s" el nivel" s" la altura" }s& s" del agua ha" s&
@@ -5825,7 +5747,7 @@ location_39% :description
     paragraph
     endof
   east% of
-    \ XXX TODO variar
+    \ XXX TODO -- variar
     s" Es la única salida." paragraph
     endof
   uninteresting_direction
@@ -5837,7 +5759,7 @@ location_40% :attributes
   0 location_35% location_41% 0 0 0 0 0 self% init_location
   ;attributes
 location_40% :description
-  \ XXX TODO crear ente. losas y losetas, estalactitas, panorama, escalones
+  \ XXX TODO -- crear ente. losas y losetas, estalactitas, panorama, escalones
   sight case
   self% of
     s" Una gran explanada enlosetada contempla un bello panorama de estalactitas."
@@ -5868,13 +5790,13 @@ location_40% :description
   endcase
   ;description
 location_41% :attributes
-  \ XXX TODO cambiar el nombre. no se puede pasar a mayúscula un carácter pluriocteto en utf-8
+  \ XXX TODO -- cambiar el nombre. no se puede pasar a mayúscula un carácter pluriocteto en utf-8
   self% is_indoor_location
   s" ídolo" self% ms-name!
   0 0 0 location_40% 0 0 0 0 self% init_location
   ;attributes
 location_41% :description
-  \ XXX TODO crear ente. roca, centinela
+  \ XXX TODO -- crear ente. roca, centinela
   sight case
   self% of
     s" El ídolo parece un centinela siniestro de una gran roca que se encuentra al sur."
@@ -5951,7 +5873,7 @@ location_44% :attributes
   location_43% 0 0 location_45% 0 0 0 0 self% init_location
   ;attributes
 location_44% :description
-  \ XXX TODO crear ente. lago, escaleras, pasaje, lago
+  \ XXX TODO -- crear ente. lago, escaleras, pasaje, lago
   sight case
   self% of
     s" Unas escaleras" s{ s" dan" s" permiten el" }s& s{ s" paso" s" acceso" }s&
@@ -5977,7 +5899,7 @@ location_45% :attributes
   0 location_47% location_44% location_46% 0 0 0 0 self% init_location
   ;attributes
 location_45% :description
-  \ XXX TODO crear ente. pasaje/camino/paso/senda
+  \ XXX TODO -- crear ente. pasaje/camino/paso/senda
   sight case
   self% of
     ^narrow(mp)$ pass_ways$ s&
@@ -6049,11 +5971,11 @@ location_47% :description
     paragraph
     endof
   north% of
-    \ XXX TODO variar
+    \ XXX TODO -- variar
     s" Hay salida" that_way$ s& period+ paragraph
     endof
   west% of
-    \ XXX TODO variar
+    \ XXX TODO -- variar
     door% is_open? if
       s" La luz diurna entra por la puerta."
     else
@@ -6075,7 +5997,7 @@ location_48% :attributes
   s" , como ahora" s?+
   ;
 location_48% :description
-  \ XXX TODO crear ente. cueva
+  \ XXX TODO -- crear ente. cueva
   sight case
   self% of
     s{ s" Apenas si" s" Casi no" }s
@@ -6158,7 +6080,7 @@ location_51% :attributes
   location_50% 0 0 0 0 0 0 0 self% init_location
   ;attributes
 location_51% :description
-  \ XXX TODO crear ente. mercado, plaza, villa, pueblo, castillo
+  \ XXX TODO -- crear ente. mercado, plaza, villa, pueblo, castillo
   sight case
   self% of
     ^the_village$ s" bulle de actividad con el mercado en el centro de la plaza," s&
@@ -6367,10 +6289,12 @@ defer tool_complement  \ Herramienta (indicada con «con» o «usando»)
 defer actual_tool_complement  \ Herramienta estricta (indicada con «usando»)
 defer company_complement  \ Compañía (indicado con «con»)
 defer actual_company_complement  \ Compañía estricta (indicada con «con» en presencia de «usando»)
-false [if]  \ XXX OLD XXX TODO -- descartado, pendiente
-  variable to_complement  \ Destino \ XXX OLD no utilizado
-  variable from_complement  \ Origen \ XXX OLD no utilizado
-  variable into_complement  \ Destino dentro \ XXX OLD no utilizado
+false [if]
+  \ XXX OLD
+  \ XXX TODO -- descartado, pendiente
+  variable to_complement  \ Destino \ XXX OLD -- no utilizado
+  variable from_complement  \ Origen \ XXX OLD -- no utilizado
+  variable into_complement  \ Destino dentro \ XXX OLD -- no utilizado
 [then]
 
 \ Ente que ha provocado un error
@@ -6512,7 +6436,7 @@ to impossible_error#
 : nonsense$  ( -- ca len )
   \ Devuelve una variante de «no tiene sentido»,
   \ que formará parte de mensajes personalizados por cada acción.
-  \ XXX TODO quitar las variantes que no sean adecuadas a todos los casos
+  \ XXX TODO -- quitar las variantes que no sean adecuadas a todos los casos
   s{
   s" es ilógico"
   s" no parece lógico"
@@ -6559,7 +6483,7 @@ to impossible_error#
 to nonsense_error#
 : dangerous$  ( -- ca len )
   \ Devuelve una variante de «es peligroso», que formará parte de mensajes personalizados por cada acción.
-  \ XXX TODO quitar las variantes que no sean adecuadas a todos los casos y unificar
+  \ XXX TODO -- quitar las variantes que no sean adecuadas a todos los casos y unificar
   s{
   s" es algo descabellado"
   s" es descabellado"
@@ -6638,7 +6562,7 @@ to dangerous_error#
 2 ' (secondary_complement+is_nonsense) action_error: secondary_complement+is_nonsense drop
 : no_reason_for$  ( -- ca len )
   \ Devuelve una variante de «no hay motivo para».
-  \ XXX TODO quitar las variantes que no sean adecuadas a todos los casos
+  \ XXX TODO -- quitar las variantes que no sean adecuadas a todos los casos
   s" No hay" s{
     s" nada que justifique"
     s{  s" necesidad" s" alguna" s?&
@@ -6743,8 +6667,8 @@ to unnecessary_tool_error#
 
 0 [if]
 
-  \ XXX FIXME error «no tiene nada especial»
-  \ XXX TODO inacabado
+  \ XXX FIXME -- error «no tiene nada especial»
+  \ XXX TODO -- inacabado
 
 : it_is_normal_x$  ( ca1 len1 -- ca2 len2 )
   \ Devuelve una variante de «no tiene nada especial x».
@@ -7800,7 +7724,7 @@ here swap - cell / constant battle_phases  \ Fases de la batalla
   that_(at_least)$ s" permite" s& to_see_something$ s& s?&
   ;
 : sun_adjectives$  ( -- ca len )
-  \ XXX TODO hacer que seleccione uno o dos adjetivos
+  \ XXX TODO -- hacer que seleccione uno o dos adjetivos
   \ s" tímido" s" débil" s" triste" s" lejano"
   ""
   ;
@@ -7866,7 +7790,7 @@ here swap - cell / constant battle_phases  \ Fases de la batalla
 \ }}} ==========================================================
 section( Tramas asociadas a lugares)  \ {{{
 
-\ XXX TODO convertir las tramas que corresponda
+\ XXX TODO -- convertir las tramas que corresponda
 \ de :after_describing_location
 \ en :before_describing_location
 
@@ -7951,7 +7875,7 @@ location_29% :after_describing_location
   refugees% is_here  \ Para que sean visibles en la distancia
   ;after_describing_location
 location_31% :after_describing_location
-  \ XXX TODO mover a la descripción?
+  \ XXX TODO -- mover a la descripción?
   self% has_north_exit? if
     s" Las rocas yacen desmoronadas a lo largo del"
     pass_way$ s& period+
@@ -7996,7 +7920,7 @@ section( Trama global)  \ {{{
 : plot  ( -- )
   \ Trama global.
   \ Nota: Las subtramas deben comprobarse en orden cronológico:
-  \ XXX TODO la trama de la batalla sería adecuada para una trama global de escenario,
+  \ XXX TODO -- la trama de la batalla sería adecuada para una trama global de escenario,
   \ invocada desde aquí. Aquí quedarían solo las tramas generales que no dependen de
   \ ningún escenario.
   battle? if  battle exit  then
@@ -8175,7 +8099,7 @@ section( Errores del intérprete de comandos)  \ {{{
   \ Comienzo común:
   s{ s" intenta" s" procura" s" prueba a" }s
   s{ s" reescribir" s" expresar" s" escribir" s" decir" }s&
-  \ XXX TODO este "lo" crea problema de concordancia con el final de la frase:
+  \ XXX TODO -- este "lo" crea problema de concordancia con el final de la frase:
   s{ s"  la frase" s" lo" s"  la idea" }s+
   s{
   \ Final 0:
@@ -8457,7 +8381,7 @@ Los nombres de las acciones empiezan por el prefijo «do_»
 (algunas palabras secundarias de las acciones
 también usan el mismo prefijo).
 
-XXX TODO explicación sobre la sintaxis
+XXX TODO -- explicación sobre la sintaxis
 
 *)
 
@@ -8843,7 +8767,7 @@ action: do_sharpen
 action: do_speak
 action: do_swim
 action: do_take
-action: do_take|do_eat \ XXX TODO cambiar do_eat por ingerir
+action: do_take|do_eat \ XXX TODO -- cambiar do_eat por ingerir
 action: do_take_off
 
 \ }}}---------------------------------------------
@@ -8853,7 +8777,7 @@ subsection( Herramientas para averiguar complemento omitido)  \ {{{
   \ Devuelve un ente personaje al que probablemente se refiera un comando.
   \ Se usa para averiguar el objeto de algunas acciones
   \ cuando el jugador no lo especifica.
-  \ XXX TODO ampliar para contemplar los soldados y oficiales, según la trama, el escenario y la fase de la batalla
+  \ XXX TODO -- ampliar para contemplar los soldados y oficiales, según la trama, el escenario y la fase de la batalla
   true case
     ambrosio% is_here? of  ambrosio%  endof
     leader% is_here? of  leader%  endof
@@ -8894,7 +8818,7 @@ subsection( Mirar, examinar y registrar)  \ {{{
   ;action
 :action do_look_to_direction
   \  Acción de otear.
-  \ XXX TODO traducir «otear» en el nombre de la palabra
+  \ XXX TODO -- traducir «otear» en el nombre de la palabra
   tool_complement{unnecessary}
   main_complement{required}
   main_complement{direction}
@@ -9095,7 +9019,7 @@ subsection( Ponerse y quitarse prendas)  \ {{{
 \ }}}---------------------------------------------
 subsection( Tomar y dejar)  \ {{{
 
-\ XXX OLD Puede que aún sirva:
+\ XXX OLD -- Puede que aún sirva:
 \ : cannot_take_the_altar  \ No se puede tomar el altar
 \   s" [el altar no se toca]" narrate  \ XXX TMP
 \   impossible
@@ -9160,7 +9084,7 @@ subsection( Tomar y dejar)  \ {{{
   \ Deja un ente.
   object is_worn? if
 
-    [false] [if]  \ XXX TODO mensaje combinado:
+    [false] [if]  \ XXX TODO -- mensaje combinado:
     object is_not_worn
     s" te" s{
       direct_pronoun s& s" quita" object plural_ending+
@@ -9202,7 +9126,7 @@ subsection( Cerrar y abrir)  \ {{{
   door% is_closed
   ;
 : .the_key_fits  ( -- )
-  \ XXX TODO nuevo texto, quitar «fácilmente»
+  \ XXX TODO -- nuevo texto, quitar «fácilmente»
   s" La llave gira fácilmente dentro del candado."
   narrate
   ;
@@ -9260,14 +9184,14 @@ subsection( Cerrar y abrir)  \ {{{
   ;action
 : the_door_is_locked  ( -- )
   \ Informa de que la puerta está cerrada por el candado.
-  \ XXX TODO añadir variantes
+  \ XXX TODO -- añadir variantes
   lock% ^full_name s" bloquea la puerta." s&
   narrate
   lock_found
   ;
 : unlock_the_door  ( -- )
   \ Abrir la puerta candada, si es posible.
-  \ XXX TODO falta mensaje adecuado sobre la llave que gira
+  \ XXX TODO -- falta mensaje adecuado sobre la llave que gira
   the_door_is_locked
   key% {needed}
   lock% dup is_open
@@ -9283,7 +9207,7 @@ subsection( Cerrar y abrir)  \ {{{
 : the_plants$  ( -- ca len )
   \ Devuelve las plantas que la puerta rompe al abrirse.
   s" las hiedras" s" las hierbas" both
-  \ XXX TODO hacerlas visibles
+  \ XXX TODO -- hacerlas visibles
   ;
 : the_door_breaks_the_plants_0$  ( -- ca len )
   \ Devuelve el mensaje sobre la rotura de las plantas por la puerta
@@ -9428,13 +9352,13 @@ subsection( Agredir)  \ {{{
   \ Acción de atacar.
   main_complement{required}
   main_complement{accessible}
-  main_complement{living} \ XXX TODO también es posible atacar otras cosas, como la ciudad u otros lugares, o el enemigo
+  main_complement{living} \ XXX TODO -- también es posible atacar otras cosas, como la ciudad u otros lugares, o el enemigo
   tool_complement{hold}
   main_complement @ (do_attack)
   ;action
 :action do_frighten
   \ Acción de asustar.
-  \ XXX TODO distinguir de las demás en grado o requisitos
+  \ XXX TODO -- distinguir de las demás en grado o requisitos
   main_complement{required}
   main_complement{accessible}
   main_complement{living}
@@ -9473,7 +9397,7 @@ subsection( Agredir)  \ {{{
   \ Acción de matar.
   main_complement{required}
   main_complement{accessible}
-  main_complement{living}  \ XXX TODO también es posible matar otras cosas, como el enemigo
+  main_complement{living}  \ XXX TODO -- también es posible matar otras cosas, como el enemigo
   tool_complement{hold}
   main_complement @ (do_kill)
   ;action
@@ -9534,7 +9458,7 @@ subsection( Agredir)  \ {{{
   ;action
 : can_be_sharpened?  ( a -- wf )
   \ ¿Puede un ente ser afilado?
-  \ XXX TODO mover esta palabra junto con los demás seudo-campos
+  \ XXX TODO -- mover esta palabra junto con los demás seudo-campos
   dup log% =  swap sword% =  or  \ ¿Es el tronco o la espada?
   ;
 : log_already_sharpened$  ( -- ca len )
@@ -10120,7 +10044,7 @@ subsection( Hablar y presentarse)  \ {{{
   ;
 : already_warned$  ( -- ca len )
   \ Mensaje de que el líder ya te advirtió sobre un objeto.
-  \ XXX TODO elaborar más
+  \ XXX TODO -- elaborar más
   s" ya" s?
   s{
     s" fuisteis" s{ s" avisado" s" advertido" }s& s" de ello" s?&
@@ -10182,7 +10106,7 @@ subsection( Hablar y presentarse)  \ {{{
   ;
 : the_leader_points_to_the_north$  ( -- ca len )
   \ El líder se enfada y apunta al norte.
-  \ XXX TODO crear ente "brazo" aquí, o activarlo como sinómino del anciano
+  \ XXX TODO -- crear ente "brazo" aquí, o activarlo como sinómino del anciano
   leader% ^full_name
   s{ s" alza" s" extiende" s" levanta" }s&
   s{ s" su" s" el" }s& s" brazo" s&
@@ -10292,7 +10216,7 @@ subsection( Hablar y presentarse)  \ {{{
   then  we_are_refugees
   ;
 : first_conversation_with_the_leader  ( -- )
-  \ XXX TODO elaborar mejor el texto
+  \ XXX TODO -- elaborar mejor el texto
   my_name_is$ s" Ulfius y..." s& speak talked_to_the_leader
   the_leader_introduces_himself
   ;
@@ -10310,7 +10234,7 @@ subsection( Hablar y presentarse)  \ {{{
   ;
 : the_leader_checks_what_you_carry  ( -- )
   \ El jefe controla lo que llevas.
-  \ XXX TODO mejorar para que se pueda pasar si dejamos el objeto en el suelo o se lo damos
+  \ XXX TODO -- mejorar para que se pueda pasar si dejamos el objeto en el suelo o se lo damos
   true case
     stone% is_accessible? of  the_leader_forbids_the_stone  endof
     sword% is_accessible? of  the_leader_forbids_the_sword  endof
@@ -10524,7 +10448,7 @@ subsection( Hablar y presentarse)  \ {{{
   }s ^uppercase speak
   ;
 : you_already_had_the_key$  ( -- ca len )
-  \ XXX TODO ampliar y variar
+  \ XXX TODO -- ampliar y variar
   s{
     s" La llave, Ambrosio, estaba ya en vuestro poder."
     s" Vos, Ambrosio, estabais ya en posesión de la llave."
@@ -10575,7 +10499,7 @@ subsection( Hablar y presentarse)  \ {{{
   ;
 : conversation_2_with_ambrosio  ( -- )
   \ Tercera conversación con Ambrosio, si se dan las condiciones.
-  \ XXX TODO simplificar la condición
+  \ XXX TODO -- simplificar la condición
   location_45% 1- location_47% 1+ my_location within
   ?? (conversation_2_with_ambrosio)
   ;
@@ -10736,7 +10660,7 @@ variable game_file_id  \ Identificador del fichero en que se graba la partida
 : read_game_file  ( ca len -- )
   \ Lee el fichero de configuración.
   \ ca len = Nombre del fichero
-  \ XXX TODO comprobar la existencia del fichero y atrapar errores al leerlo
+  \ XXX TODO -- comprobar la existencia del fichero y atrapar errores al leerlo
   only restore_vocabulary
   included  restore_vocabularies
   ;
@@ -10930,7 +10854,7 @@ restore_vocabularies
   ;
 : load_the_game  ( ca len -- )
   \ Acción de salvar la partida.
-  \ XXX TODO no funciona bien
+  \ XXX TODO -- no funciona bien
   \ main_complement{forbidden}
   only restore_vocabulary
   [debug_filing] [??] ~~
@@ -11282,7 +11206,7 @@ usado en el comando con dicha (seudo)preposición, o bien cero si la
 : save_command_elements  ( -- )
   \ XXX TODO -- not used
   action @ last_action !
-  \ XXX TODO falta guardar los complementos
+  \ XXX TODO -- falta guardar los complementos
   ;
 
 : (obey)  ( ca len -- )
@@ -11356,7 +11280,7 @@ usado en el comando con dicha (seudo)preposición, o bien cero si la
 : non_prepositional_complement!  ( a -- )
   \ Almacena un complemento principal o secundario.
   \ a = Identificador de ente
-  \ XXX TODO esta palabra sobrará cuando las (seudo)preposiciones estén implementadas completamente
+  \ XXX TODO -- esta palabra sobrará cuando las (seudo)preposiciones estén implementadas completamente
   main_complement @
   if    secondary_complement!
   else  main_complement!
@@ -11625,7 +11549,7 @@ restore_vocabularies
   ;
 : read_config  ( -- )
   \ Lee el fichero de configuración.
-  \ XXX TODO atrapar errores al leerlo
+  \ XXX TODO -- atrapar errores al leerlo
   base @ decimal
   only config_vocabulary
   config_file$ 2dup type ['] included catch  ( x1 x2 n | 0 )
@@ -11778,7 +11702,7 @@ adecuada.
   \ (o FALSE si la ambigüedad no puede ser resuelta).
   true case
     the_cave_entrance_is_accessible? of  cave_entrance%  endof
-    \ XXX TODO quizá no se implemente esto porque precisaría asociar a cave_entrance% el vocablo «salida/s», lo que crearía una ambigüedad adicional que resolver:
+    \ XXX TODO -- quizá no se implemente esto porque precisaría asociar a cave_entrance% el vocablo «salida/s», lo que crearía una ambigüedad adicional que resolver:
     \ location_10% am_i_there? of  cave_entrance%  endof
     false swap
   endcase
@@ -12162,7 +12086,7 @@ o sustantivos.
   colocarte colócate colÓcate colóquete colÓquete
   colocarme colócame colÓcame colócome colÓcome colóqueme colÓqueme
   }synonyms
-\ XXX TODO crear acción. vestir [con], parte como sinónimo y parte independiente
+\ XXX TODO -- crear acción. vestir [con], parte como sinónimo y parte independiente
 : ponérselo  ponerse éste  ;
 ' ponérselo synonyms{
   ponÉrselo
@@ -12456,7 +12380,7 @@ o sustantivos.
 
 : altar  altar% complement!  ;
 : arco  arch% complement!  ;
-: capa  cloak% complement!  ; \ XXX TODO hijuelo?
+: capa  cloak% complement!  ; \ XXX TODO -- hijuelo?
 ' capa synonyms{  lana  }synonyms
 \ ' capa synonyms{  abrigo  }synonyms \ XXX TODO -- diferente género
 : coraza  cuirasse% complement!  ;
@@ -12464,20 +12388,20 @@ o sustantivos.
 : puerta  door% complement!  ;
 : esmeralda  emerald% complement!  ;
 ' esmeralda synonyms{  joya  }synonyms
-\ XXX TODO piedra_preciosa brillante
+\ XXX TODO -- piedra_preciosa brillante
 : derrumbe fallen_away% complement!  ;
 : banderas  flags% complement!  ;
 ' banderas synonyms{
     bandera pendones enseñas enseÑas pendón pendÓn enseña enseÑa
     mástil mÁstil mástiles mÁstiles
     estandarte estandartes
-  }synonyms \ XXX TODO estandarte, enseña... otro género
+  }synonyms \ XXX TODO -- estandarte, enseña... otro género
 : dragones  flags% is_known? ?? banderas ;
 ' dragones synonyms{ dragón dragÓn }synonyms
 : pedernal  flint% complement!  ;
 : ídolo  idol% complement!  ;
 ' ídolo synonyms{  Ídolo ojo orificio agujero  }synonyms
-\ XXX TODO separar los sinónimos de ídolo
+\ XXX TODO -- separar los sinónimos de ídolo
 : llave  key% complement!  ;
 : lago  lake% complement!  ;
 ' lago synonyms{  laguna agua estanque  }synonyms  \ XXX TODO -- diferente género
@@ -12485,7 +12409,7 @@ o sustantivos.
 ' candado synonyms{  cerrojo  }synonyms
 : tronco  log% complement!  ;
 ' tronco synonyms{  leño leÑo madero  }synonyms
-\ XXX TODO madera
+\ XXX TODO -- madera
 : trozo  piece% complement!  ;
 ' trozo synonyms{  pedazo retal tela  }synonyms
 : harapo  rags% complement!  ;
@@ -12574,8 +12498,8 @@ o sustantivos.
 ' escalar synonyms{  trepar trepa trepo trepe  }synonyms
 
 : hablar  ['] do_speak action!  ;
-\ XXX TODO Crear nuevas palabras según la preposición que necesiten.
-\ XXX TODO Separar matices.
+\ XXX TODO -- Crear nuevas palabras según la preposición que necesiten.
+\ XXX TODO -- Separar matices.
 ' hablar synonyms{
   habla hablad hablo hable
   hablarle háblale hÁblale háblole hÁblole háblele hÁblele
@@ -12602,7 +12526,7 @@ o sustantivos.
 ' nubes synonyms{  nube estratocúmulo estratocÚmulo estratocúmulos estratocÚmulos cirro cirros  }synonyms
 : suelo  floor% complement!  ;
 ' suelo synonyms{  suelos tierra firme  }synonyms
-\ XXX TODO Añadir «piso», que es ambiguo
+\ XXX TODO -- Añadir «piso», que es ambiguo
 : cielo  sky% complement!  ;
 ' cielo synonyms{  cielos firmamento  }synonyms
 : techo  ceiling% complement!  ;
@@ -12650,7 +12574,9 @@ o sustantivos.
   «usando»_preposition# preposition!
   ;
 ' usando synonyms{ utilizando empleando mediante }synonyms
-false [if]  \ XXX OLD XXX TODO -- descartado, pendiente
+false [if]
+  \ XXX OLD
+  \ XXX TODO -- descartado, pendiente
 : a  ( -- )
   \ Uso: Destino de movimiento, objeto indirecto
   «a»_preposition# preposition!
@@ -12770,7 +12696,7 @@ false [if]  \ XXX OLD XXX TODO -- descartado, pendiente
   }synonyms
 
 
-\ XXX TMP Comandos para usar durante el desarrollo:
+\ XXX TMP -- Comandos para usar durante el desarrollo:
 \ : forth  (finish)  ;
 : bye  bye  ;
 : quit  quit  ;
@@ -13026,7 +12952,7 @@ false [if]  \ XXX TODO -- not used
   ;
 : enough?  ( -- wf )
   \ ¿Prefiere el jugador no jugar otra partida?
-  \ XXX TODO hacer que la pregunta varíe si la respuesta es incorrecta
+  \ XXX TODO -- hacer que la pregunta varíe si la respuesta es incorrecta
   \ Para ello, pasar como parámetro el xt que crea la cadena.
   success? if  ['] play_again?$  else  ['] retry?$  then  cr no?
   ;
@@ -13127,7 +13053,7 @@ false [if]  \ XXX TODO -- not used
 : the_sad_end  ( -- )
   \ Final del juego con fracaso.
   s" Los sajones"
-  \ XXX TODO añadir también el siguiente escenario, el lago
+  \ XXX TODO -- añadir también el siguiente escenario, el lago
   location_10% am_i_there? if
     \ XXX TODO -- ampliar y variar
     comma+
@@ -13185,7 +13111,7 @@ section( Acerca del programa)  \ {{{
   s" la Licencia Pública General de GNU, tal como está publicada" s&
   s" por la Free Software Foundation (Fundación para los Programas Libres)," s&
   s" bien en su versión 2 o, a tu elección, cualquier versión posterior" s&
-  s" (http://gnu.org/licenses/)." s& \ XXX TODO confirmar
+  s" (http://gnu.org/licenses/)." s& \ XXX TODO -- confirmar
   paragraph
   ;
 : program  ( -- )
@@ -13240,7 +13166,7 @@ section( Introducción)  \ {{{
   ;
 : intro_3  ( -- )
   \ Muestra la introducción al juego (parte 3).
-  \ XXX FIXME comprobar «cernirse»; añadir otras opciones
+  \ XXX FIXME -- comprobar «cernirse»; añadir otras opciones
   ^your_soldiers$ s{
     s" se" s{ s" ciernen" s" lanzan" s" arrojan" }s& s" sobre" s&
     s" se" s{ s" amparan" s" apoderan" }s& s" de" s&
@@ -13305,7 +13231,7 @@ section( Principal)  \ {{{
 : init_parser/game  ( -- )
   \ Preparativos que hay que hacer en el intérprete
   \ de comandos antes de cada partida.
-  \ XXX TODO trasladar a su zona
+  \ XXX TODO -- trasladar a su zona
   erase_last_command_elements
   ;
 : init-game  ( -- )
@@ -13351,7 +13277,7 @@ also forth definitions
   s" Datos preparados." paragraph
   ;
 
-\ i0 cr  \ XXX TMP para depuración
+\ i0 cr  \ XXX TMP -- para depuración
 
 \ }}} ==========================================================
 section( Pruebas)  \ {{{
@@ -13469,102 +13395,4 @@ true [if]
 
 only forth
 
-\eof  \ Ignora el resto del fichero, que se usa para notas
-
-\ }}} ==========================================================
-\ Notas {{{
-
-0 [if]
-
-------------------------------------------------
-Términos usados en los comentarios del programa
-
-«ente»
-«lugar»/«escenario»
-«salida»/«dirección»
-«protagonista»
-«base de datos»
-«ficha»
-«campo»/«atributo»
-
-------------------------------------------------
-Esbozo de acciones y (seudo)preposiciones
-
-a, al
-con, usando...
-de
-
-
-do_attack
-
-atacar
-atacar H
-atacar O
-atacar a H
-atacar a H con O
-
-do_break
-
-romper O
-romper O1 con O2
-
-do_climb
-
-escalar
-escalar O
-escalar O1 con O2
-
-do_close:
-
-cerrar
-cerrar O
-cerrar O1 con O2
-
-do_do:
-
-hacer?
-
-do_drop:
-
-soltar O
-soltar O1 con O2
-
-do_examine:
-
-(do_exits):
-
-salidas
-
-do_frighten
-do_go
-do_go_ahead
-do_go_back
-do_go_down
-do_go_east
-do_go_in
-do_go_north
-do_go|do_break
-do_go_out
-do_go_south
-do_go_up
-do_go_west
-do_hit
-do_introduce_yourself
-do_inventory
-do_kill
-do_look
-do_look_to_direction
-do_look_yourself
-do_make
-do_open
-do_put_on
-do_search
-do_sharpen
-do_speak
-do_swim
-do_take
-do_take|do_eat
-do_take_off
-
-[then]
 

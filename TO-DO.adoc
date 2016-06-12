@@ -1,5 +1,5 @@
 = Tareas pendientes de Asalto y castigo
-:revdate: 2016-02-03
+:revdate: 2016-06-12
 
 == Programación
 
@@ -636,4 +636,101 @@ De esto: «La palabra ZX , a veces, se usa como ZX2 .»
 A esto: «La palabra 'zx', a veces, se usa como 'zx2'.»
 
 Recortar las líneas para que no sobrepasen los 75 caracteres.
+
+
+== Notas
+
+
+=== Términos usados en los comentarios del programa
+
+----
+«ente»
+«lugar»/«escenario»
+«salida»/«dirección»
+«protagonista»
+«base de datos»
+«ficha»
+«campo»/«atributo»
+----
+
+=== Esbozo de acciones y (seudo)preposiciones
+
+----
+a, al
+con, usando...
+de
+
+
+do_attack
+
+atacar
+atacar H
+atacar O
+atacar a H
+atacar a H con O
+
+do_break
+
+romper O
+romper O1 con O2
+
+do_climb
+
+escalar
+escalar O
+escalar O1 con O2
+
+do_close:
+
+cerrar
+cerrar O
+cerrar O1 con O2
+
+do_do:
+
+hacer?
+
+do_drop:
+
+soltar O
+soltar O1 con O2
+
+do_examine:
+
+(do_exits):
+
+salidas
+
+do_frighten
+do_go
+do_go_ahead
+do_go_back
+do_go_down
+do_go_east
+do_go_in
+do_go_north
+do_go|do_break
+do_go_out
+do_go_south
+do_go_up
+do_go_west
+do_hit
+do_introduce_yourself
+do_inventory
+do_kill
+do_look
+do_look_to_direction
+do_look_yourself
+do_make
+do_open
+do_put_on
+do_search
+do_sharpen
+do_speak
+do_swim
+do_take
+do_take|do_eat
+do_take_off
+----
+
 
