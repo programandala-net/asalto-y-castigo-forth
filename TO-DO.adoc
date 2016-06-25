@@ -3,6 +3,10 @@
 
 == Programación
 
+2016-06-25:
+
+Hacer que la acción previa sea anulada tras un error.
+
 2016-02-03:
 
 ----

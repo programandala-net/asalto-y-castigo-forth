@@ -11,7 +11,7 @@ CR .( Asalto y castigo )  \ {{{
 \ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
 
 only forth definitions
-s" 0.7.1+201606210030"  2constant version
+s" 0.8.0+201606251848" 2constant version
 version type cr
 
 \ 'Asalto y castigo' is free software; you can redistribute
@@ -99,7 +99,6 @@ require random.fs
 
 \ ----------------------------------------------
 \ De la librería «Forth Foundation Library»
-\ (versión 0.8.0)
 \ http://code.google.com/p/ffl/
 
 (
@@ -124,9 +123,8 @@ require ffl/dtm.fs  \ Tipo de datos para fecha y hora
 require ffl/dti.fs  \ Herramientas adicionales para fecha y hora
 
 \ ----------------------------------------------
-\ De programandala.net
-
-\ Galope (Gforth Accessible Library Of Particular Elements)
+\ De Galope
+\ http://programandala.net/en.program.galope.html
 
 require galope/sb.fs \ Almacén circular de cadenas de texto
 ' bs+ alias s+
@@ -134,28 +132,28 @@ require galope/sb.fs \ Almacén circular de cadenas de texto
 ' bs" alias s" immediate
 2048 dictionary_sb
 
-require galope/two-choose.fs  \ `2schoose`, selección aleatoria de un elemento doble de la pila
-' 2choose alias schoose
+require galope/aliases-colon.fs  \ `aliases:`
 require galope/at-x.fs  \ `at-x`  \ XXX TMP -- for debugging
 require galope/between.fs  \ `between` (variante habitual de `within`)
+require galope/bit-field-colon.fs  \ `bitfield:`
 require galope/bracket-false.fs  \ `[false]`
 require galope/bracket-or.fs  \ `[or]`
 require galope/bracket-question-question.fs  \ `[??]`
 require galope/bracket-true.fs  \ `[true]`
 require galope/choose.fs  \ `choose`, selección aleatoria de un elemento de la pila
-require galope/colors.fs
 require galope/colon-alias.fs  \ `:alias`
+require galope/colors.fs
 require galope/column.fs  \ `column`
 require galope/drops.fs  \ `drops`, eliminación de varios elementos de la pila
 require galope/enum.fs  \ `enum`
 require galope/home.fs  \ `home`
+require galope/immediate-aliases-colon.fs  \ `immediate-aliases:`
 require galope/ink.fs
 require galope/minus-minus.fs  \ `--`
 require galope/paper.fs
 require galope/paren-star.fs  \ `(*`
 require galope/plus-plus.fs  \ `++`
 require galope/print.fs  \ Impresión de textos ajustados
-require galope/sourcepath.fs
 require galope/question-empty.fs  \ `?empty`
 require galope/question-keep.fs  \ `?keep`
 require galope/question-question.fs  \ `??`
@@ -164,15 +162,26 @@ require galope/randomize.fs  \ `randomize`
 require galope/row.fs  \ `row`
 require galope/sconstant.fs \ Constantes de cadenas de texto
 require galope/seconds.fs \ `seconds`, pausa en segundos acortable con una pulsación de tecla
+require galope/sourcepath.fs
 require galope/svariable.fs \ Variables de cadenas de texto
 require galope/system_colors.fs
 require galope/tilde-tilde.fs  \ `~~` mejorado
 require galope/to-yyyymmddhhmmss.fs  \ `>yyyymmddhhss`
+require galope/two-choose.fs  \ `2schoose`, selección aleatoria de un elemento doble de la pila
+' 2choose alias schoose
 require galope/x-c-store.fs  \ `xc!`
 require galope/xcase_es.fs  \ Cambio de caja para caracteres propios del castellano en UTF-8
 require galope/xy.fs  \ Posición actual del cursor
 
+\ ----------------------------------------------
+\ De Flibustre
+\ http://programandala.net
+
+require flibustre/different-question.fs  \ `different?`
+
+\ ----------------------------------------------
 \ Otras herramientas
+\ http://programandala.net
 
 require halto2.fs \ XXX TMP -- check points for debugging
 false to halto?
@@ -259,66 +268,7 @@ pad 0 2constant ""  \ Simula una cadena vacía.
   \ XXX TODO -- confirmar este cálculo, pues depende de si el número se considera con signo o no
   dup @ 1+ ?dup if  swap !  else  drop  then  ;
 
-: different?  ( x1 x2 x1 -- wf )
-  \ ¿Es x2 distinto de x1, y es x1 distinto de cero?
-  \ Este cálculo se usa en dos lugares del programa.
-  <> swap 0<> and  ;
-
 ' bootmessage alias .forth
-
-\ }}} ==========================================================
-section( Definición de estructuras)  \ {{{
-
-(*
-
-Creamos herramientas para definir y gestionar campos de datos
-buleanos que usen un solo bitio.
-
-*)
-
-variable bit#  \ Contador de máscara de bitio para los campos buleanos.
-: bitfields  ( -- )
-  1 bit# !  ;
-
-: bit#?  ( -- u )
-  bit# @  dup 0= abort" Too many bits defined in the field"  ;
-
-: bit+  ( -- )
-  bit# @ 1 lshift bit# !  ;
-
-: bitfield:  ( u1 "name" -- u1 )
-  \ Crea un campo de bitio en el próximo campo de celda.
-  \ u1 = Desplazamiento (respecto al inicio de la ficha) del próximo campo de celda que se creará
-  create  bit#? over 2, bit+
-  does>  ( a pfa -- u2 a' )
-    \ a = Dirección de la ficha de datos
-    \ u2 = Máscara del bitio
-    \ a' = Dirección del campo en que está definido el bitio en la ficha de datos.
-    2@ rot +  ;
-
-: bit-on  ( u a -- )
-  \ Activa un campo de bitio.
-  \ u = Máscara del bitio
-  \ a = Dirección del campo
-  dup @ rot or swap !  ;
-
-: bit-off  ( u a -- )
-  \ Desactiva un campo de bitio.
-  \ u = Máscara del bitio
-  \ a = Dirección del campo
-  dup @ rot invert and swap !  ;
-
-: bit!  ( f u a -- )
-  \ Guarda un indicador en un campo de bitio.
-  \ u = Máscara del bitio
-  \ a = Dirección del campo
-  rot if  bit-on  else  bit-off  then  ;
-
-: bit@  ( u a -- wf )
-  \ Devuelve el contenido de un campo de bitio.
-  \ u = Máscara del bitio
-  \ a = Dirección del campo
-  @ and 0<>  ;
 
 \ }}} ==========================================================
 section( Vectores)  \ {{{
@@ -710,8 +660,8 @@ subsection( Borrado de pantalla)  \ {{{
   \ No sirve de mucho colorear la pantalla, porque la edición de textos
   \ utiliza el color de fondo predeterminado del sistema, el negro,
   \ cuando se borra el texto que está siendo escrito.
-  \ No se ha comprabado si en Windows ocurre lo mismo.
-  \ No sirve de nada usar trm+set-default-attributes
+  \ No se ha comprobado si en Windows ocurre lo mismo.
+  \ No sirve usar `trm+set-default-attributes`.
   paper print_home
   [false] [if]  \ Por líneas, más lento
     rows 0 do  i ?? cr [ cols ] literal spaces  loop
@@ -3035,18 +2985,18 @@ false value sight  \ Guarda el ente dirección al que se mira en un escenario (o
   \ a = Ente para cuya descripción se ha creado una palabra
   \ xt = Dirección de ejecución de la palabra recién creada
   over ~description-xt !  \ Conservar la dirección de ejecución en la ficha del ente
-  postpone literal  ;  \ Compilar el identificador de ente en la palabra de descripción recién creada, para que `[:description]` lo guarde en `self%` en tiempo de ejecución 
+  postpone literal  ;  \ Compilar el identificador de ente en la palabra de descripción recién creada, para que `[:description]` lo guarde en `self%` en tiempo de ejecución
 
 : :description  ( a -- )
   \ Inicia la definición de una palabra de descripción para un ente.
   :noname noname-roll
   (:description)  \ Hacer las operaciones preliminares
-  postpone [:description]  ;  \ Compilar la palabra `[:description]` en la palabra creada, para que se ejecute cuando sea llamada 
+  postpone [:description]  ;  \ Compilar la palabra `[:description]` en la palabra creada, para que se ejecute cuando sea llamada
 
 : [;description]  ( -- )
   \ Operaciones finales tras la ejecución de la descripción de un ente.
   \ Esta palabra se ejecutará al final de la palabra de descripción.
-  false to sight  ;  \ Poner a cero el selector de vista, para evitar posibles errores 
+  false to sight  ;  \ Poner a cero el selector de vista, para evitar posibles errores
 
 : ;description  ( colon-sys -- )
   \ Termina la definición de una palabra de descripción de un ente.
@@ -3087,7 +3037,7 @@ false value sight  \ Guarda el ente dirección al que se mira en un escenario (o
 : describe-direction  ( a -- )
   \ Describe un ente dirección.
   to sight  \ Poner el ente dirección en `sight`
-  my-location describe-other  ;  \ Y describir el escenario actual como un ente normal; ahí se hace la distinción 
+  my-location describe-other  ;  \ Y describir el escenario actual como un ente normal; ahí se hace la distinción
 
 : description-type  ( a -- u )
   \ Convierte un ente en el tipo de descripción que requiere.
@@ -3996,7 +3946,7 @@ create 'cave-descriptions
   \ a1 ... an = Entes de dirección correspondientes a las salidas
   \ u = Número de entes de dirección suministrados
   unsort-cave-exits  (exits-cave-description) period+
-  main-cave-exits-are$ 2swap s&  ;  \ Añadir el encabezado 
+  main-cave-exits-are$ 2swap s&  ;  \ Añadir el encabezado
 
 : cave-exit-description$  ( -- ca1 len1 )
   \ Devuelve la descripción de una dirección de salida de un tramo de cueva.
@@ -6863,7 +6813,7 @@ variable #elements  \ Total de los elementos de una lista
   dup protagonist% <>  \ ¿No es el protagonista?
   over is-decoration? 0=  and  \ ¿Y no es decorativo?
   over is-listed? and  \ ¿Y puede ser listado?
-  swap is-global? 0=  and  ;  \ ¿Y no es global? 
+  swap is-global? 0=  and  ;  \ ¿Y no es global?
 
 : /list++  ( u1 a1 a2 -- u1 | u2 )
   \ Actualiza un contador si un ente es la localización de otro y puede ser listado.
@@ -6986,7 +6936,7 @@ section( Herramientas para las tramas asociadas a escenarios)  \ {{{
   \ Esta palabra se ejecutará al comienzo de la palabra de trama de escenario.
   \ El identificador del ente está en la pila
   \ porque se compiló con `literal` cuando se creó la palabra de trama.
-  to self%  ;  \ Actualizar el puntero al ente, usado para aligerar la sintaxis 
+  to self%  ;  \ Actualizar el puntero al ente, usado para aligerar la sintaxis
 
 : (:can-i-enter-location?)  ( a xt -- )
   \ Operaciones preliminares para la definición
@@ -6997,14 +6947,14 @@ section( Herramientas para las tramas asociadas a escenarios)  \ {{{
   \ a = Ente escenario para cuya trama se ha creado una palabra
   \ xt = Dirección de ejecución de la palabra recién creada
   over ~can-i-enter-location?-xt !  \ Guardar el xt de la nueva palabra en la ficha del ente
-  postpone literal  ;  \ Compilar el identificador de ente en la palabra de descripción recién creada, para que `[:description]` lo guarde en `self%` en tiempo de ejecución 
+  postpone literal  ;  \ Compilar el identificador de ente en la palabra de descripción recién creada, para que `[:description]` lo guarde en `self%` en tiempo de ejecución
 
 : :can-i-enter-location?  ( a -- xt a )
   \ Crea una palabra sin nombre que manejará
   \ la trama previa de entrada a un ente escenario
   :noname noname-roll
   (:can-i-enter-location?)  \ Hacer las operaciones preliminares
-  postpone [:location-plot]  ;  \ Compilar la palabra `[:location-plot]` en la palabra creada, para que se ejecute cuando sea llamada 
+  postpone [:location-plot]  ;  \ Compilar la palabra `[:location-plot]` en la palabra creada, para que se ejecute cuando sea llamada
 
 : (:before-describing-location)  ( a xt -- )
   \ Operaciones preliminares para la definición
@@ -7015,14 +6965,14 @@ section( Herramientas para las tramas asociadas a escenarios)  \ {{{
   \ a = Ente escenario para cuya trama se ha creado una palabra
   \ xt = Dirección de ejecución de la palabra recién creada
   over ~before-describing-location-xt !  \ Guardar el xt de la nueva palabra en la ficha del ente
-  postpone literal  ;  \ Compilar el identificador de ente en la palabra de descripción recién creada, para que `[:description]` lo guarde en `self%` en tiempo de ejecución 
+  postpone literal  ;  \ Compilar el identificador de ente en la palabra de descripción recién creada, para que `[:description]` lo guarde en `self%` en tiempo de ejecución
 
 : :before-describing-location  ( a -- xt a )
   \ Crea una palabra sin nombre que manejará
   \ una trama de entrada a un ente escenario
   :noname noname-roll
   (:before-describing-location)  \ Hacer las operaciones preliminares
-  postpone [:location-plot]  ;  \ Compilar la palabra `[:location-plot]` en la palabra creada, para que se ejecute cuando sea llamada 
+  postpone [:location-plot]  ;  \ Compilar la palabra `[:location-plot]` en la palabra creada, para que se ejecute cuando sea llamada
 
 : (:after-describing-location)  ( a xt -- )
   \ Operaciones preliminares para la definición
@@ -7033,14 +6983,14 @@ section( Herramientas para las tramas asociadas a escenarios)  \ {{{
   \ a = Ente escenario para cuya trama se ha creado una palabra
   \ xt = Dirección de ejecución de la palabra recién creada
   over ~after-describing-location-xt !  \ Guardar el xt de la nueva palabra en la ficha del ente
-  postpone literal  ;  \ Compilar el identificador de ente en la palabra de descripción recién creada, para que `[:description]` lo guarde en `self%` en tiempo de ejecución 
+  postpone literal  ;  \ Compilar el identificador de ente en la palabra de descripción recién creada, para que `[:description]` lo guarde en `self%` en tiempo de ejecución
 
 : :after-describing-location  ( a -- xt a )
   \ Crea una palabra sin nombre que manejará
   \ una trama de entrada a un ente escenario
   :noname noname-roll
   (:after-describing-location)  \ Hacer las operaciones preliminares
-  postpone [:location-plot]  ;  \ Compilar la palabra `[:location-plot]` en la palabra creada, para que se ejecute cuando sea llamada 
+  postpone [:location-plot]  ;  \ Compilar la palabra `[:location-plot]` en la palabra creada, para que se ejecute cuando sea llamada
 
 : (:after-listing-entities)  ( a xt -- )
   \ Operaciones preliminares para la definición
@@ -7051,14 +7001,14 @@ section( Herramientas para las tramas asociadas a escenarios)  \ {{{
   \ a = Ente escenario para cuya trama se ha creado una palabra
   \ xt = Dirección de ejecución de la palabra recién creada
   over ~after-listing-entities-xt !  \ Guardar el xt de la nueva palabra en la ficha del ente
-  postpone literal  ;  \ Compilar el identificador de ente en la palabra de descripción recién creada, para que `[:description]` lo guarde en `self%` en tiempo de ejecución 
+  postpone literal  ;  \ Compilar el identificador de ente en la palabra de descripción recién creada, para que `[:description]` lo guarde en `self%` en tiempo de ejecución
 
 : :after-listing-entities  ( a -- xt a )
   \ Crea una palabra sin nombre que manejará
   \ la trama de entrada a un ente escenario
   :noname noname-roll
   (:after-listing-entities)  \ Hacer las operaciones preliminares
-  postpone [:location-plot]  ;  \ Compilar la palabra [:LOCATION-PLOT] en la palabra creada, para que se ejecute cuando sea llamada 
+  postpone [:location-plot]  ;  \ Compilar la palabra [:LOCATION-PLOT] en la palabra creada, para que se ejecute cuando sea llamada
 
 : (:before-leaving-location)  ( a xt -- )
   \ Operaciones preliminares para la definición
@@ -7069,14 +7019,14 @@ section( Herramientas para las tramas asociadas a escenarios)  \ {{{
   \ a = Ente escenario para cuya trama se ha creado una palabra
   \ xt = Dirección de ejecución de la palabra recién creada
   over ~before-leaving-location-xt !  \ Guardar el xt de la nueva palabra en la ficha del ente
-  postpone literal  ;  \ Compilar el identificador de ente en la palabra de descripción recién creada, para que `[:description]` lo guarde en `self%` en tiempo de ejecución 
+  postpone literal  ;  \ Compilar el identificador de ente en la palabra de descripción recién creada, para que `[:description]` lo guarde en `self%` en tiempo de ejecución
 
 : :before-leaving-location  ( a -- xt a )
   \ Crea una palabra sin nombre que manejará
   \ la trama de salida de un ente escenario
   :noname noname-roll
   (:before-leaving-location)  \ Hacer las operaciones preliminares
-  postpone [:location-plot]  ;  \ Compilar la palabra `[:location-plot]` en la palabra creada, para que se ejecute cuando sea llamada 
+  postpone [:location-plot]  ;  \ Compilar la palabra `[:location-plot]` en la palabra creada, para que se ejecute cuando sea llamada
 
 true [if]
   : ;can-i-enter-location?  ( colon-sys -- )  postpone ;  ;  immediate
@@ -7481,7 +7431,7 @@ here swap - cell / constant battle-phases  \ Fases de la batalla
 : battle-location?  ( -- wf )
   \ ¿En el escenario de la batalla?
   my-location location-10% <  \ ¿Está el protagonista en un escenario menor que el 10?
-  pass-still-open? 0=  and  ;  \ ¿Y el paso del desfiladero está cerrado? 
+  pass-still-open? 0=  and  ;  \ ¿Y el paso del desfiladero está cerrado?
 
 : battle-phase++  ( -- )
   \ Incrementar la fase de la batalla (salvo una de cada diez veces, al azar).
@@ -8535,7 +8485,7 @@ condicionales anidadas.
   \ Nota: los errores apuntados por el campo ~TAKE-ERROR# no reciben parámetros salvo en WHAT
   dup what !
   dup take-error# throw  \ Error específico del ente
-  can-be-taken? 0= nonsense-error# and throw  ;  \ Condición general de error 
+  can-be-taken? 0= nonsense-error# and throw  ;  \ Condición general de error
 
 : ?{takeable}  ( a | 0 -- )
   \ Provoca un error si un supuesto ente lo es y no puede ser tomado.
@@ -8806,7 +8756,7 @@ variable #free-exits  \ Contador de las salidas posibles
   exit-separator$ »+
   exits-table@ full-name »+
   #listed ++
-  [debug-do-exits] [if]  cr .stack  [then]  ;  \ XXX INFORMER 
+  [debug-do-exits] [if]  cr .stack  [then]  ;  \ XXX INFORMER
 
 false [if]  \ Primera versión
 
@@ -8821,7 +8771,7 @@ false [if]  \ Primera versión
 \   [debug-do-exits] [if]  i i cr . @ .  [then]  \ XXX INFORMER
     i @ 0<> abs +
   cell  +loop
-  [debug-do-exits] [if]  cr .stack  [then]  ;  \ XXX INFORMER 
+  [debug-do-exits] [if]  cr .stack  [then]  ;  \ XXX INFORMER
 
 :action do-exits
   \ Acción de listar las salidas posibles de la localización del protagonista.
@@ -8853,7 +8803,7 @@ false [if]  \ Primera versión
     this-location i + @ ?? i
   cell  +loop
   depth r> -
-  [debug-do-exits] [if]  cr .stack  [then]  ;  \ XXX INFORMER 
+  [debug-do-exits] [if]  cr .stack  [then]  ;  \ XXX INFORMER
 
 : (list-exits)  ( -- )
   \ Crea la lista de salidas y la imprime
@@ -9369,7 +9319,7 @@ subsection( Agredir)  \ {{{
 : can-be-sharpened?  ( a -- wf )
   \ ¿Puede un ente ser afilado?
   \ XXX TODO -- mover esta palabra junto con los demás seudo-campos
-  dup log% =  swap sword% =  or  ;  \ ¿Es el tronco o la espada? 
+  dup log% =  swap sword% =  or  ;  \ ¿Es el tronco o la espada?
 
 : log-already-sharpened$  ( -- ca len )
   \ Devuulve una cadena con una variante de «Ya está afilado»
@@ -9483,7 +9433,7 @@ subsection( Movimiento)  \ {{{
     if  nip enter-location  else  impossible-move  then
   else  drop nonsense
   then
-  [debug] [if]  s" Al salir de DO-GO-IF-POSSIBLE" debug  [then]  ;  \ XXX INFORMER 
+  [debug] [if]  s" Al salir de DO-GO-IF-POSSIBLE" debug  [then]  ;  \ XXX INFORMER
 
 : simply-do-go  ( -- )
   \ Ir sin dirección específica.
@@ -10142,7 +10092,7 @@ subsection( Hablar y presentarse)  \ {{{
 : the-leader-forbids-the-sword  ( -- )
   \ El jefe te avisa de que no puedes pasar con la espada.
   the-leader-warns-about-the-sword
-  sword-forbidden? ?++  ;  \ Recordarlo 
+  sword-forbidden? ?++  ;  \ Recordarlo
 
 : the-leader-checks-what-you-carry  ( -- )
   \ El jefe controla lo que llevas.
@@ -10523,7 +10473,7 @@ como cualquier otro código fuente.
 : file-name$  ( -- ca len )
   \ Devuelve el nombre con que se grabará el juego.
   s" ayc-" yyyymmddhhmmss$ s+
-  s" .exe" windows? and s+  ;  \ Añadir sufijo si estamos en Windows 
+  s" .exe" windows? and s+  ;  \ Añadir sufijo si estamos en Windows
 
 defer reenter
 svariable filename
@@ -10558,7 +10508,7 @@ variable game-file-id  \ Identificador del fichero en que se graba la partida
 
 : close-game-file  ( -- )
   \ Cierra el fichero en que se grabó la partida.
-  game-file-id @ close-file abort" Close file error."  ;  \ XXX TMP -- mensaje tmp 
+  game-file-id @ close-file abort" Close file error."  ;  \ XXX TMP -- mensaje tmp
 
 : create-game-file  ( ca len -- )
   \ Crea un fichero para grabar una partida
@@ -10576,7 +10526,7 @@ variable game-file-id  \ Identificador del fichero en que se graba la partida
 
 : >file/  ( ca len -- )
   \ Escribe una línea en el fichero de la partida.
-  game-file-id @ write-line abort" Write file error"  ;  \ XXX TMP -- mensaje tmp 
+  game-file-id @ write-line abort" Write file error"  ;  \ XXX TMP -- mensaje tmp
 
 : cr>file  ( -- )
   \ Escribe un final de línea en el fichero de la partida.
@@ -10585,7 +10535,7 @@ variable game-file-id  \ Identificador del fichero en que se graba la partida
 : >file  ( ca len -- )
   \ Escribe una cadena en el fichero de la partida.
   space+
-  game-file-id @ write-file abort" Write file error"  ;  \ XXX TMP -- mensaje tmp 
+  game-file-id @ write-file abort" Write file error"  ;  \ XXX TMP -- mensaje tmp
 
 also restore-vocabulary  definitions
 ' \ alias \
@@ -10701,7 +10651,7 @@ restore-vocabularies
   r@ in-exit entity>file
   r> direction n>file
   n>file  \ Número ordinal del ente
-  s" load-entity" >file/  ;  \ Palabra que hará la restauración del ente 
+  s" load-entity" >file/  ;  \ Palabra que hará la restauración del ente
 
 : rule>file  ( -- )
   \ Escribe una línea de separación en el fichero de la partida.
@@ -10732,7 +10682,7 @@ restore-vocabularies
   stone-forbidden? @ f>file
   sword-forbidden? @ f>file
   recent-talks-to-the-leader @ n>file
-  s" load-plot" >file/  ;  \ Palabra que hará la restauración de la trama 
+  s" load-plot" >file/  ;  \ Palabra que hará la restauración de la trama
 
 : file-header  ( -- )
   \ Escribe la cabecera del fichero de la partida.
@@ -11012,7 +10962,7 @@ usado en el comando con dicha (seudo)preposición, o bien cero si la
 : execute-previous-action  ( -- )
   \ Ejecuta la acción previa, si así está configurado.
   repeat-previous-action? @
-  if    (execute-previous-action)  else  no-verb-error# ?wrong  then  ;
+  if  (execute-previous-action)  else  no-verb-error# ?wrong  then  ;
 
 : execute-action  ( -- )
   \ Ejecuta la acción del comando, si es posible.
@@ -11070,7 +11020,6 @@ usado en el comando con dicha (seudo)preposición, o bien cero si la
   [debug-parsing] [??] ~~
   ['] evaluate-command catch
   [debug-parsing] [??] ~~
-  [debug-parsing] [??] ~~
   dup if  nip nip  then  \ Arreglar la pila, pues CATCH hace que apunte a su posición previa
   [debug-parsing] [??] ~~
   dup ?wrong 0=
@@ -11097,13 +11046,13 @@ usado en el comando con dicha (seudo)preposición, o bien cero si la
   \ Copia el último complemento al lugar del penúltimo.
   \ a = Ente que fue encontrado como último complemento.
   >last-complement >but-one!  \ El último del mismo género y número
-  last-complement >but-one!  ;  \ El último absoluto 
+  last-complement >but-one!  ;  \ El último absoluto
 
 : new-last-complement  ( a -- )
   \ Guarda un nuevo complemento como el último complemento hallado.
   dup shift-last-complement  \ Copiar último a penúltimo
   dup last-complement !  \ Guardarlo como último absoluto
-  dup >last-complement !  ;  \ Guardarlo como último de su género y número 
+  dup >last-complement !  ;  \ Guardarlo como último de su género y número
 
 : save-command-elements  ( -- )
   action @ last-action !  ;
@@ -11129,9 +11078,9 @@ usado en el comando con dicha (seudo)preposición, o bien cero si la
   2dup different?  \ ¿Hay ya otro anterior y es diferente?
   [debug-parsing] [??] ~~  ;
 
-: action!  ( a -- )
+: action!  ( xt -- )
   \ Comprueba y almacena la acción.
-  \ a = Dirección de ejecución de la palabra de la acción
+  \ xt = Identificador de ejecución de la acción
   [debug-parsing] [??] ~~
   action @ second?  \ ¿Había ya una acción?
   [debug-parsing] [??] ~~
@@ -11472,43 +11421,7 @@ frase del jugador con la palabra estándar EVALUATE
 escrita a medida EVALUATE-COMMAND ], que ejecutará
 cada palabra que contenga el texto.
 
-A continuación definimos palabras que nos proporcionan una
-sintaxis cómoda para crear un número variable de sinónimos de
-cada palabra del vocabulario del jugador.
-
 *)
-
-: parse-synonym  ( -- ca len )
-  \ Devuelve el siguiente sinónimo de la lista.
-  begin   parse-name dup 0=
-  while   2drop refill 0=
-          abort" Error en el código fuente: lista de sinónimos incompleta"
-  repeat
-  \ 2dup ." sinónimo: " type space \ XXX INFORMER
-  ;
-
-: (another-synonym?)  ( ca len -- wf )
-  \ ¿No se ha terminado la lista de sinónimos?
-  s" }synonyms" compare  ;
-
-: another-synonym?  ( -- ca len wf )
-  \ Toma la siguiente palabra en el flujo de entrada
-  \ y comprueba si es el final de la lista de sinónimos.
-  parse-synonym 2dup (another-synonym?)  ;
-
-: synonyms{  (  xt "name#0" ... "name#n" "}synonyms" -- )
-  \ Crea uno o varios sinónimos de una palabra.
-  \ xt = Dirección de ejecución de la palabra a clonar
-  begin  dup another-synonym? ( xt xt ca len wf )
-  while  :alias
-  repeat  2drop 2drop  ;
-
-: immediate-synonyms{  (  xt "name#0" ... "name#n" "}synonyms" -- )
-  \ Crea uno o varios sinónimos inmediatos de una palabra.
-  \ xt = Dirección de ejecución de la palabra a clonar
-  begin  dup another-synonym?  ( xt xt ca len wf )
-  while  :alias  immediate
-  repeat  2drop 2drop  ;
 
 \ Resolución de entes ambiguos
 
@@ -11671,26 +11584,26 @@ o sustantivos.
 \ : aquello  last-but-one-complement @ complement!  ;
 
 : éste  last-complement >masculine >singular @ complement!  ;
-' éste synonyms{ Éste ése Ése }synonyms
+' éste aliases: Éste ése Ése ;aliases
 : ésta  last-complement >feminine >singular @ complement!  ;
-' ésta synonyms{ Ésta ésa Ésa }synonyms
+' ésta aliases: Ésta ésa Ésa ;aliases
 : éstos  last-complement >masculine >plural @ complement!  ;
-' éstos synonyms{ Éstos ésos Ésos }synonyms
+' éstos aliases: Éstos ésos Ésos ;aliases
 : éstas  last-complement >feminine >plural @ complement!  ;
-' éstas synonyms{ Éstas ésas Ésas }synonyms
+' éstas aliases: Éstas ésas Ésas ;aliases
 : aquél  last-but-one-complement >masculine >singular @ complement!  ;
-' aquél synonyms{ aquÉl }synonyms
+' aquél aliases: aquÉl ;aliases
 : aquélla  last-but-one-complement >feminine >singular @ complement!  ;
-' aquélla synonyms{ aquÉlla }synonyms
+' aquélla aliases: aquÉlla ;aliases
 : aquéllos  last-but-one-complement >masculine >plural @ complement!  ;
-' aquéllos synonyms{ aquÉllos }synonyms
+' aquéllos aliases: aquÉllos ;aliases
 : aquéllas  last-but-one-complement >feminine >plural @ complement!  ;
-' aquéllas synonyms{ aquÉllas }synonyms
+' aquéllas aliases: aquÉllas ;aliases
 
 \ Verbos
 
 : ir ['] do-go action!  ;
-' ir synonyms{
+' ir aliases:
   dirigirme diríjame dirÍjame diríjome dirÍjome
   dirigirse dirigíos dirigÍos diríjase dirÍjase
   dirigirte diríjote dirÍjote dirígete dirÍgete
@@ -11702,132 +11615,132 @@ o sustantivos.
   moverte muévete muÉvete
   ve id idos voy vaya
   marchar marcha marchad marcho marche
-  }synonyms
+  ;aliases
 
 : abrir  ['] do-open action!  ;
-' abrir synonyms{  abre abrid abro abra  }synonyms
+' abrir aliases:  abre abrid abro abra  ;aliases
 : abrirlo  abrir éste  ;
-' abrirlo synonyms{ ábrelo Ábrelo abridlo ábrolo Ábrolo ábralo Ábralo }synonyms
+' abrirlo aliases: ábrelo Ábrelo abridlo ábrolo Ábrolo ábralo Ábralo ;aliases
 : abrirla  abrir ésta  ;
-' abrirla synonyms{ ábrela Ábrela abridla ábrola Ábrola ábrala Ábrala }synonyms
+' abrirla aliases: ábrela Ábrela abridla ábrola Ábrola ábrala Ábrala ;aliases
 : abrirlos  abrir éstos  ;
-' abrirlos synonyms{ ábrelos Ábrelos abridlos ábrolos Ábrolos ábralos Ábralos }synonyms
+' abrirlos aliases: ábrelos Ábrelos abridlos ábrolos Ábrolos ábralos Ábralos ;aliases
 : abrirlas  abrir éstas  ;
-' abrirlas synonyms{ ábrelas Ábrelas abridlas ábrolas Ábrolas ábralas Ábralas }synonyms
+' abrirlas aliases: ábrelas Ábrelas abridlas ábrolas Ábrolas ábralas Ábralas ;aliases
 
 : cerrar  ['] do-close action!  ;
-' cerrar synonyms{  cierra cerrad cierro }synonyms
+' cerrar aliases:  cierra cerrad cierro ;aliases
 : cerrarlo  cerrar éste  ;
-' cerrarlo synonyms{  ciérralo ciÉrralo cerradlo ciérrolo ciÉrrolo ciérrelo ciÉrrelo }synonyms
+' cerrarlo aliases:  ciérralo ciÉrralo cerradlo ciérrolo ciÉrrolo ciérrelo ciÉrrelo ;aliases
 : cerrarla  cerrar ésta  ;
-' cerrarla synonyms{  ciérrala ciÉrrala cerradla ciérrola ciÉrrola ciérrela ciÉrrela }synonyms
+' cerrarla aliases:  ciérrala ciÉrrala cerradla ciérrola ciÉrrola ciérrela ciÉrrela ;aliases
 : cerrarlos  cerrar éstos  ;
-' cerrarlos synonyms{  ciérralos ciÉrralos cerradlos ciérrolos ciÉrrolos ciérrelos ciÉrrelos }synonyms
+' cerrarlos aliases:  ciérralos ciÉrralos cerradlos ciérrolos ciÉrrolos ciérrelos ciÉrrelos ;aliases
 : cerrarlas  cerrar éstas  ;
-' cerrarlas synonyms{  ciérralas ciÉrralas cerradlas ciérrolas ciÉrrolas ciérrelas ciÉrrelas }synonyms
+' cerrarlas aliases:  ciérralas ciÉrralas cerradlas ciérrolas ciÉrrolas ciérrelas ciÉrrelas ;aliases
 
 : coger  ['] do-take action!  ;
-' coger synonyms{
+' coger aliases:
   coge coged cojo coja
   agarrar agarra agarrad agarro agarre
   recoger recoge recoged recojo recoja
-  }synonyms
+  ;aliases
 : cogerlo  coger éste  ;
-' cogerlo synonyms{
+' cogerlo aliases:
   cógelo cÓgelo cogedlo cójolo cÓjolo cójalo cÓjalo
   agarrarlo agárralo agÁrralo agarradlo agárrolo agÁrrolo agárrelo agÁrrelo
   recogerlo recógelo recÓgelo recogedlo recójolo recÓjolo recójalo recÓjalo
-  }synonyms
+  ;aliases
 : cogerla  coger éste  ;
-' cogerla synonyms{
+' cogerla aliases:
   cógela cÓgela cogedla cójola cÓjola cójala cÓjala
   agarrarla agárrala agÁrrala agarradla agárrola agÁrrola agárrela agÁrrela
   recogerla recógela recÓgela recogedla recójola recÓjola recójala recÓjala
-  }synonyms
+  ;aliases
 : cogerlos  coger éstos  ;
-' cogerlos synonyms{
+' cogerlos aliases:
   cógelos cÓgelos cogedlos cójolos cÓjolos cójalos cÓjalos
   agarrarlos agárralos agÁrralos agarradlos agárrolos agÁrrolos agárrelos agÁrrelos
   recogerlos recógelos recÓgelos recogedlos recójolos recÓjolos recójalos recÓjalos
-  }synonyms
+  ;aliases
 : cogerlas  coger éstas  ;
-' cogerlas synonyms{
+' cogerlas aliases:
   cógelas cÓgelas cogedlas cójolas cÓjolas cójalas cÓjalas
   agarrarlas agárralas agÁrralas agarradlas agárrolas agÁrrolas agárrelas agÁrrelas
   recogerlas recógelas recÓgelas recogedlas recójolas recÓjolas recójalas recÓjalas
-  }synonyms
+  ;aliases
 
 : tomar  ['] do-take|do-eat action!  ; \ XXX TODO -- unfinished
-' tomar  synonyms{
+' tomar  aliases:
   toma tomad tomo tome
-  }synonyms
+  ;aliases
 : tomarlo  tomar éste  ;
-' tomarlo synonyms{ tómalo tÓmalo tomadlo tómolo tÓmolo tómelo tÓmelo }synonyms
+' tomarlo aliases: tómalo tÓmalo tomadlo tómolo tÓmolo tómelo tÓmelo ;aliases
 
 : dejar  ['] do-drop action!  ;
-' dejar synonyms{
+' dejar aliases:
   deja dejad dejo deje
   soltar suelta soltad suelto suelte
   tirar tira tirad tiro tire
-  }synonyms
+  ;aliases
 : dejarlo  dejar éste  ;
-' dejarlo synonyms{
+' dejarlo aliases:
   déjalo dÉjalo dejadlo déjolo dÉjolo déjelo dÉjelo
   soltarlo suéltalo suÉltalo soltadlo suéltolo suÉltolo suéltelo suÉltelo
   tirarlo tíralo tÍralo tiradlo tírolo tÍrolo tírelo tÍrelo
-  }synonyms
+  ;aliases
 : dejarlos  dejar éstos  ;
-' dejarlos synonyms{
+' dejarlos aliases:
   déjalos dÉjalos dejadlos déjolos dÉjolos déjelos dÉjelos
   soltarlos suéltalos suÉltalos soltadlos suéltolos suÉltolos suéltelos suÉltelos
   tirarlos tíralos tÍralos tiradlos tírolos tÍrolos tírelos tÍrelos
-  }synonyms
+  ;aliases
 : dejarla  dejar ésta  ;
-' dejarla synonyms{
+' dejarla aliases:
   déjala dÉjala dejadla déjola dÉjola déjela dÉjela
   soltarla suéltala suÉltala soltadla suéltola suÉltola suéltela suÉltela
   tirarla tírala tÍrala tiradla tírola tÍrola tírela tÍrela
-  }synonyms
+  ;aliases
 : dejarlas  dejar éstas  ;
-' dejarlas synonyms{
+' dejarlas aliases:
   déjalas dÉjalas dejadlas déjolas dÉjolas déjelas dÉjelas
   soltarlas suéltalas suÉltalas soltadlas suéltolas suÉltolas suéltelas suÉltelas
   tirarlas tíralas tÍralas tiradlas tírolas tÍrolas tírelas tÍrelas
-  }synonyms
+  ;aliases
 
 : mirar  ['] do-look action!  ;
-' mirar synonyms{
+' mirar aliases:
   m mira mirad miro mire
   contemplar contempla contemplad contemplo contemple
   observar observa observad observo observe
-  }synonyms
+  ;aliases
 : mirarlo  mirar éste  ;
-' mirarlo synonyms{
+' mirarlo aliases:
   míralo mÍralo miradlo mírolo mÍrolo mírelo mÍrelo
   contemplarlo contémplalo contÉmplalo contempladlo contémplolo contÉmplolo contémplelo contÉmplelo
   observarlo obsérvalo obsÉrvalo observadlo obsérvolo obsÉrvolo obsérvelo obsÉrvelo
-  }synonyms
+  ;aliases
 : mirarla  mirar ésta  ;
-' mirarla synonyms{
+' mirarla aliases:
   mírala mÍrala miradla mírola mÍrola mírela mÍrela
   contemplarla contémplala contÉmplala contempladla contémplola contÉmplola contémplela contÉmplela
   observarla obsérvala obsÉrvala observadla obsérvola obsÉrvola obsérvela obsÉrvela
-  }synonyms
+  ;aliases
 : mirarlos  mirar éstos  ;
-' mirarlos synonyms{
+' mirarlos aliases:
   míralos mÍralos miradlos mírolos mÍrolos mírelos mÍrelos
   contemplarlos contémplalos contÉmplalos contempladlos contémplolos contÉmplolos contémplelos contÉmplelos
   observarlos obsérvalos obsÉrvalos observadlos obsérvolos obsÉrvolos obsérvelos obsÉrvelos
-  }synonyms
+  ;aliases
 : mirarlas  mirar éstas  ;
-' mirarlas synonyms{
+' mirarlas aliases:
   míralas mÍralas miradlas mírolas mÍrolas mírelas mÍrelas
   contemplarlas contémplalas contÉmplalas contempladlas contémplolas contÉmplolas contémplelas contÉmplelas
   observarlas obsérvalas obsÉrvalas observadlas obsérvolas obsÉrvolas obsérvelas obsÉrvelas
-  }synonyms
+  ;aliases
 
 : mirarse  ['] do-look-yourself action!  ;
-' mirarse synonyms{
+' mirarse aliases:
   mírese mÍrese miraos
   mirarte mírate mÍrate mírote mÍrote mírete mÍrete
   mirarme mírame mÍrame miradme mírome mÍrome míreme mÍreme
@@ -11837,93 +11750,93 @@ o sustantivos.
   observarse obsérvese obsÉrvese observaos
   observarte obsérvate obsÉrvate obsérvote obsÉrvote obsérvete obsÉrvete
   observarme obsérvame obsÉrvame observadme obsérvome obsÉrvome obsérveme obsÉrveme
-  }synonyms
+  ;aliases
 
 : otear  ['] do-look-to-direction action!  ;
-' otear synonyms{ oteo otea otead otee }synonyms
+' otear aliases: oteo otea otead otee ;aliases
 
 : x  ['] do-exits action!  ;
 : salida  ['] do-exits (exits) action|complement!  ;
-' salida synonyms{  salidas  }synonyms
+' salida aliases:  salidas  ;aliases
 
 : examinar  ['] do-examine action!  ;
-' examinar synonyms{ ex examina examinad examino examine  }synonyms
+' examinar aliases: ex examina examinad examino examine  ;aliases
 : examinarlo  examinar éste  ;
-' examinarlo synonyms{ examínalo examÍnalo examinadlo examínolo examÍnolo examínelo examÍnelo  }synonyms
+' examinarlo aliases: examínalo examÍnalo examinadlo examínolo examÍnolo examínelo examÍnelo  ;aliases
 : examinarlos  examinar éstos  ;
-' examinarlos synonyms{ examínalos examÍnalos examinadlos examínolos examÍnolos examínelos examÍnelos  }synonyms
+' examinarlos aliases: examínalos examÍnalos examinadlos examínolos examÍnolos examínelos examÍnelos  ;aliases
 : examinarla  examinar ésta  ;
-' examinarla synonyms{ examínala examÍnala examinadla examínola examÍnola examínela examÍnela  }synonyms
+' examinarla aliases: examínala examÍnala examinadla examínola examÍnola examínela examÍnela  ;aliases
 : examinarlas  examinar éstas  ;
-' examinarlas synonyms{ examínalas examÍnalas examinadlas examínolas examÍnolas examínelas examÍnelas  }synonyms
+' examinarlas aliases: examínalas examÍnalas examinadlas examínolas examÍnolas examínelas examÍnelas  ;aliases
 
 : examinarse  ['] do-examine action! protagonist% complement!  ;
-' examinarse synonyms{
+' examinarse aliases:
   examínese examÍnese examinaos
   examinarte examínate examÍnate examínete examÍnete
   examinarme examíname examÍname examinadme examínome examÍnome examíneme examÍneme
-  }synonyms
+  ;aliases
 
 : registrar  ['] do-search action!  ;
-' registrar synonyms{  registra registrad registro registre  }synonyms
+' registrar aliases:  registra registrad registro registre  ;aliases
 : registrarlo  registrar éste  ;
-' registrarlo synonyms{ regístralo regÍstralo registradlo regístrolo regÍstrolo regístrelo regÍstrelo  }synonyms
+' registrarlo aliases: regístralo regÍstralo registradlo regístrolo regÍstrolo regístrelo regÍstrelo  ;aliases
 : registrarla  registrar ésta  ;
-' registrarla synonyms{ regístrala regÍstrala registradla regístrola regÍstrola regístrela regÍstrela  }synonyms
+' registrarla aliases: regístrala regÍstrala registradla regístrola regÍstrola regístrela regÍstrela  ;aliases
 : registrarlos  registrar éstos  ;
-' registrarlos synonyms{ regístralos regÍstralos registradlos regístrolos regÍstrolos regístrelos regÍstrelos  }synonyms
+' registrarlos aliases: regístralos regÍstralos registradlos regístrolos regÍstrolos regístrelos regÍstrelos  ;aliases
 : registrarlas  registrar éstas  ;
-' registrarlas synonyms{ regístralas regÍstralas registradlas regístrolas regÍstrolas regístrelas regÍstrelas  }synonyms
+' registrarlas aliases: regístralas regÍstralas registradlas regístrolas regÍstrolas regístrelas regÍstrelas  ;aliases
 
 : i  ['] do-inventory inventory% action|complement!  ;
-' i synonyms{  inventario  }synonyms
+' i aliases:  inventario  ;aliases
 : inventariar  ['] do-inventory action!  ;
-' inventariar synonyms{
+' inventariar aliases:
   inventaría inventarÍa inventariad inventarío inventarÍo inventaríe inventarÍe
   registrarse regístrase regÍstrase regístrese regÍstrese
   registrarme regístrame regÍstrame registradme regístrome regÍstrome regístreme regÍstreme
   registrarte regístrate regÍstrate regístrote regÍstrote regístrete regÍstrete
-  }synonyms
+  ;aliases
 
 : hacer  ['] do-do action!  ;
-' hacer synonyms{  haz haced hago haga  }synonyms
+' hacer aliases:  haz haced hago haga  ;aliases
 : hacerlo  hacer éste  ;
-' hacerlo synonyms{  hazlo hacedlo hágolo hÁgolo hágalo hÁgalo  }synonyms
+' hacerlo aliases:  hazlo hacedlo hágolo hÁgolo hágalo hÁgalo  ;aliases
 : hacerla  hacer ésta  ;
-' hacerla synonyms{  hazla hacedla hágola hÁgola hágala hÁgala  }synonyms
+' hacerla aliases:  hazla hacedla hágola hÁgola hágala hÁgala  ;aliases
 : hacerlos  hacer éstos  ;
-' hacerlos synonyms{  hazlos hacedlos hágolos hÁgolos hágalos hÁgalos  }synonyms
+' hacerlos aliases:  hazlos hacedlos hágolos hÁgolos hágalos hÁgalos  ;aliases
 : hacerlas  hacer éstas  ;
-' hacerlas synonyms{  hazlas hacedlas hágolas hÁgolas hágalas hÁgalas  }synonyms
+' hacerlas aliases:  hazlas hacedlas hágolas hÁgolas hágalas hÁgalas  ;aliases
 
 : fabricar  ['] do-make action!  ;
-' fabricar synonyms{
+' fabricar aliases:
   fabrica fabricad fabrico fabrique
   construir construid construye construyo construya
-  }synonyms
+  ;aliases
 : fabricarlo  fabricar éste  ;
-' fabricarlo synonyms{
+' fabricarlo aliases:
   fabrícalo fabrÍcalo fabricadlo fabrícolo fabrÍcolo fabríquelo fabrÍquelo
   construirlo constrúyelo constrÚyelo construidlo constrúyolo constrÚyolo constrúyalo constrÚyalo
-  }synonyms
+  ;aliases
 : fabricarla  fabricar éste  ;
-' fabricarla synonyms{
+' fabricarla aliases:
   fabrícala fabrÍcala fabricadla fabrícola fabrÍcola fabríquela fabrÍquela
   construirla constrúyela constrÚyela construidla constrúyola constrÚyola constrúyala constrÚyala
-  }synonyms
+  ;aliases
 : fabricarlos  fabricar éste  ;
-' fabricarlos synonyms{
+' fabricarlos aliases:
   fabrícalos fabrÍcalos fabricadlos fabrícolos fabrÍcolos fabríquelos fabrÍquelos
   construirlos constrúyelos constrÚyelos construidlos constrúyolos constrÚyolos constrúyalos constrÚyalos
-  }synonyms
+  ;aliases
 : fabricarlas  fabricar éste  ;
-' fabricarlas synonyms{
+' fabricarlas aliases:
   fabrícalas fabrÍcalas fabricadlas fabrícolas fabrÍcolas fabríquelas fabrÍquelas
   construirlas constrúyelas constrÚyelas construidlas constrúyolas constrÚyolas constrúyalas constrÚyalas
-  }synonyms
+  ;aliases
 
 : nadar  ['] do-swim action!  ;
-' nadar synonyms{
+' nadar aliases:
   nada nado nade
   bucear bucea bucead buceo bucee
   sumergirse sumérgese sumÉrgese sumérjase sumÉrjase
@@ -11935,51 +11848,51 @@ o sustantivos.
   bañarse baÑarse báñase bÁñase báÑase bÁÑase báñese bÁñese báÑese bÁÑese
   bañarme baÑarme báñame bÁñame báÑame bÁÑame báñome bÁñome báÑome bÁÑome báñeme bÁñeme báÑeme bÁÑeme
   bañarte báñate bÁñate báÑate bÁÑate bañaos baÑaos báñote bÁñote báÑote bÁÑote báñete bÁñete báÑete bÁÑete
-  }synonyms
+  ;aliases
 
 : quitarse  ['] do-take-off action!  ;
-' quitarse synonyms{
+' quitarse aliases:
   quítase quÍtase quitaos quítese quÍtese
   quitarte quítate quÍtate quítote quÍtote quítete quÍtete
   quitarme quítame quÍtame quítome quÍtome quíteme quÍteme
-  }synonyms
+  ;aliases
 : quitárselo  quitarse éste  ;
-' quitárselo synonyms{
+' quitárselo aliases:
   quitÁrselo
   quitártelo quitÁrtelo quitáoslo quitÁoslo quíteselo quÍteselo
   quitármelo quitÁrmelo quítamelo quÍtamelo quítomelo quÍtomelo quítemelo quÍtemelo
-  }synonyms
+  ;aliases
 : quitársela  quitarse ésta  ;
-' quitársela synonyms{
+' quitársela aliases:
   quitÁrsela
   quitártela quitÁrtela quitáosla quitÁosla quítesela quÍtesela
   quitármela quitÁrmela quítamela quÍtamela quítomela quÍtomela quítemela quÍtemela
-  }synonyms
+  ;aliases
 : quitárselos  quitarse éstos  ;
-' quitárselos synonyms{
+' quitárselos aliases:
   quitÁrselos
   quitártelos quitÁrtelos quitáoslos quitÁoslos quíteselos quÍteselos
   quitármelos quitÁrmelos quítamelos quÍtamelos quítomelos quÍtomelos quítemelos quÍtemelos
-  }synonyms
+  ;aliases
 : quitárselas  quitarse éstas  ;
-' quitárselas synonyms{
+' quitárselas aliases:
   quitÁrselas
   quitártelas quitÁrtelas quitáoslas quitÁoslas quíteselas quÍteselas
   quitármelas quitÁrmelas quítamelas quÍtamelas quítomelas quÍtomelas quítemelas quÍtemelas
-  }synonyms
+  ;aliases
 
 : ponerse  ['] do-put-on action!  ;
-' ponerse synonyms{
+' ponerse aliases:
   póngase pÓngase poneos
   ponerme ponme póngome pÓngome póngame pÓngame
   ponerte ponte póngote pÓngote póngate pÓngate
   colocarse colocaos colóquese colÓquese
   colocarte colócate colÓcate colóquete colÓquete
   colocarme colócame colÓcame colócome colÓcome colóqueme colÓqueme
-  }synonyms
+  ;aliases
 \ XXX TODO -- crear acción. vestir [con], parte como sinónimo y parte independiente
 : ponérselo  ponerse éste  ;
-' ponérselo synonyms{
+' ponérselo aliases:
   ponÉrselo
   póngaselo pÓngaselo ponéoslo ponÉoslo
   ponérmelo ponÉrmelo pónmelo pÓnmelo póngomelo pÓngomelo póngamelo pÓngamelo
@@ -11987,9 +11900,9 @@ o sustantivos.
   colocórselo colocÓrselo colocáoslo colocÁoslo colóqueselo colÓqueselo
   colocártelo colocÁrtelo colócatelo colÓcatelo colóquetelo colÓquetelo
   colocármelo colocÁrmelo colócamelo colÓcamelo colócomelo colÓcomelo colóquemelo colÓquemelo
-  }synonyms
+  ;aliases
 : ponérsela  ponerse ésta  ;
-' ponérsela synonyms{
+' ponérsela aliases:
   ponÉrsela
   póngasela pÓngasela ponéosla ponÉosla
   ponérmela ponÉrmela pónmela pÓnmela póngomela pÓngomela póngamela pÓngamela
@@ -11997,9 +11910,9 @@ o sustantivos.
   colocórsela colocÓrsela colocáosla colocÁosla colóquesela colÓquesela
   colocártela colocÁrtela colócatela colÓcatela colóquetela colÓquetela
   colocármela colocÁrmela colócamela colÓcamela colócomela colÓcomela colóquemela colÓquemela
-  }synonyms
+  ;aliases
 : ponérselos  ponerse éstos  ;
-' ponérselos synonyms{
+' ponérselos aliases:
   ponÉrselos
   póngaselos pÓngaselos ponéoslos ponÉoslos
   ponérmelos ponÉrmelos pónmelos pÓnmelos póngomelos pÓngomelos póngamelos pÓngamelos
@@ -12007,9 +11920,9 @@ o sustantivos.
   colocórselos colocÓrselos colocáoslos colocÁoslos colóqueselos colÓqueselos
   colocártelos colocÁrtelos colócatelos colÓcatelos colóquetelos colÓquetelos
   colocármelos colocÁrmelos colócamelos colÓcamelos colócomelos colÓcomelos colóquemelos colÓquemelos
-  }synonyms
+  ;aliases
 : ponérselas  ponerse éstas  ;
-' ponérselas synonyms{
+' ponérselas aliases:
   ponÉrselas
   póngaselas pÓngaselas ponéoslas ponÉoslas
   ponérmelas ponÉrmelas pónmelas pÓnmelas póngomelas pÓngomelas póngamelas pÓngamelas
@@ -12017,215 +11930,215 @@ o sustantivos.
   colocórselas colocÓrselas colocáoslas colocÁoslas colóqueselas colÓqueselas
   colocártelas colocÁrtelas colócatelas colÓcatelas colóquetelas colÓquetelas
   colocármelas colocÁrmelas colócamelas colÓcamelas colócomelas colÓcomelas colóquemelas colÓquemelas
-  }synonyms
+  ;aliases
 
 : matar  ['] do-kill action!  ;
-' matar synonyms{
+' matar aliases:
   mata matad mato mate
   asesinar asesina asesinad asesino asesine
   aniquilar aniquila aniquilad aniquilo aniquile
-  }synonyms
+  ;aliases
 : matarlo  matar éste  ;
-' matarlo synonyms{
+' matarlo aliases:
   mátalo mÁtalo matadlo mátolo mÁtolo mátelo mÁtelo
   asesinarlo asesínalo asesÍnalo asesinadlo asesínolo asesÍnolo asesínelo asesÍnelo
   aniquilarlo aniquínalo aniquÍnalo aniquinadlo aniquínolo aniquÍnolo aniquínelo aniquÍnelo
-  }synonyms
+  ;aliases
 : matarla  matar ésta  ;
-' matarla synonyms{
+' matarla aliases:
   mátala mÁtala matadla mátola mÁtola mátela mÁtela
   asesinarla asesínala asesÍnala asesinadla asesínola asesÍnola asesínela asesÍnela
   aniquilarla aniquínala aniquÍnala aniquinadla aniquínola aniquÍnola aniquínela aniquÍnela
-  }synonyms
+  ;aliases
 : matarlos  matar éstos  ;
-' matarlos synonyms{
+' matarlos aliases:
   mátalos mÁtalos matadlos mátolos mÁtolos mátelos mÁtelos
   asesinarlos asesínalos asesÍnalos asesinadlos asesínolos asesÍnolos asesínelos asesÍnelos
   aniquilarlos aniquínalos aniquÍnalos aniquinadlos aniquínolos aniquÍnolos aniquínelos aniquÍnelos
-  }synonyms
+  ;aliases
 : matarlas  matar éstas  ;
-' matarlas synonyms{
+' matarlas aliases:
   mátalas mÁtalas matadlas mátolas mÁtolas mátelas mÁtelas
   asesinarlas asesínalas asesÍnalas asesinadlas asesínolas asesÍnolas asesínelas asesÍnelas
   aniquilarlas aniquínalas aniquÍnalas aniquinadlas aniquínolas aniquÍnolas aniquínelas aniquÍnelas
-  }synonyms
+  ;aliases
 
 : golpear  ['] do-hit action!  ;
-' golpear synonyms{
+' golpear aliases:
   golpea golpead golpeo golpee
   sacudir sacude sacudid sacudo sacuda
-  }synonyms
+  ;aliases
 : golpearla  golpear ésta  ;
-' golpearla synonyms{
+' golpearla aliases:
   golpéala golpÉala golpeadla golpéola golpÉola golpéela golpÉela
   sacudirla sacúdela sacÚdela sacudidla sacúdola sacÚdola sacúdala sacÚdala
-  }synonyms
+  ;aliases
 : golpearlos  golpear éstos  ;
-' golpearlos synonyms{
+' golpearlos aliases:
   golpéalos golpÉalos golpeadlos golpéolos golpÉolos golpéelos golpÉelos
   sacudirlos sacúdelos sacÚdelos sacudidlos sacúdolos sacÚdolos sacúdalos sacÚdalos
-  }synonyms
+  ;aliases
 : golpearlas  golpear éstas  ;
-' golpearlas synonyms{
+' golpearlas aliases:
   golpéalas golpÉalas golpeadlas golpéolas golpÉolas golpéelas golpÉelas
   sacudirlas sacúdelas sacÚdelas sacudidlas sacúdolas sacÚdolas sacúdalas sacÚdalas
-  }synonyms
+  ;aliases
 
 : atacar  ['] do-attack action!  ;
-' atacar synonyms{
+' atacar aliases:
   ataca atacad ataco ataque
   agredir agrede agredid agredo agreda
-  }synonyms
+  ;aliases
 : atacarlo  atacar éste  ;
-' atacarlo synonyms{
+' atacarlo aliases:
   atácalo atÁcalo atacadlo atácolo atÁcolo atáquelo atÁquelo
   agredirlo agrédelo agrÉdelo agredidlo agrédolo agrÉdolo agrédalo agrÉdalo
-  }synonyms
+  ;aliases
 : atacarla  atacar ésta  ;
-' atacarla synonyms{
+' atacarla aliases:
   atácala atÁcala atacadla atácola atÁcola atáquela atÁquela
   agredirla agrédela agrÉdela agredidla agrédola agrÉdola agrédala agrÉdala
-  }synonyms
+  ;aliases
 : atacarlos  atacar éstos  ;
-' atacarlos synonyms{
+' atacarlos aliases:
   atácalos atÁcalos atacadlos atácolos atÁcolos atáquelos atÁquelos
   agredirlos agrédelos agrÉdelos agredidlos agrédolos agrÉdolos agrédalos agrÉdalos
-  }synonyms
+  ;aliases
 : atacarlas  atacar éstas  ;
-' atacarlas synonyms{
+' atacarlas aliases:
   atácalas atÁcalas atacadlas atácolas atÁcolas atáquelas atÁquelas
   agredirlas agrédelas agrÉdelas agredidlas agrédolas agrÉdolas agrédalas agrÉdalas
-  }synonyms
+  ;aliases
 
 : romper  ['] do-break action!  ;
-' romper synonyms{
+' romper aliases:
   rompe romped rompo rompa
   despedazar despedaza despedazad despedazo despedace
   destrozar destroza destrozad destrozo destroce
   dividir divide dividid divido divida
   cortar corta cortad corto corte
-  }synonyms
+  ;aliases
 : romperlo  romper éste  ;
-' romperlo synonyms{
+' romperlo aliases:
   rómpelo rÓmpelo rompedlo rómpolo rÓmpolo rómpalo rÓmpalo
   despedazarlo despedazalo despedazadlo despedázolo despedÁzolo despedácelo despedÁcelo
   destrozarlo destrázalo destrÁzalo destrozadlo destrózolo destrÓzolo destrócelo destrÓcelo
   dividirlo divídelo divÍdelo divididlo divídolo divÍdolo divídalo divÍdalo
   cortarlo cortalo cortadlo córtolo cÓrtolo córtelo cÓrtelo
-  }synonyms
+  ;aliases
 : romperla  romper ésta  ;
-' romperla synonyms{
+' romperla aliases:
   rómpela rÓmpela rompedla rómpola rÓmpola rómpala rÓmpala
   despedazarla despedazala despedazadla despedázola despedÁzola despedácela despedÁcela
   destrozarla destrázala destrÁzala destrozadla destrózola destrÓzola destrócela destrÓcela
   dividirla divídela divÍdela divididla divídola divÍdola divídala divÍdala
   cortarla córtala cÓrtala cortadla córtola cÓrtola córtela cÓrtela
-  }synonyms
+  ;aliases
 : romperlos  romper éstos  ;
-' romperlos synonyms{
+' romperlos aliases:
   rómpelos rÓmpelos rompedlos rómpolos rÓmpolos rómpalos rÓmpalos
   despedazarlos despedazalos despedazadlos despedázolos despedÁzolos despedácelos despedÁcelos
   destrozarlos destrázalos destrÁzalos destrozadlos destrózolos destrÓzolos destrócelos destrÓcelos
   dividirlos divídelos divÍdelos divididlos divídolos divÍdolos divídalos divÍdalos
   cortarlos córtalos cÓrtalos cortadlos córtolos cÓrtolos córtelos cÓrtelos
-  }synonyms
+  ;aliases
 : romperlas  romper éstas  ;
-' romperlas synonyms{
+' romperlas aliases:
   rómpelas rÓmpelas rompedlas rómpolas rÓmpolas rómpalas rÓmpalas
   despedazarlas despedazalas despedazadlas despedázolas despedÁzolas despedácelas despedÁcelas
   destrozarlas destrázalas destrÁzalas destrozadlas destrózolas destrÓzolas destrócelas destrÓcelas
   dividirlas divídelas divÍdelas divididlas divídolas divÍdolas divídalas divÍdalas
   cortarlas córtalas cÓrtalas cortadlas córtolas cÓrtolas córtelas cÓrtelas
-  }synonyms
+  ;aliases
 
 \ quebrar \ XXX TODO
 \ desgarrar \ XXX TODO
 
 : asustar  ['] do-frighten action!  ;
-' asustar synonyms{
+' asustar aliases:
   asusto asusta asustad asuste
   amedrentar amedrento amedrenta amedrentad amedrente
   acojonar acojono acojona acojonad acojone
   atemorizar atemoriza atemorizad atemorizo atemorice
-  }synonyms
+  ;aliases
 : asustarlo  asustar éste  ;
-' asustarlo synonyms{
+' asustarlo aliases:
   asústolo asÚstolo asústalo asÚstalo asustadlo asústelo asÚstelo
   amedrentarlo amedréntolo amedrÉntolo amedréntalo amedrÉntalo amedrentadlo amedréntelo amedrÉntelo
   acojonarlo acojónolo acojÓnolo acojónalo acojÓnalo acojonadlo acojónelo acojÓnelo
   atemorizarlo atemorízalo atemorÍzalo atemorizadlo atemorízolo atemorÍzolo atemorícelo atemorÍcelo
-  }synonyms
+  ;aliases
 : asustarla  asustar ésta  ;
-' asustarla synonyms{
+' asustarla aliases:
   asústola asÚstola asústala asÚstala asustadla asústela asÚstela
   amedrentarla amedréntola amedrÉntola amedréntala amedrÉntala amedrentadla amedréntela amedrÉntela
   acojonarla acojónola acojÓnola acojónala acojÓnala acojonadla acojónela acojÓnela
   atemorizarla atemorízala atemorÍzala atemorizadla atemorízola atemorÍzola atemorícela atemorÍcela
-  }synonyms
+  ;aliases
 : asustarlos  asustar éstos  ;
-' asustarlos synonyms{
+' asustarlos aliases:
   asústolos asÚstolos asústalos asÚstalos asustadlos asústelos asÚstelos
   amedrentarlos amedréntolos amedrÉntolos amedréntalos amedrÉntalos amedrentadlos amedréntelos amedrÉntelos
   acojonarlos acojónolos acojÓnolos acojónalos acojÓnalos acojonadlos acojónelos acojÓnelos
   atemorizarlos atemorízalos atemorÍzalos atemorizadlos atemorízolos atemorÍzolos atemorícelos atemorÍcelos
-  }synonyms
+  ;aliases
 : asustarlas  asustar éstas  ;
-' asustarlas synonyms{
+' asustarlas aliases:
   asústolas asÚstolas asústalas asÚstalas asustadlas asústelas asÚstelas
   amedrentarlas amedréntolas amedrÉntolas amedréntalas amedrÉntalas amedrentadlas amedréntelas amedrÉntelas
   acojonarlas acojónolas acojÓnolas acojónalas acojÓnalas acojonadlas acojónelas acojÓnelas
   atemorizarlas atemorízalas atemorÍzalas atemorizadlas atemorízolas atemorÍzolas atemorícelas atemorÍcelas
-  }synonyms
+  ;aliases
 
 : afilar  ['] do-sharpen action!  ;
-' afilar synonyms{  afila afilad afilo afile  }synonyms
+' afilar aliases:  afila afilad afilo afile  ;aliases
 : afilarlo  afilar éste  ;
-' afilarlo synonyms{  afílalo afÍlalo afiladlo afílolo afÍlolo afílelo afÍlelo  }synonyms
+' afilarlo aliases:  afílalo afÍlalo afiladlo afílolo afÍlolo afílelo afÍlelo  ;aliases
 : afilarla  afilar ésta  ;
-' afilarla synonyms{  afílala afÍlala afiladla afílola afÍlola afílela afÍlela  }synonyms
+' afilarla aliases:  afílala afÍlala afiladla afílola afÍlola afílela afÍlela  ;aliases
 : afilarlos  afilar éstos  ;
-' afilarlos synonyms{  afílalos afÍlalos afiladlos afílolos afÍlolos afílelos afÍlelos  }synonyms
+' afilarlos aliases:  afílalos afÍlalos afiladlos afílolos afÍlolos afílelos afÍlelos  ;aliases
 : afilarlas  afilar éstas  ;
-' afilarlas synonyms{  afílalas afÍlalas afiladlas afílolas afÍlolas afílelas afÍlelas  }synonyms
+' afilarlas aliases:  afílalas afÍlalas afiladlas afílolas afÍlolas afílelas afÍlelas  ;aliases
 
 : partir  ['] do-go|do-break action!  ;
-' partir synonyms{  parto partid parta  }synonyms
+' partir aliases:  parto partid parta  ;aliases
 \ «parte» está en la sección final de ambigüedades
 : partirlo  partir éste  ;
-' partirlo synonyms{  pártelo pÁrtelo pártolo pÁrtolo partidlo pártalo pÁrtalo  }synonyms
+' partirlo aliases:  pártelo pÁrtelo pártolo pÁrtolo partidlo pártalo pÁrtalo  ;aliases
 : partirla  partir ésta  ;
-' partirla synonyms{  pártela pÁrtela pártola pÁrtola partidla pártala pÁrtala  }synonyms
+' partirla aliases:  pártela pÁrtela pártola pÁrtola partidla pártala pÁrtala  ;aliases
 : partirlos  partir éstos  ;
-' partirlos synonyms{  pártelos pÁrtelos pártolos pÁrtolos partidlos pártalos pÁrtalos  }synonyms
+' partirlos aliases:  pártelos pÁrtelos pártolos pÁrtolos partidlos pártalos pÁrtalos  ;aliases
 : partirlas  partir éstas  ;
-' partirlas synonyms{  pártelas pÁrtelas pártolas pÁrtolas partidlas pártalas pÁrtalas  }synonyms
+' partirlas aliases:  pártelas pÁrtelas pártolas pÁrtolas partidlas pártalas pÁrtalas  ;aliases
 
-: esperar  ;  \ XXX TODO 
+: esperar  ;  \ XXX TODO
 
-' esperar synonyms{
+' esperar aliases:
   z espera esperad espero espere
   aguardar aguarda aguardad aguardo aguarde
-  }synonyms
+  ;aliases
 : esperarlo  esperar éste  ;
-' esperarlo synonyms{
+' esperarlo aliases:
   esperadlo espérolo espÉrolo espérelo espÉrelo
   aguardarlo aguárdalo aguÁrdalo aguardadlo aguárdolo aguÁrdolo aguárdelo aguÁrdelo
-  }synonyms
+  ;aliases
 : esperarla  esperar ésta  ;
-' esperarla synonyms{
+' esperarla aliases:
   esperadla espérola espÉrola espérela espÉrela
   aguardarla aguárdala aguÁrdala aguardadla aguárdola aguÁrdola aguárdela aguÁrdela
-  }synonyms
+  ;aliases
 : esperarlos  esperar éstos  ;
-' esperarlos synonyms{
+' esperarlos aliases:
   esperadlos espérolos espÉrolos espérelos espÉrelos
   aguardarlos aguárdalos aguÁrdalos aguardadlos aguárdolos aguÁrdolos aguárdelos aguÁrdelos
-  }synonyms
+  ;aliases
 : esperarlas  esperar éstas  ;
-' esperarlas synonyms{
+' esperarlas aliases:
   esperadlas espérolas espÉrolas espérelas espÉrelas
   aguardarlas aguárdalas aguÁrdalas aguardadlas aguárdolas aguÁrdolas aguárdelas aguÁrdelas
-  }synonyms
+  ;aliases
 
 \ XXX TODO:
 \ meter introducir insertar colar encerrar
@@ -12233,24 +12146,24 @@ o sustantivos.
 : ulfius  ulfius% complement!  ;
 : ambrosio  (ambrosio) complement!  ;
 : hombre  (man) complement!  ;
-' hombre synonyms{  señor seÑor tipo individuo persona  }synonyms
+' hombre aliases:  señor seÑor tipo individuo persona  ;aliases
 : hombres  (men) complement!  ;
-' hombres synonyms{ gente personas }synonyms
+' hombres aliases: gente personas ;aliases
 \ XXX Ambigüedad.:
 \ «jefe» podría ser también el jefe de los enemigos durante la batalla:
 : jefe  leader% complement!  ;
-' jefe synonyms{
+' jefe aliases:
   líder lÍder viejo anciano abuelo
-  }synonyms
+  ;aliases
 : soldados  soldiers% complement!  ;
-' soldados synonyms{
+' soldados aliases:
   guerreros luchadores combatientes camaradas
   compañeros compaÑeros oficiales suboficiales militares
   guerrero luchador combatiente camarada
   compañero compaÑero oficial suboficial militar
-  }synonyms
+  ;aliases
 : multitud  refugees% complement!  ;
-' multitud synonyms{
+' multitud aliases:
   niño niÑo niños niÑos niña niÑa niñas niÑas
   muchacho muchachos muchacha muchachas
   adolescente adolescentes
@@ -12263,71 +12176,71 @@ o sustantivos.
   pobres desgraciados desafortunados
   desgraciadas desafortunadas
   muchedumbre masa enjambre
-  }synonyms
+  ;aliases
 : refugiados leader% conversations? ?? multitud ;
-' refugiados synonyms{ refugiada refugiadas }synonyms
+' refugiados aliases: refugiada refugiadas ;aliases
 : refugiado leader% conversations? ?? viejo ;
 
 : altar  altar% complement!  ;
 : arco  arch% complement!  ;
 : capa  cloak% complement!  ; \ XXX TODO -- hijuelo?
-' capa synonyms{  lana  }synonyms
-\ ' capa synonyms{  abrigo  }synonyms \ XXX TODO -- diferente género
+' capa aliases:  lana  ;aliases
+\ ' capa aliases:  abrigo  ;aliases \ XXX TODO -- diferente género
 : coraza  cuirasse% complement!  ;
-' coraza synonyms{  armadura  }synonyms
+' coraza aliases:  armadura  ;aliases
 : puerta  door% complement!  ;
 : esmeralda  emerald% complement!  ;
-' esmeralda synonyms{  joya  }synonyms
+' esmeralda aliases:  joya  ;aliases
 \ XXX TODO -- piedra-preciosa brillante
 : derrumbe fallen-away% complement!  ;
 : banderas  flags% complement!  ;
-' banderas synonyms{
+' banderas aliases:
     bandera pendones enseñas enseÑas pendón pendÓn enseña enseÑa
     mástil mÁstil mástiles mÁstiles
     estandarte estandartes
-  }synonyms \ XXX TODO -- estandarte, enseña... otro género
+  ;aliases \ XXX TODO -- estandarte, enseña... otro género
 : dragones  flags% is-known? ?? banderas ;
-' dragones synonyms{ dragón dragÓn }synonyms
+' dragones aliases: dragón dragÓn ;aliases
 : pedernal  flint% complement!  ;
 : ídolo  idol% complement!  ;
-' ídolo synonyms{  Ídolo ojo orificio agujero  }synonyms
+' ídolo aliases:  Ídolo ojo orificio agujero  ;aliases
 \ XXX TODO -- separar los sinónimos de ídolo
 : llave  key% complement!  ;
 : lago  lake% complement!  ;
-' lago synonyms{  laguna agua estanque  }synonyms  \ XXX TODO -- diferente género
+' lago aliases:  laguna agua estanque  ;aliases  \ XXX TODO -- diferente género
 : candado  lock% complement!  ;
-' candado synonyms{  cerrojo  }synonyms
+' candado aliases:  cerrojo  ;aliases
 : tronco  log% complement!  ;
-' tronco synonyms{  leño leÑo madero  }synonyms
+' tronco aliases:  leño leÑo madero  ;aliases
 \ XXX TODO -- madera
 : trozo  piece% complement!  ;
-' trozo synonyms{  pedazo retal tela  }synonyms
+' trozo aliases:  pedazo retal tela  ;aliases
 : harapo  rags% complement!  ;
 : rocas  ( -- )
   \ Este término puede referise a las rocas o al derrumbe.
   location-09% am-i-there?
   if  fallen-away%  else  rocks%  then  complement!  ;
 
-' rocas synonyms{  piedras pedruscos  }synonyms
+' rocas aliases:  piedras pedruscos  ;aliases
 : piedra  (stone) complement!  ;
-' piedra synonyms{  roca pedrusco  }synonyms
+' piedra aliases:  roca pedrusco  ;aliases
 : serpiente  snake% complement!  ;
-' serpiente synonyms{  reptil ofidio culebra animal bicho  }synonyms
+' serpiente aliases:  reptil ofidio culebra animal bicho  ;aliases
 : espada  sword% complement!  ;
-' espada synonyms{  tizona arma  }synonyms
+' espada aliases:  tizona arma  ;aliases
 \ XXX Nota.: "arma" es femenina pero usa artículo "él", contemplar en los cálculos de artículo.
 : hilo  thread% complement!  ;
-' hilo synonyms{  hebra  }synonyms
+' hilo aliases:  hebra  ;aliases
 : antorcha  torch% complement!  ;
 : cascada  waterfall% complement!  ;
-' cascada synonyms{  catarata  }synonyms
+' cascada aliases:  catarata  ;aliases
 : catre  s" catre" bed% ms-name! bed% complement!  ;
-' catre synonyms{  camastro  }synonyms
+' catre aliases:  camastro  ;aliases
 : cama s" cama" bed% fs-name! bed% complement!  ;
 : velas  candles% complement!  ;
-' velas synonyms{  vela  }synonyms
+' velas aliases:  vela  ;aliases
 : mesa  table% complement!  ;
-' mesa synonyms{  mesita pupitre  }synonyms
+' mesa aliases:  mesita pupitre  ;aliases
 : puente  (bridge) complement!  ;
 : alguien  (somebody) complement!  ;
 : hierba  s" hierba" grass% fs-name! grass% complement!  ;
@@ -12338,59 +12251,59 @@ o sustantivos.
 : hiedras  s" hiedras" grass% fp-name! grass% complement!  ;
 
 : n  ['] do-go-north north% action|complement!  ;
-' n synonyms{  norte septentrión septentriÓn  }synonyms
+' n aliases:  norte septentrión septentriÓn  ;aliases
 
 : s  ['] do-go-south south% action|complement!  ;
-' s synonyms{  sur meridión meridiÓn  }synonyms
+' s aliases:  sur meridión meridiÓn  ;aliases
 
 : e  ['] do-go-east east% action|complement!  ;
-' e synonyms{  este oriente levante  }synonyms
+' e aliases:  este oriente levante  ;aliases
 
 : o  ['] do-go-west west% action|complement!  ;
-' o synonyms{  oeste occidente poniente  }synonyms
+' o aliases:  oeste occidente poniente  ;aliases
 
 : ar  ['] do-go-up up% action|complement!  ;
-' ar synonyms{  arriba  }synonyms
+' ar aliases:  arriba  ;aliases
 : subir  ['] do-go-up action!  ;
-' subir synonyms{  sube subid subo suba  }synonyms
-' subir synonyms{  ascender asciende ascended asciendo ascienda  }synonyms
-' subir synonyms{  subirse subíos subÍos súbese sÚbese súbase sÚbase  }synonyms
-' subir synonyms{  subirte súbete sÚbete súbote sÚbote súbate sÚbate  }synonyms
+' subir aliases:  sube subid subo suba  ;aliases
+' subir aliases:  ascender asciende ascended asciendo ascienda  ;aliases
+' subir aliases:  subirse subíos subÍos súbese sÚbese súbase sÚbase  ;aliases
+' subir aliases:  subirte súbete sÚbete súbote sÚbote súbate sÚbate  ;aliases
 
 : ab  ['] do-go-down down% action|complement!  ;
-' ab synonyms{  abajo  }synonyms
+' ab aliases:  abajo  ;aliases
 : bajar  ['] do-go-down action!  ;
-' bajar synonyms{  baja bajad bajo baje  }synonyms
-' bajar synonyms{  bajarse bajaos bájase bÁjase bájese bÁjese  }synonyms
-' bajar synonyms{  bajarte bájate bÁjate bájote bÁjote bájete bÁjete  }synonyms
-' bajar synonyms{  descender desciende descended desciendo descienda  }synonyms
+' bajar aliases:  baja bajad bajo baje  ;aliases
+' bajar aliases:  bajarse bajaos bájase bÁjase bájese bÁjese  ;aliases
+' bajar aliases:  bajarte bájate bÁjate bájote bÁjote bájete bÁjete  ;aliases
+' bajar aliases:  descender desciende descended desciendo descienda  ;aliases
 
 : salir  ['] do-go-out action!  ;
-' salir synonyms{  sal salid salgo salga  }synonyms
+' salir aliases:  sal salid salgo salga  ;aliases
 \ XXX TODO -- ambigüedad. sal
-' salir synonyms{  salirse }synonyms
-' salir synonyms{  salirme sálgome sÁlgome  }synonyms
-' salir synonyms{  salirte }synonyms
+' salir aliases:  salirse ;aliases
+' salir aliases:  salirme sálgome sÁlgome  ;aliases
+' salir aliases:  salirte ;aliases
 \ XXX TODO -- ambigüedad. salte
 : fuera  ['] do-go-out out% action|complement!  ;
-' fuera synonyms{  afuera }synonyms
+' fuera aliases:  afuera ;aliases
 : exterior  out% complement!  ;
 : entrar ['] do-go-in action!  ;
-' entrar synonyms{  entra entrad entro entre  }synonyms
-' entrar synonyms{  entrarse entraos éntrese Éntrese éntrase Éntrase  }synonyms
-' entrar synonyms{  entrarte éntrete Éntrete éntrate Éntrate  }synonyms
+' entrar aliases:  entra entrad entro entre  ;aliases
+' entrar aliases:  entrarse entraos éntrese Éntrese éntrase Éntrase  ;aliases
+' entrar aliases:  entrarte éntrete Éntrete éntrate Éntrate  ;aliases
 : dentro  ['] do-go-in in% action|complement!  ;
-' dentro synonyms{  adentro  }synonyms
+' dentro aliases:  adentro  ;aliases
 : interior  in% complement!  ;
 
 : escalar  ['] do-climb action!  ;
-' escalar synonyms{  escala escalo escale  }synonyms
-' escalar synonyms{  trepar trepa trepo trepe  }synonyms
+' escalar aliases:  escala escalo escale  ;aliases
+' escalar aliases:  trepar trepa trepo trepe  ;aliases
 
 : hablar  ['] do-speak action!  ;
 \ XXX TODO -- Crear nuevas palabras según la preposición que necesiten.
 \ XXX TODO -- Separar matices.
-' hablar synonyms{
+' hablar aliases:
   habla hablad hablo hable
   hablarle háblale hÁblale háblole hÁblole háblele hÁblele
   conversar conversa conversad converso converse
@@ -12399,40 +12312,40 @@ o sustantivos.
   decirle dile decidle dígole dÍgole dígale dÍgale
   platicar platica platicad platico platique
   platicarle platícale platÍcale platicadle platícole platÍcole platíquele platÍquele
-  }synonyms
+  ;aliases
   \ contar cuenta cuento cuente  \ XXX
   \ contarle cuéntale cuÉntale cuéntole cuÉntole cuéntele cuÉntele  \ XXX
 
 : presentarse  ['] do-introduce-yourself action!  ;
-' presentarse synonyms{
+' presentarse aliases:
   preséntase presÉntase preséntese presÉntese
   presentarte preséntate presÉntate presentaos preséntete presÉntete
-  }synonyms
+  ;aliases
 
 \ Términos asociados a entes globales o virtuales
 
 : nubes  clouds% complement!  ;
 \ XXX TODO ¿cúmulo-nimbos?, ¿nimbos?
-' nubes synonyms{  nube estratocúmulo estratocÚmulo estratocúmulos estratocÚmulos cirro cirros  }synonyms
+' nubes aliases:  nube estratocúmulo estratocÚmulo estratocúmulos estratocÚmulos cirro cirros  ;aliases
 : suelo  floor% complement!  ;
-' suelo synonyms{  suelos tierra firme  }synonyms
+' suelo aliases:  suelos tierra firme  ;aliases
 \ XXX TODO -- Añadir «piso», que es ambiguo
 : cielo  sky% complement!  ;
-' cielo synonyms{  cielos firmamento  }synonyms
+' cielo aliases:  cielos firmamento  ;aliases
 : techo  ceiling% complement!  ;
 : cueva  (cave) complement!  ;
-' cueva synonyms{  caverna gruta  }synonyms
+' cueva aliases:  caverna gruta  ;aliases
 : entrada  (entrance) complement!  ;
 \ XXX TODO ¿Implementar cambio de nombre y/o género gramatical? (entrada, acceso):
-' entrada synonyms{  acceso }synonyms
+' entrada aliases:  acceso ;aliases
 : enemigo  enemy% complement!  ;
-' enemigo synonyms{ enemigos sajón sajÓn sajones }synonyms
+' enemigo aliases: enemigos sajón sajÓn sajones ;aliases
 : todo ;  \ XXX TODO
 \ XXX TODO ¿Implementar cambio de nombre y/o género gramatical? (pared/es, muro/s):
 : pared  (wall) complement!  ;
-' pared  synonyms{ muro }synonyms
+' pared  aliases: muro ;aliases
 : paredes  wall% complement!  ;
-' paredes  synonyms{ muros }synonyms
+' paredes  aliases: muros ;aliases
 
 \ Artículos
 
@@ -12442,7 +12355,7 @@ o sustantivos.
 \ palabras desconocidas.
 
 : la  ;
-' la synonyms{ las el los una un unas unos }synonyms
+' la aliases: las el los una un unas unos ;aliases
 
 \ Adjetivos demostrativos
 
@@ -12451,7 +12364,7 @@ o sustantivos.
 \ será interpretado como punto cardinal.
 
 : esta  ;
-' esta synonyms{ estas estos }synonyms
+' esta aliases: estas estos ;aliases
 
 \ (Seudo)preposiciones
 
@@ -12463,7 +12376,7 @@ o sustantivos.
   \ Uso: Herramienta
   «usando»-preposition# preposition!  ;
 
-' usando synonyms{ utilizando empleando mediante }synonyms
+' usando aliases: utilizando empleando mediante ;aliases
 false [if]
   \ XXX OLD
   \ XXX TODO -- descartado, pendiente
@@ -12471,7 +12384,7 @@ false [if]
   \ Uso: Destino de movimiento, objeto indirecto
   «a»-preposition# preposition!  ;
 
-' a synonyms{ al }synonyms
+' a aliases: al ;aliases
 : de  ( -- )
   \ Uso: Origen de movimiento, propiedad
   «de»-preposition# preposition!  ;
@@ -12507,23 +12420,23 @@ false [if]
   \ Restaura los colores predeterminados.
   ['] recolor action!  ;
 
-' #colorear synonyms{
+' #colorear aliases:
   #colorea #coloreo
   #recolorear #recolorea #recoloreo
   #pintar #pinta #pinto
   #limpiar #limpia #limpio
-  }synonyms
+  ;aliases
 
 : #configurar  ( -- )
   \ Restaura la configuración predeterminada
   \ y después carga el fichero de configuración
   ['] get-config action!  ;
 
-' #configurar synonyms{
+' #configurar aliases:
   #reconfigurar
   #configura #configuro
   #reconfigura #reconfiguro
-  }synonyms
+  ;aliases
 
 : #grabar  ( "name" -- )
   \ Graba el estado de la partida en un fichero.
@@ -12533,12 +12446,12 @@ false [if]
   ['] save-the-game action!
   [debug-parsing] [??] ~~
   ;  immediate
-' #grabar immediate-synonyms{
+' #grabar immediate-aliases:
   #graba #grabo
   #exportar #exporta #exporto
   #salvar #salva #salvo
   #guardar #guarda #guardo
-  }synonyms
+  ;aliases
 
 : #cargar  ( "name" -- )
   \ Carga el estado de la partida de un fichero.
@@ -12550,20 +12463,20 @@ false [if]
   ['] load-the-game action!
   [debug-parsing] [??] ~~
   ;  immediate
-' #cargar immediate-synonyms{
+' #cargar immediate-aliases:
   #carga #cargo
   #importar #importa #importo
   #leer #lee #leo
   #recargar #recarga #recargo
   #recuperar #recupera #recupero
   #restaurar #restaura #restauro
-  }synonyms
+  ;aliases
 
 : #fin  ( -- )
   \ Abandonar la partida
   ['] finish action!  ;
 
-' #fin synonyms{
+' #fin aliases:
   #acabar #acaba #acabo
   #adiós #adiÓs
   #apagar #apaga #apago
@@ -12572,19 +12485,19 @@ false [if]
   #finalizar #finaliza #finalizo
   #salir #sal #salgo
   #terminar #termina #termino
-  }synonyms
+  ;aliases
 
 : #ayuda  ( -- )
   \ ['] do-help action!
   ;
   \ XXX TODO
 
-' #ayuda synonyms{
+' #ayuda aliases:
   #ayudar #ayudita #ayudas
   #instrucciones #manual #guía #guÍa #mapa #plano #menú #menÚ
   #pista #pistas
   #socorro #auxilio #favor
-  }synonyms
+  ;aliases
 
 \ XXX TMP -- Comandos para usar durante el desarrollo:
 \ : forth  (finish)  ;
@@ -12617,6 +12530,10 @@ cantidad es la misma, como por ejemplo en «sí sí no no», el
 resultado será el mismo que si no se hubiera escrito nada.
 
 *)
+
+\ XXX TODO -- 2016-06-24: This module has been adapted to _La pistola
+\ de agua_, and simplified a lot. The code could be reused by both
+\ projects.
 
 variable #answer  \ Su valor será 0 si no ha habido respuesta válida; negativo para «no»; y positivo para «sí»
 : answer-undefined  ( -- )
@@ -12705,9 +12622,7 @@ section( Entrada de comandos)  \ {{{
 
 Para la entrada de comandos se usa la palabra de Forth
 `accept`, que permite limitar el número máximo de caracteres
-que serán aceptados. Por desgracia ACCEPT permite escribir
-más y después trunca la cadena, por lo que sería mejor
-escribir una alternativa.
+que serán aceptados.
 
 *)
 
@@ -12724,7 +12639,7 @@ svariable command  \ Zona de almacenamiento del comando
   cols /indentation @ - 1-
   \ Restar la longitud del presto si no lleva detrás un salto de línea:
   cr-after-command-prompt? @ 0= abs command-prompt$ nip * -
-  \ Restar uno si tras el presto va no va salto de línea pero sí un espacio:
+  \ Restar uno si tras el presto no va salto de línea pero sí un espacio:
   cr-after-command-prompt? @ 0= space-after-command-prompt? @ and abs -  ;
 
 : wait-for-input  ( -- ca len )
@@ -12749,10 +12664,13 @@ svariable command  \ Zona de almacenamiento del comando
   \ Imprime un presto y devuelve el comando introducido por el jugador.
   [debug-info] [if]  "" debug  [then]  \ XXX INFORMER
   .command-prompt wait-for-input
-  [debug] [if]  cr cr ." <<<" 2dup type ." >>>" cr cr  [then]  ;  \ XXX INFORMER 
+  [debug] [if]  cr cr ." <<<" 2dup type ." >>>" cr cr  [then]  ;  \ XXX INFORMER
 
 \ }}} ==========================================================
 section( Entrada de respuestas de tipo «sí o no»)  \ {{{
+
+\ XXX TODO -- 2016-06-25: This module has been adapted to _La pistola
+\ de agua_. The code could be reused by both projects.
 
 : yes|no  ( ca len -- n )
   \ Evalúa una respuesta a una pregunta del tipo «sí o no».
@@ -12802,7 +12720,7 @@ section( Fin)  \ {{{
 false [if]  \ XXX TODO -- not used
 : battle-phases  ( -- u )
   \ Devuelve el número máximo de fases de la batalla.
-  5 random 7 +  ;  \ Número al azar, de 8 a 11 
+  5 random 7 +  ;  \ Número al azar, de 8 a 11
 
 [then]
 : failure?  ( -- wf )

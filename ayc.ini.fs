@@ -7,7 +7,7 @@
 \ Página del programa:
 \ http://programandala.net/es.programa.asalto_y_castigo.forth
 
-\ Última modificación: 201602030140
+\ Última modificación: 201606242015
 
 \ --------------------------------------------------------------
 \ Observaciones
@@ -231,7 +231,7 @@ no nueva_línea_tras_presto_de_comando
 \ tras entrar en un escenario o antes de describirlo?
 \ Opciones: sí y no.
 
-no borrar_pantalla_para_escenarios
+sí borrar_pantalla_para_escenarios
 
 \ ¿Borrar la pantalla
 \ tras el final de una escena?
