@@ -11,7 +11,7 @@ CR .( Asalto y castigo )  \ {{{
 \ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
 
 only forth definitions
-s" 0.8.0+201606251855" 2constant version
+s" 0.8.0+201606252049" 2constant version
 version type cr
 
 \ 'Asalto y castigo' is free software; you can redistribute
@@ -100,21 +100,6 @@ require random.fs
 \ De la librería «Forth Foundation Library»
 \ http://code.google.com/p/ffl/
 
-(
-
-Esta gran librería, preparada para ser compatible con los
-sistemas Forth más utilizados, proporciona palabras
-especializadas muy útiles, con el objetivo de ayudar a crear
-aplicaciones en Forth.  Las palabras están agrupadas
-temáticamente en módulos independientes.  Cada módulo de la
-librería tiene por nombre una abreviatura de tres letras y
-sus palabras comienzan por esas mismas tres letras.  Por
-ejemplo: los nombres de las palabras proporcionadas por el
-módulo «str» empiezan por «str», como `str-create`,
-`str+columns` o `str.version`.
-
-*)
-
 require ffl/str.fs  \ Cadenas de texto dinámicas
 require ffl/trm.fs  \ Manejo de terminal ANSI
 require ffl/chr.fs  \ Herramientas para caracteres
@@ -150,7 +135,6 @@ require galope/immediate-aliases-colon.fs  \ `immediate-aliases:`
 require galope/ink.fs
 require galope/minus-minus.fs  \ `--`
 require galope/paper.fs
-require galope/paren-star.fs  \ `(*`
 require galope/plus-plus.fs  \ `++`
 require galope/print.fs  \ Impresión de textos ajustados
 require galope/question-empty.fs  \ `?empty`
@@ -860,17 +844,13 @@ str-create tmp-str  \ Cadena dinámica de texto temporal para usos variados
 \ }}} ==========================================================
 section( Textos aleatorios)  \ {{{
 
-(*
+\ Casi todas las palabras de esta sección devuelven una cadena
+\ calculada al azar. Las restantes palabras son auxiliares.
 
-Casi todas las palabras de esta sección devuelven una cadena
-calculada al azar. Las restantes palabras son auxiliares.
-
-Por convención, en el programa las palabras que devuelven
-una cadena sin recibir parámetros en la pila tienen el signo
-«$» al final de su nombre.  También por tanto las constantes
-de cadena creadas con `sconstant`.
-
-*)
+\ Por convención, en el programa las palabras que devuelven
+\ una cadena sin recibir parámetros en la pila tienen el signo
+\ «$» al final de su nombre.  También por tanto las constantes
+\ de cadena creadas con `sconstant`.
 
 : at-least$  ( ca len -- )
   s{ s" al" s" por lo" }s s" menos" s&  ;
@@ -1440,14 +1420,10 @@ s" de Westmorland" sconstant of-westmorland$
 \ }}} ==========================================================
 section( Cadena dinámica para impresión)  \ {{{
 
-(*
-
-Usamos una cadena dinámica llamada `print-str` para guardar
-los párrafos enteros que hay que mostrar en pantalla. En
-esta sección creamos la cadena y palabras útiles para
-manipularla.
-
-*)
+\ Usamos una cadena dinámica llamada `print-str` para guardar
+\ los párrafos enteros que hay que mostrar en pantalla. En
+\ esta sección creamos la cadena y palabras útiles para
+\ manipularla.
 
 str-create print-str  \ Cadena dinámica para almacenar el texto antes de imprimirlo justificado
 
@@ -1495,17 +1471,13 @@ str-create print-str  \ Cadena dinámica para almacenar el texto antes de imprim
 \ }}} ==========================================================
 section( Herramientas para sonido)  \ {{{
 
-(*
+\ Las herramientas para proveer de sonido al juego están apenas
+\ esbozadas aquí.
 
-Las herramientas para proveer de sonido al juego están apenas
-esbozadas aquí.
-
-La idea consiste en utilizar un reproductor externo que acepte
-comandos y no muestre interfaz, como mocp para GNU/Linux, que es el
-que usamos en las pruebas. Los comandos para la consola del sistema
-operativo se pasan con la palabra SYSTEM de Gforth.
-
-*)
+\ La idea consiste en utilizar un reproductor externo que acepte
+\ comandos y no muestre interfaz, como mocp para GNU/Linux, que es el
+\ que usamos en las pruebas. Los comandos para la consola del sistema
+\ operativo se pasan con la palabra SYSTEM de Gforth.
 
 : clear-sound-track  ( -- )
   \ Limpia la lista de sonidos.
@@ -1791,62 +1763,58 @@ false [if]  \ XXX OLD -- obsoleto
 \ }}} ==========================================================
 section( Definición de la ficha de un ente)  \ {{{
 
-(*
-
-Denominamos «ente» a cualquier componente del mundo virtual
-del juego que es manipulable por el programa.  «Entes» por
-tanto son los objetos, manipulables o no por el jugador; los
-personajes, interactivos o no; los lugares; y el propio
-personaje protagonista.
-
-Cada ente tiene una ficha en la base de datos del juego.  La
-base de datos es una zona de memoria dividida en partes
-iguales, una para cada ficha. El identificador de cada ficha es
-una palabra que al ejecutarse deja en la pila la dirección de
-memoria donde se encuentra la ficha.
-
-Los campos de la base de datos, como es habitual en Forth en
-este tipo de estructuras, son palabras que suman el
-desplazamiento adecuado a la dirección base de la ficha, que
-reciben en la pila, apuntando así a la dirección de memoria que
-contiene el campo correspondiente.
-
-A pesar de que Gforth dispone de palabras especializadas para
-crear estructuras de datos de todo tipo, hemos optado por el
-método más sencillo: usar `+field` y `constant`.
-
-El funcionamiento de `+field` es muy sencillo: Toma de la pila dos
-valores: el inferior es el desplazamiento en octetos desde el inicio
-del «registro», que en este programa denominamos «ficha»; el superior
-es el número de octetos necesarios para almacenar el campo a crear. Con
-ellos crea una palabra nueva [cuyo nombre es tomado del flujo de
-entrada, es decir, es la siguiente palabra en el código fuente] que
-será el identificador del campo de datos; esta palabra, al ser creada,
-guardará en su propio campo de datos el desplazamiento del campo de
-datos desde el inicio de la ficha de datos, y cuando sea ejecutada lo
-sumará al número de la parte superior de la pila, que deberá ser la
-dirección en memoria de la ficha.
-
-Salvo los campos buleanos, que ocupan un solo bitio gracias a las
-palabras creadas para ello, todos los demás campos ocupan una celda.
-La «celda» es un concepto de ANS Forth: es la unidad en que se mide el
-tamaño de cada elemento de la pila, y capaz por tanto de contener una
-dirección de memoria.  En los sistemas Forth de 8 o 16 bitios una celda
-equivale a un valor de 16 bitios; en los sistemas Forth de 32 bitios,
-como Gforth, una celda equivale a un valor de 32 bitios.
-
-El contenido de un campo puede representar cualquier cosa: un número
-con o sin signo, o una dirección de memoria [de una cadena de texto, de
-una palabra de Forth, de la ficha de otro ente, de otra estructura de
-datos...].
-
-Para facilitar la legibilidad, los nombres de los campos empiezan con
-el signo de tilde, «~»; los que contienen datos buleanos terminan con
-una interrogación, «?»;  los que contienen direcciones de ejecución
-terminan con «-xt»; los que contienen códigos de error terminan con
-«-error#».
-
-*)
+\ Denominamos «ente» a cualquier componente del mundo virtual
+\ del juego que es manipulable por el programa.  «Entes» por
+\ tanto son los objetos, manipulables o no por el jugador; los
+\ personajes, interactivos o no; los lugares; y el propio
+\ personaje protagonista.
+\
+\ Cada ente tiene una ficha en la base de datos del juego.  La
+\ base de datos es una zona de memoria dividida en partes
+\ iguales, una para cada ficha. El identificador de cada ficha es
+\ una palabra que al ejecutarse deja en la pila la dirección de
+\ memoria donde se encuentra la ficha.
+\
+\ Los campos de la base de datos, como es habitual en Forth en
+\ este tipo de estructuras, son palabras que suman el
+\ desplazamiento adecuado a la dirección base de la ficha, que
+\ reciben en la pila, apuntando así a la dirección de memoria que
+\ contiene el campo correspondiente.
+\
+\ A pesar de que Gforth dispone de palabras especializadas para
+\ crear estructuras de datos de todo tipo, hemos optado por el
+\ método más sencillo: usar `+field` y `constant`.
+\
+\ El funcionamiento de `+field` es muy sencillo: Toma de la pila dos
+\ valores: el inferior es el desplazamiento en octetos desde el inicio
+\ del «registro», que en este programa denominamos «ficha»; el superior
+\ es el número de octetos necesarios para almacenar el campo a crear. Con
+\ ellos crea una palabra nueva [cuyo nombre es tomado del flujo de
+\ entrada, es decir, es la siguiente palabra en el código fuente] que
+\ será el identificador del campo de datos; esta palabra, al ser creada,
+\ guardará en su propio campo de datos el desplazamiento del campo de
+\ datos desde el inicio de la ficha de datos, y cuando sea ejecutada lo
+\ sumará al número de la parte superior de la pila, que deberá ser la
+\ dirección en memoria de la ficha.
+\
+\ Salvo los campos buleanos, que ocupan un solo bitio gracias a las
+\ palabras creadas para ello, todos los demás campos ocupan una celda.
+\ La «celda» es un concepto de ANS Forth: es la unidad en que se mide el
+\ tamaño de cada elemento de la pila, y capaz por tanto de contener una
+\ dirección de memoria.  En los sistemas Forth de 8 o 16 bitios una celda
+\ equivale a un valor de 16 bitios; en los sistemas Forth de 32 bitios,
+\ como Gforth, una celda equivale a un valor de 32 bitios.
+\
+\ El contenido de un campo puede representar cualquier cosa: un número
+\ con o sin signo, o una dirección de memoria [de una cadena de texto, de
+\ una palabra de Forth, de la ficha de otro ente, de otra estructura de
+\ datos...].
+\
+\ Para facilitar la legibilidad, los nombres de los campos empiezan con
+\ el signo de tilde, «~»; los que contienen datos buleanos terminan con
+\ una interrogación, «?»;  los que contienen direcciones de ejecución
+\ terminan con «-xt»; los que contienen códigos de error terminan con
+\ «-error#».
 
 0 \ Valor inicial de desplazamiento para el primer campo
 
@@ -1931,24 +1899,20 @@ constant /entity  \ Tamaño de cada ficha
 \ }}} ==========================================================
 section( Interfaz de campos)  \ {{{
 
-(*
-
-Las palabras de esta sección facilitan la tarea de
-interactuar con los campos de las fichas, evitando repetir
-cálculos, escondiendo parte de los entresijos de las fichas
-y haciendo el código más conciso, más fácil de modificar y
-más legible.
-
-Algunas de las palabras que definimos a continuación actúan
-de forma análoga a los campos de las fichas de entes:
-reciben en la pila el identificador de ente y devuelven en
-ella un resultado. La diferencia es que es un resultado
-calculado.
-
-Otras actúan como procedimientos para realizar operaciones
-frecuentes con los entes.
-
-*)
+\ Las palabras de esta sección facilitan la tarea de
+\ interactuar con los campos de las fichas, evitando repetir
+\ cálculos, escondiendo parte de los entresijos de las fichas
+\ y haciendo el código más conciso, más fácil de modificar y
+\ más legible.
+\
+\ Algunas de las palabras que definimos a continuación actúan
+\ de forma análoga a los campos de las fichas de entes:
+\ reciben en la pila el identificador de ente y devuelven en
+\ ella un resultado. La diferencia es que es un resultado
+\ calculado.
+\
+\ Otras actúan como procedimientos para realizar operaciones
+\ frecuentes con los entes.
 
 \ ----------------------------------------------
 \ Herramientas para los campos de dirección
@@ -1984,13 +1948,9 @@ last-exit> cell+ first-exit> - constant /exits
 \ ----------------------------------------------
 \ Interfaz básica para leer y modificar los campos
 
-(*
-
-Las palabras que siguen permiten hacer las operaciones
-básicas de obtención y modificación del contenido de los
-campos.
-
-*)
+\ Las palabras que siguen permiten hacer las operaciones
+\ básicas de obtención y modificación del contenido de los
+\ campos.
 
 \ Obtener el contenido de un campo a partir de un identificador de ente
 
@@ -2085,22 +2045,18 @@ campos.
 \ ----------------------------------------------
 \ Campos calculados o seudo-campos
 
-(*
+\ Los seudo-campos devuelven un cálculo. Sirven para añadir
+\ una capa adicional de abstracción y simplificar el código.
 
-Los seudo-campos devuelven un cálculo. Sirven para añadir
-una capa adicional de abstracción y simplificar el código.
-
-Por conveniencia, en el caso de algunos de los campos binarios
-creamos también palabras para la propiedad contraria.  Por
-ejemplo, en las fichas existe el campo `~is-open?` para indicar
-si un ente está abierto, pero creamos las palabras necesarias
-para examinar y modificar tanto la propiedad de «cerrado» como
-la de «abierto». Esto ayuda a escribir posteriormente el código
-efectivo (pues no hace falta recordar si la propiedad real y por
-tanto el campo de la ficha del ente era «abierto» o «cerrado») y
-hace el código más conciso y legible.
-
-*)
+\ Por conveniencia, en el caso de algunos de los campos binarios
+\ creamos también palabras para la propiedad contraria.  Por
+\ ejemplo, en las fichas existe el campo `~is-open?` para indicar
+\ si un ente está abierto, pero creamos las palabras necesarias
+\ para examinar y modificar tanto la propiedad de «cerrado» como
+\ la de «abierto». Esto ayuda a escribir posteriormente el código
+\ efectivo (pues no hace falta recordar si la propiedad real y por
+\ tanto el campo de la ficha del ente era «abierto» o «cerrado») y
+\ hace el código más conciso y legible.
 
 : is-direction?  ( a -- f )  direction 0<>  ;
 : is-familiar?  ( a -- f )  familiar 0>  ;
@@ -2303,28 +2259,24 @@ hace el código más conciso y legible.
 \ ----------------------------------------------
 \ Herramientas de artículos y pronombres
 
-(*
-
-La selección del artículo adecuado para el nombre de un ente
-tiene su complicación. Depende por supuesto del número y
-género gramatical del nombre, pero también de la relación
-con el protagonista [distinción entre artículos definidos e
-indefinidos] y de la naturaleza del ente [cosa o personaje].
-
-Por conveniencia, consideramos como artículos ciertas
-palabras que son adjetivos [como «esta», «ninguna»...], pues
-en la práctica para el programa su manejo es idéntico: se
-usan para preceder a los nombres bajo ciertas condiciones.
-
-En este mismo apartado definimos palabras para calcular
-los pronombres de objeto indirecto [le/s] y de objeto
-directo [la/s, lo/s], así como terminaciones habituales.
-
-Utilizamos una tabla de cadenas de longitud variable, apuntada por una
-segunda tabla con sus direcciones.  Esto unifica y simplifica los
-cálculos.
-
-*)
+\ La selección del artículo adecuado para el nombre de un ente tiene
+\ su complicación. Depende por supuesto del número y género gramatical
+\ del nombre, pero también de la relación con el protagonista
+\ [distinción entre artículos definidos e indefinidos] y de la
+\ naturaleza del ente [cosa o personaje].
+\
+\ Por conveniencia, consideramos como artículos ciertas palabras que
+\ son adjetivos [como «esta», «ninguna»...], pues en la práctica para
+\ el programa su manejo es idéntico: se usan para preceder a los
+\ nombres bajo ciertas condiciones.
+\
+\ En este mismo apartado definimos palabras para calcular los
+\ pronombres de objeto indirecto [le/s] y de objeto directo [la/s,
+\ lo/s], así como terminaciones habituales.
+\
+\ Utilizamos una tabla de cadenas de longitud variable, apuntada por
+\ una segunda tabla con sus direcciones.  Esto unifica y simplifica
+\ los cálculos.
 
 : hs,  ( ca len -- a1 )
   \ Compila una cadena en el diccionario y devuelve su dirección.
@@ -2584,21 +2536,17 @@ cell constant /article-gender-set  \ De femenino a masculino
 \ ----------------------------------------------
 \ Interfaz para los nombres de los entes
 
-(*
-
-Como ya se explicó, el nombre de cada ente se guarda en una
-cadena dinámica [que se crea en la memoria con `allocate`, no
-en el espacio del diccionario del sistema].  El manejo de
-estas cadenas dinámicas se hace con el módulo
-correspondiente de Forth Foundation Library.
-
-En la ficha del ente se guarda solo la dirección de la
-cadena dinámica, en el campo `~name-str`.  Por ello hacen
-falta palabras que hagan de interfaz para gestionar los
-nombres de ente de forma análoga a como se hace con el resto
-de datos de su ficha.
-
-*)
+\ Como ya se explicó, el nombre de cada ente se guarda en una
+\ cadena dinámica [que se crea en la memoria con `allocate`, no
+\ en el espacio del diccionario del sistema].  El manejo de
+\ estas cadenas dinámicas se hace con el módulo
+\ correspondiente de Forth Foundation Library.
+\
+\ En la ficha del ente se guarda solo la dirección de la
+\ cadena dinámica, en el campo `~name-str`.  Por ello hacen
+\ falta palabras que hagan de interfaz para gestionar los
+\ nombres de ente de forma análoga a como se hace con el resto
+\ de datos de su ficha.
 
 : name!  ( ca len a1 -- )
   \ Guarda el nombre de un ente.
@@ -2770,15 +2718,11 @@ section( Algunas cadenas calculadas y operaciones con ellas)  \ {{{
 \ }}} ==========================================================
 section( Operaciones elementales con entes)  \ {{{
 
-(*
-
-Algunas operaciones sencillas relacionadas con la trama.
-
-Alguna es necesario crearla como vector porque se usa en las
-descripciones de los entes o en las acciones, antes de
-definir la trama.
-
-*)
+\ Algunas operaciones sencillas relacionadas con la trama.
+\
+\ Alguna es necesario crearla como vector porque se usa en las
+\ descripciones de los entes o en las acciones, antes de
+\ definir la trama.
 
 defer lock-found  \ Encontrar el candado; la definición está en `(lock-found)`
 
@@ -2803,19 +2747,15 @@ defer lock-found  \ Encontrar el candado; la definición está en `(lock-found)`
 \ }}} ==========================================================
 section( Herramientas para crear las fichas de la base de datos)  \ {{{
 
-(*
-
-No es posible reservar el espacio necesario para las fichas
-hasta saber cuántas necesitaremos (a menos que usáramos una
-estructura un poco más sofisticada con fichas separadas pero
-enlazadas entre sí, muy habitual también y fácil de crear).  Por
-ello la palabra "'entities" (que devuelve la dirección de la
-base de datos) se crea como un vector, para asignarle
-posteriormente su dirección de ejecución.  Esto permite crear un
-nuevo ente fácilmente, sin necesidad de asignar previamente el
-número de fichas a una constante.
-
-*)
+\ No es posible reservar el espacio necesario para las fichas
+\ hasta saber cuántas necesitaremos (a menos que usáramos una
+\ estructura un poco más sofisticada con fichas separadas pero
+\ enlazadas entre sí, muy habitual también y fácil de crear).  Por
+\ ello la palabra "'entities" (que devuelve la dirección de la
+\ base de datos) se crea como un vector, para asignarle
+\ posteriormente su dirección de ejecución.  Esto permite crear un
+\ nuevo ente fácilmente, sin necesidad de asignar previamente el
+\ número de fichas a una constante.
 
 defer 'entities  \ Dirección de los entes; vector que después será redirigido a la palabra real
 0 value #entities  \ Contador de entes, que se actualizará según se vayan creando
@@ -2950,24 +2890,20 @@ defer 'entities  \ Dirección de los entes; vector que después será redirigido
 \ }}} ==========================================================
 section( Herramientas para crear las descripciones)  \ {{{
 
-(*
-
-No almacenamos las descripciones en la base de datos junto
-con el resto de atributos de los entes, sino que para cada
-ente creamos una palabra que imprime su descripción, lo que
-es mucho más flexible: La descripción podrá variar en
-función del desarrollo del juego y adaptarse a las
-circunstancias, e incluso sustituir en algunos casos al
-código que controla la trama del juego.
-
-Así pues, lo que almacenamos en la ficha del ente, en el
-campo `~description-xt`, es la dirección de ejecución de la
-palabra que imprime su descripción.
-
-Por tanto, para describir un ente basta tomar de su ficha el
-contenido de `~description-xt`, y llamar a `execute`.
-
-*)
+\ No almacenamos las descripciones en la base de datos junto
+\ con el resto de atributos de los entes, sino que para cada
+\ ente creamos una palabra que imprime su descripción, lo que
+\ es mucho más flexible: La descripción podrá variar en
+\ función del desarrollo del juego y adaptarse a las
+\ circunstancias, e incluso sustituir en algunos casos al
+\ código que controla la trama del juego.
+\
+\ Así pues, lo que almacenamos en la ficha del ente, en el
+\ campo `~description-xt`, es la dirección de ejecución de la
+\ palabra que imprime su descripción.
+\
+\ Por tanto, para describir un ente basta tomar de su ficha el
+\ contenido de `~description-xt`, y llamar a `execute`.
 
 false value sight  \ Guarda el ente dirección al que se mira en un escenario (o el propio ente escenario); se usa en las palabras de descripción de escenarios
 : [:description]  ( a -- )
@@ -3070,30 +3006,26 @@ false value sight  \ Guarda el ente dirección al que se mira en un escenario (o
 \ }}} ==========================================================
 section( Identificadores de entes)  \ {{{
 
-(*
-
-Cada ente es identificado mediante una palabra. Los
-identificadores de entes se crean con la palabra `entity:`.
-Cuando se ejecutan devuelven la dirección en memoria de la
-ficha del ente en la base de datos, que después puede ser
-modificada con un identificador de campo para convertirla en
-la dirección de memoria de un campo concreto de la ficha.
-
-Para reconocer mejor los identificadores de entes usamos el
-sufijo «%» en sus nombres.
-
-Los entes escenario usan como nombre de identificador el número
-que tienen en la versión original del programa. Esto hace más
-fácil la adaptación del código original en BASIC.  Además, para
-que algunos cálculos tomados del código original funcionen, es
-preciso que los entes escenario se creen ordenados por ese
-número.
-
-El orden en que se definan los restantes identificadores es
-irrelevante.  Si están agrupados por tipos y en orden
-alfabético es solo por claridad.
-
-*)
+\ Cada ente es identificado mediante una palabra. Los
+\ identificadores de entes se crean con la palabra `entity:`.
+\ Cuando se ejecutan devuelven la dirección en memoria de la
+\ ficha del ente en la base de datos, que después puede ser
+\ modificada con un identificador de campo para convertirla en
+\ la dirección de memoria de un campo concreto de la ficha.
+\
+\ Para reconocer mejor los identificadores de entes usamos el
+\ sufijo «%» en sus nombres.
+\
+\ Los entes escenario usan como nombre de identificador el número
+\ que tienen en la versión original del programa. Esto hace más
+\ fácil la adaptación del código original en BASIC.  Además, para
+\ que algunos cálculos tomados del código original funcionen, es
+\ preciso que los entes escenario se creen ordenados por ese
+\ número.
+\
+\ El orden en que se definan los restantes identificadores es
+\ irrelevante.  Si están agrupados por tipos y en orden
+\ alfabético es solo por claridad.
 
 entity: ulfius%
 ' ulfius% is protagonist%  \ Actualizar el vector que apunta al ente protagonista
@@ -3225,44 +3157,38 @@ create ('entities) /entities allot  \ Reservar el espacio en el diccionario
 \ }}} ==========================================================
 section( Herramientas para crear conexiones entre escenarios)  \ {{{
 
-\ XXX Nota.: Este código quedaría mejor con el resto
-\ de herramientas de la base de datos, para no separar
-\ la lista de entes de sus datos.
-\ Pero se necesita usar los identificadores
-\ de los entes dirección.
+\ XXX Nota.: Este código quedaría mejor con el resto de herramientas
+\ de la base de datos, para no separar la lista de entes de sus datos.
+\ Pero se necesita usar los identificadores de los entes dirección.
 \ Se podría solucionar con vectores, más adelante.
 
-(*
+\ Para crear el mapa hay que hacer dos operaciones con los
+\ entes escenario: marcarlos como tales, para poder
+\ distinguirlos como escenarios; e indicar a qué otros entes
+\ escenario conducen sus salidas.
+\
+\ La primera operación se hace guardando un valor buleano «cierto»
+\ en el campo `~is-location?` del ente.  Por ejemplo:
 
-Para crear el mapa hay que hacer dos operaciones con los
-entes escenario: marcarlos como tales, para poder
-distinguirlos como escenarios; e indicar a qué otros entes
-escenario conducen sus salidas.
+\   cave% ~is-location? bit-on
 
-La primera operación se hace guardando un valor buleano «cierto»
-en el campo `~is-location?` del ente.  Por ejemplo:
+\ O bien mediante la palabra creada para ello en la interfaz
+\ básica de campos:
 
-  cave% ~is-location? bit-on
+\   cave% is-location
 
-O bien mediante la palabra creada para ello en la interfaz
-básica de campos:
+\ La segunda operación se hace guardando en los campos de
+\ salida del ente los identificadores de los entes a que cada
+\ salida conduzca.  No hace falta ocuparse de las salidas
+\ impracticables porque ya estarán a cero de forma
+\ predeterminada.  Por ejemplo:
 
-  cave% is-location
+\   path% cave% ~south-exit !  \ Hacer que la salida sur de `cave%` conduzca a `path%`
+\   cave% path% ~north-exit !  \ Hacer que la salida norte de `path%` conduzca a `cave%`
 
-La segunda operación se hace guardando en los campos de
-salida del ente los identificadores de los entes a que cada
-salida conduzca.  No hace falta ocuparse de las salidas
-impracticables porque ya estarán a cero de forma
-predeterminada.  Por ejemplo:
-
-  path% cave% ~south-exit !  \ Hacer que la salida sur de `cave%` conduzca a `path%`
-  cave% path% ~north-exit !  \ Hacer que la salida norte de `path%` conduzca a `cave%`
-
-No obstante, para hacer más fácil este segundo paso, hemos
-creado unas palabras que proporcionan una sintaxis específica,
-como mostraremos a continuación.
-
-*)
+\ No obstante, para hacer más fácil este segundo paso, hemos
+\ creado unas palabras que proporcionan una sintaxis específica,
+\ como mostraremos a continuación.
 
 0 [if]  \ XXX TODO -- unfinished
 
@@ -3288,37 +3214,31 @@ out% ,
 
 [then]
 
-(*
-
-Necesitamos una tabla que nos permita traducir esto:
-
-ENTRADA: Un puntero correspondiente a un campo de dirección
-de salida en la ficha de un ente.
-
-SALIDA: El identificador del ente dirección al que se
-refiere esa salida.
-
-*)
+\ Necesitamos una tabla que nos permita traducir esto:
+\
+\ ENTRADA: Un puntero correspondiente a un campo de dirección
+\ de salida en la ficha de un ente.
+\
+\ SALIDA: El identificador del ente dirección al que se
+\ refiere esa salida.
 
 create exits-table  \ Tabla de traducción de salidas
 #exits cells allot  \ Reservar espacio para tantas celdas como salidas
-: >exits-table>  ( u -- a )
+
+: >exits-table>  ( u -- a )  first-exit> - exits-table +  ;
   \ Apunta a la dirección de un elemento de la tabla de direcciones.
   \ u = Campo de dirección (por tanto, desplazamiento relativo al inicio de la ficha de un ente)
   \ a = Dirección del ente dirección correspondiente en la tabla
-  first-exit> - exits-table +  ;
 
-: exits-table!  ( ca len -- )
-  \ Guarda un ente en una posición de la tabla de salidas.
+: exits-table!  ( a u -- )  >exits-table> !  ;
+  \ Guarda un ente _a_ en una posición de la tabla de salidas.
   \ a = Ente dirección
   \ u = Campo de dirección (por tanto, desplazamiento relativo al inicio de la ficha de un ente)
-  >exits-table> !  ;
 
-: exits-table@  ( u -- a )
+: exits-table@  ( u -- a )  >exits-table> @  ;
   \ Devuelve un ente dirección a partir de un campo de dirección.
   \ u = Campo de dirección (por tanto, desplazamiento relativo al inicio de la ficha de un ente)
   \ a = Ente dirección
-  >exits-table> @  ;
 
 \ Rellenar cada elemento de la tabla con un ente de salida,
 \ usando como puntero el campo análogo de la ficha.
@@ -3345,27 +3265,23 @@ in% in-exit> exits-table!
 
 [then]
 
-(*
+\ A continuación definimos palabras para proporcionar la
+\ siguiente sintaxis (primero origen y después destino en la
+\ pila, como es convención en Forth):
 
-A continuación definimos palabras para proporcionar la
-siguiente sintaxis (primero origen y después destino en la
-pila, como es convención en Forth):
+\   \ Hacer que la salida sur de `cave%` conduzca a `path%`
+\   \ pero sin afectar al sentido contrario:
+\   cave% path% s-->
 
-  \ Hacer que la salida sur de `cave%` conduzca a `path%`
-  \ pero sin afectar al sentido contrario:
-  cave% path% s-->
+\   \ Hacer que la salida norte de `path%` conduzca a `cave%`
+\   \ pero sin afectar al sentido contrario:
+\   path% cave% n-->
 
-  \ Hacer que la salida norte de `path%` conduzca a `cave%`
-  \ pero sin afectar al sentido contrario:
-  path% cave% n-->
+\ O en un solo paso:
 
-O en un solo paso:
-
-  \ Hacer que la salida sur de `cave%` conduzca a `path%`
-  \ y al contrario: la salida norte de `path%` conducirá a `cave%`:
-  cave% path% s<-->
-
-*)
+\   \ Hacer que la salida sur de `cave%` conduzca a `path%`
+\   \ y al contrario: la salida norte de `path%` conducirá a `cave%`:
+\   cave% path% s<-->
 
 : -->  ( a1 a2 u -- )
   \ Conecta el ente a1 con el ente a2 mediante la salida indicada por el desplazamiento u.
@@ -3512,12 +3428,8 @@ O en un solo paso:
   \ Desconecta la salida hacia dentro del ente a1 con el ente a2 (y al contrario).
   o-->|  i-->|  ;
 
-(*
-
-Por último, definimos dos palabras para hacer
-todas las asignaciones de salidas en un solo paso.
-
-*)
+\ Por último, definimos dos palabras para hacer
+\ todas las asignaciones de salidas en un solo paso.
 
 : exits!  ( a1 ... a8 a0 -- )
   \ Asigna todas las salidas de un ente escenario.
@@ -3542,14 +3454,10 @@ todas las asignaciones de salidas en un solo paso.
 \ }}} ==========================================================
 section( Recursos para las descripciones de entes)  \ {{{
 
-(*
-
-Las palabras de esta sección se usan para
-construir las descripciones de los entes.
-Cuando su uso se vuelve más genérico, se mueven
-a la sección de textos calculados.
-
-*)
+\ Las palabras de esta sección se usan para
+\ construir las descripciones de los entes.
+\ Cuando su uso se vuelve más genérico, se mueven
+\ a la sección de textos calculados.
 
 \ ----------------------------------------------
 \ Albergue de los refugiados
@@ -4548,16 +4456,12 @@ waterfall% :description
 
 \ Entes escenario
 
-(*
-
-Las palabras que describen entes escenario reciben en `sight`
-(variable que está creada con `value` y por tanto devuelve su
-valor como si fuera una constante) un identificador de ente.
-Puede ser el mismo ente escenario o un ente de dirección.  Esto
-permite describir lo que hay más allá de cada escenario en
-cualquier dirección.
-
-*)
+\ Las palabras que describen entes escenario reciben en `sight`
+\ (variable que está creada con `value` y por tanto devuelve su
+\ valor como si fuera una constante) un identificador de ente.
+\ Puede ser el mismo ente escenario o un ente de dirección.  Esto
+\ permite describir lo que hay más allá de cada escenario en
+\ cualquier dirección.
 
 location-01% :attributes
   s" aldea sajona" self% fs-name!
@@ -6888,15 +6792,10 @@ section( Tramas comunes a todos los escenarios)  \ {{{
 \ ----------------------------------------------
 \ Ambrosio nos sigue
 
-(*
-
-XXX TODO
-
-Confirmar la función de la llave aquí. En el código original
-solo se distingue que sea manipulable o no, lo que es
-diferente a que esté accesible.
-
-*)
+\ XXX TODO --
+\ Confirmar la función de la llave aquí. En el código original
+\ solo se distingue que sea manipulable o no, lo que es
+\ diferente a que esté accesible.
 
 : ambrosio-must-follow?  ( -- )
   \ ¿Ambrosio tiene que estar siguiéndonos?
@@ -7793,17 +7692,13 @@ section( Trama global)  \ {{{
 \ }}} ==========================================================
 section( Descripciones especiales)  \ {{{
 
-(*
-
-Esta sección contiene palabras que muestran descripciones
-que necesitan un tratamiento especial porque hacen
-uso de palabras relacionadas con la trama.
-
-En lugar de crear vectores para las palabras que estas
-descripciones utilizan, es más sencillo crearlos para las
-descripciones y definirlas aquí, a continuación de la trama.
-
-*)
+\ Esta sección contiene palabras que muestran descripciones
+\ que necesitan un tratamiento especial porque hacen
+\ uso de palabras relacionadas con la trama.
+\
+\ En lugar de crear vectores para las palabras que estas
+\ descripciones utilizan, es más sencillo crearlos para las
+\ descripciones y definirlas aquí, a continuación de la trama.
 
 : officers-forbid-to-steal$  ( -- )
   \ Devuelve una variante de «Tus oficiales detienen el saqueo».
@@ -8153,35 +8048,32 @@ subsection( Pronombres)  \ {{{
 
 variable last-action  \ Última acción utilizada por el jugador
 
-(*
+\ La tabla `last-complement` que crearemos a continuación sirve para
+\ guardar los identificadores de entes correspondientes a los últimos
+\ complementos utilizados en los comandos del jugador. De este modo los
+\ pronombres podrán recuperarlos.
+\
+\ Necesita cinco celdas: una para el último complemento usado y cuatro
+\ para cada último complemento usado de cada género y número.  El espacio
+\ se multiplica por dos para guardar en la segunda mitad los penúltimos
+\ complementos.
+\
+\ La estructura de la tabla es la siguiente, con desplazamientos
+\ indicados en celdas:
 
-La tabla `last-complement` que crearemos a continuación sirve para
-guardar los identificadores de entes correspondientes a los últimos
-complementos utilizados en los comandos del jugador. De este modo los
-pronombres podrán recuperarlos.
+\ Último complemento usado:
+\   +0 De cualquier género y número.
+\   +1 Masculino singular.
+\   +2 Femenino singular.
+\   +3 Masculino plural.
+\   +4 Femenino plural.
 
-Necesita cinco celdas: una para el último complemento usado y cuatro
-para cada último complemento usado de cada género y número.  El espacio
-se multiplica por dos para guardar en la segunda mitad los penúltimos
-complementos.
-
-La estructura de la tabla es la siguiente, con desplazamientos
-indicados en celdas:
-
-Último complemento usado:
-  +0 De cualquier género y número.
-  +1 Masculino singular.
-  +2 Femenino singular.
-  +3 Masculino plural.
-  +4 Femenino plural.
-Penúltimo complemento usado:
-  +5 De cualquier género y número.
-  +6 Masculino singular.
-  +7 Femenino singular.
-  +8 Masculino plural.
-  +9 Femenino plural.
-
-*)
+\ Penúltimo complemento usado:
+\   +5 De cualquier género y número.
+\   +6 Masculino singular.
+\   +7 Femenino singular.
+\   +8 Masculino plural.
+\   +9 Femenino plural.
 
 create last-complement  \ Tabla para últimos complementos usados
 5 cells 2*  \ Octetos necesarios para toda la tabla
@@ -8237,15 +8129,11 @@ dup constant /last-complements  allot
 \ }}}---------------------------------------------
 subsection( Herramientas para la creación de acciones)  \ {{{
 
-(*
+\ Los nombres de las acciones empiezan por el prefijo «do-»
+\ (algunas palabras secundarias de las acciones
+\ también usan el mismo prefijo).
 
-Los nombres de las acciones empiezan por el prefijo «do-»
-(algunas palabras secundarias de las acciones
-también usan el mismo prefijo).
-
-XXX TODO -- explicación sobre la sintaxis
-
-*)
+\ XXX TODO -- explicación sobre la sintaxis
 
 : action:  ( "name" -- )
   \ Crear un identificador de acción.
@@ -8269,21 +8157,17 @@ XXX TODO -- explicación sobre la sintaxis
 \ }}}---------------------------------------------
 subsection( Comprobación de los requisitos de las acciones)  \ {{{
 
-(*
-
-En las siguientes palabras usamos las llaves en sus nombres
-como una notación, para hacer más legible y más fácil de
-modificar el código.  El texto entre las llaves indica la
-condición que se ha de cumplir.
-
-Si la condición no se cumple, se provocará un error con
-THROW que devolverá el flujo al último `catch`.
-
-Este sistema de filtros y errores permite simplificar el
-código de las acciones porque ahorra muchas estructuras
-condicionales anidadas.
-
-*)
+\ En las siguientes palabras usamos las llaves en sus nombres
+\ como una notación, para hacer más legible y más fácil de
+\ modificar el código.  El texto entre las llaves indica la
+\ condición que se ha de cumplir.
+\
+\ Si la condición no se cumple, se provocará un error con
+\ `throw` que devolverá el flujo al último `catch`.
+\
+\ Este sistema de filtros y errores permite simplificar el
+\ código de las acciones porque ahorra muchas estructuras
+\ condicionales anidadas.
 
 : main-complement{forbidden}  ( -- )
   \ Provoca un error si hay complemento principal.
@@ -8565,27 +8449,23 @@ section( Acciones)  \ {{{
 
 \ XXX TODO -- usar `defer` en lugar de este sistema
 
-(*
+\ Para crear una acción, primero es necesario crear su
+\ identificador con la palabra `action:`, que funciona de forma
+\ parecida a `defer`. Después hay que definir la palabra de la
+\ acción con las palabras previstas para ello, que se ocupan
+\ de darle al identificador el valor de ejecución
+\ correspondiente. Ejemplo de la sintaxis:
 
-Para crear una acción, primero es necesario crear su
-identificador con la palabra `action:`, que funciona de forma
-parecida a `defer`. Después hay que definir la palabra de la
-acción con las palabras previstas para ello, que se ocupan
-de darle al identificador el valor de ejecución
-correspondiente. Ejemplo de la sintaxis:
+\ action: identificador
 
-action: identificador
+\ :action identificador
+\   \ definición de la acción
+\   ;action
 
-:action identificador
-  \ definición de la acción
-  ;action
-
-Todos los identificadores deben ser creados antes de las
-definiciones, pues su objetivo es posibilitar que las
-acciones se llamen unas a otras sin importar el orden en que
-estén definidas en el código fuente.
-
-*)
+\ Todos los identificadores deben ser creados antes de las
+\ definiciones, pues su objetivo es posibilitar que las
+\ acciones se llamen unas a otras sin importar el orden en que
+\ estén definidas en el código fuente.
 
 \ ----------------------------------------------
 subsection( Identificadores)  \ {{{
@@ -10454,15 +10334,11 @@ create conversations-with-ambrosio
 \ }}}---------------------------------------------
 subsection( Guardar el juego)  \ {{{
 
-(*
-
-Para guardar el estado de la partida usaremos una solución
-muy sencilla: ficheros de texto que reproduzcan el código
-Forth necesario para restaurarlas. Esto permitirá
-restaurar una partida con solo interpretar ese fichero
-como cualquier otro código fuente.
-
-*)
+\ Para guardar el estado de la partida usaremos una solución
+\ muy sencilla: ficheros de texto que reproduzcan el código
+\ Forth necesario para restaurarlas. Esto permitirá
+\ restaurar una partida con solo interpretar ese fichero
+\ como cualquier otro código fuente.
 
 0 [if] \ XXX TODO -- pendiente
 : yyyymmddhhmmss$  ( -- ca len )
@@ -10769,43 +10645,39 @@ defer finish
 \ }}} ==========================================================
 section( Intérprete de comandos)  \ {{{
 
-(*
-
-Gracias al uso del propio intérprete de Forth como intérprete de
-comandos del juego, más de la mitad del trabajo ya está hecha por
-anticipado. Para ello basta crear las palabras del vocabulario del
-juego como palabras propias de Forth y hacer que Forth interprete
-directamente la entrada del jugador. Creando las palabras en un
-vocabulario de Forth específico para ellas, y haciendo que sea el
-único vocabulario activo en el momento de la interpretación, solo las
-palabras del juego serán reconocidas, no las del programa ni las del
-sistema Forth.
-
-Sin embargo hay una consideración importante: Al pasarle directamente
-al intérprete de Forth el texto del comando escrito por el jugador,
-Forth ejecutará las palabras que reconozca (haremos que las no
-reconocidas las ignore) en el orden en que estén escritas en la frase.
-Esto quiere decir que, al contrario de lo que ocurre con otros
-métodos, no podremos tener una visión global del comando del jugador:
-ni de cuántas palabras consta ni, en principio, qué viene a
-continuación de la palabra que está siendo interpretada en cada
-momento.
-
-Una solución sería que cada palabra del jugador guardara un
-identificador unívoco en la pila o en una tabla, y posteriormente
-interpretáramos el resultado de una forma convencional.
-
-Sin embargo, hemos optado por dejar a Forth hacer su trabajo hasta el
-final, pues nos parece más sencillo y eficaz [también es más propio
-del espíritu de Forth usar su intérprete como intérprete de la
-aplicación en lugar de programar un intérprete adicional específico].
-Las palabras reconocidas en el comando del jugador se ejecutarán pues
-en el orden en que fueron escritas. Cada una actualizará el elemento
-del comando que represente, verbo o complemento, tras comprobar si ya
-ha habido una palabra previa que realice la misma función y en su caso
-deteniendo el proceso con un error.
-
-*)
+\ Gracias al uso del propio intérprete de Forth como intérprete de
+\ comandos del juego, más de la mitad del trabajo ya está hecha por
+\ anticipado. Para ello basta crear las palabras del vocabulario del
+\ juego como palabras propias de Forth y hacer que Forth interprete
+\ directamente la entrada del jugador. Creando las palabras en un
+\ vocabulario de Forth específico para ellas, y haciendo que sea el
+\ único vocabulario activo en el momento de la interpretación, solo las
+\ palabras del juego serán reconocidas, no las del programa ni las del
+\ sistema Forth.
+\
+\ Sin embargo hay una consideración importante: Al pasarle directamente
+\ al intérprete de Forth el texto del comando escrito por el jugador,
+\ Forth ejecutará las palabras que reconozca (haremos que las no
+\ reconocidas las ignore) en el orden en que estén escritas en la frase.
+\ Esto quiere decir que, al contrario de lo que ocurre con otros
+\ métodos, no podremos tener una visión global del comando del jugador:
+\ ni de cuántas palabras consta ni, en principio, qué viene a
+\ continuación de la palabra que está siendo interpretada en cada
+\ momento.
+\
+\ Una solución sería que cada palabra del jugador guardara un
+\ identificador unívoco en la pila o en una tabla, y posteriormente
+\ interpretáramos el resultado de una forma convencional.
+\
+\ Sin embargo, hemos optado por dejar a Forth hacer su trabajo hasta el
+\ final, pues nos parece más sencillo y eficaz [también es más propio
+\ del espíritu de Forth usar su intérprete como intérprete de la
+\ aplicación en lugar de programar un intérprete adicional específico].
+\ Las palabras reconocidas en el comando del jugador se ejecutarán pues
+\ en el orden en que fueron escritas. Cada una actualizará el elemento
+\ del comando que represente, verbo o complemento, tras comprobar si ya
+\ ha habido una palabra previa que realice la misma función y en su caso
+\ deteniendo el proceso con un error.
 
 variable 'prepositions#  \ Número de (seudo)preposiciones
 : prepositions#  ( -- n )
@@ -10845,34 +10717,30 @@ prepositions# cells constant /prepositional-complements
 \ Tabla de complementos (seudo)preposicionales:
 create prepositional-complements /prepositional-complements allot
 
-(*
-
-Las (seudo)preposiciones permitidas en el juego pueden tener usos
-diferentes, y algunos de ellos dependen del ente al que se refieran,
-por lo que su análisis hay que hacerlo en varios niveles.
-
-Decimos «(seudo)preposiciones» porque algunos de los términos usados
-como preposiciones no lo son [como por ejemplo «usando», que es un
-gerundio] pero se usan como si lo fueran.
-
-Los identificadores creados arriba se refieren a (seudo)preposiciones
-del vocabulario de juego (por ejemplo, «a», «con»...) o a sus
-sinónimos, no a sus posibles usos finales como complementos [por
-ejemplo, destino de movimiento, objeto indirecto, herramienta,
-compañía...]. Por ejemplo, el identificador `«a»-preposition` se usa
-para indicar (en la tabla) que se ha encontrado la preposición «a» [o
-su sinónimo «al»], pero el significado efectivo [por ejemplo, indicar
-una dirección o un objeto indirecto o un objeto directo de persona, en
-este caso] se calculará en una etapa posterior.
-
-Cada elemento de la tabla de complementos (seudo)preposicionales
-representa una (seudo)preposición [incluidos evidentemente sus
-sinónimos]; será apuntado pues por un identificador de
-(seudo)preposición y contendrá el identificador del ente que haya sido
-usado en el comando con dicha (seudo)preposición, o bien cero si la
-(seudo)preposición no ha sido utilizada hasta el momento.
-
-*)
+\ Las (seudo)preposiciones permitidas en el juego pueden tener usos
+\ diferentes, y algunos de ellos dependen del ente al que se refieran,
+\ por lo que su análisis hay que hacerlo en varios niveles.
+\
+\ Decimos «(seudo)preposiciones» porque algunos de los términos usados
+\ como preposiciones no lo son [como por ejemplo «usando», que es un
+\ gerundio] pero se usan como si lo fueran.
+\
+\ Los identificadores creados arriba se refieren a (seudo)preposiciones
+\ del vocabulario de juego (por ejemplo, «a», «con»...) o a sus
+\ sinónimos, no a sus posibles usos finales como complementos [por
+\ ejemplo, destino de movimiento, objeto indirecto, herramienta,
+\ compañía...]. Por ejemplo, el identificador `«a»-preposition` se usa
+\ para indicar (en la tabla) que se ha encontrado la preposición «a» [o
+\ su sinónimo «al»], pero el significado efectivo [por ejemplo, indicar
+\ una dirección o un objeto indirecto o un objeto directo de persona, en
+\ este caso] se calculará en una etapa posterior.
+\
+\ Cada elemento de la tabla de complementos (seudo)preposicionales
+\ representa una (seudo)preposición [incluidos evidentemente sus
+\ sinónimos]; será apuntado pues por un identificador de
+\ (seudo)preposición y contendrá el identificador del ente que haya sido
+\ usado en el comando con dicha (seudo)preposición, o bien cero si la
+\ (seudo)preposición no ha sido utilizada hasta el momento.
 
 : erase-prepositional-complements  ( -- )
   \ Borra la tabla de complementos (seudo)preposicionales.
@@ -11135,49 +11003,37 @@ usado en el comando con dicha (seudo)preposición, o bien cero si la
   then  ;
 
 : (complement!)  ( a -- )
-  \ Comprueba y almacena un complemento.
-  \ a = Identificador de ente
-  [debug-parsing] [??] ~~
-  a-preposition-is-open?  \ ¿Hay una (seudo)preposición abierta?
-  if    prepositional-complement!  \ Sí: complemento (seudo)preposicional
-  else  non-prepositional-complement!  \ No: complemento principal o secundario
-  then  ;
+  a-preposition-is-open?
+  if    prepositional-complement!
+  else  non-prepositional-complement!  then  ;
+  \ Almacena el ente _a_ como complemento.
 
 : complement!  ( a | 0 -- )
+  ?dup ?? (complement!)  ;
   \ Comprueba y almacena un complemento.
   \ a = Identificador de ente,
   \     o cero si se trata de un pronombre sin referente.
-  [debug-parsing] [??] ~~
-  ?dup ?? (complement!)  ;
 
-: action|complement!  ( a1 a2 -- )
-  \ Comprueba y almacena un complemento o una acción,
+: action|complement!  ( xt a -- )
+  action @
+  a-preposition-is-open? or
+  if  nip complement!  else  drop action!  then  ;
+  \ Comprueba y almacena un complemento _a_ o una acción _xt_,
   \ ambos posibles significados de la misma palabra.
-  \ a1 = Dirección de ejecución de la palabra de la acción
-  \ a2 = Identificador de ente
-  action @  \ ¿Hay ya una acción reconocida...
-  a-preposition-is-open? or  \ ...o bien una (seudo)preposición abierta?
-  if    nip complement!  \ Sí: lo tomamos como complemento
-  else  drop action!  \ No: lo tomamos como acción
-  then  ;
 
 \ }}} ==========================================================
 section( Fichero de configuración)  \ {{{
 
-(*
-
-El juego tiene un fichero de configuración en que el jugador
-puede indicar sus preferencias. Este fichero es código en
-Forth y se interpreta directamente, pero en él solo serán
-reconocidas las palabras creadas expresamente para la
-configuración, así como las palabras habituales para hacer
-comentarios de bloques o líneas en Forth. Cualquier otra
-palabra dará error.
-
-El fichero de configuración se lee al inicio de cada
-partida.
-
-*)
+\ El juego tiene un fichero de configuración en que el jugador
+\ puede indicar sus preferencias. Este fichero es código en
+\ Forth y se interpreta directamente, pero en él solo serán
+\ reconocidas las palabras creadas expresamente para la
+\ configuración, así como las palabras habituales para hacer
+\ comentarios de bloques o líneas en Forth. Cualquier otra
+\ palabra dará error.
+\
+\ El fichero de configuración se lee al inicio de cada
+\ partida.
 
 sourcepath 2constant path$
 
@@ -11407,53 +11263,46 @@ restore-vocabularies
 \ }}} ==========================================================
 section( Herramientas para crear el vocabulario del juego)  \ {{{
 
-(*
+\ El vocabulario del juego está implementado como un
+\ vocabulario de Forth, creado con el nombre de
+\ `player-vocabulary`.  La idea es muy sencilla: crearemos en
+\ este vocabulario nuevo palabras de Forth cuyos nombres sean
+\ las palabras españolas que han de ser reconocidas en los
+\ comandos del jugador. De este modo bastará interpretar la
+\ frase del jugador con la palabra estándar EVALUATE
+\ [o, según el sistema Forth de que se trate, con la palabra
+\ escrita a medida EVALUATE-COMMAND ], que ejecutará
+\ cada palabra que contenga el texto.
 
-El vocabulario del juego está implementado como un
-vocabulario de Forth, creado con el nombre de
-`player-vocabulary`.  La idea es muy sencilla: crearemos en
-este vocabulario nuevo palabras de Forth cuyos nombres sean
-las palabras españolas que han de ser reconocidas en los
-comandos del jugador. De este modo bastará interpretar la
-frase del jugador con la palabra estándar EVALUATE
-[o, según el sistema Forth de que se trate, con la palabra
-escrita a medida EVALUATE-COMMAND ], que ejecutará
-cada palabra que contenga el texto.
-
-*)
-
+\ ---------------------------------------------
 \ Resolución de entes ambiguos
 
-(*
-
-Algunos términos del vocabulario del jugador pueden
-referirse a varios entes. Por ejemplo, «hombre» puede
-referirse al jefe de los refugiados o a Ambrosio,
-especialmente antes de que Ulfius hable con él por primera
-vez y sepa su nombre.  Otra palabra, como «ambrosio», solo
-debe ser reconocida cuando Ambrosio ya se ha presentado
-y ha dicho su nombre.
-
-Para estos casos creamos palabras que devuelven el ente
-adecuado en función de las circunstancias.  Serán llamadas
-desde la palabra correspondiente del vocabulario del
-jugador.
-
-Si la ambigüedad no puede ser resuelta, o si la palabra ambigua
-no debe ser reconocida en las circunstancias de juego actuales,
-se devolverá un `false`, que tendrá el mismo efecto que si la
-palabra ambigua no existiera en el comando del jugador. Esto
-provocará después el error adecuado.
-
-Las acciones ambiguas, como por ejemplo «partir» [que puede
-significar «marchar» o «romper»] no pueden ser resueltas de
-esta manera, pues antes es necesario que que todos los
-términos de la frase hayan sido evaluados. Por ello se
-tratan como si fueran acciones como las demás, pero que al
-ejecutarse resolverán la ambigüedad y llamarán a la acción
-adecuada.
-
-*)
+\ Algunos términos del vocabulario del jugador pueden
+\ referirse a varios entes. Por ejemplo, «hombre» puede
+\ referirse al jefe de los refugiados o a Ambrosio,
+\ especialmente antes de que Ulfius hable con él por primera
+\ vez y sepa su nombre.  Otra palabra, como «ambrosio», solo
+\ debe ser reconocida cuando Ambrosio ya se ha presentado
+\ y ha dicho su nombre.
+\
+\ Para estos casos creamos palabras que devuelven el ente
+\ adecuado en función de las circunstancias.  Serán llamadas
+\ desde la palabra correspondiente del vocabulario del
+\ jugador.
+\
+\ Si la ambigüedad no puede ser resuelta, o si la palabra ambigua
+\ no debe ser reconocida en las circunstancias de juego actuales,
+\ se devolverá un `false`, que tendrá el mismo efecto que si la
+\ palabra ambigua no existiera en el comando del jugador. Esto
+\ provocará después el error adecuado.
+\
+\ Las acciones ambiguas, como por ejemplo «partir» [que puede
+\ significar «marchar» o «romper»] no pueden ser resueltas de
+\ esta manera, pues antes es necesario que que todos los
+\ términos de la frase hayan sido evaluados. Por ello se
+\ tratan como si fueran acciones como las demás, pero que al
+\ ejecutarse resolverán la ambigüedad y llamarán a la acción
+\ adecuada.
 
 : (man) ( -- a | false )
   \ Devuelve el ente adecuado a la palabra «hombre» y sus sinónimos
@@ -11566,13 +11415,12 @@ section( Vocabulario del juego)  \ {{{
 \ Elegir el vocabulario `player-vocabulary` para crear en él las nuevas palabras:
 also player-vocabulary definitions
 
+\ ----------------------------------------------
 \ Pronombres
 
-(*
-De momento no se implementan las formas sin tilde
-porque obligarían a distinguir sus usos como adjetivos
-o sustantivos.
-*)
+\ De momento no se implementan las formas sin tilde
+\ porque obligarían a distinguir sus usos como adjetivos
+\ o sustantivos.
 
 \ XXX TODO
 \ esto/s eso/s y aquello/s podrían implementarse como sinónimos
@@ -11599,6 +11447,7 @@ o sustantivos.
 : aquéllas  last-but-one-complement >feminine >plural @ complement!  ;
 ' aquéllas aliases: aquÉllas ;aliases
 
+\ ----------------------------------------------
 \ Verbos
 
 : ir ['] do-go action!  ;
@@ -12142,6 +11991,8 @@ o sustantivos.
 \ XXX TODO:
 \ meter introducir insertar colar encerrar
 
+\ ----------------------------------------------
+
 : ulfius  ulfius% complement!  ;
 : ambrosio  (ambrosio) complement!  ;
 : hombre  (man) complement!  ;
@@ -12249,6 +12100,8 @@ o sustantivos.
 : hiedra  s" hiedra" grass% fs-name! grass% complement!  ;
 : hiedras  s" hiedras" grass% fp-name! grass% complement!  ;
 
+\ ----------------------------------------------
+
 : n  ['] do-go-north north% action|complement!  ;
 ' n aliases:  norte septentrión septentriÓn  ;aliases
 
@@ -12346,6 +12199,7 @@ o sustantivos.
 : paredes  wall% complement!  ;
 ' paredes  aliases: muros ;aliases
 
+\ ----------------------------------------------
 \ Artículos
 
 \ Los artículos no hacen nada pero es necesario crearlos
@@ -12356,6 +12210,7 @@ o sustantivos.
 : la  ;
 ' la aliases: las el los una un unas unos ;aliases
 
+\ ----------------------------------------------
 \ Adjetivos demostrativos
 
 \ Lo mismo hacemos con los adjetivos demostrativos
@@ -12365,6 +12220,7 @@ o sustantivos.
 : esta  ;
 ' esta aliases: estas estos ;aliases
 
+\ ----------------------------------------------
 \ (Seudo)preposiciones
 
 : con  ( -- )
@@ -12406,6 +12262,7 @@ false [if]
 
 [then]
 
+\ ----------------------------------------------
 \ Meta
 
 \ Términos ambiguos
@@ -12508,27 +12365,23 @@ restore-vocabularies
 \ }}} ==========================================================
 section( Vocabulario para entradas «sí» o «no»)  \ {{{
 
-(*
-
-Para los casos en que el programa hace una pregunta que debe
-ser respondida con «sí» o «no», usamos un truco análogo al
-del vocabulario del juego: creamos un vocabulario específico
-con palabras cuyos nombres sean las posibles respuestas:
-«sí», «no», «s» y «n».  Estas palabras actualizarán una
-variable,  con cuyo valor el programa sabrá si se ha
-producido una respuesta válida o no y cuál es.
-
-En principio, si el jugador introdujera varias respuestas
-válidas la última sería la que tendría efecto. Por ejemplo,
-la respuesta «sí sí sí sí sí no» sería considerada negativa.
-Para dotar al método de una chispa de inteligencia, las
-respuestas no cambian el valor de la variable sino que lo
-incrementan o decrementan. Así el mayor número de respuestas
-afirmativas o negativas decide el resultado; y si la
-cantidad es la misma, como por ejemplo en «sí sí no no», el
-resultado será el mismo que si no se hubiera escrito nada.
-
-*)
+\ Para los casos en que el programa hace una pregunta que debe
+\ ser respondida con «sí» o «no», usamos un truco análogo al
+\ del vocabulario del juego: creamos un vocabulario específico
+\ con palabras cuyos nombres sean las posibles respuestas:
+\ «sí», «no», «s» y «n».  Estas palabras actualizarán una
+\ variable,  con cuyo valor el programa sabrá si se ha
+\ producido una respuesta válida o no y cuál es.
+\
+\ En principio, si el jugador introdujera varias respuestas
+\ válidas la última sería la que tendría efecto. Por ejemplo,
+\ la respuesta «sí sí sí sí sí no» sería considerada negativa.
+\ Para dotar al método de una chispa de inteligencia, las
+\ respuestas no cambian el valor de la variable sino que lo
+\ incrementan o decrementan. Así el mayor número de respuestas
+\ afirmativas o negativas decide el resultado; y si la
+\ cantidad es la misma, como por ejemplo en «sí sí no no», el
+\ resultado será el mismo que si no se hubiera escrito nada.
 
 \ XXX TODO -- 2016-06-24: This module has been adapted to _La pistola
 \ de agua_, and simplified a lot. The code could be reused by both
@@ -12617,13 +12470,8 @@ restore-vocabularies
 \ }}} ==========================================================
 section( Entrada de comandos)  \ {{{
 
-(*
-
-Para la entrada de comandos se usa la palabra de Forth
-`accept`, que permite limitar el número máximo de caracteres
-que serán aceptados.
-
-*)
+\ Para la entrada de comandos se usa la palabra de Forth `accept`, que
+\ permite limitar el número máximo de caracteres que serán aceptados.
 
 svariable command  \ Zona de almacenamiento del comando
 
@@ -13084,13 +12932,9 @@ also forth definitions
 \ }}} ==========================================================
 section( Pruebas)  \ {{{
 
-(*
-
-Esta sección contiene código para probar el programa
-sin interactuar con el juego, para detectar mejor posibles
-errores.
-
-*)
+\ Esta sección contiene código para probar el programa
+\ sin interactuar con el juego, para detectar mejor posibles
+\ errores.
 
 true [if]
 
