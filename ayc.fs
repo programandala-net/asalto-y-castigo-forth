@@ -11,7 +11,7 @@ CR .( Asalto y castigo )  \ {{{
 \ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
 
 only forth definitions
-s" 0.9.0+201606261441" 2constant version
+s" 0.9.1+201606261616" 2constant version
 version type cr
 
 \ 'Asalto y castigo' is free software; you can redistribute
@@ -3179,8 +3179,8 @@ entity: enemy%
   \ Espacio necesario para guardar todas las fichas.
 
 create ('entities) /entities allot
-'entities /entities erase
 ' ('entities) is 'entities
+'entities /entities erase
   \ Crear e inicializar la tabla en el diccionario.
 
 \ }}} ==========================================================
@@ -10634,8 +10634,10 @@ restore-vocabularies
   \ hará la restauración de la trama
 
 : file-header  ( -- )
-  s" \ Datos de restauración de una partida de «Asalto y castigo»" >file/
-  s" \ (http://pragramandala.net/es.programa.asalto-y-castigo.forth)" >file/
+  s" \ Datos de restauración de una partida de «Asalto y castigo»"
+  >file/
+  s" \ (http://pragramandala.net/es.programa.asalto_y_castigo.forth.html)"
+  >file/
   s" \ Fichero creado en" yyyy-mm-dd-hh:mm:ss$ s& >file/  ;
   \ Escribe la cabecera del fichero de la partida.
 
@@ -10643,8 +10645,8 @@ restore-vocabularies
   file-header save-entities save-config save-plot  ;
   \ Escribe el contenido del fichero de la partida.
 
-: fs+  ( ca len -- a' u' )  s" .fs" s+  ;
-  \ Añade la extensión .fs a un nombre de fichero.
+: fs+  ( ca1 len2 -- ca2 len2 )  s" .fs" s+  ;
+  \ Añade la extensión «.fs» a un nombre de fichero _ca1 len1_.
 
 : (save-the-game)  ( ca len -- )
   fs+ create-game-file write-game-file close-game-file  ;
