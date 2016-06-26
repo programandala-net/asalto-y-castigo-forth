@@ -1,18 +1,17 @@
 #! /usr/bin/env gforth
 
 \ ==============================================================
-CR .( Asalto y castigo )  \ {{{
+cr .( Asalto y castigo )  \ {{{
 
 \ A text adventure in Spanish,
 \ written in Forth with Gforth.
 
 \ Project under development.
 
-\ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
+\ Version: see file <VERSION.txt>.
+\ Last update: 201606261631
 
-only forth definitions
-s" 0.9.1+201606261616" 2constant version
-version type cr
+\ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
 
 \ 'Asalto y castigo' is free software; you can redistribute
 \ it and/or modify it under the terms of the GNU General
@@ -39,10 +38,7 @@ version type cr
 \ http://caad.es/baltasarq/
 \ http://baltasarq.info
 
-\ Información:
-\
-
-\ ##############################################################
+\ ==============================================================
 \ Documentación
 
 \ El historial de desarrollo está en:
@@ -89,7 +85,9 @@ del mismo elemento, modificado.
 [then]
 
 \ }}} ==========================================================
-CR .( Requisitos)  \ {{{
+cr .( Requisitos)  \ {{{
+
+only forth definitions
 
 \ ----------------------------------------------
 \ De Gforth
@@ -171,6 +169,8 @@ false to halto?
 
 \ }}} ==========================================================
 \ Meta \ {{{
+
+s" VERSION.txt" slurp-file 2constant version
 
 : wait  key drop  ;
 
@@ -1709,9 +1709,11 @@ svariable narration-prompt
   \ Imprime el presto de fin de escena.
 
 : (break)  ( +n|-n -- )
-  [false] [if]  \ XXX OLD -- antiguo. versión primera, que no coloreaba la línea
+  [false] [if]
+    \ XXX OLD -- antiguo. versión primera, que no coloreaba la línea
     wait  trm+erase-line print_start_of_line
-  [else]  \ XXX NEW
+  [else]
+    \ XXX NEW
     wait  print_start_of_line
     trm+save-current-state background-line trm+restore-current-state
   [then]  ;
@@ -13089,6 +13091,15 @@ true [if]
   ~~
   used-prepositions ?
   ~~  ;
+
+: bla$  ( -- ca len )
+  s" bla bla bla bla bla bla bla bla bla bla bla bla bla bla"  ;
+
+: blabla  ( -- )
+  bla$ s& bla$ s& bla$ s& bla$ s& bla$ s& bla$ s& bla$ s& bla$ s&
+  bla$ s& bla$ s& bla$ s& bla$ s& bla$ s& bla$ s& bla$ s& bla$ s&
+  bla$ s& bla$ s& bla$ s& bla$ s& bla$ s& bla$ s& bla$ s& bla$ s&
+  narrate  ;
 
 [then]
 
