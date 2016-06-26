@@ -1,4 +1,16 @@
-\ **** Estilo «desierto» ****
+\ config/color.desierto.fs
+
+\ Combinación de colores «desierto»
+
+\ Este fichero forma parte de
+\ «Asalto y castigo>
+\ http://programandala.net/es.programa.asalto_y_castigo.forth.html
+
+\ Autor: Marcos Cruz (programandala.net), 2011..2016
+
+\ Última modificación: 201606261937
+
+\ ==============================================================
 
 amarillo papel_de_fondo
 marrón tinta_de_créditos

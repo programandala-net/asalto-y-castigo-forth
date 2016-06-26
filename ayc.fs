@@ -9,7 +9,7 @@ cr .( Asalto y castigo )  \ {{{
 \ Project under development.
 
 \ Version: see file <VERSION.txt>.
-\ Last update: 201606261908
+\ Last update: 201606261941
 
 \ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
 
@@ -11103,7 +11103,7 @@ sourcepath 2constant path$
 : config-dir$  ( -- ca len )  s" config/"  ;
   \ Directorio de los ficheros de configuración.
 
-: default-config-file$  ( -- ca len )  s" default.fs"  ;
+: default-config-file$  ( -- ca len )  s" predeterminado.fs"  ;
   \ Fichero de configuración predeterminado, sin ruta.
 
 svariable temporary-config-file  temporary-config-file off
@@ -11144,6 +11144,8 @@ also config-vocabulary  definitions
 ' \ alias \  immediate
 ' true alias sí
 ' false alias no
+
+' include alias incluye
 
 : varón  ( -- )  woman-player? off  ;
   \ Configura que el jugador es un varón.
@@ -11331,9 +11333,7 @@ false [if]
 
 : read-config  ( -- )
   only config-vocabulary seal
-  config-file$
-  2dup cr type  \ XXX INFORMER
-  ['] included catch  ( x1 x2 n | 0 )
+  config-file$ ['] included catch  ( x1 x2 n | 0 )
   restore-vocabularies
   \ ?dup if  nip nip ( n ) read-config-error  then  ; \ XXX TODO
   if  2drop read-config-error  then  ;

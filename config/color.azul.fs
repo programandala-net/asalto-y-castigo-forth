@@ -1,4 +1,16 @@
-\ **** Estilo «azul» ****
+\ config/color.azul.fs
+
+\ Combinación de colores «azul»
+
+\ Este fichero forma parte de
+\ «Asalto y castigo>
+\ http://programandala.net/es.programa.asalto_y_castigo.forth.html
+
+\ Autor: Marcos Cruz (programandala.net), 2011..2016
+
+\ Última modificación: 201606261937
+
+\ ==============================================================
 
 azul papel_de_fondo
 blanco tinta_de_créditos

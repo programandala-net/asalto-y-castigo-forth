@@ -1,4 +1,16 @@
-\ **** Estilo «monitor de fósforo verde» ****
+\ config/color.monitor_verde.fs
+
+\ Combinación de colores «monitor de fósforo verde»
+
+\ Este fichero forma parte de
+\ «Asalto y castigo>
+\ http://programandala.net/es.programa.asalto_y_castigo.forth.html
+
+\ Autor: Marcos Cruz (programandala.net), 2011..2016
+
+\ Última modificación: 201606261937
+
+\ ==============================================================
 
 negro papel_de_fondo
 verde tinta_de_créditos
