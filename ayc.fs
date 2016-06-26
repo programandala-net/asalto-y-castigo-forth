@@ -9,7 +9,7 @@ cr .( Asalto y castigo )  \ {{{
 \ Project under development.
 
 \ Version: see file <VERSION.txt>.
-\ Last update: 201606261631
+\ Last update: 201606261640
 
 \ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
 
@@ -136,6 +136,7 @@ require galope/paper.fs
 require galope/plus-plus.fs  \ `++`
 require galope/print.fs  \ Impresión de textos ajustados
 require galope/question-empty.fs  \ `?empty`
+require galope/question-execute.fs  \ `?execute`
 require galope/question-keep.fs  \ `?keep`
 require galope/question-question.fs  \ `??`
 require galope/random_strings.fs  \ Selección aleatoria de cadenas de texto
@@ -6998,10 +6999,6 @@ true [if]
   ' ; alias ;before-leaving-location  immediate
 [then]
 
-: ?execute  ( xt | 0 -- )  ?dup ?? execute  ;
-  \ Ejecuta un vector de ejecución, si no es cero.
-  \ XXX TODO -- move to Galope
-
 : before-describing-location  ( a -- )
   before-describing-any-location
   before-describing-location-xt ?execute  ;
@@ -8104,11 +8101,9 @@ create 'language-error-verbosity-xt
 ' repeated-preposition constant (repeated-preposition-error#)
 ' (repeated-preposition-error#) is repeated-preposition-error#
 
-: ?wrong  ( xt | 0 -- )  ?dup ?? execute  ;
-  \ Informa, si es preciso, de un error en el comando.
-  \ xt = Dirección de ejecución de la palabra de error (que se usa también como código del error)
-  \ [debug-catch] [debug-parsing] [or] [??] ~~
-  \ XXX TODO -- use `?execute` instead
+' ?execute alias ?wrong  ( xt | 0 -- )
+  \ Informa, si es preciso, de un error en el comando.  _xt_ es tanto
+  \ la palabra que muestra el error como el código del error.
 
 \ }}} ==========================================================
 section( Herramientas para crear las acciones)  \ {{{
