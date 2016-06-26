@@ -1,7 +1,35 @@
 = Tareas pendientes de Asalto y castigo
-:revdate: 2016-06-12
+:revdate: 2016-06-26
 
 == Programación
+
+2016-06-26:
+
+- Crear un directorio para ficheros de configuración.
+- Extraer del fichero de configuración la explicación
+  y moverla a la documentación general.
+- Dividir el fichero de configuración, separando las configuraciones
+  de colores.
+- Añadir un comando de sistema para cargar un fichero de
+  configuración.
+- Añadir `incluir_fichero` a los comandos de configuración.
+- Añadir un comando inmediato para que el jugador pueda dar un comando
+  de configuración.
+
+2016-06-26:
+
+Confirmar esto que se dice en el fichero de configuración:
+
+____
+El color de fondo de la pantalla es configurable pero con una
+limitación: cuando la pantalla se enrolla (se desplaza hacia arriba)
+el color del sistema se utilizará en las nuevas líneas que aparezcan
+por debajo.
+____
+
+2016-06-26:
+
+Mover `?execute` a Galope y usarlo en vez de `?wrong`.
 
 2016-06-25:
 
@@ -119,6 +147,7 @@ opción será configurable.
 
 Error:
 
+----
   Hecho.
   > i
   Llevas contigo tu capa (puesta), tu coraza (puesta), el
@@ -138,6 +167,8 @@ Oeste. Al fondo puede oírse un gran estruendo.
   Main : pedernal
   Ya llevas eso contigo.
   >
+----
+
 '''
 2012-05-16:
 
