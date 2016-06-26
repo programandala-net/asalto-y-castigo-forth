@@ -9,7 +9,7 @@ cr .( Asalto y castigo )  \ {{{
 \ Project under development.
 
 \ Version: see file <VERSION.txt>.
-\ Last update: 201606261640
+\ Last update: 201606261908
 
 \ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
 
@@ -87,7 +87,7 @@ del mismo elemento, modificado.
 \ }}} ==========================================================
 cr .( Requisitos)  \ {{{
 
-only forth definitions
+only forth definitions  decimal
 
 \ ----------------------------------------------
 \ De Gforth
@@ -173,7 +173,7 @@ false to halto?
 
 s" VERSION.txt" slurp-file 2constant version
 
-: wait  key drop  ;
+: press-key  ( -- ) key drop  ;
 
 \ Indicadores para depuración
 
@@ -211,7 +211,7 @@ true constant [old-method]  immediate
   cr ." Aviso: La pila no está vacía. Contenido: "  ;
 
 : .s?  ( -- )
-  depth if  depth-warning .s cr  wait  then  ;
+  depth if  depth-warning .s cr  press-key  then  ;
   \ Imprime el contenido de la pila si no está vacía.
 
 : section(  ( "text<bracket>" -- )
@@ -272,8 +272,6 @@ pad 0 2constant ""  \ Simula una cadena vacía.
   \ (pues es un número de 32 bitios),
   \ pero así queda mejor hecho.
   \ XXX TODO -- confirmar este cálculo, pues depende de si el número se considera con signo o no
-
-' bootmessage alias .forth
 
 \ }}} ==========================================================
 section( Vectores)  \ {{{
@@ -536,9 +534,9 @@ variable action-error-paper
   red debug-paper !
   gray description-ink !
   black description-paper !
-  light_red language-error-ink !
+  light-red language-error-ink !
   black language-error-paper !
-  light_cyan input-ink !
+  light-cyan input-ink !
   black input-paper !
   green location-description-ink !
   black location-description-paper !
@@ -552,9 +550,9 @@ variable action-error-paper
   black question-paper !
   green scene-prompt-ink !
   black scene-prompt-paper !
-  light_gray speech-ink !
+  light-gray speech-ink !
   black speech-paper !
-  light_red system-error-ink !
+  light-red system-error-ink !
   black system-error-paper !
   green narration-prompt-ink !
   black narration-prompt-paper !  ;
@@ -644,17 +642,17 @@ subsection( Demo de colores)  \ {{{
   cr ." Colores descritos como se ven en Debian"
   black color-bar ." negro"
   gray color-bar ." gris"
-  light_gray color-bar ." gris claro"
+  light-gray color-bar ." gris claro"
   blue color-bar ." azul"
-  light_blue color-bar ." azul claro"
+  light-blue color-bar ." azul claro"
   cyan color-bar ." cian"
-  light_cyan color-bar ." cian claro"
+  light-cyan color-bar ." cian claro"
   green color-bar ." verde"
-  light_green color-bar ." verde claro"
+  light-green color-bar ." verde claro"
   magenta color-bar ." magenta"
-  light_magenta color-bar ." magenta claro"
+  light-magenta color-bar ." magenta claro"
   red color-bar ." rojo"
-  light_red color-bar ." rojo claro"
+  light-red color-bar ." rojo claro"
   brown color-bar ." marrón"
   yellow color-bar ." amarillo"
   white color-bar ." blanco"
@@ -662,7 +660,7 @@ subsection( Demo de colores)  \ {{{
   \ brown color-bar ." marrón"
   \ red color-bar ." rojo"
   \ brown color-bar ." marrón"
-  system_colors cr  ;
+  system-colors cr  ;
   \ Prueba los colores.
 
 \ }}}---------------------------------------------
@@ -768,7 +766,7 @@ section( Depuración)  \ {{{
   \ Imprime el mensaje del punto de chequeo, si no está vacío.
 
 : debug-pause  ( -- )
-  [debug-pause] [if]  depth ?? wait [then]  ;
+  [debug-pause] [if]  depth ?? press-key [then]  ;
   \ Pausa tras mostrar la información de depuración.
 
 : debug  ( ca len -- )
@@ -1663,20 +1661,20 @@ variable indent-first-line-too?
   \ Imprime un texto _ca len_ justificado como inicio de un párrafo.
 
 : (language-error)  ( ca len -- )
-  language-error-color paragraph system_colors  ;
+  language-error-color paragraph system-colors  ;
   \ Imprime una cadena como un informe de error lingüístico.
   \ XXX TODO -- renombrar
 
 : action-error  ( ca len -- )
-  action-error-color paragraph system_colors  ;
+  action-error-color paragraph system-colors  ;
   \ Imprime una cadena como un informe de error de un comando.
 
 : system-error  ( ca len -- )
-  system-error-color paragraph system_colors  ;
+  system-error-color paragraph system-colors  ;
   \ Imprime una cadena como un informe de error del sistema.
 
 : narrate  ( ca len -- )
-  narration-color paragraph system_colors  ;
+  narration-color paragraph system-colors  ;
   \ Imprime una cadena como una narración.
 
 \ }}}---------------------------------------------
@@ -1712,10 +1710,10 @@ svariable narration-prompt
 : (break)  ( +n|-n -- )
   [false] [if]
     \ XXX OLD -- antiguo. versión primera, que no coloreaba la línea
-    wait  trm+erase-line print_start_of_line
+    press-key  trm+erase-line print_start_of_line
   [else]
     \ XXX NEW
-    wait  print_start_of_line
+    press-key  print_start_of_line
     trm+save-current-state background-line trm+restore-current-state
   [then]  ;
   \ Hace una pausa de _+n_
@@ -1827,7 +1825,7 @@ false [if]  \ XXX OLD -- obsoleto
   \ Pone comillas o raya a una cita de un diálogo.
 
 : speak  ( ca len -- )
-  quoted speech-color paragraph system_colors  ;
+  quoted speech-color paragraph system-colors  ;
   \ Imprime una cita de un diálogo.
 
 \ }}}
@@ -11102,14 +11100,25 @@ section( Fichero de configuración)  \ {{{
 
 sourcepath 2constant path$
 
-: config-file$  ( -- ca len )  path$ s" ayc.ini.fs" s+  ;
-  \ Fichero de configuración.
-  \ XXX FIXME
-  \ `.` está en `fpath` en mi gforth
-  \ s" ./ayc.ini.fs" \ lo encuentra al arrancar desde el dir del programa; no desde otro
-  \ s" ayc.ini.fs" \ ídem
-  \ Tras hacer un enlace /usr/share/gforth/site-forth/ayc al dir del proyecto:
-  \ s" ayc/ayc.ini.fs" \ lo encuentra desde cualquier dir
+: config-dir$  ( -- ca len )  s" config/"  ;
+  \ Directorio de los ficheros de configuración.
+
+: default-config-file$  ( -- ca len )  s" default.fs"  ;
+  \ Fichero de configuración predeterminado, sin ruta.
+
+svariable temporary-config-file  temporary-config-file off
+
+: current-config-file$  ( -- ca len )
+  temporary-config-file count dup
+  if    >sb temporary-config-file off
+  else  2drop default-config-file$  then  ;
+  \ Fichero de configuración actual: el temporal especificado en un
+  \ comando o, si su nombre está vacío, el predeterminado. Sin ruta
+  \ en cualquier caso.
+
+: config-file$  ( -- ca len )
+  path$ config-dir$ s+ current-config-file$ s+  ;
+  \ Fichero de configuración con su ruta completa.
 
 svariable command-prompt
 
@@ -11185,18 +11194,18 @@ also config-vocabulary  definitions
 
 ' black alias negro
 ' blue alias azul
-' light_blue alias azul_claro
+' light-blue alias azul_claro
 ' brown alias marrón
 ' cyan alias cian
-' light_cyan alias cian_claro
+' light-cyan alias cian_claro
 ' green alias verde
-' light_green alias verde_claro
+' light-green alias verde_claro
 ' gray alias gris
-' light_gray alias gris_claro
+' light-gray alias gris_claro
 ' magenta alias magenta
-' light_magenta alias magenta_claro
+' light-magenta alias magenta_claro
 ' red alias rojo
-' light_red alias rojo_claro
+' light-red alias rojo_claro
 ' white alias blanco
 ' yellow alias amarillo
 
@@ -11301,18 +11310,34 @@ restore-vocabularies
   \ Inicializa las variables de configuración con sus valores
   \ predeterminados.
 
+false [if]
+
+: read-config-error  ( n -- )
+  s" Se ha producido un error #"
+  rot n>str s+
+  s"  leyendo el fichero de configuración." s+
+  system-error press-key  ;
+  \ XXX TODO -- El error no es significativo porque siempre es #-37,
+  \ no el que ha causado el fallo de interpretación del fichero.
+  \ Por eso de momento esta versión está desactivada.
+
+[else]
+
 : read-config-error  ( -- )
   s" Se ha producido un error leyendo el fichero de configuración."
-  system-error wait  ;
+  system-error press-key  ;
+
+[then]
 
 : read-config  ( -- )
-  base @ decimal
-  only config-vocabulary
-  config-file$ 2dup type ['] included catch  ( x1 x2 n | 0 )
-  if  2drop  read-config-error  then
-  restore-vocabularies  base !  ;
+  only config-vocabulary seal
+  config-file$
+  2dup cr type  \ XXX INFORMER
+  ['] included catch  ( x1 x2 n | 0 )
+  restore-vocabularies
+  \ ?dup if  nip nip ( n ) read-config-error  then  ; \ XXX TODO
+  if  2drop read-config-error  then  ;
   \ Lee el fichero de configuración.
-  \ XXX TODO -- atrapar errores al leerlo
 
 : get-config  ( -- )
   init-config read-config  ;
@@ -12331,22 +12356,18 @@ false [if]
 : #colorear  ( -- )  ['] recolor action!  ;
   \ Restaura los colores predeterminados.
 
-' #colorear aliases:
-  #colorea #coloreo
-  #recolorear #recolorea #recoloreo
-  #pintar #pinta #pinto
-  #limpiar #limpia #limpio
-  ;aliases
+: #configurar  ( "name" | -- )
+  parse-name temporary-config-file place
+  ['] read-config action!  ; immediate
+  \ Carga el fichero de configuración _name_.  Si no se indica _name_,
+  \ se cargará el fichero de configuración predeterminado.
 
-: #configurar  ( -- )  ['] get-config action!  ;
-  \ Restaura la configuración predeterminada
-  \ y después carga el fichero de configuración
-
-' #configurar aliases:
-  #reconfigurar
-  #configura #configuro
-  #reconfigura #reconfiguro
-  ;aliases
+: #reconfigurar  ( "name" | -- )
+  parse-name temporary-config-file place
+  ['] get-config action!  ; immediate
+  \ Restaura la configuración predeterminada y después carga el
+  \ fichero de configuración _name_.  Si no se indica _name_, se
+  \ cargará el fichero de configuración predeterminado.
 
 : #grabar  ( "name" -- )
   [debug-parsing] [??] ~~
@@ -12355,12 +12376,6 @@ false [if]
   ['] save-the-game action!
   [debug-parsing] [??] ~~
   ;  immediate
-' #grabar immediate-aliases:
-  #graba #grabo
-  #exportar #exporta #exporto
-  #salvar #salva #salvo
-  #guardar #guarda #guardo
-  ;aliases
   \ Graba el estado de la partida en un fichero.
 
 : #cargar  ( "name" -- )
@@ -12372,14 +12387,6 @@ false [if]
   ['] load-the-game action!
   [debug-parsing] [??] ~~
   ;  immediate
-' #cargar immediate-aliases:
-  #carga #cargo
-  #importar #importa #importo
-  #leer #lee #leo
-  #recargar #recarga #recargo
-  #recuperar #recupera #recupero
-  #restaurar #restaura #restauro
-  ;aliases
   \ Carga el estado de la partida de un fichero.
 
 : #fin  ( -- )  ['] finish action!  ;
@@ -12408,10 +12415,15 @@ false [if]
   #socorro #auxilio #favor
   ;aliases
 
-\ XXX TMP -- Comandos para usar durante el desarrollo:
-\ : forth  (finish)  ;
-: bye  bye  ;
-: quit  quit  ;
+: #forth  ( -- )
+  restore-vocabularies system-colors cr bootmessage cr quit  ;
+  \ XXX TMP -- Para usar durante el desarrollo.
+
+: #bye  ( -- )  bye  ;
+  \ XXX TMP -- Para usar durante el desarrollo.
+
+: #quit  ( -- )  quit  ;
+  \ XXX TMP -- Para usar durante el desarrollo.
 
 restore-vocabularies
 
@@ -12683,8 +12695,7 @@ false [if]
   \ XXX TODO -- not used
 
 : surrender?  ( -- f )
-  ['] surrender?$ yes?
-  ~~  ;  \ XXX INFORMER
+  ['] surrender?$ yes?  ;
   \ ¿Quiere el jugador dejar el juego?
 
 : game-over?  ( -- f )  success? failure? or  ;
@@ -12785,7 +12796,8 @@ false [if]
   \ Mensaje final del juego.
 
 : (finish)  ( -- )
-  restore-vocabularies system_colors cr .forth quit  ;
+  \ restore-vocabularies system-colors cr bootmessage quit  ; \ XXX OLD
+  bye  ;  \ XXX NEW
   \ Abandonar el juego.
 
 :noname  ( -- )

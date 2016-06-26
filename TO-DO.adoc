@@ -5,13 +5,8 @@
 
 2016-06-26:
 
-- Crear un directorio para ficheros de configuración.
 - Extraer del fichero de configuración la explicación
   y moverla a la documentación general.
-- Dividir el fichero de configuración, separando las configuraciones
-  de colores.
-- Añadir un comando de sistema para cargar un fichero de
-  configuración.
 - Añadir `incluir_fichero` a los comandos de configuración.
 - Añadir un comando inmediato para que el jugador pueda dar un comando
   de configuración.
@@ -26,10 +21,6 @@ limitación: cuando la pantalla se enrolla (se desplaza hacia arriba)
 el color del sistema se utilizará en las nuevas líneas que aparezcan
 por debajo.
 ____
-
-2016-06-26:
-
-Mover `?execute` a Galope y usarlo en vez de `?wrong`.
 
 2016-06-25:
 
@@ -59,11 +50,6 @@ rescate».
   ¿Te quedan fuerzas para probar una vez más?
 Pila: <2> 1989697584 1989857760 
 ----
-
-2016-02-03:
-
-Fallo: los metacomandos como `#configura` no funcionan, y se repite la
-orden anterior:
 
 2016-02-03:
 

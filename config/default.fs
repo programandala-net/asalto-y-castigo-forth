@@ -1,4 +1,4 @@
-\ ayc.ini.fs
+\ config/default.fs
 
 \ Fichero de configuración de:
 \ «Asalto y castigo»
@@ -7,7 +7,7 @@
 \ Página del programa:
 \ http://programandala.net/es.programa.asalto_y_castigo.forth
 
-\ Última modificación: 201606261411
+\ Última modificación: 201606261733
 
 \ --------------------------------------------------------------
 \ Observaciones
@@ -363,152 +363,5 @@ negro papel_de_error_operativo
 
 rojo_claro tinta_de_error_del_sistema
 negro papel_de_error_del_sistema
-
-\ --------------------------------------------------------------
-\ Ejemplos de combinaciones de colores
-
-\ **** Estilo «ceniza» ****
-
-(
-negro papel_de_fondo
-gris tinta_de_créditos
-negro papel_de_créditos
-gris tinta_de_narración
-negro papel_de_narración
-negro tinta_de_presto_de_comandos
-gris papel_de_presto_de_comandos
-gris tinta_de_entrada
-negro papel_de_entrada
-negro tinta_de_nombre_de_escenario
-gris papel_de_nombre_de_escenario
-gris tinta_de_descripción_de_escenario
-negro papel_de_descripción_de_escenario
-gris tinta_de_descripción
-negro papel_de_descripción
-gris tinta_de_presto_de_pantalla_llena
-negro papel_de_presto_de_pantalla_llena
-gris tinta_de_presto_de_pausa_de_narración
-negro papel_de_presto_de_pausa_de_narración
-gris tinta_de_presto_de_escena
-negro papel_de_presto_de_escena
-gris tinta_de_diálogos
-negro papel_de_diálogos
-gris tinta_de_pregunta
-negro papel_de_pregunta
-gris tinta_de_error_lingüístico
-negro papel_de_error_lingüístico
-gris tinta_de_error_operativo
-negro papel_de_error_operativo
-gris tinta_de_error_del_sistema
-negro papel_de_error_del_sistema
-)
-
-\ **** Estilo «monitor de fósforo verde» ****
-
-(
-negro papel_de_fondo
-verde tinta_de_créditos
-negro papel_de_créditos
-verde tinta_de_narración
-negro papel_de_narración
-negro tinta_de_presto_de_comandos
-verde papel_de_presto_de_comandos
-verde tinta_de_entrada
-negro papel_de_entrada
-negro tinta_de_nombre_de_escenario
-verde papel_de_nombre_de_escenario
-verde tinta_de_descripción_de_escenario
-negro papel_de_descripción_de_escenario
-verde tinta_de_descripción
-negro papel_de_descripción
-verde tinta_de_presto_de_pantalla_llena
-negro papel_de_presto_de_pantalla_llena
-verde tinta_de_presto_de_pausa_de_narración
-negro papel_de_presto_de_pausa_de_narración
-verde tinta_de_presto_de_escena
-negro papel_de_presto_de_escena
-verde tinta_de_diálogos
-negro papel_de_diálogos
-verde tinta_de_pregunta
-negro papel_de_pregunta
-verde tinta_de_error_lingüístico
-negro papel_de_error_lingüístico
-negro tinta_de_error_operativo
-verde papel_de_error_operativo
-verde tinta_de_error_del_sistema
-negro papel_de_error_del_sistema
-)
-
-\ **** Estilo «monitor de fósforo ámbar» ****
-
-(
-negro papel_de_fondo
-marrón tinta_de_créditos
-negro papel_de_créditos
-marrón tinta_de_narración
-negro papel_de_narración
-negro tinta_de_presto_de_comandos
-marrón papel_de_presto_de_comandos
-marrón tinta_de_entrada
-negro papel_de_entrada
-negro tinta_de_nombre_de_escenario
-marrón papel_de_nombre_de_escenario
-marrón tinta_de_descripción_de_escenario
-negro papel_de_descripción_de_escenario
-marrón tinta_de_descripción
-negro papel_de_descripción
-marrón tinta_de_presto_de_pantalla_llena
-negro papel_de_presto_de_pantalla_llena
-marrón tinta_de_presto_de_pausa_de_narración
-negro papel_de_presto_de_pausa_de_narración
-marrón tinta_de_presto_de_escena
-negro papel_de_presto_de_escena
-marrón tinta_de_diálogos
-negro papel_de_diálogos
-marrón tinta_de_pregunta
-negro papel_de_pregunta
-marrón tinta_de_error_lingüístico
-negro papel_de_error_lingüístico
-marrón tinta_de_error_operativo
-negro papel_de_error_operativo
-marrón tinta_de_error_del_sistema
-negro papel_de_error_del_sistema
-)
-
-\ **** Estilo «desierto» ****
-
-(
-amarillo papel_de_fondo
-marrón tinta_de_créditos
-amarillo papel_de_créditos
-marrón tinta_de_narración
-amarillo papel_de_narración
-amarillo tinta_de_presto_de_comandos
-marrón papel_de_presto_de_comandos
-marrón tinta_de_entrada
-amarillo papel_de_entrada
-amarillo tinta_de_nombre_de_escenario
-marrón papel_de_nombre_de_escenario
-marrón tinta_de_descripción_de_escenario
-amarillo papel_de_descripción_de_escenario
-marrón tinta_de_descripción
-amarillo papel_de_descripción
-marrón tinta_de_presto_de_pantalla_llena
-amarillo papel_de_presto_de_pantalla_llena
-marrón tinta_de_presto_de_pausa_de_narración
-amarillo papel_de_presto_de_pausa_de_narración
-marrón tinta_de_presto_de_escena
-amarillo papel_de_presto_de_escena
-marrón tinta_de_diálogos
-amarillo papel_de_diálogos
-marrón tinta_de_pregunta
-amarillo papel_de_pregunta
-marrón tinta_de_error_lingüístico
-amarillo papel_de_error_lingüístico
-marrón tinta_de_error_operativo
-amarillo papel_de_error_operativo
-marrón tinta_de_error_del_sistema
-amarillo papel_de_error_del_sistema
-)
 
 \ vim: textwidth=64
