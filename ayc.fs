@@ -11,7 +11,7 @@ CR .( Asalto y castigo )  \ {{{
 \ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
 
 only forth definitions
-s" 0.9.0+201606261356" 2constant version
+s" 0.9.0+201606261441" 2constant version
 version type cr
 
 \ 'Asalto y castigo' is free software; you can redistribute
@@ -176,17 +176,28 @@ false to halto?
 
 \ Indicadores para depuración
 
-false value [debug] immediate  \ ¿Depuración global?
-false value [debug-init] immediate  \ ¿Depurar la inicialización?
-false value [debug-parsing] immediate  \ ¿Depurar el analizador?
-false value [debug-parsing-result] immediate  \ ¿Mostrar el resultado del analizador?
-false value [debug-filing] immediate  \ ¿Depurar operaciones de ficheros?
-false value [debug-do-exits] immediate  \ ¿Depurar la acción `do-exits`?
-false value [debug-catch] immediate  \ ¿Depurar `catch` y `throw`?
-false value [debug-save] immediate  \ ¿Depurar la grabación de partidas?
-true value [debug-info] immediate  \ ¿Mostrar info sobre el presto de comandos?
-false value [debug-pause] immediate  \ ¿Hacer pausa en puntos de depuración?
-false value [debug-map] immediate  \ ¿Mostrar el número de escenario del juego original?
+false value [debug] immediate
+  \ ¿Depuración global?
+false value [debug-init] immediate
+  \ ¿Depurar la inicialización?
+false value [debug-parsing] immediate
+  \ ¿Depurar el analizador?
+false value [debug-parsing-result] immediate
+  \ ¿Mostrar el resultado del analizador?
+false value [debug-filing] immediate
+  \ ¿Depurar operaciones de ficheros?
+false value [debug-do-exits] immediate
+  \ ¿Depurar la acción `do-exits`?
+false value [debug-catch] immediate
+  \ ¿Depurar `catch` y `throw`?
+false value [debug-save] immediate
+  \ ¿Depurar la grabación de partidas?
+true value [debug-info] immediate
+  \ ¿Mostrar info sobre el presto de comandos?
+false value [debug-pause] immediate
+  \ ¿Hacer pausa en puntos de depuración?
+false value [debug-map] immediate
+  \ ¿Mostrar el número de escenario del juego original?
 
 \ Indicadores para poder elegir alternativas que aún son experimentales
 
@@ -229,11 +240,21 @@ restore-vocabularies
 
 \ Demás vocabularios
 
-vocabulary menu-vocabulary  \ palabras del menú \ XXX TODO -- not used yet
-vocabulary player-vocabulary  \ palabras del jugador
-vocabulary answer-vocabulary  \ respuestas a preguntas de «sí» o «no»
-vocabulary config-vocabulary  \ palabras de configuración del juego
-vocabulary restore-vocabulary  \ palabras de restauración de una partida
+vocabulary menu-vocabulary
+  \ Palabras del menú.
+  \ XXX TODO -- not used yet
+
+vocabulary player-vocabulary
+  \ Palabras del jugador.
+
+vocabulary answer-vocabulary
+  \ Respuestas a preguntas de «sí» o «no».
+
+vocabulary config-vocabulary
+  \ Palabras de configuración del juego.
+
+vocabulary restore-vocabulary
+  \ Palabras de restauración de una partida.
 
 \ }}} ==========================================================
 section( Palabras genéricas)  \ {{{
@@ -258,15 +279,16 @@ section( Vectores)  \ {{{
 
 \ XXX TODO -- efecto de pila
 
-defer protagonist%  \ Ente protagonista
-defer sword%  \ Ente espada
-defer stone%  \ Ente piedra
-defer torch%  \ Antorcha
-defer leader%  \ Ente líder de los refugiados
-defer location-01%  \ Primer ente escenario
+defer protagonist%  \ Ente protagonista.
+defer sword%        \ Ente espada.
+defer stone%        \ Ente piedra.
+defer torch%        \ Antorcha.
+defer leader%       \ Ente líder de los refugiados.
+defer location-01%  \ Primer ente escenario.
+defer exits%        \ Ente "salidas".
 
-defer list-exits  \ Crea e imprime la lista de salidas
-defer exits%  \ Ente "salidas"
+defer list-exits  ( -- )
+  \ Crea e imprime la lista de salidas.
 
 \ }}} ==========================================================
 section( Códigos de error)  \ {{{
@@ -367,19 +389,46 @@ section( Variables y constantes)  \ {{{
 \ Algunas variables de configuración
 \ (el resto se crea en sus propias secciones)
 
-variable woman-player?  \ ¿El jugador es una mujer?
-variable castilian-quotes?  \ ¿Usar comillas castellanas en las citas, en lugar de raya?
-variable location-page?  \ ¿Borrar la pantalla antes de entrar en un escenario o de describirlo?
-variable cr?  \ ¿Separar los párrafos con una línea en blanco?
-variable ignore-unknown-words?  \ ¿Ignorar las palabras desconocidas?  \ XXX TODO -- not used yet
-variable scene-page?  \ ¿Borrar la pantalla después de la pausa de los cambios de escena?
-variable language-errors-verbosity  \ Nivel de detalle de los mensajes de error lingüístico
-svariable 'language-error-general-message$  \ Mensaje de error lingüístico para el nivel 1
-variable action-errors-verbosity  \ Nivel de detalle de los mensajes de error operativo
-svariable 'action-error-general-message$  \ Mensaje de error operativo para el nivel 1
-0 constant min-errors-verbosity  \ Nivel mínimo para el detalle de errores
-2 constant max-errors-verbosity  \ Nivel máximo para el detalle de errores
-variable repeat-previous-action?  \ ¿Repetir la acción anterior cuando no se especifica otra en el comando?
+variable woman-player?
+  \ ¿El jugador es una mujer?
+
+variable castilian-quotes?
+  \ ¿Usar comillas castellanas en las citas, en lugar de raya?
+
+variable location-page?
+  \ ¿Borrar la pantalla antes de entrar en un escenario o de describirlo?
+
+variable cr?
+  \ ¿Separar los párrafos con una línea en blanco?
+
+variable ignore-unknown-words?
+  \ ¿Ignorar las palabras desconocidas?
+  \ XXX TODO -- not used yet
+
+variable scene-page?
+  \ ¿Borrar la pantalla después de la pausa de los cambios de escena?
+
+variable language-errors-verbosity
+  \ Nivel de detalle de los mensajes de error lingüístico.
+
+svariable 'language-error-general-message$
+  \ Mensaje de error lingüístico para el nivel 1.
+
+variable action-errors-verbosity
+  \ Nivel de detalle de los mensajes de error operativo.
+
+svariable 'action-error-general-message$
+  \ Mensaje de error operativo para el nivel 1.
+
+0 constant min-errors-verbosity
+  \ Nivel mínimo para el detalle de errores.
+
+2 constant max-errors-verbosity
+  \ Nivel máximo para el detalle de errores.
+
+variable repeat-previous-action?
+  \ ¿Repetir la acción anterior cuando no se especifica otra en el
+  \ comando?
 
 \ Variables de la trama
 
@@ -405,7 +454,9 @@ variable stone-forbidden?
 variable sword-forbidden?
   \ ¿El protagonista ha intentado pasar con la espada?
 
-variable recent-talks-to-the-leader  \ Contador de intentos de hablar con el líder sin cambiar de escenario
+variable recent-talks-to-the-leader
+  \ Contador de intentos de hablar con el líder sin cambiar de
+  \ escenario.
 
 : init-plot  ( -- )
   ambrosio-follows? off
@@ -726,7 +777,8 @@ section( Depuración)  \ {{{
 \ }}} ==========================================================
 section( Manipulación de textos)  \ {{{
 
-str-create tmp-str  \ Cadena dinámica de texto temporal para usos variados
+str-create tmp-str
+  \ Cadena dinámica de texto temporal para usos variados.
 
 : str-get-last-char  ( a -- c )
   dup str-length@ 1- swap str-get-char  ;
@@ -1428,7 +1480,9 @@ section( Cadena dinámica para impresión)  \ {{{
 \ esta sección creamos la cadena y palabras útiles para
 \ manipularla.
 
-str-create print-str  \ Cadena dinámica para almacenar el texto antes de imprimirlo justificado
+str-create print-str
+  \ Cadena dinámica para almacenar el texto antes de imprimirlo
+  \ justificado.
 
 : «»-clear  ( -- )  print-str str-clear  ;
   \ Vacía la cadena dinámica `print-str`.
@@ -1494,8 +1548,11 @@ section( Herramientas para sonido)  \ {{{
 \ }}} ==========================================================
 section( Impresión de textos)  \ {{{
 
-variable #lines  \ Número de línea del texto que se imprimirá
-variable scroll  \ Indicador de que la impresión no debe parar
+variable #lines
+  \ Número de línea del texto que se imprimirá.
+
+variable scroll
+  \ Indicador de que la impresión no debe parar.
 
 \ ----------------------------------------------
 subsection( Presto de pausa en la impresión de párrafos)  \ {{{
@@ -1506,7 +1563,8 @@ svariable scroll-prompt  \ Guardará el presto de pausa
   scroll-prompt count  ;
   \ Devuelve el presto de pausa.
 
-1 value /scroll-prompt  \ Número de líneas de intervalo para mostrar un presto
+1 value /scroll-prompt
+  \ Número de líneas de intervalo para mostrar un presto.
 
 : scroll-prompt-key  ( -- )
   key  bl =  scroll !  ;
@@ -1623,7 +1681,8 @@ variable indent-first-line-too?
 \ }}}---------------------------------------------
 subsection( Pausas y prestos en la narración)  \ {{{
 
-variable indent-pause-prompts?  \ ¿Hay que indentar también los prestos?
+variable indent-pause-prompts?
+  \ ¿Hay que indentar también los prestos?
 
 : indent-prompt  ( -- )
   indent-pause-prompts? @ ?? indent  ;
@@ -1701,9 +1760,9 @@ svariable scene-prompt
 \ }}}---------------------------------------------
 subsection( Impresión de citas de diálogos)  \ {{{
 
-s" —" sconstant dash$  \ Raya (Unicode $2014, #8212)
-s" «" sconstant lquote$ \ Comilla castellana de apertura
-s" »" sconstant rquote$  \ Comilla castellana de cierre
+s" —" sconstant dash$     \ Raya (Unicode $2014, #8212).
+s" «" sconstant lquote$   \ Comilla castellana de apertura.
+s" »" sconstant rquote$   \ Comilla castellana de cierre.
 
 : str-with-rquote-only?  ( a -- f )
   >r rquote$ 0 r@ str-find -1 >
@@ -2297,9 +2356,9 @@ create 'articles  \ Tabla índice de los artículos
 
 \ Separaciones entre artículos en la tabla índice (por tanto en
 \ celdas):
-cell constant /article-gender-set  \ De femenino a masculino
-2 cells constant /article-number-set  \ De plural a singular
-4 cells constant /article-type-set  \ Entre grupos de diferente tipo
+  cell  constant /article-gender-set  \ De femenino a masculino.
+2 cells constant /article-number-set  \ De plural a singular.
+4 cells constant /article-type-set    \ Entre grupos de diferente tipo.
 
 : article-number>  ( a -- u )
   has-singular-name? /article-number-set and  ;
@@ -3116,10 +3175,13 @@ entity: enemy%
 \ (pues la palabra `entity:` actualiza el contador `#entities`)
 \ y por tanto podemos reservar espacio para la base de datos:
 
-#entities /entity * constant /entities  \ Espacio necesario para guardar todas las fichas, en octetos
-create ('entities) /entities allot  \ Reservar el espacio en el diccionario
-' ('entities) is 'entities  \ Asignar el vector a la palabra real
-'entities /entities erase  \ Llenar la zona con ceros, para mayor seguridad
+#entities /entity * constant /entities
+  \ Espacio necesario para guardar todas las fichas.
+
+create ('entities) /entities allot
+'entities /entities erase
+' ('entities) is 'entities
+  \ Crear e inicializar la tabla en el diccionario.
 
 \ }}} ==========================================================
 section( Herramientas para crear conexiones entre escenarios)  \ {{{
@@ -5992,7 +6054,8 @@ in% :attributes
 \ }}} ==========================================================
 section( Mensaje de acción completada)  \ {{{
 
-variable silent-well-done?  \ XXX TODO -- not used yet
+variable silent-well-done?
+  \ XXX TODO -- not used yet
 
 : (well-done)  ( -- )
   s{ s" Hecho." s" Bien." }s narrate  ;
@@ -6013,16 +6076,32 @@ variable silent-well-done?  \ XXX TODO -- not used yet
 \ }}} ==========================================================
 section( Errores de las acciones)  \ {{{
 
-variable action  \ Código de la acción del comando
-variable previous-action  \ Código de la acción del comando anterior
+variable action
+  \ Código de la acción del comando.
 
-\ Entes complemento:
-variable main-complement  \ Principal (complemento directo o destino)
-variable secondary-complement  \ Secundario (complemento indirecto, destino u origen)
-defer tool-complement  \ Herramienta (indicada con «con» o «usando»)
-defer actual-tool-complement  \ Herramienta estricta (indicada con «usando»)
-defer company-complement  \ Compañía (indicado con «con»)
-defer actual-company-complement  \ Compañía estricta (indicada con «con» en presencia de «usando»)
+variable previous-action
+  \ Código de la acción del comando anterior.
+
+variable main-complement
+  \ Ente complemento principal (complemento directo o destino).
+
+variable secondary-complement
+  \ Ente complemento secundario (complemento indirecto, destino u
+  \ origen).
+
+defer tool-complement
+  \ Ente complemento de herramienta (indicada con «con» o «usando»).
+
+defer actual-tool-complement
+  \ Ente complemento estricto de herramienta (indicada con «usando»).
+
+defer company-complement
+  \ Ente complemento de compañía (indicado con «con»).
+
+defer actual-company-complement
+  \ Ente complemento estricto de compañía (indicada con «con» en
+  \ presencia de «usando»).
+
 false [if]
   \ XXX OLD
   \ XXX TODO -- descartado, pendiente
@@ -6031,14 +6110,15 @@ false [if]
   variable into-complement  \ Destino dentro \ XXX OLD -- no utilizado
 [then]
 
-\ Ente que ha provocado un error
-\ y puede ser citado en el mensaje de error correspondiente:
 variable what
+  \ Ente que ha provocado un error y puede ser citado en el mensaje de
+  \ error correspondiente.
 
-\ Código de la (seudo)preposición abierta, o cero:
 variable current-preposition
-\ Máscara de bitios de las (seudo)preposiciones usadas en la frase:
+  \ Código de la (seudo)preposición abierta, o cero.
+
 variable used-prepositions
+  \ Máscara de bitios de las (seudo)preposiciones usadas en la frase.
 
 : action-error-general-message$  ( -- ca len )
   'action-error-general-message$ count  ;
@@ -8037,7 +8117,8 @@ subsection( Pronombres)  \ {{{
 \ XXX TODO:
 \ Mover esto a la sección del intérprete.
 
-variable last-action  \ Última acción utilizada por el jugador
+variable last-action
+  \ Última acción utilizada por el jugador.
 
 \ La tabla `last-complement` que crearemos a continuación sirve para
 \ guardar los identificadores de entes correspondientes a los últimos
@@ -8066,9 +8147,12 @@ variable last-action  \ Última acción utilizada por el jugador
 \   +8 Masculino plural.
 \   +9 Femenino plural.
 
-create last-complement  \ Tabla para últimos complementos usados
-5 cells 2*  \ Octetos necesarios para toda la tabla
-dup constant /last-complements  allot
+5 cells 2* constant /last-complements
+  \ Octetos necesarios para la tabla
+  \ de últimos complementos usados.
+
+create last-complement /last-complements allot
+  \ Tabla de últimos complementos usados.
 
 \ Desplazamientos para acceder a los elementos de la tabla:
 1 cells constant />masculine-complement  \ Respecto al inicio de tabla
@@ -8076,6 +8160,8 @@ dup constant /last-complements  allot
 0 cells constant />singular-complement  \ Respecto a su género en singular
 2 cells constant />plural-complement  \ Respecto a su género en singular
 5 cells constant />but-one-complement  \ Respecto a la primera mitad de la tabla
+  \ XXX TODO -- mejorar comentarios
+
 : >masculine  ( a1 -- a2 )  />masculine-complement +  ;
 : >feminine  ( a1 -- a2 )  />feminine-complement +  ;
 : >singular  ( a1 -- a2 )  />singular-complement +  ;
