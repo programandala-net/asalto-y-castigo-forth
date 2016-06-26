@@ -7,7 +7,7 @@
 \ Página del programa:
 \ http://programandala.net/es.programa.asalto_y_castigo.forth
 
-\ Última modificación: 201606242015
+\ Última modificación: 201606261411
 
 \ --------------------------------------------------------------
 \ Observaciones
@@ -32,24 +32,25 @@ un número decimal provocará un error.
 == Cadenas de texto ==
 
 Para indicar una cadena de texto se usa la palabra estándar de
-Forth `s"`, que como siempre debe ir separada con espacios. La
-propia cadena empieza tras el primer espacio de separación
-posterior, y por ello incluirá otros espacios iniciales si los
-hubiera; termina con las primeras comillas dobles, por lo que no
-puede incluir este signo.
+Forth `s"`, que, como todas las palabras de Forth, siempre debe
+ir separada con espacios de lo que la precede y de lo que la
+sigue. La propia cadena empieza tras el primer espacio de
+separación posterior, y por ello incluirá otros espacios
+iniciales si los hubiera; termina con las primeras comillas
+dobles, por lo que no se puede incluir este signo.
 
 == Comentarios en este fichero ==
 
 Téngase en cuenta que tanto la apertura de paréntesis como la
 barra invertida son palabras de Forth como las demás, es decir,
-deben estar separadas del texto circundante  por espacio, un
+deben estar separadas del texto circundante  por un espacio, un
 tabulador o un salto de línea.
 
-La barra invertida desecha el código fuente que la suceda, hasta
+La barra invertida desecha el código fuente que la sigue, hasta
 el próximo final de línea; la apertura de paréntesis hace lo
 mismo hasta el siguiente cierre de paréntesis, lo que permite
 crear comentarios de bloque, como se hace para este mismo texto
-de ayuda.
+de ayuda que estás leyendo.
 
 == Codificación de este fichero ==
 
@@ -171,10 +172,10 @@ sí indentar_primera_línea_de_pantalla
 \ Prestos
 \ --------------------------------------------------------------
 
-\ Un presto o inductor (en inglés «prompt») es una marca gráfica
-\ convencional que sirve para indicar que el programa está
-\ preparado para recibir la entrada del usuario y señalar el
-\ lugar de la pantalla en que se mostrará.
+\ Un presto o inductor (en inglés, «prompt») es una marca
+\ gráfica convencional que sirve para indicar que el programa
+\ está preparado para recibir la entrada del usuario y señalar
+\ el lugar de la pantalla en que se mostrará dicha entrada.
 
 \ ¿Indentar los prestos de pausa como si de la primera
 \ línea de un párrafo se tratara o mostrarlos en el margen?
@@ -250,12 +251,13 @@ no borrar_pantalla_para_escenas
 \ configurado en la terminal del sistema operativo. Dependerá de
 \ la configuración de la terminal.
 
-\ xxx todo Comprobar esto:
 \ El color de fondo de la pantalla es configurable pero con una
-\ limitación: cuando la pantalla se enrolla el color del sistema
-\ se utilizará en las nuevas líneas que aparezcan por debajo.
+\ limitación: cuando la pantalla se enrolla (se desplaza hacia
+\ arriba) el color del sistema se utilizará en las nuevas líneas
+\ que aparezcan por debajo.
 
 \ Los colores disponibles son los siguientes:
+
 \     amarillo
 \     azul
 \     azul_claro
@@ -272,7 +274,8 @@ no borrar_pantalla_para_escenas
 \     rojo_claro
 \     verde
 \     verde_claro
-\ (No se admiten las formas «cyan» y «cyan_claro»).
+
+\ Nótese que no se admiten las formas «cyan» y «cyan_claro».
 
 \ Como ya se ha dicho respecto a la configuración, también los
 \ colores elegidos en este fichero coinciden con los
