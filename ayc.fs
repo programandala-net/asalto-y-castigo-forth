@@ -9,7 +9,7 @@ cr .( Asalto y castigo )  \ {{{
 \ Project under development.
 
 \ Version: see file <VERSION.txt>.
-\ Last update: 201606272241
+\ Last update: 201606272305
 
 \ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
 
@@ -289,6 +289,7 @@ defer torch%        \ Antorcha.
 defer leader%       \ Ente líder de los refugiados.
 defer location-01%  \ Primer ente escenario.
 defer exits%        \ Ente "salidas".
+defer log%          \ Ente tronco.
 
 defer list-exits  ( -- )
   \ Crea e imprime la lista de salidas.
@@ -2226,7 +2227,7 @@ last-exit> cell+ first-exit> - constant /exits
 : is-hold  ( a -- )  ~location protagonist% swap !  ;
   \ Hace que el protagonista sea la localización de un ente.
 
-: is-worn-by-me?  ( a -- )  dup is-hold?  swap is-worn?  and  ;
+: is-worn-by-me?  ( a -- f )  dup is-hold?  swap is-worn?  and  ;
   \ ¿El protagonista lleva puesto el ente indicado?
 
 : is-known?  ( a -- f )
@@ -2263,20 +2264,31 @@ last-exit> cell+ first-exit> - constant /exits
   \ ¿Un ente no es accesible para el protagonista?
 
 : can-be-looked-at?  ( a -- f )
-  [false] [if]  \ Primera versión
-    dup my-location =  \ ¿Es la localización del protagonista?
-    over is-direction? or  \ ¿O es un ente dirección?
-    over exits% = or  \ ¿O es el ente "salidas"?
+  [false] [if]
+    \ XXX OLD -- Primera versión
+    dup my-location =       \ ¿Es la localización del protagonista?
+    over is-direction? or   \ ¿O es un ente dirección?
+    over exits% = or        \ ¿O es el ente "salidas"?
     swap is-accessible? or  \ ¿O está accesible?
-  [else]  \ Segunda versión, menos elegante pero más rápida y legible
-    { entity }  \ Variable local creada con el parámetro de la pila
+  [then]
+  [false] [if]
+    \ XXX OLD -- Segunda versión, menos elegante pero más rápida y legible
+    { entity }
     true case
-      entity am-i-there? of  true  endof \ ¿Es la localización del protagonista?
-      entity is-direction? of  true  endof \ ¿Es un ente dirección?
+      entity am-i-there?    of  true  endof  \ ¿Es la localización del protagonista?
+      entity is-direction?  of  true  endof  \ ¿Es un ente dirección?
       entity is-accessible? of  true  endof  \ ¿Está accesible?
-      entity exits% = of  true  endof  \ ¿Es el ente "salidas"?
+      entity exits% =       of  true  endof  \ ¿Es el ente "salidas"?
       false swap
     endcase
+  [then]
+  [true] [if]
+    \ XXX NEW -- Tercera versión, más rápida y compacta
+    dup my-location = ?dup if  nip exit  then  \ ¿Es la localización del protagonista?
+    dup is-direction? ?dup if  nip exit  then  \ ¿Es un ente dirección?
+    dup exits% =      ?dup if  nip exit  then  \ ¿O es el ente "salidas"?
+        is-accessible?     ?exit               \ ¿O está accesible?
+    false
   [then]  ;
   \ ¿El ente puede ser mirado?
 
@@ -2301,6 +2313,10 @@ last-exit> cell+ first-exit> - constant /exits
   [then]  ;
   \ ¿El ente podría ser escalado? (Aunque en la práctica no sea posible).
   \ XXX TODO -- hacerlo mejor con un indicador en la ficha
+
+: can-be-sharpened?  ( a -- f )
+  dup log% =  swap sword% =  or  ;
+  \ ¿Puede un ente ser afilado?
 
 : talked-to-the-leader?  ( -- f )  leader% conversations 0<>  ;
   \ ¿El protagonista ha hablado con el líder?
@@ -3093,7 +3109,7 @@ entity: idol%
 entity: key%
 entity: lake%
 entity: lock%
-entity: log%
+entity: (log%) ' (log%) is log%
 entity: piece%
 entity: rags%
 entity: ravine-wall%
@@ -9270,11 +9286,6 @@ subsection( Agredir)  \ {{{
   \ s" golpear"  main-complement+is-nonsense \ XXX TMP
   ;action
   \ Acción de golpear.
-
-: can-be-sharpened?  ( a -- f )
-  dup log% =  swap sword% =  or  ;
-  \ ¿Puede un ente ser afilado?
-  \ XXX TODO -- mover esta palabra junto con los demás seudo-campos
 
 : log-already-sharpened$  ( -- ca len )
   s" Ya" s{
