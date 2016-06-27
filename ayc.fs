@@ -9,7 +9,7 @@ cr .( Asalto y castigo )  \ {{{
 \ Project under development.
 
 \ Version: see file <VERSION.txt>.
-\ Last update: 201606261941
+\ Last update: 201606272206
 
 \ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
 
@@ -28,6 +28,9 @@ cr .( Asalto y castigo )  \ {{{
 \ por la Free Software Foundation ('fundación para los
 \ programas libres'), bien en su versión 2 o, a tu elección,
 \ cualquier versión posterior.
+
+\ ==============================================================
+\ Reconocimiento
 
 \ «Asalto y castigo» está basado en el programa homónimo
 \ escrito por Baltasar el Arquero en Sinclair BASIC para ZX
@@ -95,8 +98,8 @@ only forth definitions  decimal
 require random.fs
 
 \ ----------------------------------------------
-\ De la librería «Forth Foundation Library»
-\ http://code.google.com/p/ffl/
+\ De Forth Foundation Library
+\ http://irdvo.github.io/ffl/
 
 require ffl/str.fs  \ Cadenas de texto dinámicas
 require ffl/trm.fs  \ Manejo de terminal ANSI
@@ -202,28 +205,28 @@ false value [debug-map] immediate
 
 \ Indicadores para poder elegir alternativas que aún son experimentales
 
-true constant [old-method]  immediate
-[old-method] 0= constant [new-method]  immediate
+true dup constant [old-method] immediate
+      0= constant [new-method] immediate
 
 \ Títulos de sección
 
 : depth-warning  ( -- )
   cr ." Aviso: La pila no está vacía. Contenido: "  ;
 
-: .s?  ( -- )
+: ?.s  ( -- )
   depth if  depth-warning .s cr  press-key  then  ;
   \ Imprime el contenido de la pila si no está vacía.
 
 : section(  ( "text<bracket>" -- )
   cr postpone .(  \ El nombre de sección terminará con: )
-  .s?  ;
+  ?.s  ;
   \ Notación para los títulos de sección en el código fuente.
   \ Permite hacer tareas de depuración mientras se compila el programa;
   \ por ejemplo detectar el origen de descuadres en la pila.
 
 : subsection(  ( "text<bracket>" -- )
   cr 2 spaces [char] - emit postpone .(  \ El nombre de subsección terminará con: )
-  .s?  ;
+  ?.s  ;
   \ Notación para los títulos de subsección en el código fuente.
 
 \ }}} ==========================================================
@@ -1470,6 +1473,12 @@ s" de Westmorland" sconstant of-westmorland$
 
 : rocky(f)$  ( -- ca len )
   s{ s" rocosa" s" de roca" s" s" s?+ }s  ;
+
+: using$  ( -- ca len )
+  s{ s" Con la ayuda de"
+     s" Sirviéndote de"
+     s" Usando"
+     s" Empleando" }s  ;
 
 \ }}} ==========================================================
 section( Cadena dinámica para impresión)  \ {{{
@@ -2907,7 +2916,7 @@ defer 'entities  ( -- a )
   #entities 0 do
     [debug-init] [if]  i cr ." about to init entity #" .  [then]
     i #>entity init-entity
-    \ i #>entity full-name space type .s?  \ XXX INFORMER
+    \ i #>entity full-name space type ?.s  \ XXX INFORMER
   loop  ;
   \ Restaura las fichas de los entes a su estado original.
 
@@ -8437,16 +8446,16 @@ subsection( Comprobación de los requisitos de las acciones)  \ {{{
   \ Provoca un error si el complemento principal existe y no puede ser
   \ tomado.
 
-: {broken}  ( a -- )  dup what ! ~break-error# @ throw  ;
+: {breakable}  ( a -- )  dup what ! ~break-error# @ throw  ;
   \ Provoca un error si un ente no puede ser roto.
   \ Nota: los errores apuntados por el campo `~break-error#` no
   \ reciben parámetros salvo en `what`.
 
-: ?{broken}  ( a | 0 -- )  ?dup ?? {broken}  ;
+: ?{breakable}  ( a | 0 -- )  ?dup ?? {breakable}  ;
   \ Provoca un error si un supuesto ente lo es y no puede ser roto.
 
-: main-complement{broken}  ( -- )
-  main-complement @ ?{broken}  ;
+: main-complement{breakable}  ( -- )
+  main-complement @ ?{breakable}  ;
   \ Provoca un error si el complemento principal existe y no puede ser roto.
 
 : {looked}  ( a -- )
@@ -9216,20 +9225,18 @@ subsection( Agredir)  \ {{{
   \ Hace aparecer los restos de la capa rota de forma aleatoria:
   \ en el escenario o en el inventario.
 
-: break-the-cloak  ( -- )
+: shatter-the-cloak  ( -- )
   sword% {accessible}
   sword% taken
-  s{ s" Con la ayuda de" s" Sirviéndote de" s" Usando" s" Empleando" }s
-  sword% full-name s& comma+
+  using$ sword% full-name s& comma+
   s" rasgas" s& cloak% full-name s& period+ narrate
   cloak-pieces  ;
   \ Romper la capa.
-  \ XXX TODO -- Inacabado
 
 : (do-break)  ( a -- )
   case
     snake% of  kill-the-snake  endof  \ XXX TMP
-    cloak% of  break-the-cloak  endof
+    cloak% of  shatter-the-cloak  endof
     do-not-worry
   endcase  ;
   \ Romper un ente.
@@ -9237,7 +9244,7 @@ subsection( Agredir)  \ {{{
 :action do-break
   main-complement{required}
   main-complement{accessible}
-  main-complement{broken}
+  main-complement{breakable}
   tool-complement{hold}
   main-complement @ (do-break)
   ;action
@@ -9249,7 +9256,7 @@ subsection( Agredir)  \ {{{
 : (do-hit)  ( a -- )
   case
     snake% of  kill-the-snake  endof
-    cloak% of  break-the-cloak  endof
+    cloak% of  shatter-the-cloak  endof
     flint% of  hit-the-flint  endof
     do-not-worry
   endcase  ;
@@ -11955,7 +11962,7 @@ also player-vocabulary definitions
 ' romperlo aliases:
   rómpelo rÓmpelo rompedlo rómpolo rÓmpolo rómpalo rÓmpalo
   despedazarlo despedazalo despedazadlo despedázolo despedÁzolo despedácelo despedÁcelo
-  destrozarlo destrázalo destrÁzalo destrozadlo destrózolo destrÓzolo destrócelo destrÓcelo
+  destrozarlo destrózalo destrÓzalo destrozadlo destrózolo destrÓzolo destrócelo destrÓcelo
   dividirlo divídelo divÍdelo divididlo divídolo divÍdolo divídalo divÍdalo
   cortarlo cortalo cortadlo córtolo cÓrtolo córtelo cÓrtelo
   ;aliases
@@ -11963,7 +11970,7 @@ also player-vocabulary definitions
 ' romperla aliases:
   rómpela rÓmpela rompedla rómpola rÓmpola rómpala rÓmpala
   despedazarla despedazala despedazadla despedázola despedÁzola despedácela despedÁcela
-  destrozarla destrázala destrÁzala destrozadla destrózola destrÓzola destrócela destrÓcela
+  destrozarla destrózala destrÓzala destrozadla destrózola destrÓzola destrócela destrÓcela
   dividirla divídela divÍdela divididla divídola divÍdola divídala divÍdala
   cortarla córtala cÓrtala cortadla córtola cÓrtola córtela cÓrtela
   ;aliases
@@ -11971,7 +11978,7 @@ also player-vocabulary definitions
 ' romperlos aliases:
   rómpelos rÓmpelos rompedlos rómpolos rÓmpolos rómpalos rÓmpalos
   despedazarlos despedazalos despedazadlos despedázolos despedÁzolos despedácelos despedÁcelos
-  destrozarlos destrázalos destrÁzalos destrozadlos destrózolos destrÓzolos destrócelos destrÓcelos
+  destrozarlos destrózalos destrÓzalos destrozadlos destrózolos destrÓzolos destrócelos destrÓcelos
   dividirlos divídelos divÍdelos divididlos divídolos divÍdolos divídalos divÍdalos
   cortarlos córtalos cÓrtalos cortadlos córtolos cÓrtolos córtelos cÓrtelos
   ;aliases
@@ -11979,7 +11986,7 @@ also player-vocabulary definitions
 ' romperlas aliases:
   rómpelas rÓmpelas rompedlas rómpolas rÓmpolas rómpalas rÓmpalas
   despedazarlas despedazalas despedazadlas despedázolas despedÁzolas despedácelas despedÁcelas
-  destrozarlas destrázalas destrÁzalas destrozadlas destrózolas destrÓzolas destrócelas destrÓcelas
+  destrozarlas destrózalas destrÓzalas destrozadlas destrózolas destrÓzolas destrócelas destrÓcelas
   dividirlas divídelas divÍdelas divididlas divídolas divÍdolas divídalas divÍdalas
   cortarlas córtalas cÓrtalas cortadlas córtolas cÓrtolas córtelas cÓrtelas
   ;aliases

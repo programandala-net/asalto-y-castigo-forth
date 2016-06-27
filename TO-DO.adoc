@@ -5,9 +5,6 @@
 
 2016-06-26:
 
-- Extraer del fichero de configuración la explicación
-  y moverla a la documentación general.
-- Añadir `incluir_fichero` a los comandos de configuración.
 - Añadir un comando inmediato para que el jugador pueda dar un comando
   de configuración.
 
