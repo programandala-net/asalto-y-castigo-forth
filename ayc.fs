@@ -9,7 +9,7 @@ cr .( Asalto y castigo )  \ {{{
 \ Project under development.
 
 \ Version: see file <VERSION.txt>.
-\ Last update: 201606281147
+\ Last update: 201606281156
 
 \ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
 
@@ -267,15 +267,17 @@ section( Palabras genéricas)  \ {{{
 true constant [true]  immediate
 false constant [false]  immediate
 
-pad 0 2constant ""  \ Simula una cadena vacía.
+pad 0 2constant null$
+  \ Cadena vacía.
 
 : ?++  ( a -- )
   dup @ 1+ ?dup if  swap !  else  drop  then  ;
-  \ Incrementa el contenido de una dirección, si es posible.
-  \ En la práctica el límite es inalcanzable
-  \ (pues es un número de 32 bitios),
-  \ pero así queda mejor hecho.
-  \ XXX TODO -- confirmar este cálculo, pues depende de si el número se considera con signo o no
+  \ Incrementa el contenido de una dirección _a_, si es posible.  En
+  \ la práctica el límite es inalcanzable (pues es un número de 32
+  \ bitios), pero así queda mejor hecho.
+  \
+  \ XXX TODO -- confirmar este cálculo, pues depende de si el número
+  \ se considera con signo o no
 
 \ }}} ==========================================================
 section( Vectores)  \ {{{
@@ -936,7 +938,7 @@ section( Textos aleatorios)  \ {{{
   \ Devuelve una forma de llamar al líder de los refugiados.
 
 : with-him$  ( -- ca len )
-  s{ "" s" consigo" s" encima" }s  ;
+  s{ null$ s" consigo" s" encima" }s  ;
   \ Devuelve una variante de «consigo» o una cadena vacía.
 
 : with-you$  ( -- ca len )
@@ -954,7 +956,7 @@ section( Textos aleatorios)  \ {{{
   \ Devuelve una variante de «Llevas» (con la primera mayúscula).
 
 : now$  ( -- ca len )
-  s{ "" s" ahora" s" en este momento" s" en estos momentos" }s  ;
+  s{ null$ s" ahora" s" en este momento" s" en estos momentos" }s  ;
   \ Devuelve una variante de «ahora» o una cadena vacía.
 
 : now-$  ( -- ca len )
@@ -1099,7 +1101,7 @@ section( Textos aleatorios)  \ {{{
   \ f = ¿El texto está en plural?
 
 : of-your-ex-cloak$  ( -- ca len )
-  s{ "" s" que queda" s" que quedó" }s s" de" s&
+  s{ null$ s" que queda" s" que quedó" }s s" de" s&
   s{ s" lo" s" la" }s& s" que" s& s" antes" s?&
   s{ s" era" s" fue" s" fuera" }s&
   your|the(f)$ s& s{ s" negra" s" oscura" }s?&
@@ -2514,10 +2516,10 @@ create 'articles  \ Tabla índice de los artículos
 
 : plural-ending  ( a -- ca1 len1 )
   [false] [if]
-    \ Método 1, «estilo BASIC»:
-    has-plural-name? if  s" s"  else  ""  then
+    \ XXX OLD -- Método 1, «estilo BASIC»:
+    has-plural-name? if  s" s"  else  null$  then
   [else]
-    \ Método 2, sin estructuras condicionales, «estilo Forth»:
+    \ XXX NEW -- Método 2, sin estructuras condicionales, «estilo Forth»:
     s" s" rot has-plural-name? and
   [then]  ;
   \ Devuelve la terminación adecuada del plural
@@ -2646,7 +2648,7 @@ create 'articles  \ Tabla índice de los artículos
 : name  ( a -- ca len )  name-str str-get  ;
   \ Devuelve el nombre _ca len_ de un ente _a_.
 
-: ?name  ( a -- ca len )  ?dup if  name  else  ""  then  ;
+: ?name  ( a -- ca len )  ?dup if  name  else  null$  then  ;
   \ Devuelve el nombre _ca len_ de un ente _a_, si es tal;
   \ devuelve una cadena vacía si _a_ es cero.
   \ XXX TMP -- solo se usa para depuración
@@ -6274,7 +6276,7 @@ to cannot-see-what-error#
 0 ' (impossible) action-error: impossible
 to impossible-error#
 
-: try$  ( -- ca len )  s{ "" "" s" intentar" }s  ;
+: try$  ( -- ca len )  s{ null$ null$ s" intentar" }s  ;
   \ Devuelve una variante de «intentar» (o cadena vacía).
 
 : nonsense$  ( -- ca len )
@@ -6459,7 +6461,7 @@ to dangerous-error#
   s" más" s&
   s{ s" importantes" s" urgentes" s" útiles" }s&
   s{
-  "" s" a que prestar atención" s" de que ocuparse"
+  null$ s" a que prestar atención" s" de que ocuparse"
   s" para ocuparse" s" para prestarles atención"
   }s&  ;
   \ Primera versión posible del mensaje de `do-not-worry`.
@@ -6575,7 +6577,7 @@ to you-do-not-have-it-error#
 to you-do-not-have-what-error#
 
 : it-seems$  ( -- ca len )
-  s{ "" s" parece que" s" por lo que parece," }s  ;
+  s{ null$ s" parece que" s" por lo que parece," }s  ;
 
 : it-is$  ( -- ca len )
   s{ s" es" s" sería" s" será" }s  ;
@@ -7291,7 +7293,7 @@ section( Recursos de las tramas asociadas a lugares)  \ {{{
 : battle-phase-03$  ( -- ca len )
   ^your-soldiers$
   s" empiezan a acusar" s&
-  s{ "" s" visiblemente" s" notoriamente" }s&
+  s{ null$ s" visiblemente" s" notoriamente" }s&
   s" el" s&{ s" titánico" s" enorme" }s?&
   s" esfuerzo." s&  ;
   \ Devuelve la descripción del combate (fase 03).
@@ -7535,7 +7537,7 @@ here swap - cell / constant battle-phases
             s{ s" remedio" s" camino" }s& s" que" s&
       }s{ s" volver atrás" s" retroceder" }s&
       s{ s" vuelves atrás" s" retrocedes" }s s" sin remedio" s?&
-  }s{ "" s" unos pasos" s" sobre tus pasos" }s&  ;
+  }s{ null$ s" unos pasos" s" sobre tus pasos" }s&  ;
 
 : to-the-place-where$  ( -- a u)
   s" hasta" s" el lugar" s? dup if  s" de la cueva" s?&  then s&
@@ -7553,7 +7555,7 @@ here swap - cell / constant battle-phases
 
 : sun-adjectives$  ( -- ca len )
   \ s" tímido" s" débil" s" triste" s" lejano"
-  ""  ;
+  null$  ;
   \ XXX TODO -- hacer que seleccione uno o dos adjetivos
 
 : there-are-some-sun-rays$  ( -- ca len )
@@ -7899,7 +7901,7 @@ section( Errores del intérprete de comandos)  \ {{{
   \ con una coma de separación; o bien la deja sin tocar.
 
 : in-the-sentence$  ( -- ca len )
-  s{ "" s" en la frase" s" en el comando" s" en el texto" }s  ;
+  s{ null$ s" en la frase" s" en el comando" s" en el texto" }s  ;
   \ Devuelve una variante de «en la frase» (o una cadena vacía).
 
 : error-comment-0$  ( -- ca len )
@@ -7928,7 +7930,7 @@ section( Errores del intérprete de comandos)  \ {{{
 
 : error-comment-2-end-0$  ( -- ca len )
   s{ s" de" s" otra" }s way$ s&?
-  s{ "" s" un poco" s" algo" }s& s" más" s&
+  s{ null$ s" un poco" s" algo" }s& s" más" s&
   s{ s" simple" s" sencilla" s" clara" }s&  ;
   \ Devuelve el final 0 de la variante 2 del mensaje de
   \ acompañamiento para los errores lingüísticos.
@@ -8927,7 +8929,7 @@ subsection( Tomar y dejar)  \ {{{
       s" quita" object plural-ending+ object full-name s&
     }s& s" y" s&
 
-  else  ""
+  else  null$
 
     [then]
 
@@ -9154,7 +9156,7 @@ subsection( Agredir)  \ {{{
   s" se da a la fuga" s" se quita de enmedio"
   s" se aparta" s" escapa"
   }s&
-  s{ "" s" asustada" s" atemorizada" }s&
+  s{ null$ s" asustada" s" atemorizada" }s&
   narrate  ;
   \ La serpiente huye.
 
@@ -9530,7 +9532,7 @@ subsection( Nadar)  \ {{{
   s" la dejas caer" s" la sueltas" }s
   rot if
     s{ s" Rápidamente" s" Sin dilación"
-    s" Sin dudarlo" s{ "" s" un momento" s" un instante" }s&
+    s" Sin dudarlo" s{ null$ s" un momento" s" un instante" }s&
     }s 2swap s&
   then  period+  ;
   \ Devuelve mensaje sobre deshacerse de la coraza dentro del agua.
@@ -9557,7 +9559,7 @@ subsection( Nadar)  \ {{{
 : (you-sink-1)$ ( -- ca len )
   s" El peso de tu coraza"
   s{ s" te arrastra" s" tira de ti" }s&
-  s{ "" s" sin remedio" s" con fuerza" }s&
+  s{ null$ s" sin remedio" s" con fuerza" }s&
   s{
   s" hacia el fondo"
   s" hacia las profundidades"
@@ -9577,7 +9579,7 @@ subsection( Nadar)  \ {{{
 : you-swim$  ( -- ca len )
   cuirasse% is-hold?
   if  you-swim-with-cuirasse$  cuirasse% vanish
-  else  ""
+  else  null$
   then  swiming$ s&  ;
   \  Devuelve mensaje sobre nadar.
 
@@ -9850,7 +9852,7 @@ subsection( Hablar y presentarse)  \ {{{
 : times-warned  ( u -- ca1 len1 )
   { times }  \ Variable local
   true case
-    times 0 = of  ""  endof
+    times 0 = of  null$  endof
     times 1 = of  warned-once$  endof
     times 2 = of  warned-twice$  endof
     times 6 < of  warned-several-times$  endof
@@ -10008,7 +10010,7 @@ subsection( Hablar y presentarse)  \ {{{
   s{ s" confiado" s" con confianza" }s& s" y," s&
   s" con un suave gesto" s& s" de su mano" s?& comma+
   s" te interrumpe para" s&
-  s{  s" explicar" s{ s" te" s" se" "" }s+
+  s{  s" explicar" s{ s" te" s" se" null$ }s+
       s" presentarse" s" contarte" s" decir" s" te" s?+
   }s& colon+ narrate  ;
   \ El líder te corta, confiado.
@@ -10080,7 +10082,7 @@ subsection( Hablar y presentarse)  \ {{{
 : times-insisted  ( u -- ca1 len1 )
   { times }
   true case
-    times 0 = of  ""  endof  \ XXX OLD -- innecesario
+    times 0 = of  null$  endof  \ XXX OLD -- innecesario
     times 1 = of  insisted-once$  endof
     times 2 = of  insisted-twice$  endof
     times 6 < of  insisted-several-times$  endof
@@ -10300,7 +10302,7 @@ subsection( Hablar y presentarse)  \ {{{
   s" Ulfius," s&
   s" cumplid vuestra" s{ s" promesa." s" palabra." }s&
   s" Tomad" this|the(f)$ s& s" llave" s&
-  s{ "" s" en vuestra mano" s" en vuestras manos" s" con vos" }s&
+  s{ null$ s" en vuestra mano" s" en vuestras manos" s" con vos" }s&
   s" y abrid" s& s" la puerta de" s?& this|the(f)$ s& s" cueva." s&
   speak
   key% is-hold  ;
@@ -12904,7 +12906,7 @@ section( Introducción)  \ {{{
   \ Muestra la introducción al juego (parte 4).
 
 : needed-orders$  ( -- ca len )
-  s" órdenes" s{ "" s" necesarias" s" pertinentes" }s&  ;
+  s" órdenes" s{ null$ s" necesarias" s" pertinentes" }s&  ;
   \ Devuelve una variante de «órdenes necesarias».
 
 : intro-5  ( -- )
@@ -12917,9 +12919,11 @@ section( Introducción)  \ {{{
   \ Muestra la introducción al juego (parte 5).
 
 : intro-6  ( -- )
-  [false] [if]  \ Primera versión, descartada
+  [false] [if]
+    \ XXX OLD -- Primera versión, descartada
     ^officers-forbid-to-steal$ period+
-  [else]  \ Segunda versión
+  [else]
+    \ XXX NEW -- Segunda versión
     soldiers-steal-spite-of-officers$ period+
   [then]
   narrate  scene-break  ;
@@ -12933,20 +12937,17 @@ section( Introducción)  \ {{{
 \ }}} ==========================================================
 section( Principal)  \ {{{
 
-: init-once  ( -- )
-  restore-vocabularies  init-screen  ;
+: init-once  ( -- )  restore-vocabularies  init-screen  ;
   \ Preparativos que hay que hacer solo una vez, antes de la primera partida.
 
-: init-parser/game  ( -- )
-  erase-last-command-elements  ;
+: init-parser/game  ( -- )  erase-last-command-elements  ;
   \ Preparativos que hay que hacer en el intérprete
   \ de comandos antes de cada partida.
   \ XXX TODO -- trasladar a su zona
 
 : init-game  ( -- )
   randomize
-  init-parser/game
-  init-entities init-plot
+  init-parser/game init-entities init-plot
   get-config new-page
   [true] [if]
     about cr intro
