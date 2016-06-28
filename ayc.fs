@@ -9,7 +9,7 @@ cr .( Asalto y castigo )  \ {{{
 \ Project under development.
 
 \ Version: see file <VERSION.txt>.
-\ Last update: 201606281604
+\ Last update: 201606281614
 
 \ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
 
@@ -936,21 +936,21 @@ section( Textos aleatorios)  \ {{{
   s{ null$ s" ahora" s" en este momento" s" en estos momentos" }s  ;
   \ Devuelve una variante de «ahora» o una cadena vacía.
 
-: now-$  ( -- ca len )
-  now$ s?  ;
-  \ Devuelve el resultado de `now$` o una cadena vacía.
-  \ Sirve como versión de `now$` con mayor probabilidad devolver una cadena vacía.
+: now-or-null$  ( -- ca len )  now$ s?  ;
+  \ Devuelve el resultado de `now$` o una cadena vacía.  Sirve como
+  \ variante de `now$` con mayor probabilidad devolver una cadena
+  \ vacía.
 
 : here$  ( -- ca len )
   s{ s" por aquí" s" por este lugar" s" en este lugar" s" aquí" }s  ;
   \ Devuelve una variante de «aquí».
 
-: here|""$  ( -- ca len | a 0 )
-  here$ s?  ;
-  \ Devuelve una variante de «aquí» o una cadena vacía.
+: here-or-null$  ( -- ca len )  here$ s?  ;
+  \ Devuelve el resultado de `here$` o una cadena vacía.
 
-: now|here|""$  ( -- ca len | a 0 )
-  s{ now$ here|""$ }s  ;
+: now-or-here-or-null$  ( -- ca len )  s{ now$ here-or-null$ }s  ;
+  \ Devuelve el resultado de `now$` o de `here-or-null$`, o una cadena
+  \ vacía.
 
 : only$  ( -- ca len )
   s{ s" tan solo" s" solo" s" solamente" s" únicamente" }s  ;
@@ -961,15 +961,11 @@ section( Textos aleatorios)  \ {{{
   \ Devuelve una variante de «Solamente» (con la primera mayúscula).
   \ Nota: no se puede calcular este texto a partir de la versión en minúsculas, porque el cambio entre minúsculas y mayúsculas no funciona con caracteres codificados en UTF-8 de más de un octeto.
 
-: only-$  ( -- ca len )
-  only$ s?  ;
-  \ Devuelve una variante de «solamente»
-  \ o una cadena vacía.
+: only-or-null$  ( -- ca len )  only$ s?  ;
+  \ Devuelve el resultado de `only$` o una cadena vacía.
 
-: ^only-$  ( -- ca len )
-  ^only$ s?  ;
-  \ Devuelve una variante de «Solamente» (con la primera mayúscula)
-  \ o u una cadena vacía.
+: ^only-or-null$  ( -- ca len )  ^only$ s?  ;
+  \ Devuelve el resultado de `^only$` o una cadena vacía.
 
 : again$  ( -- ca len )
   s{ s" de nuevo" s" otra vez" s" otra vez más" s" una vez más" }s  ;
@@ -1110,11 +1106,10 @@ section( Textos aleatorios)  \ {{{
   s{ s" Me llamo" s" Mi nombre es" }s  ;
 
 : very$  ( -- ca len )
-  s{ s" muy" s" harto" }s  ; \ XXX TODO -- añadir asaz
+  s{ s" muy" s" harto" s" asaz" }s  ;
 
-: very-$  ( -- ca len )
-  very$ s?  ;
-  \ Devuelve el resultado de very$ o una cadena vacía.
+: very-or-null$  ( -- ca len )  very$ s?  ;
+  \ Devuelve el resultado de `very$` o una cadena vacía.
 
 : the-path$  ( -- ca len )
   s{ s" el camino" s" la senda" s" el sendero" }s  ;
@@ -4584,7 +4579,7 @@ location-03% :description
   self% of
     ^the-path$ s" avanza por el valle," s&
     s" desde la parte alta, al este," s&
-    s" a una zona" s& very-$ s& s" boscosa, al oeste." s&
+    s" a una zona" s& very-or-null$ s& s" boscosa, al oeste." s&
     paragraph
     endof
   east% of
@@ -4592,7 +4587,7 @@ location-03% :description
     paragraph
     endof
   west% of
-    s" Una zona" very-$ s& s" boscosa." s&
+    s" Una zona" very-or-null$ s& s" boscosa." s&
     paragraph
     endof
   uninteresting-direction
@@ -6463,7 +6458,7 @@ to dangerous-error#
 : do-not-worry  ( -- )
   ['] (do-not-worry-0)$
   ['] (do-not-worry-1)$ 2 choose execute
-  now-$ s&  period+ action-error  ;
+  now-or-null$ s&  period+ action-error  ;
   \ Informa de que una acción no tiene importancia.
   \ XXX TMP, no se usa
 
@@ -9579,7 +9574,7 @@ subsection( Nadar)  \ {{{
     you-swim$ narrate narration-break
     you-emerge$ narrate narration-break
     location-12% enter-location  the-battle-ends
-  else  s" nadar" now|here|""$ s& is-nonsense  then
+  else  s" nadar" now-or-here-or-null$ s& is-nonsense  then
   ;action
   \ Acción de nadar.
 
@@ -9711,8 +9706,8 @@ subsection( Inventario)  \ {{{
   \ Devuelve mensaje para encabezar la lista de inventario.
 
 : you-are-carrying-only$  ( -- ca len )
-  2 random if    ^you-are-carrying$ only-$ s&
-           else  ^only-$ you-are-carrying$ s&  then  ;
+  2 random if    ^you-are-carrying$ only-or-null$ s&
+           else  ^only-or-null$ you-are-carrying$ s&  then  ;
   \ Devuelve mensaje para encabezar una lista de inventario de un solo elemento.
 
 :action do-inventory
