@@ -9,7 +9,7 @@ cr .( Asalto y castigo )  \ {{{
 \ Project under development.
 
 \ Version: see file <VERSION.txt>.
-\ Last update: 201606272305
+\ Last update: 201606281147
 
 \ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
 
@@ -247,7 +247,7 @@ restore-vocabularies
 
 vocabulary menu-vocabulary
   \ Palabras del menú.
-  \ XXX TODO -- not used yet
+  \ XXX TODO -- no usado
 
 vocabulary player-vocabulary
   \ Palabras del jugador.
@@ -300,7 +300,7 @@ section( Códigos de error)  \ {{{
 \ The execution token of the word that manages the error
 \ is used as `throw` code:
 
-\ 0 constant no-error# \ XXX TODO -- not used
+\ 0 constant no-error# \ XXX TODO -- no usado
 
 0 value cannot-see-error#
 0 value cannot-see-what-error#
@@ -407,7 +407,7 @@ variable cr?
 
 variable ignore-unknown-words?
   \ ¿Ignorar las palabras desconocidas?
-  \ XXX TODO -- not used yet
+  \ XXX TODO -- no usado
 
 variable scene-page?
   \ ¿Borrar la pantalla después de la pausa de los cambios de escena?
@@ -684,13 +684,13 @@ subsection( Otros atributos tipográficos)  \ {{{
   if  trm.reverse-on  else  trm.reverse-off  then  1 sgr  ;
   \ Activa o desactiva la inversión de colores (papel y tinta).
 
-true [if]  \ XXX TODO
+false [if]  \ XXX TODO
 : blink ( f -- )
   if  trm.blink-on  else  trm.blink-off  then  1 sgr  ;
   \ Activa o desactiva el parpadeo.
   \ XXX FIXME -- no funciona
-
 [then]
+
 : italic  ( f -- )
   \ Activa o desactiva la cursiva.
   \ Nota: tiene el mismo efecto que `inverse`.
@@ -744,7 +744,7 @@ section( Depuración)  \ {{{
 : fatal-error  ( f ca len -- )
   rot if  ." Error fatal: " type cr bye  else  2drop  then  ;
   \ Informa de un error y sale del sistema, si el indicador de error es distinto de cero.
-  \ XXX TODO -- not used
+  \ XXX TODO -- no usado
   \ f = Indicador de error
   \ ca len = Mensaje de error
 
@@ -814,7 +814,7 @@ str-create tmp-str
   \ Hace una copia de una cadena en el almacén circular
   \ y la devuelve con la primera letra en mayúscula,
   \ dependiendo del valor de un indicador.
-  \ XXX TODO -- not used
+  \ XXX TODO -- no usado
 
 : -punctuation  ( ca len -- ca len )
   exit \ XXX TMP
@@ -824,7 +824,7 @@ str-create tmp-str
   \ Sustituye por espacios todos los signos de puntuación ASCII de una cadena.
   \ XXX TODO -- recorrer la cadena por caracteres UTF-8
   \ XXX TODO -- sustituir también signos de puntuación UTF-8
-  \ XXX FIXME -- esto elimina las marcas "#" de los comandos del sistema!
+  \ XXX FIXME -- no eliminar las marcas "#" de los comandos del sistema
 
 : tmp-str!  ( ca len -- )  tmp-str str-set  ;
   \ Guarda una cadena en la cadena dinámica `tmp-str`.
@@ -865,7 +865,7 @@ str-create tmp-str
   \ Se usa para convertir en plural o singular los verbos de una frase.
   \ ca len = Expresión
   \ f = ¿Hay que poner los verbos en plural?
-  \ XXX TODO -- not used
+  \ XXX TODO -- no usado
 
 : char>string  ( c u -- ca len )
   dup sb_allocate swap 2dup 2>r  rot fill  2r>  ;
@@ -892,11 +892,11 @@ str-create tmp-str
 
 : and&  ( ca1 len1 -- ca2 len2 )  s" y" s&  ;
   \ Añade una conjunción «y» al final de una cadena.
-  \ XXX TODO -- not used
+  \ XXX TODO -- no usado
 
 : or&  ( ca1 len1 -- ca2 len2 )  s" o" s&  ;
   \ Añade una conjunción «o» al final de una cadena.
-  \ XXX TODO -- not used
+  \ XXX TODO -- no usado
 
 \ }}} ==========================================================
 section( Textos aleatorios)  \ {{{
@@ -926,7 +926,7 @@ section( Textos aleatorios)  \ {{{
 
 : this|the(m)$  ( -- ca len )
   s{ s" este" s" el" }s  ;
-  \ XXX TODO -- not used
+  \ XXX TODO -- no usado
 
 : your|the(f)$  ( -- ca len )
   s{ s" tu" s" la" }s  ;
@@ -1790,7 +1790,8 @@ s" »" sconstant rquote$   \ Comilla castellana de cierre.
   \ y además el penúltimo no lo es? (para descartar que se trate de
   \ puntos suspensivos).
   \ XXX FIXME -- fallo: no se pone punto tras puntos suspensivos
-  \ XXX TODO -- factor out
+  \ XXX TODO -- factorizar
+  \ XXX TODO -- usar signo de puntos suspensivos UTF-8
 
 : str-prepend-quote  ( a -- )
   lquote$ rot str-prepend-string  ;
@@ -2249,7 +2250,7 @@ last-exit> cell+ first-exit> - constant /exits
 
 : is-not-here?  ( a -- f )  is-here? 0=  ;
   \ ¿Está un ente en otra localización que la del protagonista?
-  \ XXX TODO -- not used
+  \ XXX TODO -- no usado
 
 : is-here-and-unknown?  ( a -- f )  dup is-here? swap is-unknown? and  ;
   \ ¿Está un ente en la misma localización que el protagonista y aún no es conocido por él?
@@ -2266,7 +2267,7 @@ last-exit> cell+ first-exit> - constant /exits
 : can-be-looked-at?  ( a -- f )
   [false] [if]
     \ XXX OLD -- Primera versión
-    dup my-location =       \ ¿Es la localización del protagonista?
+    dup am-i-there?         \ ¿Es la localización del protagonista?
     over is-direction? or   \ ¿O es un ente dirección?
     over exits% = or        \ ¿O es el ente "salidas"?
     swap is-accessible? or  \ ¿O está accesible?
@@ -2284,7 +2285,7 @@ last-exit> cell+ first-exit> - constant /exits
   [then]
   [true] [if]
     \ XXX NEW -- Tercera versión, más rápida y compacta
-    dup my-location = ?dup if  nip exit  then  \ ¿Es la localización del protagonista?
+    dup am-i-there? ?dup if  nip exit  then  \ ¿Es la localización del protagonista?
     dup is-direction? ?dup if  nip exit  then  \ ¿Es un ente dirección?
     dup exits% =      ?dup if  nip exit  then  \ ¿O es el ente "salidas"?
         is-accessible?     ?exit               \ ¿O está accesible?
@@ -2588,7 +2589,7 @@ create 'articles  \ Tabla índice de los artículos
   \ cuyo sujeto se indica con el identificador de su entidad.
   \ ca len = Expresión
   \ a = Entidad
-  \ XXX TODO -- not used
+  \ XXX TODO -- no usado
 
 : proper-grammar-number  ( a ca1 len1 -- ca2 len2 )
   rot has-plural-name? *>plural-ending  ;
@@ -2598,7 +2599,7 @@ create 'articles  \ Tabla índice de los artículos
   \ cuyo número gramatical se indica con el identificador de una entidad.
   \ ca len = Expresión
   \ a = Entidad
-  \ XXX TODO -- not used
+  \ XXX TODO -- no usado
 
 \ ----------------------------------------------
 \ Interfaz para los nombres de los entes
@@ -2714,7 +2715,7 @@ create 'articles  \ Tabla índice de los artículos
   \ masculino para añadirla a la preposición «a», si un ente humano
   \ _a_ lo requiere para ser usado como objeto directo; o una cadena
   \ vacía.
-  \ XXX TODO -- not used
+  \ XXX TODO -- no usado
 
 : a/$  ( a -- ca len )  s" a" rot is-human? and  ;
   \ Devuelve la preposición «a» en _ca len_ si un ente _a_ lo requiere
@@ -2724,7 +2725,7 @@ create 'articles  \ Tabla índice de los artículos
   \ Devuelve la preposición «a» en _ca len_, con posible artículo
   \ determinado, si un ente _a_ lo requiere para ser usado como objeto
   \ directo.
-  \ XXX TODO -- not used
+  \ XXX TODO -- no usado
 
 : subjective-negative-name-as-direct-object  ( a -- ca len )
   dup a/$ rot subjective-negative-name s&  ;
@@ -2734,7 +2735,7 @@ create 'articles  \ Tabla índice de los artículos
 
 : .full-name  ( a -- )  full-name paragraph  ;
   \ Imprime el nombre completo de un ente.
-  \ XXX TODO -- not used
+  \ XXX TODO -- no usado
 
 \ }}} ==========================================================
 section( Algunas cadenas calculadas y operaciones con ellas)  \ {{{
@@ -2789,7 +2790,7 @@ defer lock-found  ( -- )
 : vanish-if-hold  ( a -- )
   dup is-hold? if  vanish  else  drop  then  ;
   \ Hace desaparecer un ente si su localización es el protagonista.
-  \ XXX TODO -- not used
+  \ XXX TODO -- no usado
 
 \ }}} ==========================================================
 section( Herramientas para crear las fichas de la base de datos)  \ {{{
@@ -3034,7 +3035,7 @@ false value sight
   [true] [if]
     swap is-direction? 2 and +
   [else]
-    \ XXX TODO -- unfinished, not used yet
+    \ XXX TODO -- terminar; no usado
     over is-direction? 2 and +
     swap exits% = 4 and +
   [then]  ;
@@ -3694,7 +3695,7 @@ false [if]  \ XXX OLD -- código obsoleto
   \ cardinales (todos usan artículo determinado masculino). Se usa en
   \ la descripción principal de un escenario
   \
-  \ XXX TODO -- not used
+  \ XXX TODO -- no usado
 
 : $other-exit-in-cave  ( ca1 len1 -- ca2 len2 )
   ^a-pass-way$ s&
@@ -3706,7 +3707,7 @@ false [if]  \ XXX OLD -- código obsoleto
   \ palabra solo sirve para parámetros de puntos cardinales (todos
   \ usan artículo determinado masculino)
   \
-  \ XXX TODO -- not used
+  \ XXX TODO -- no usado
 
 [then]  \ XXX NOTE: fin del código obsoleto
 
@@ -4295,7 +4296,7 @@ flint% :attributes
   s" pedernal" self% ms-name!
   ;attributes
 flint% :description
-  s" Es dura y afilada." \ XXX FIXME
+  s" Es una piedra dura y afilada."
   paragraph
   ;description
 grass% :attributes
@@ -6082,7 +6083,7 @@ in% :attributes
 section( Mensaje de acción completada)  \ {{{
 
 variable silent-well-done?
-  \ XXX TODO -- not used yet
+  \ XXX TODO -- no usado
 
 : (well-done)  ( -- )
   s{ s" Hecho." s" Bien." }s narrate  ;
@@ -6217,7 +6218,7 @@ to cannot-see-what-error#
 
 : like-that$  ( -- ca len )
   s{ s" así" s" como eso" }s  ;
-  \ XXX TODO -- not used
+  \ XXX TODO -- no usado
 
 : something-like-that$  ( -- ca len )
   s" hacer" s?
@@ -6377,7 +6378,7 @@ to dangerous-error#
 : ?full-name&  ( ca1 len1 a2 -- )
   ?dup if  full-name s&  then  ;
   \ Añade a una cadena el nombre de un posible ente.
-  \ XXX TODO -- not used
+  \ XXX TODO -- no usado
   \ ca1 len1 = Cadena
   \ a2 = Ente (o cero)
 
@@ -6442,7 +6443,7 @@ to dangerous-error#
 : (nonsense|no-reason)  ( -- )
   ['] nonsense ['] no-reason 2 choose execute  ;
   \ Informa de que una acción no especificada no tiene sentido o no tiene motivo.
-  \ XXX TODO -- not used yet
+  \ XXX TODO -- aún no usado
 
 0 ' (nonsense|no-reason) action-error: nonsense|no-reason drop
 
@@ -6883,11 +6884,11 @@ section( Tramas comunes a todos los escenarios)  \ {{{
 
 : before-describing-any-location  ( -- )  ;
   \ Trama de entrada común a todos los entes escenario.
-  \ XXX TODO -- not used
+  \ XXX TODO -- no usado
 
 : after-describing-any-location  ( -- )  ;
   \ Trama de entrada común a todos los entes escenario.
-  \ XXX TODO -- not used
+  \ XXX TODO -- no usado
 
 : after-listing-entities-of-any-location  ( a -- )
   ambrosio-must-follow? ?? ambrosio-must-follow  ;
@@ -7040,7 +7041,7 @@ true [if]
 
 : before-leaving-any-location  ( -- )  ;
   \ Trama de salida común a todos los entes escenario.
-  \ XXX TODO -- not used
+  \ XXX TODO -- no usado
 
 : before-leaving-location  ( a -- )
   before-leaving-any-location
@@ -7088,14 +7089,14 @@ section( Recursos de las tramas asociadas a lugares)  \ {{{
   \ ¿El paso del desfiladero está abierto por el norte?
 
 : still-in-the-village?  ( -- f )
-  my-location location-01% =
+  location-01% am-i-there?
   location-02% is-not-visited? and  ;
   \ ¿Los soldados no se han movido aún de la aldea sajona?
 
 : back-to-the-village?  ( -- f )
   location-01% am-i-there?  location-02% is-visited? and  ;
   \ ¿Los soldados han regresado a la aldea sajona?
-  \ XXX TODO -- not used
+  \ XXX TODO -- no usado
 
 : soldiers-follow-you  ( -- )
   ^all-your$ soldiers$ s&
@@ -7862,9 +7863,9 @@ section( Descripciones especiales)  \ {{{
 : (soldiers-description)  ( -- )
   true case
     still-in-the-village? of  soldiers-steal-spite-of-officers  endof
-\   back-to-the-village? of  soldiers-go-home  endof  \ XXX TODO -- not used
+\   back-to-the-village? of  soldiers-go-home  endof  \ XXX TODO -- no usado
     pass-still-open? of  soldiers-go-home  endof
-\   battle? of  battle-phase  endof  \ XXX TODO -- not used. redundante, porque tras la descripción se mostrará otra vez la situación de la batalla
+\   battle? of  battle-phase  endof  \ XXX TODO -- no usado. redundante, porque tras la descripción se mostrará otra vez la situación de la batalla
   endcase  ;
   \ Describe a tus soldados.
 
@@ -7872,9 +7873,9 @@ section( Descripciones especiales)  \ {{{
 : (officers-description)  ( -- )
   true case
     still-in-the-village? of  ^officers-forbid-to-steal$  endof
-\   back-to-the-village? of  officers-go-home  endof  \ XXX TODO -- not used
+\   back-to-the-village? of  officers-go-home  endof  \ XXX TODO -- no usado
     pass-still-open? of  officers-go-home  endof
-\   battle? of  battle-phase  endof  \ XXX TODO -- not used. redundante, porque tras la descripción se mostrará otra vez la situación de la batalla
+\   battle? of  battle-phase  endof  \ XXX TODO -- no usado. redundante, porque tras la descripción se mostrará otra vez la situación de la batalla
   endcase  ;
   \ Describe a tus soldados.
 
@@ -8307,14 +8308,14 @@ subsection( Comprobación de los requisitos de las acciones)  \ {{{
   different-tool? 0= useless-what-tool-error# and throw  ;
   \ Provoca un error (narrativo) si se usa cierta herramienta.
   \ a = Ente que no será aceptado como herramienta
-  \ XXX TODO -- not used
+  \ XXX TODO -- no usado
 
 : actual-tool{not-this}  ( a -- )
   dup what !
   different-actual-tool? 0= useless-what-tool-error# and throw  ;
   \ Provoca un error (narrativo) si se usa cierta herramienta estricta.
   \ a = Ente que no será aceptado como herramienta estricta
-  \ XXX TODO -- not used
+  \ XXX TODO -- no usado
 
 : tool{this-only}  ( a -- )
   tool-complement @ what !
@@ -11006,7 +11007,7 @@ create prepositional-complements /prepositional-complements allot
 
 : save-command-elements  ( -- )
   action @ last-action !  ;
-  \ XXX TODO -- not used
+  \ XXX TODO -- no usado
   \ XXX TODO -- falta guardar los complementos
 
 : (obey)  ( ca len -- )
@@ -12622,7 +12623,7 @@ section( Entrada de respuestas de tipo «sí o no»)  \ {{{
 \ }}} ==========================================================
 section( Fin)  \ {{{
 
-: success?  ( -- f )  my-location location-51% =  ;
+: success?  ( -- f )  location-51% am-i-there?  ;
   \ ¿Ha completado con éxito su misión el protagonista?
 
 false [if]
@@ -12630,7 +12631,7 @@ false [if]
 : battle-phases  ( -- u )  5 random 7 +  ;
   \ Devuelve el número máximo de fases de la batalla
   \ (número al azar, de 8 a 11).
-  \ XXX TODO -- not used
+  \ XXX TODO -- no usado
 
 [then]
 
@@ -12686,7 +12687,6 @@ false [if]
   s" abandonar?"
   }s&  ;
   \ Devuelve la pregunta de si el jugador quiere dejar el juego.
-  \ XXX TODO -- not used
 
 : surrender?  ( -- f )
   ['] surrender?$ yes?  ;
@@ -12789,18 +12789,20 @@ false [if]
   success? if  the-happy-end  else  the-sad-end  then  scene-break  ;
   \ Mensaje final del juego.
 
-: (finish)  ( -- )
-  \ restore-vocabularies system-colors cr bootmessage quit  ; \ XXX OLD
-  bye  ;  \ XXX NEW
-  \ Abandonar el juego.
 
-:noname  ( -- )
-  surrender?  if
-    \ retry?$  cr no? ?? (finish)  \ XXX TODO
-    (finish)
-  then
-  ; is finish
-  \ Acción de abandonar el juego.
+: retry?  ( -- f )  ['] retry?$ yes?  ;
+  \ Pregunta al jugador si quiere volver a intentarlo y devuelve la
+  \ respuesta en el indicador _f_.
+
+defer adventure  ( -- )
+
+: (finish)  ( -- )  retry? if  adventure  else  farewell  then  ;
+  \ Acción de abandonar el juego, ya confirmada por el jugador.
+  \ Pregunta al jugador si quiere volver a intentarlo; si es así,
+  \ inicia una nueva partida; de otro modo sale del programa.
+
+:noname  ( -- )  surrender? ?? (finish)  ; is finish
+  \ Acción de abandonar el juego. Pide confirmación.
 
 \ }}} ==========================================================
 section( Acerca del programa)  \ {{{
@@ -12824,8 +12826,9 @@ section( Acerca del programa)  \ {{{
   \ Muestra un texto sobre la licencia.
 
 : program  ( -- )
-  s" «Asalto y castigo» (escrito en Gforth)" paragraph
-  s" Versión " version s& paragraph  ;
+  s" «Asalto y castigo»" paragraph
+  s" Versión " version s& paragraph  
+  s" Escrito en Forth con Gforth." paragraph  ;
   \ Muestra el nombre y versión del programa.
 
 : about  ( -- )
@@ -12874,7 +12877,7 @@ section( Introducción)  \ {{{
 
 : intro-3  ( -- )
   ^your-soldiers$ s{
-    s" se" s{ s" ciernen" s" lanzan" s" arrojan" }s& s" sobre" s&
+    s" se" s{ s" lanzan" s" arrojan" }s& s" sobre" s&
     s" se" s{ s" amparan" s" apoderan" }s& s" de" s&
     s{ s" rodean" s" cercan" }s
   }s& s" la aldea y la" s&
@@ -12891,7 +12894,6 @@ section( Introducción)  \ {{{
   s" en" s& s{ s" la batalla" s" el combate" s" la lucha" s" la pelea" }s& period+
   narrate  scene-break  ;
   \ Muestra la introducción al juego (parte 3).
-  \ XXX FIXME -- comprobar «cernirse»; añadir otras opciones
 
 : intro-4  ( -- )
   sire,$ s{
@@ -12963,20 +12965,17 @@ section( Principal)  \ {{{
   [then]  ;
   \ Preparativos que hay que hacer antes de cada partida.
 
-: game  ( -- )
-  begin  plot listen obey  game-over?  until  ;
+: game  ( -- )  begin  plot listen obey  game-over?  until  ;
   \ Bucle de la partida.
 
-: (main)  ( -- )
-  begin  init-game game the-end  enough?  until  ;
+: (adventure)  ( -- )  begin  init-game game the-end  enough?  until  ;
+' (adventure) is adventure
+  \ Bucle del juego.
 
-: main  ( -- )
-  init-once (main) farewell  ;
-  \ Bucle principal del juego.
+: run  ( -- )  init-once adventure farewell  ;
+  \ Arranque del juego.
 
-also forth definitions
-' main alias go
-' main alias run
+forth-wordlist set-current
 
 : i0  ( -- )
   \ XXX TMP -- hace toda la inicialización; para depuración.
@@ -13103,6 +13102,3 @@ true [if]
   narrate  ;
 
 [then]
-
-only forth
-
