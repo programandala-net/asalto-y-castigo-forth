@@ -9,7 +9,7 @@ cr .( Asalto y castigo )  \ {{{
 \ Project under development.
 
 \ Version: see file <VERSION.txt>.
-\ Last update: 201606281614
+\ Last update: 201606281624
 
 \ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
 
@@ -1543,15 +1543,13 @@ subsection( Presto de pausa en la impresión de párrafos)  \ {{{
 
 svariable scroll-prompt  \ Guardará el presto de pausa
 
-: scroll-prompt$  ( -- ca len )
-  scroll-prompt count  ;
+: scroll-prompt$  ( -- ca len )  scroll-prompt count  ;
   \ Devuelve el presto de pausa.
 
 1 value /scroll-prompt
   \ Número de líneas de intervalo para mostrar un presto.
 
-: scroll-prompt-key  ( -- )
-  key  bl =  scroll !  ;
+: scroll-prompt-key  ( -- )  key  bl =  scroll !  ;
   \ Espera la pulsación de una tecla
   \ y actualiza con ella el estado del desplazamiento.
 
@@ -1561,13 +1559,17 @@ svariable scroll-prompt  \ Guardará el presto de pausa
   trm+erase-line  trm+restore-cursor  ;
   \ Imprime el presto de pausa, espera una tecla y borra el presto.
 
+: 
+
 : (scroll-prompt?)  ( u -- f )
-  dup 1+ #lines @ <>  \ ¿Es distinta de la última?
-  swap /scroll-prompt mod 0=  and  ;  \ ¿Y el intervalo es correcto?
-  \ ¿Se necesita imprimir un presto para la línea actual?
-  \ u = Línea actual del párrafo que se está imprimiendo
-  \ Se tienen que cumplir dos condiciones:
-  \ XXX TODO factor to save the comments
+  dup 1+ #lines @ <>
+  swap /scroll-prompt mod 0=  and  ;
+  \ ¿Se necesita imprimir un presto para la línea actual?  Se tienen
+  \ que cumplir dos condiciones.  1) ¿Es distinta de la última?; 2) ¿Y
+  \ el intervalo es correcto?.  _u_ es la línea actual del párrafo que
+  \ se está imprimiendo.
+  \
+  \ XXX TODO factorizar para no tener que comentar las condiciones.
 
 : scroll-prompt?  ( u -- f )
   scroll @ if  drop false  else  (scroll-prompt?)  then  ;
@@ -1577,11 +1579,12 @@ svariable scroll-prompt  \ Guardará el presto de pausa
   \ si no, se comprueban las otras condiciones.
   \ ." L#" dup . ." /" #lines @ . \ XXX INFORMER
 
-: .scroll-prompt?  ( u -- )
-  scroll-prompt? ?? .scroll-prompt  ;
-  \ Imprime un presto y espera la pulsación de una tecla,
-  \ si corresponde a la línea en curso.
-  \ u = Línea actual del párrafo que se está imprimiendo
+: .scroll-prompt?  ( u -- )  scroll-prompt? ?? .scroll-prompt  ;
+  \ Imprime un presto y espera la pulsación de una tecla, si
+  \ corresponde a la línea en curso.  _u_ es la línea actual del
+  \ párrafo que se está imprimiendo.
+  \
+  \ \ XXX TODO -- no se usa
 
 \ }}}---------------------------------------------
 subsection( Impresión de párrafos ajustados)  \ {{{
