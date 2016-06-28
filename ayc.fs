@@ -9,7 +9,7 @@ cr .( Asalto y castigo )  \ {{{
 \ Project under development.
 
 \ Version: see file <VERSION.txt>.
-\ Last update: 201606281221
+\ Last update: 201606281350
 
 \ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
 
@@ -231,34 +231,31 @@ true dup constant [old-method] immediate
   \ Notación para los títulos de subsección en el código fuente.
 
 \ }}} ==========================================================
-section( Vocabularios de Forth)  \ {{{
+section( Listas de palabras)  \ {{{
 
-\ Vocabulario principal del programa (no de la aventura)
+wordlist constant game-wordlist
+  \ Palabras del programa (no de la aventura)
 
-vocabulary game-vocabulary
+: restore-wordlists  ( -- )
+  only forth game-wordlist dup >order set-current  ;
+  \ Restaura las listas a su orden de búsqueda habitual.
 
-: restore-vocabularies  ( -- )
-  only forth also game-vocabulary definitions  ;
-  \ Restaura los vocabularios a su orden habitual.
+restore-wordlists
 
-restore-vocabularies
-
-\ Demás vocabularios
-
-vocabulary menu-vocabulary
+wordlist constant menu-wordlist
   \ Palabras del menú.
   \ XXX TODO -- no usado
 
-vocabulary player-vocabulary
+wordlist constant player-wordlist
   \ Palabras del jugador.
 
-vocabulary answer-vocabulary
+wordlist constant answer-wordlist
   \ Respuestas a preguntas de «sí» o «no».
 
-vocabulary config-vocabulary
+wordlist constant config-wordlist
   \ Palabras de configuración del juego.
 
-vocabulary restore-vocabulary
+wordlist constant restore-wordlist
   \ Palabras de restauración de una partida.
 
 \ }}} ==========================================================
@@ -5968,6 +5965,7 @@ floor% :description
     s" El suelo fuera es muy bonito."
     paragraph
   else
+    \ XXX FIXME -- se muestra esto en exteriores
     s" El suelo dentro es muy bonito."
     paragraph
   then
@@ -8298,14 +8296,12 @@ subsection( Comprobación de los requisitos de las acciones)  \ {{{
 : tool-complement{this-only}  ( a -- )
   different-tool? not-allowed-tool-complement-error# and throw  ;
   \ Provoca un error (lingüístico)
-  \ si hay complemento instrumental y no es el indicado.
-  \ a = Ente que será aceptado como complemento instrumental
+  \ si hay complemento instrumental y no es el ente _a_.
 
 : actual-tool-complement{this-only}  ( a -- )
   different-actual-tool? not-allowed-tool-complement-error# and throw  ;
   \ Provoca un error (lingüístico)
-  \ si hay complemento instrumental estricto y no es el indicado.
-  \ a = Ente que será aceptado como complemento instrumental
+  \ si hay complemento instrumental estricto y no es el ente _a_.
 
 : tool{not-this}  ( a -- )
   dup what !
@@ -10501,7 +10497,7 @@ variable game-file-id
   \ XXX TODO -- mensaje de error definitivo
 
 : read-game-file  ( ca len -- )
-  only restore-vocabulary  included  restore-vocabularies  ;
+  restore-wordlist 1 set-order  included  restore-wordlists  ;
   \ Lee el fichero de configuración de nombre _ca len_.
   \ XXX TODO -- comprobar la existencia del fichero y atrapar errores
   \ al leerlo
@@ -10520,7 +10516,7 @@ variable game-file-id
   \ Escribe una cadena en el fichero de la partida.
   \ XXX TODO -- mensaje de error definitivo
 
-also restore-vocabulary  definitions
+restore-wordlist set-current
 
 ' \ alias \
 immediate
@@ -10568,7 +10564,8 @@ immediate
   \ Restaura las variables de la trama.
   \ Debe hacerse en orden alfabético inverso.
 
-restore-vocabularies
+restore-wordlists
+
 : string>file  ( ca len -- )
   bs| s" | 2swap s+ bs| "| s+ >file  ;
   \ Escribe una cadena en el fichero de la partida.
@@ -10695,7 +10692,7 @@ restore-vocabularies
 
 : load-the-game  ( ca len -- )
   \ main-complement{forbidden} XXX TODO
-  only restore-vocabulary
+  restore-wordlist 1 set-order
   [debug-filing] [??] ~~
   \ included  \ XXX FIXME -- el sistema estalla
   \ 2drop  \ XXX NOTE: sin error
@@ -10711,7 +10708,7 @@ restore-vocabularies
   [debug-filing] [??] ~~
   catch
   [debug-filing] [??] ~~
-  restore-vocabularies
+  restore-wordlists
   [debug-filing] [??] ~~
   ?dup if
     ( ca len u2 ) nip nip
@@ -10755,9 +10752,9 @@ section( Intérprete de comandos)  \ {{{
 \ comandos del juego, más de la mitad del trabajo ya está hecha por
 \ anticipado. Para ello basta crear las palabras del vocabulario del
 \ juego como palabras propias de Forth y hacer que Forth interprete
-\ directamente la entrada del jugador. Creando las palabras en un
-\ vocabulario de Forth específico para ellas, y haciendo que sea el
-\ único vocabulario activo en el momento de la interpretación, solo las
+\ directamente la entrada del jugador. Creando las palabras en una
+\ lista de palabras de Forth específica para ellas, y haciendo que sea
+\ la única lista activa en el momento de la interpretación, solo las
 \ palabras del juego serán reconocidas, no las del programa ni las del
 \ sistema Forth.
 \
@@ -10978,17 +10975,17 @@ create prepositional-complements /prepositional-complements allot
 : valid-parsing?  ( ca len -- f )
   -punctuation
   [debug-parsing] [??] ~~
-  \ Dejar solo el diccionario PLAYER-VOCABULARY activo
-  only player-vocabulary
-  \ [debug-catch] [if]  s" En VALID-PARSING? antes de preparar CATCH" debug  [then]  \ XXX INFORMER
+  player-wordlist 1 set-order
+  \ [debug-catch] [if]  s" En `valid-parsing?` antes de preparar `catch`" debug  [then]  \ xxx informer
   [debug-parsing] [??] ~~
   ['] evaluate-command catch
   [debug-parsing] [??] ~~
-  dup if  nip nip  then  \ Arreglar la pila, pues CATCH hace que apunte a su posición previa
+  dup if  nip nip  then
+    \ Arreglar la pila, pues `catch` hace que apunte a su posición previa
   [debug-parsing] [??] ~~
   dup ?wrong 0=
   [debug-parsing] [??] ~~
-  restore-vocabularies
+  restore-wordlists
   no-parsing-error-left? and
   [debug-parsing] [??] ~~
   [debug-parsing-result] [if]
@@ -11034,7 +11031,7 @@ create prepositional-complements /prepositional-complements allot
   [debug-parsing] [??] ~~
   dup if  (obey)  else  2drop  then
   [debug-parsing] [??] ~~  ;
-  \ Evalúa un comando con el vocabulario del juego, si no está vacío.
+  \ Evalúa un comando, si no está vacío, con el vocabulario del juego.
 
 : second?  ( x1 x2 -- x1 f )
   [debug-parsing] [??] ~~
@@ -11169,10 +11166,10 @@ variable cr-after-command-prompt?
   \ Asegura que un nivel de detalle de error está entre los
   \ límites.
 
-also config-vocabulary  definitions
+config-wordlist dup >order set-current
 
 \ Las palabras cuyas definiciones siguen a continuación
-\ se crearán en el vocabulario `config-vocabulary` y
+\ se crearán en la lista `config-wordlist` y
 \ son las únicas que podrán usarse para configurar el juego
 \ en el fichero de configuración:
 
@@ -11314,7 +11311,7 @@ also config-vocabulary  definitions
   \ Configura si hay que usar acción anterior cuando no se
   \ especifica otra en el comando.
 
-restore-vocabularies
+restore-wordlists
   \ Terminar de definir palabras permitidas en el fichero
   \ configuración.
 
@@ -11368,9 +11365,9 @@ false [if]
 [then]
 
 : read-config  ( -- )
-  only config-vocabulary seal
+  config-wordlist 1 set-order
   config-file$ ['] included catch  ( x1 x2 n | 0 )
-  restore-vocabularies
+  restore-wordlists
   \ ?dup if  nip nip ( n ) read-config-error  then  ; \ XXX TODO
   if  2drop read-config-error  then  ;
   \ Lee el fichero de configuración.
@@ -11383,16 +11380,9 @@ false [if]
 \ }}} ==========================================================
 section( Herramientas para crear el vocabulario del juego)  \ {{{
 
-\ El vocabulario del juego está implementado como un
-\ vocabulario de Forth, creado con el nombre de
-\ `player-vocabulary`.  La idea es muy sencilla: crearemos en
-\ este vocabulario nuevo palabras de Forth cuyos nombres sean
-\ las palabras españolas que han de ser reconocidas en los
-\ comandos del jugador. De este modo bastará interpretar la
-\ frase del jugador con la palabra estándar EVALUATE
-\ [o, según el sistema Forth de que se trate, con la palabra
-\ escrita a medida EVALUATE-COMMAND ], que ejecutará
-\ cada palabra que contenga el texto.
+\ El vocabulario del juego está implementado como una lista
+\ de palabras de Forth, creado con el nombre de
+\ `player-wordlist`.
 
 \ ---------------------------------------------
 \ Resolución de entes ambiguos
@@ -11534,7 +11524,7 @@ section( Herramientas para crear el vocabulario del juego)  \ {{{
 \ }}} ==========================================================
 section( Vocabulario del juego)  \ {{{
 
-also player-vocabulary definitions
+player-wordlist dup >order set-current
 
 \ ----------------------------------------------
 \ Pronombres
@@ -12422,7 +12412,7 @@ false [if]
   \ XXX TODO
 
 : #forth  ( -- )
-  restore-vocabularies system-colors cr bootmessage cr quit  ;
+  restore-wordlists system-colors cr bootmessage cr quit  ;
   \ XXX TMP -- Para usar durante el desarrollo.
 
 : #bye  ( -- )  bye  ;
@@ -12431,14 +12421,14 @@ false [if]
 : #quit  ( -- )  quit  ;
   \ XXX TMP -- Para usar durante el desarrollo.
 
-restore-vocabularies
+restore-wordlists
 
 \ }}} ==========================================================
 section( Vocabulario para entradas «sí» o «no»)  \ {{{
 
 \ Para los casos en que el programa hace una pregunta que debe
 \ ser respondida con «sí» o «no», usamos un truco análogo al
-\ del vocabulario del juego: creamos un vocabulario específico
+\ del vocabulario del juego: creamos una lista de palabras
 \ con palabras cuyos nombres sean las posibles respuestas:
 \ «sí», «no», «s» y «n».  Estas palabras actualizarán una
 \ variable,  con cuyo valor el programa sabrá si se ha
@@ -12455,8 +12445,8 @@ section( Vocabulario para entradas «sí» o «no»)  \ {{{
 \ resultado será el mismo que si no se hubiera escrito nada.
 
 \ XXX TODO -- 2016-06-24: This module has been adapted to _La pistola
-\ de agua_, and simplified a lot. The code could be reused by both
-\ projects.
+\ de agua_, and simplified a lot for that project. The code could be
+\ reused by both projects.
 
 variable #answer
   \ Su valor será 0 si no ha habido respuesta válida; negativo para
@@ -12533,7 +12523,7 @@ variable #answer
 : answer-yes  ( -- )  error-if-previous-not  #answer ++  ;
   \ Anota una respuesta afirmativa.
 
-also answer-vocabulary definitions
+answer-wordlist set-current
 
 : sí  answer-yes  ;
 : s  answer-yes  ;
@@ -12541,7 +12531,7 @@ also answer-vocabulary definitions
 : n  answer-no  ;
 : si  wrong-yes-error# throw  ;
 
-restore-vocabularies
+restore-wordlists
 
 \ }}} ==========================================================
 section( Entrada de comandos)  \ {{{
@@ -12574,12 +12564,12 @@ svariable command
   \ y en minúsculas.
 
 : wait-for-input  ( -- ca len )
-  only player-vocabulary seal
-  (wait-for-input)  restore-vocabularies  ;
+  player-wordlist 1 set-order
+  (wait-for-input)  restore-wordlists  ;
   \ Espera un comando del jugador (dejando en el orden de búsqueda
-  \ solo el vocabulario del jugador, para que solo sus palabras sean
-  \ completadas con el tabulador) y lo devuelve sin espacios laterales
-  \ y en minúsculas.
+  \ solo la lista de palabras del vocabulario del jugador, para que
+  \ solo sus palabras sean completadas con el tabulador) y lo devuelve
+  \ sin espacios laterales y en minúsculas.
 
 : .command-prompt  ( -- )
   command-prompt$ command-prompt-color paragraph
@@ -12603,13 +12593,13 @@ section( Entrada de respuestas de tipo «sí o no»)  \ {{{
 
 : yes|no  ( ca len -- n )
   answer-undefined
-  only answer-vocabulary
+  answer-wordlist 1 set-order
   ['] evaluate-command catch
   dup if  nip nip  then  \ Reajustar la pila si ha habido error
   dup ?wrong 0=  \ Ejecutar el posible error y preparar su indicador para usarlo en el resultado
   #answer @ 0= two-options-only-error# and ?wrong  \ Ejecutar error si la respuesta fue irreconocible
   #answer @ dup 0<> and and  \ Calcular el resultado final
-  restore-vocabularies  ;
+  restore-wordlists  ;
   \ Evalúa una respuesta a una pregunta del tipo «sí o no».
   \ ca len = Respuesta a evaluar
   \ n = Resultado (un número negativo para «no» y positivo para «sí»; cero si no se ha respondido ni «sí» ni «no», o si se produjo un error)
@@ -12625,6 +12615,8 @@ section( Entrada de respuestas de tipo «sí o no»)  \ {{{
   \ Devuelve la respuesta a una pregunta del tipo «sí o no».
   \ xt = Dirección de ejecución que devuelve una cadena con la pregunta
   \ n = Respuesta: un número negativo para «no» y positivo para «sí»
+  \ XXX FIXME -- usar una variante de `listen` que permita indicar
+  \ la lista de palabras a usar.
 
 : yes?  ( xt -- f )  answer 0>  ;
   \ ¿Es afirmativa la respuesta a una pregunta?
@@ -12951,7 +12943,7 @@ section( Introducción)  \ {{{
 \ }}} ==========================================================
 section( Principal)  \ {{{
 
-: init-once  ( -- )  restore-vocabularies  init-screen  ;
+: init-once  ( -- )  restore-wordlists  init-screen  ;
   \ Preparativos que hay que hacer solo una vez, antes de la primera partida.
 
 : init-parser/game  ( -- )  erase-last-command-elements  ;
