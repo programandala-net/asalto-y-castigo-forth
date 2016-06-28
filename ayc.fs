@@ -9,7 +9,7 @@ cr .( Asalto y castigo )  \ {{{
 \ Project under development.
 
 \ Version: see file <VERSION.txt>.
-\ Last update: 201606281156
+\ Last update: 201606281221
 
 \ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
 
@@ -2287,11 +2287,14 @@ last-exit> cell+ first-exit> - constant /exits
   [then]
   [true] [if]
     \ XXX NEW -- Tercera versión, más rápida y compacta
-    dup am-i-there? ?dup if  nip exit  then  \ ¿Es la localización del protagonista?
-    dup is-direction? ?dup if  nip exit  then  \ ¿Es un ente dirección?
-    dup exits% =      ?dup if  nip exit  then  \ ¿O es el ente "salidas"?
-        is-accessible?     ?exit               \ ¿O está accesible?
-    false
+    dup am-i-there?    ?dup if  nip exit  then
+      \ ¿Es la localización del protagonista?
+    dup is-direction?  ?dup if  nip exit  then
+      \ ¿Es un ente dirección?
+    dup exits% =       ?dup if  nip exit  then
+      \ ¿Es el ente "salidas"?
+    is-accessible?
+      \ ¿Está accesible?
   [then]  ;
   \ ¿El ente puede ser mirado?
 
@@ -3123,7 +3126,7 @@ entity: (sword%) ' (sword%) is sword%
 entity: table%
 entity: thread%
 entity: (torch%) ' (torch%) is torch%
-entity: wall%  \ XXX TODO -- unfinished
+entity: wall%  \ XXX TODO -- inconcluso
 entity: waterfall%
 
 \ Entes escenario (en orden de número):
@@ -3184,7 +3187,7 @@ entity: sky%
 entity: floor%
 entity: ceiling%
 entity: clouds%
-entity: cave%  \ XXX TODO -- unfinished
+entity: cave%  \ XXX TODO -- inconcluso
 
 \ Entes virtuales
 \ (necesarios para la ejecución de algunos comandos):
@@ -3249,7 +3252,7 @@ section( Herramientas para crear conexiones entre escenarios)  \ {{{
 \ creado unas palabras que proporcionan una sintaxis específica,
 \ como mostraremos a continuación.
 
-0 [if]  \ XXX TODO -- unfinished
+0 [if]  \ XXX TODO -- inconcluso
 
 create opposite-exits
 south-exit> ,
@@ -3312,7 +3315,7 @@ down% down-exit> exits-table!
 out% out-exit> exits-table!
 in% in-exit> exits-table!
 
-0 [if]  \ XXX TODO -- unfinished
+0 [if]  \ XXX TODO -- inconcluso
 : opposite-exit  ( a1 -- a2 )
   first-exit> - opposite-exits + @  ;
   \ Devuelve la dirección cardinal opuesta a la indicada.
@@ -4485,9 +4488,8 @@ torch% :attributes
   self% is-not-lit
   ;attributes
 torch% :description
-  \ XXX TODO -- unfinished
-  s" Está apagada."
-  paragraph
+  s" Está" self% is-lit?
+  if  s" encendida."  else  s" apagada."  then  s& paragraph
   ;description
 waterfall% :attributes
   s" cascada" self% fs-name!
@@ -6002,13 +6004,13 @@ exits% :description
 inventory% :attributes
   ;attributes
 enemy% :attributes
-  \ XXX TODO -- unfinished
+  \ XXX TODO -- inconcluso
   s" enemigos" self% mp-name!
   self% is-human
   self% is-decoration
   ;attributes
 enemy% :description
-  \ XXX TODO -- unfinished
+  \ XXX TODO -- inconcluso
   battle# @ if
     s" Enemigo en batalla!!!"  \ XXX TMP
   else
@@ -6494,7 +6496,7 @@ to dangerous-error#
   \ para ejecutar una acción.
   \ ca1 len1 = Acción (una frase con verbo en infinitivo)
   \ a2 = Ente innecesario
-  \ XXX TODO -- unfinished
+  \ XXX TODO -- inconcluso
 
 3 ' (unnecessary-tool-for-that) action-error: unnecessary-tool-for-that
 to unnecessary-tool-for-that-error#
@@ -6797,7 +6799,7 @@ variable #elements
   over is-listed? and  \ ¿Y puede ser listado?
   swap is-global? 0=  and  ;  \ ¿Y no es global?
   \ ¿El ente puede ser incluido en las listas?
-  \ XXX TODO -- unfinished
+  \ XXX TODO -- inconcluso
 
 : /list++  ( u a1 a2 -- u | u+1 )
   dup can-be-listed?
@@ -7114,7 +7116,7 @@ section( Recursos de las tramas asociadas a lugares)  \ {{{
   ^all-your$ soldiers$ s&
   s{ s" lo están celebrando." s" lo celebran." }s& narrate  ;
   \ Celebrando la victoria.
-  \ XXX TODO -- unfinished
+  \ XXX TODO -- inconcluso
 
 \ ----------------------------------------------
 \ Persecución
@@ -7297,7 +7299,7 @@ section( Recursos de las tramas asociadas a lugares)  \ {{{
   s" el" s&{ s" titánico" s" enorme" }s?&
   s" esfuerzo." s&  ;
   \ Devuelve la descripción del combate (fase 03).
-  \ XXX TODO -- unfinished
+  \ XXX TODO -- inconcluso
 
 : battle-phase-03  ( -- )  battle-phase-03$ narrate  ;
   \ Combate (fase 03).
@@ -7320,7 +7322,7 @@ section( Recursos de las tramas asociadas a lugares)  \ {{{
   }s rot *>verb-ending s&
   step-by-step$ s& period+  ;
   \ Devuelve la descripción del combate (fase 05).
-  \ XXX TODO -- unfinished?
+  \ XXX TODO -- inconcluso?
 
 : battle-phase-05  ( -- )  battle-phase-05$ narrate  ;
   \ Combate (fase 05).
@@ -7334,7 +7336,7 @@ section( Recursos de las tramas asociadas a lugares)  \ {{{
   }s rot *>verb-ending s&
   step-by-step$ s& period+  ;
   \ Devuelve la descripción del combate (fase 06).
-  \ XXX TODO -- unfinished
+  \ XXX TODO -- inconcluso
 
 : battle-phase-06  ( -- )  battle-phase-06$ narrate  ;
   \ Combate (fase 06).
@@ -8092,7 +8094,7 @@ create 'language-error-verbosity-xt
   s" [Con eso no puedes]"  narrate  ;
   \ Informa de que se ha producido un error
   \ porque una herramienta no especificada no es la adecuada.
-  \ XXX TODO -- unfinished
+  \ XXX TODO -- inconcluso
 
 ' useless-tool constant (useless-tool-error#)
 
@@ -8102,7 +8104,7 @@ create 'language-error-verbosity-xt
   s" [Con" what @ full-name s& s" no puedes]" s& narrate  ;
   \ Informa de que se ha producido un error
   \ porque el ente `what` no es la herramienta adecuada.
-  \ XXX TODO -- unfinished
+  \ XXX TODO -- inconcluso
   \ XXX TODO -- distinguir si la llevamos, si está presente, si es conocida...
 
 ' useless-what-tool constant (useless-what-tool-error#)
@@ -8632,10 +8634,14 @@ subsection( Mirar, examinar y registrar)  \ {{{
   dup is-location? ?? .present familiar++  ;
   \ Mira un ente.
 
+: do-look-by-default  ( -- a )
+  main-complement @ ?dup 0= ?? my-location  ;
+  \ Devuelve qué mirar.  Si falta el complemento principal, usar el
+  \ escenario.
+
 :action do-look
   tool-complement{unnecessary}
-  main-complement @ ?dup 0= ?? my-location  \ Si falta el complemento principal, usar el escenario
-  dup {looked} (do-look)
+  do-look-by-default dup {looked} (do-look)
   ;action
   \  Acción de mirar.
 
@@ -9165,7 +9171,7 @@ subsection( Agredir)  \ {{{
   the-snake-runs-away
   snake% vanish  ;
   \ Atacar la serpiente.
-  \ XXX TODO -- unfinished
+  \ XXX TODO -- inconcluso
 
 : attack-ambrosio  ( -- )  no-reason  ;
   \ Atacar a Ambrosio.
@@ -9270,14 +9276,23 @@ subsection( Agredir)  \ {{{
   ;action
   \ Acción de romper.
 
-: hit-the-flint  ( -- )  ;
-  \ XXX TODO -- unfinished
+: lit-the-torch  ( -- )
+  s" Poderosas chispas salen del choque entre espada y pedernal,"
+  s" encendiendo la antorcha." s& narrate
+  torch% is-lit  ;
+
+: hit-the-flint  ( -- )
+  flint% {accessible}
+  sword% taken
+  using$ sword% full-name s& comma+
+  s" golpeas" s& flint% full-name s& period+ narrate
+  lit-the-torch  ;
 
 : (do-hit)  ( a -- )
   case
-    snake% of  kill-the-snake  endof
+    snake% of  kill-the-snake     endof
     cloak% of  shatter-the-cloak  endof
-    flint% of  hit-the-flint  endof
+    flint% of  hit-the-flint      endof
     do-not-worry
   endcase  ;
   \ Golpear un ente.
@@ -9291,12 +9306,11 @@ subsection( Agredir)  \ {{{
   \ Acción de golpear.
 
 : log-already-sharpened$  ( -- ca len )
-  s" Ya" s{
-  s" lo afilaste antes"
-  s" está afilado de antes"
-  s" tiene una buena punta"
-  s" quedó antes bien afilado"
-  }s&  ;
+  s" Ya" s{ s" lo afilaste antes"
+            s" está afilado de antes"
+            s" tiene una buena punta"
+            s" quedó antes bien afilado"
+         }s&  ;
   \ Devuelve una variante de «Ya está afilado».
 
 : no-need-to-do-it-again$  ( -- ca len )
@@ -9346,7 +9360,7 @@ subsection( Agredir)  \ {{{
 
 : sharpen-the-sword  ( -- )  ;
   \ Afila la espada.
-  \ XXX TODO -- unfinished
+  \ XXX TODO -- inconcluso
 
 : (do-sharpen)  ( a -- )
   case
@@ -9402,7 +9416,7 @@ subsection( Movimiento)  \ {{{
 
 : simply-do-go  ( -- )  s" Ir sin rumbo...?" narrate  ;
   \ Ir sin dirección específica.
-  \ XXX TODO -- unfinished
+  \ XXX TODO -- inconcluso
 
 :action do-go
   [debug] [if]  s" Al entrar en DO-GO" debug  [then]  \ XXX INFORMER
@@ -9665,7 +9679,7 @@ subsection( Escalar)  \ {{{
 
 : do-climb-this-here-if-possible  ( a -- )  ;
   \ Escalar el ente indicado, que está presente, si es posible.
-  \ XXX TODO -- unfinished
+  \ XXX TODO -- inconcluso
 
 : do-climb-if-possible  ( a -- )
   dup is-here?
@@ -9673,11 +9687,11 @@ subsection( Escalar)  \ {{{
   else  drop s" [no está aquí eso para escalarlo]" narrate
   then  ;
   \ Escalar el ente indicado si es posible.
-  \ XXX TODO -- unfinished
+  \ XXX TODO -- inconcluso
 
 : nothing-to-climb  ( -- )
   s" [No hay nada que escalar]" narrate  ;
-  \ XXX TODO -- unfinished
+  \ XXX TODO -- inconcluso
 
 : do-climb-something  ( -- )
   location-09% am-i-there?  \ ¿Ante el derrumbe?
@@ -9691,14 +9705,14 @@ subsection( Escalar)  \ {{{
   then
   nothing-to-climb  ;
   \ Escalar algo no especificado.
-  \ XXX TODO -- unfinished
+  \ XXX TODO -- inconcluso
 
 :action do-climb
   main-complement @ ?dup
   if  do-climb-if-possible  else  do-climb-something  then
   ;action
   \ Acción de escalar.
-  \ XXX TODO -- unfinished
+  \ XXX TODO -- inconcluso
 
 \ }}}---------------------------------------------
 subsection( Inventario)  \ {{{
@@ -10062,22 +10076,22 @@ subsection( Hablar y presentarse)  \ {{{
 
 : insisted-once$  ( -- ca len )
   s{ s" antes" s" una vez" }s  ;
-  \ XXX TODO -- unfinished
+  \ XXX TODO -- inconcluso
 
 : insisted-twice$  ( -- ca len )
   s{ s" antes" s" dos veces" s" un par de veces" }s  ;
-  \ XXX TODO -- unfinished
+  \ XXX TODO -- inconcluso
 
 : insisted-several-times$  ( -- ca len )
   s{ s" las otras" s" más de dos" s" más de un par de" s" varias" }s
   s" veces" s&  ;
-  \ XXX TODO -- unfinished
+  \ XXX TODO -- inconcluso
 
 : insisted-many-times$  ( -- ca len )
   s{  s" demasiadas" s" incontables" s" innumerables"
       s" las otras" s" muchas" s" varias"
   }s  s" veces" s&  ;
-  \ XXX TODO -- unfinished
+  \ XXX TODO -- inconcluso
 
 : times-insisted  ( u -- ca1 len1 )
   { times }
@@ -10088,7 +10102,7 @@ subsection( Hablar y presentarse)  \ {{{
     times 6 < of  insisted-several-times$  endof
     insisted-many-times$ rot
   endcase  ;
-  \ XXX TODO -- unfinished
+  \ XXX TODO -- inconcluso
 
 : please-don't-insist$  ( -- ca len )
   s{ s" os ruego que" s" os lo ruego," s" he de rogaros que" }s
@@ -10102,11 +10116,11 @@ subsection( Hablar y presentarse)  \ {{{
     s" os lo he" s" mos" s?+ s{ s" hecho saber" s" advertido" s" dejado claro" }s&
     s" se os ha" s{ s" hecho saber" s" advertido" s" dejado claro" }s&
   }s&  ;
-  \ XXX TODO -- unfinished
+  \ XXX TODO -- inconcluso
 
 : don't-insist  ( -- )
   times-insisted don't-insist$ rnd2swap s& period+ ^uppercase  ;
-  \ XXX TODO -- unfinished
+  \ XXX TODO -- inconcluso
 
 : the-leader-ignores-you  ( -- )  ;
   \ El líder te ignora.
@@ -10793,7 +10807,7 @@ variable 'prepositions#
 
 preposition: «con»-preposition-bit «con»-preposition#
 preposition: «usando»-preposition-bit «usando»-preposition#
-false [if]  \ XXX TODO -- unfinished
+false [if]  \ XXX TODO -- inconcluso
 preposition: «a»-preposition-bit «a»-preposition#
 preposition: «contra»-preposition-bit «contra»-preposition#
 preposition: «de»-preposition-bit «de»-preposition#
@@ -11621,7 +11635,7 @@ also player-vocabulary definitions
   recogerlas recógelas recogedlas recójolas recójalas
   ;aliases
 
-: tomar  ['] do-take|do-eat action!  ; \ XXX TODO -- unfinished
+: tomar  ['] do-take|do-eat action!  ; \ XXX TODO -- inconcluso
 ' tomar  aliases:
   toma tomad tomo tome
   ;aliases
@@ -12945,25 +12959,30 @@ section( Principal)  \ {{{
   \ de comandos antes de cada partida.
   \ XXX TODO -- trasladar a su zona
 
+: init-game-for-debugging  ( -- )
+  location-01% enter-location
+  \ location-08% enter-location  \ Emboscada
+  \ location-11% enter-location  \ Lago
+  \ location-17% enter-location  \ Antes de la cueva oscura
+  \ location-19% enter-location  \ Encuentro con Ambrosio
+  \ location-28% enter-location  \ Refugiados
+  \ location-47% enter-location  \ casa de Ambrosio
+  \ snake% is-here
+  \ ambrosio% is-here
+  \ key% is-hold
+  flint% is-hold
+  torch% is-hold
+  ;
+  \ Condiciones especiales de inicio, para forzar situaciones
+  \ concretas de la trama en el arranque y así probar el código.
+
 : init-game  ( -- )
   randomize
   init-parser/game init-entities init-plot
   get-config new-page
-  [true] [if]
-    about cr intro
-    location-01% enter-location
-  [else]  \ XXX INFORMER
-    \ XXX TODO -- activar selectivamente para depuración:
-    \ location-08% enter-location  \ Emboscada
-    \ location-11% enter-location  \ Lago
-    \ location-17% enter-location  \ Antes de la cueva oscura
-    \ location-19% enter-location  \ Encuentro con Ambrosio
-    \ location-28% enter-location  \ Refugiados
-    \ location-47% enter-location  \ casa de Ambrosio
-    \ snake% is-here
-    \ ambrosio% is-here
-    \ key% is-hold
-  [then]  ;
+  [true] [if]    about cr intro  location-01% enter-location
+         [else]  init-game-for-debugging
+         [then]  ;
   \ Preparativos que hay que hacer antes de cada partida.
 
 : game  ( -- )  begin  plot listen obey  game-over?  until  ;
