@@ -9,7 +9,7 @@ cr .( Asalto y castigo )  \ {{{
 \ Project under development.
 
 \ Version: see file <VERSION.txt>.
-\ Last update: 201606281409
+\ Last update: 201606281546
 
 \ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
 
@@ -144,6 +144,7 @@ require galope/question-keep.fs  \ `?keep`
 require galope/question-question.fs  \ `??`
 require galope/random_strings.fs  \ Selección aleatoria de cadenas de texto
 require galope/randomize.fs  \ `randomize`
+require galope/replaced.fs  \ `replaced`
 require galope/row.fs  \ `row`
 require galope/sconstant.fs \ Constantes de cadenas de texto
 require galope/seconds.fs \ `seconds`, pausa en segundos acortable con una pulsación de tecla
@@ -279,16 +280,14 @@ pad 0 2constant null$
 \ }}} ==========================================================
 section( Vectores)  \ {{{
 
-\ XXX TODO -- efecto de pila
-
-defer protagonist%  \ Ente protagonista.
-defer sword%        \ Ente espada.
-defer stone%        \ Ente piedra.
-defer torch%        \ Antorcha.
-defer leader%       \ Ente líder de los refugiados.
-defer location-01%  \ Primer ente escenario.
-defer exits%        \ Ente "salidas".
-defer log%          \ Ente tronco.
+defer protagonist%  ( -- a )  \ Ente protagonista.
+defer sword%        ( -- a )  \ Ente espada.
+defer stone%        ( -- a )  \ Ente piedra.
+defer torch%        ( -- a )  \ Ente antorcha.
+defer leader%       ( -- a )  \ Ente líder de los refugiados.
+defer location-01%  ( -- a )  \ Primer ente escenario.
+defer exits%        ( -- a )  \ Ente salidas.
+defer log%          ( -- a )  \ Ente tronco.
 
 defer list-exits  ( -- )
   \ Crea e imprime la lista de salidas.
@@ -742,10 +741,9 @@ section( Depuración)  \ {{{
 
 : fatal-error  ( f ca len -- )
   rot if  ." Error fatal: " type cr bye  else  2drop  then  ;
-  \ Informa de un error y sale del sistema, si el indicador de error es distinto de cero.
+  \ Si el indicador _f_ es distinto de cero,
+  \ informa de un error _ca len_ y sale del sistema.
   \ XXX TODO -- no usado
-  \ f = Indicador de error
-  \ ca len = Mensaje de error
 
 : .stack  ( -- )
   [false] [if]  \ XXX OLD
@@ -808,11 +806,11 @@ str-create tmp-str
   \ Nota: Se necesita para los casos en que no queremos
   \ modificar la cadena original.
 
-: ?^uppercase  ( a1 u f -- a1 u | a2 u )
+: ?^uppercase  ( ca1 len1 f -- ca1 len1 | ca2 len2 )
   ?? ^uppercase  ;
-  \ Hace una copia de una cadena en el almacén circular
-  \ y la devuelve con la primera letra en mayúscula,
-  \ dependiendo del valor de un indicador.
+  \ Si _f_ es distinto de cero,
+  \ Devuelve una copia _ca2 len2_ de una cadena _ca1 len1_,
+  \ poniendo la primera letra en mayúscula.
   \ XXX TODO -- no usado
 
 : -punctuation  ( ca len -- ca len )
@@ -831,21 +829,11 @@ str-create tmp-str
 : tmp-str@  ( -- ca len )  tmp-str str-get  ;
   \ Devuelve el contenido de cadena dinámica `tmp-str`.
 
-: sreplace  ( ca1 len1 ca2 len2 ca3 len3 -- ca4 len4 )
-  2rot tmp-str!  tmp-str str-replace  tmp-str@  ;
-  \ Sustituye en una cadena todas las apariciones
-  \ de una subcadena por otra subcadena.
-  \ ca1 len1 = Cadena en la que se realizarán los reemplazos
-  \ ca2 len2 = Subcadena buscada
-  \ ca3 len3 = Subcadena sustituta
-  \ ca4 len4 = Resultado
-  \ XXX TODO -- use Galope's `replaced` instead
-
 : *>verb-ending  ( ca len f -- )
   [false] [if]  \ Versión al estilo de BASIC:
-    if  s" n"  else  s" "  then  s" *" sreplace
+    if  s" n"  else  s" "  then  s" *" replaced
   [else]  \ Versión sin estructuras condicionales, al estilo de Forth:
-    s" n" rot and  s" *" sreplace
+    s" n" rot and  s" *" replaced
   [then]  ;
   \ Cambia por «n» (terminación verbal en plural)
   \ los asteriscos de un texto, o los quita.
@@ -855,9 +843,9 @@ str-create tmp-str
 
 : *>plural-ending  ( ca len f -- )
   [false] [if]  \ Versión al estilo de BASIC:
-    if  s" s"  else  s" "  then  s" *" sreplace
+    if  s" s"  else  s" "  then  s" *" replaced
   [else]  \ Versión sin estructuras condicionales, al estilo de Forth:
-    s" s" rot and  s" *" sreplace
+    s" s" rot and  s" *" replaced
   [then]  ;
   \ Cambia por «s» (terminación plural)
   \ los asteriscos de un texto, o los quita.
@@ -1082,7 +1070,7 @@ section( Textos aleatorios)  \ {{{
   \ Devuelve una variante de «el/los enemigo/s».
 
 : «de-el»>«del»  ( ca1 len1 -- ca1 len1 | ca2 len2 )
-  s" del " s" de el " sreplace  ;
+  s" del " s" de el " replaced  ;
   \ Remplaza las apariciones de «de el» en una cadena por «del».
 
 : of-the-enemy|enemies$  ( -- ca len )
@@ -2485,7 +2473,7 @@ create 'articles  \ Tabla índice de los artículos
   \ correspondiente al género y número de un ente.
 
 : pronoun  ( a -- ca1 len1 )
-  definite-article  s" lo" s" el" sreplace  ;
+  definite-article  s" lo" s" el" replaced  ;
   \ Devuelve el pronombre
   \ correspondiente al género y número de un ente.
 
@@ -6824,7 +6812,7 @@ variable #elements
 : full-name-as-direct-complement  ( a -- ca len )
   dup s" a" rot is-human? and
   rot full-name s&
-  s" al" s" a el" sreplace  ;
+  s" al" s" a el" replaced  ;
   \ Devuelve el nombre completo de un ente en función de complemento
   \ directo.  Esto es necesario para añadir la preposición «a» a las
   \ personas.
