@@ -9,7 +9,7 @@ cr .( Asalto y castigo )  \ {{{
 \ Project under development.
 
 \ Version: see file <VERSION.txt>.
-\ Last update: 201606281624
+\ Last update: 201606281628
 
 \ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
 
@@ -2083,25 +2083,25 @@ last-exit> cell+ first-exit> - constant /exits
 : has-personal-name  ( a -- )  ~has-personal-name? bit-on  ;
 : has-plural-name  ( a -- )  ~has-plural-name? bit-on  ;
 : has-singular-name  ( a -- )  ~has-plural-name? bit-off  ;
-: is-character  ( a -- )  ~is-character? bit-on  ;
-: is-animal  ( a -- )  ~is-animal? bit-on  ;
-: is-light  ( a -- )  ~is-light? bit-on  ;
-: is-not-listed  ( a -- f )  ~is-not-listed? bit-on  ;
-: is-lit  ( a -- )  ~is-lit? bit-on  ;
-: is-not-lit  ( a -- )  ~is-lit? bit-off  ;
-: is-cloth  ( a -- )  ~is-cloth? bit-on  ;
-: is-decoration  ( a -- )  ~is-decoration? bit-on  ;
-: is-global-indoor  ( a -- )  ~is-global-indoor? bit-on  ;
-: is-global-outdoor  ( a -- )  ~is-global-outdoor? bit-on  ;
-: is-human  ( a -- )  ~is-human? bit-on  ;
-: is-location  ( a -- )  ~is-location? bit-on  ;
-: is-indoor-location  ( a -- )  dup is-location ~is-indoor-location? bit-on  ;
-: is-outdoor-location  ( a -- )  dup is-location ~is-indoor-location? bit-off  ;
-: is-open  ( a -- )  ~is-open? bit-on  ;
-: is-closed  ( a -- )  ~is-open? bit-off  ;
+: be-character  ( a -- )  ~is-character? bit-on  ;
+: be-animal  ( a -- )  ~is-animal? bit-on  ;
+: be-light  ( a -- )  ~is-light? bit-on  ;
+: be-not-listed  ( a -- f )  ~is-not-listed? bit-on  ;
+: be-lit  ( a -- )  ~is-lit? bit-on  ;
+: be-not-lit  ( a -- )  ~is-lit? bit-off  ;
+: be-cloth  ( a -- )  ~is-cloth? bit-on  ;
+: be-decoration  ( a -- )  ~is-decoration? bit-on  ;
+: be-global-indoor  ( a -- )  ~is-global-indoor? bit-on  ;
+: be-global-outdoor  ( a -- )  ~is-global-outdoor? bit-on  ;
+: be-human  ( a -- )  ~is-human? bit-on  ;
+: be-location  ( a -- )  ~is-location? bit-on  ;
+: be-indoor-location  ( a -- )  dup be-location ~is-indoor-location? bit-on  ;
+: be-outdoor-location  ( a -- )  dup be-location ~is-indoor-location? bit-off  ;
+: be-open  ( a -- )  ~is-open? bit-on  ;
+: be-closed  ( a -- )  ~is-open? bit-off  ;
 : times-open++  ( a -- )  ~times-open ?++  ;
-: is-worn  ( a -- )  ~is-worn? bit-on  ;
-: is-not-worn  ( a -- )  ~is-worn? bit-off  ;
+: be-worn  ( a -- )  ~is-worn? bit-on  ;
+: be-not-worn  ( a -- )  ~is-worn? bit-off  ;
 : visits++  ( a -- )  ~visits ?++  ;
 
 \ ----------------------------------------------
@@ -2142,12 +2142,12 @@ last-exit> cell+ first-exit> - constant /exits
   dup is-vegetal?  over is-animal? or  swap is-human? or  ;
   \ ¿El ente es un ser vivo (aunque esté muerto)?
 
-: is-there  ( a1 a2 -- )  ~location !  ;
+: be-there  ( a1 a2 -- )  ~location !  ;
   \ Hace que un ente sea la localización de otro.
   \ a1 = Ente que será la localización de a2
   \ a2 = Ente cuya localización será a1
 
-: taken  ( a -- )  protagonist% swap is-there  ;
+: taken  ( a -- )  protagonist% swap be-there  ;
   \ Hace que el protagonista sea la localización de un ente.
 
 : was-there  ( a1 a2 -- )  ~previous-location !  ;
@@ -2176,7 +2176,7 @@ last-exit> cell+ first-exit> - constant /exits
 : my-previous-location  ( -- a )  protagonist% previous-location  ;
   \ Devuelve la localización anterior del protagonista.
 
-: my-location!  ( a -- )  protagonist% is-there  ;
+: my-location!  ( a -- )  protagonist% be-there  ;
   \ Mueve el protagonista al ente indicado.
 
 : am-i-there?  ( a -- f )  my-location =  ;
@@ -2202,7 +2202,7 @@ last-exit> cell+ first-exit> - constant /exits
 : is-not-hold?  ( a -- f )  is-hold? 0=  ;
   \ ¿No es el protagonista la localización de un ente?
 
-: is-hold  ( a -- )  ~location protagonist% swap !  ;
+: be-hold  ( a -- )  ~location protagonist% swap !  ;
   \ Hace que el protagonista sea la localización de un ente.
 
 : is-worn-by-me?  ( a -- f )  dup is-hold?  swap is-worn?  and  ;
@@ -2232,7 +2232,7 @@ last-exit> cell+ first-exit> - constant /exits
 : is-here-and-unknown?  ( a -- f )  dup is-here? swap is-unknown? and  ;
   \ ¿Está un ente en la misma localización que el protagonista y aún no es conocido por él?
 
-: is-here  ( a -- )  my-location swap is-there  ;
+: be-here  ( a -- )  my-location swap be-there  ;
   \ Hace que un ente esté en la misma localización que el protagonista.
 
 : is-accessible?  ( a -- f )  dup is-hold?  swap is-here?  or  ;
@@ -2764,7 +2764,7 @@ defer lock-found  ( -- )
 : not-vanished?  ( a -- f )  vanished? 0=  ;
   \ ¿No está un ente desaparecido?
 
-: vanish  ( a -- )  limbo swap is-there  ;
+: vanish  ( a -- )  limbo swap be-there  ;
   \ Hace desaparecer un ente llevándolo al «limbo».
 
 : vanish-if-hold  ( a -- )
@@ -3212,7 +3212,7 @@ section( Herramientas para crear conexiones entre escenarios)  \ {{{
 \ O bien mediante la palabra creada para ello en la interfaz
 \ básica de campos:
 
-\   cave% is-location
+\   cave% be-location
 
 \ La segunda operación se hace guardando en los campos de
 \ salida del ente los identificadores de los entes a que cada
@@ -3461,7 +3461,7 @@ in% in-exit> exits-table!
   \ Los entes de salida _a1 ... a8_ (o cero) están en el orden
   \ habitual: norte, sur, este, oeste, arriba, abajo, dentro, fuera.
 
-: init-location  ( a1 ... a8 a0 -- )  dup is-location exits!  ;
+: init-location  ( a1 ... a8 a0 -- )  dup be-location exits!  ;
   \ Marca un ente _a0_ como escenario y le asigna todas las salidas.
   \ _a1 ... a8_, que sen entes escenario de salida (o cero) en el
   \ orden habitual: norte, sur, este, oeste, arriba, abajo, dentro,
@@ -3952,7 +3952,7 @@ create 'cave-descriptions
 
 : you-discover-the-cave-entrance  ( -- )
   you-discover-the-cave-entrance$ period+ narrate
-  open-the-cave-entrance  cave-entrance% is-here  ;
+  open-the-cave-entrance  cave-entrance% be-here  ;
   \ Descubres la cueva.
 
 : you-maybe-discover-the-cave-entrance  ( ca len -- )
@@ -4030,10 +4030,10 @@ section( Atributos y descripciones de entes)  \ {{{
 \ cr .( antes de ulfius) .s \ XXX INFORMER
 ulfius% :attributes
   s" Ulfius" self% ms-name!
-  self% is-human
+  self% be-human
   self% has-personal-name
   self% has-no-article
-  \ location-01% self% is-there
+  \ location-01% self% be-there
   ;attributes
 ulfius% :description
   \ XXX TMP
@@ -4045,9 +4045,9 @@ ulfius% :description
 
 ambrosio% :attributes
   s" hombre" self% ms-name!  \ El nombre cambiará a «Ambrosio» durante el juego
-  self% is-character
-  self% is-human
-  location-19% self% is-there
+  self% be-character
+  self% be-human
+  location-19% self% be-there
   ;attributes
 ambrosio% :description
   self% conversations if
@@ -4058,10 +4058,10 @@ ambrosio% :description
   ;description
 leader% :attributes
   s" anciano" self% ms-name!
-  self% is-character
-  self% is-human
-  self% is-not-listed
-  location-28% self% is-there
+  self% be-character
+  self% be-human
+  self% be-not-listed
+  location-28% self% be-there
   ;attributes
 leader% :description
   \ XXX TODO -- elaborar esto según la trama
@@ -4075,9 +4075,9 @@ leader% :description
   ;description
 soldiers% :attributes
   s" soldados" self% mp-name!
-  self% is-human
+  self% be-human
   self% familiar++
-  self% is-decoration
+  self% be-decoration
   \ self% has-definite-article  \ XXX TODO -- mejor implementar que tenga posesivo...
   self% belongs-to-protagonist  \ XXX TODO -- ...aunque quizá esto baste
   ;attributes
@@ -4090,9 +4090,9 @@ soldiers% :description
   ;description
 officers% :attributes
   s" oficiales" self% mp-name!
-  self% is-human
+  self% be-human
   self% familiar++
-  self% is-decoration
+  self% be-decoration
   \ self% has-definite-article  \ XXX TODO -- mejor implementar que tenga posesivo...
   self% belongs-to-protagonist  \ XXX TODO -- ...aunque quizá esto baste
   ;attributes
@@ -4105,8 +4105,8 @@ officers% :description
   ;description
 refugees% :attributes
   s" refugiados" self% mp-name!
-  self% is-human
-  self% is-decoration
+  self% be-human
+  self% be-decoration
   ;attributes
 refugees% :description
   my-location case
@@ -4122,9 +4122,9 @@ refugees% :description
 
 altar% :attributes
   s" altar" self% ms-name!
-  self% is-decoration
+  self% be-decoration
   impossible-error# self% ~take-error# !
-  location-18% self% is-there
+  location-18% self% be-there
   ;attributes
 altar% :description
   s" Está" s{ s" situado" s" colocado" }s&
@@ -4136,8 +4136,8 @@ altar% :description
   ;description
 arch% :attributes
   s" arco" self% ms-name!
-  self% is-decoration
-  location-18% self% is-there
+  self% be-decoration
+  location-18% self% be-there
   ;attributes
 arch% :description
   \ XXX TMP
@@ -4146,7 +4146,7 @@ arch% :description
   ;description
 bed% :attributes
   s" catre" self% ms-name!
-  location-46% self% is-there
+  location-46% self% be-there
   self% ambrosio% belongs
   ;attributes
 bed% :description
@@ -4157,8 +4157,8 @@ bed% :description
   ;description
 bridge% :attributes
   s" puente" self% ms-name!
-  self% is-decoration
-  location-13% self% is-there
+  self% be-decoration
+  location-13% self% be-there
   ;attributes
 bridge% :description
   \ XXX TMP
@@ -4167,7 +4167,7 @@ bridge% :description
   ;description
 candles% :attributes
   s" velas" self% fp-name!
-  location-46% self% is-there
+  location-46% self% be-there
   self% ambrosio% belongs
   ;attributes
 candles% :description
@@ -4185,9 +4185,9 @@ cave-entrance% :description
   ;description
 cloak% :attributes
   s" capa" self% fs-name!
-  self% is-cloth
+  self% be-cloth
   self% belongs-to-protagonist
-  self% is-worn
+  self% be-worn
   self% taken
   ;attributes
 cloak% :description
@@ -4197,16 +4197,16 @@ cloak% :description
   ;description
 cuirasse% :attributes
   s" coraza" self% fs-name!
-  self% is-cloth
+  self% be-cloth
   self% belongs-to-protagonist
-  self% is-worn
+  self% be-worn
   self% taken
   ;attributes
 door% :attributes
   s" puerta" self% fs-name!
-  self% is-closed
+  self% be-closed
   impossible-error# self% ~take-error# !
-  location-47% self% is-there
+  location-47% self% be-there
   self% ambrosio% belongs
   ;attributes
 door% :description
@@ -4222,7 +4222,7 @@ door% :description
   ;description
 emerald% :attributes
   s" esmeralda" self% fs-name!
-  location-39% self% is-there
+  location-39% self% be-there
   ;attributes
 emerald% :description
   s" Es preciosa."
@@ -4230,9 +4230,9 @@ emerald% :description
   ;description
 fallen-away% :attributes
   s" derrumbe" self% ms-name!
-  self% is-decoration
+  self% be-decoration
   nonsense-error# self% ~take-error# !
-  location-09% self% is-there
+  location-09% self% be-there
   ;attributes
 fallen-away% :description
   s{
@@ -4263,9 +4263,9 @@ fallen-away% :description
 
 flags% :attributes
   s" banderas" self% fp-name!
-  self% is-decoration
+  self% be-decoration
   ['] don't-take-the-flags self% ~take-error# !
-  location-28% self% is-there
+  location-28% self% be-there
   ;attributes
 flags% :description
   s" Son las banderas britana y sajona."
@@ -4281,7 +4281,7 @@ flint% :description
   ;description
 grass% :attributes
   s" hierba" self% fs-name!
-  self% is-decoration
+  self% be-decoration
   ;attributes
 grass% :description
   door% times-open if
@@ -4303,9 +4303,9 @@ grass% :description
   ;description
 idol% :attributes
   s" ídolo" self% ms-name!
-  self% is-decoration
+  self% be-decoration
   impossible-error# self% ~take-error# !
-  location-41% self% is-there
+  location-41% self% be-there
   ;attributes
 idol% :description
   s" El ídolo tiene dos agujeros por ojos."
@@ -4313,7 +4313,7 @@ idol% :description
   ;description
 key% :attributes
   s" llave" self% fs-name!
-  location-46% self% is-there
+  location-46% self% be-there
   self% ambrosio% belongs
   ;attributes
 key% :description
@@ -4323,9 +4323,9 @@ key% :description
   ;description
 lake% :attributes
   s" lago" self% ms-name!
-  self% is-decoration
+  self% be-decoration
   nonsense-error# self% ~take-error# !
-  location-44% self% is-there
+  location-44% self% be-there
   ;attributes
 lake% :description
   s{ s" La" s" Un rayo de" }s
@@ -4334,8 +4334,8 @@ lake% :description
   ;description
 lock% :attributes
   s" candado" self% ms-name!
-  self% is-decoration
-  self% is-closed
+  self% be-decoration
+  self% be-closed
   impossible-error# self% ~take-error# !
   self% ambrosio% belongs
   ;attributes
@@ -4348,7 +4348,7 @@ lock% :description
   ;description
 log% :attributes
   s" tronco" self% ms-name!
-  location-15% self% is-there
+  location-15% self% be-there
   ;attributes
 log% :description
   s" Es un tronco"
@@ -4377,9 +4377,9 @@ rags% :description
   ;description
 ravine-wall% :attributes
   s" pared" rocky(f)$ s& self% fs-name!
-  location-08% self% is-there
-  self% is-not-listed  \ XXX OLD -- innecesario
-  self% is-decoration
+  location-08% self% be-there
+  self% be-not-listed  \ XXX OLD -- innecesario
+  self% be-decoration
   ;attributes
 ravine-wall% :description
   s" en" the-cave-entrance-was-discovered? ?keep
@@ -4398,8 +4398,8 @@ ravine-wall% :description
   ;description
 rocks% :attributes
   s" rocas" self% fp-name!
-  self% is-decoration
-  location-31% self% is-there
+  self% be-decoration
+  location-31% self% be-there
   ;attributes
 rocks% :description
   location-31% has-north-exit?
@@ -4409,9 +4409,9 @@ rocks% :description
   ;description
 snake% :attributes
   s" serpiente" self% fs-name!
-  self% is-animal
+  self% be-animal
   dangerous-error# self% ~take-error# !
-  location-43% self% is-there
+  location-43% self% be-there
   ;attributes
 snake% :description
   \ XXX TODO -- distinguir si está muerta
@@ -4421,7 +4421,7 @@ snake% :description
   ;description
 stone% :attributes
   s" piedra" self% fs-name!
-  location-18% self% is-there
+  location-18% self% be-there
   ;attributes
 stone% :description
   s" Recia y pesada, pero no muy grande, de forma piramidal."
@@ -4441,7 +4441,7 @@ sword% :description
   ;description
 table% :attributes
   s" mesa" self% fs-name!
-  location-46% self% is-there
+  location-46% self% be-there
   self% ambrosio% belongs
   ;attributes
 table% :description
@@ -4459,8 +4459,8 @@ thread% :description
   ;description
 torch% :attributes
   s" antorcha" self% fs-name!
-  self% is-light
-  self% is-not-lit
+  self% be-light
+  self% be-not-lit
   ;attributes
 torch% :description
   s" Está" self% is-lit?
@@ -4468,9 +4468,9 @@ torch% :description
   ;description
 waterfall% :attributes
   s" cascada" self% fs-name!
-  self% is-decoration
+  self% be-decoration
   nonsense-error# self% ~take-error# !
-  location-38% self% is-there
+  location-38% self% be-there
   ;attributes
 waterfall% :description
   s" No ves nada por la cortina de agua."
@@ -4769,7 +4769,7 @@ location-09% :description
   ;description
 location-10% :attributes
   s" gruta de entrada" self% fs-name!
-  self% is-indoor-location
+  self% be-indoor-location
   location-08% 0 0 location-11% 0 0 0 0 self% init-location
   ;attributes
 location-10% :description
@@ -4789,7 +4789,7 @@ location-10% :description
   ;description
 location-11% :attributes
   s" gran lago" self% ms-name!
-  self% is-indoor-location
+  self% be-indoor-location
   0 0 location-10% 0 0 0 0 0 self% init-location
   ;attributes
 location-11% :description
@@ -4832,7 +4832,7 @@ location-11% :description
   ;description
 location-12% :attributes
   s" salida del paso secreto" self% fs-name!
-  self% is-indoor-location
+  self% be-indoor-location
   0 0 0 location-13% 0 0 0 0 self% init-location
   ;attributes
 location-12% :description
@@ -4861,7 +4861,7 @@ location-12% :description
   ;description
 location-13% :attributes
   s" puente semipodrido" self% ms-name!
-  self% is-indoor-location
+  self% be-indoor-location
   0 0 location-12% location-14% 0 0 0 0 self% init-location
   ;attributes
 location-13% :description
@@ -4887,7 +4887,7 @@ location-13% :description
   ;description
 location-14% :attributes
   s" recodo de la cueva" self% ms-name!
-  self% is-indoor-location
+  self% be-indoor-location
   0 location-15% location-13% 0 0 0 0 0 self% init-location
   ;attributes
 location-14% :description
@@ -4907,7 +4907,7 @@ location-14% :description
   ;description
 location-15% :attributes
   s" pasaje arenoso" self% ms-name!
-  self% is-indoor-location
+  self% be-indoor-location
   location-14% location-17% location-16% 0 0 0 0 0 self% init-location
   ;attributes
 location-15% :description
@@ -4939,7 +4939,7 @@ location-15% :description
   ;description
 location-16% :attributes
   s" pasaje del agua" self% ms-name!
-  self% is-indoor-location
+  self% be-indoor-location
   0 0 0 location-15% 0 0 0 0 self% init-location
   ;attributes
 location-16% :description
@@ -4967,7 +4967,7 @@ location-16% :description
   ;description
 location-17% :attributes
   s" estalactitas" self% fs-name!
-  self% is-indoor-location
+  self% be-indoor-location
   location-15% location-20% location-18% 0 0 0 0 0 self% init-location
   ;attributes
 location-17% :description
@@ -4991,7 +4991,7 @@ location-17% :description
   ;description
 location-18% :attributes
   s" puente de piedra" self% ms-name!
-  self% is-indoor-location
+  self% be-indoor-location
   0 0 location-19% location-17% 0 0 0 0 self% init-location
   ;attributes
 location-18% :description
@@ -5023,7 +5023,7 @@ location-18% :description
   ;description
 location-19% :attributes
   s" recodo arenoso del canal" self% ms-name!
-  self% is-indoor-location
+  self% be-indoor-location
   0 0 0 location-18% 0 0 0 0 self% init-location
   ;attributes
 location-19% :description
@@ -5054,7 +5054,7 @@ location-19% :description
   ;description
 location-20% :attributes
   s" tramo de cueva" self% ms-name!
-  self% is-indoor-location
+  self% be-indoor-location
   location-17% location-22% location-25% 0 0 0 0 0 self% init-location
   ;attributes
 location-20% :description
@@ -5078,7 +5078,7 @@ location-20% :description
   ;description
 location-21% :attributes
   s" tramo de cueva" self% ms-name!
-  self% is-indoor-location
+  self% be-indoor-location
   0 location-27% location-23% location-20% 0 0 0 0 self% init-location
   ;attributes
 location-21% :description
@@ -5100,7 +5100,7 @@ location-21% :description
   ;description
 location-22% :attributes
   s" tramo de cueva" self% ms-name!
-  self% is-indoor-location
+  self% be-indoor-location
   0 location-24% location-27% location-22% 0 0 0 0 self% init-location
   ;attributes
 location-22% :description
@@ -5122,7 +5122,7 @@ location-22% :description
   ;description
 location-23% :attributes
   s" tramo de cueva" self% ms-name!
-  self% is-indoor-location
+  self% be-indoor-location
   0 location-25% 0 location-21% 0 0 0 0 self% init-location
   ;attributes
 location-23% :description
@@ -5141,7 +5141,7 @@ location-23% :description
   ;description
 location-24% :attributes
   s" tramo de cueva" self% ms-name!
-  self% is-indoor-location
+  self% be-indoor-location
   location-22% 0 location-26% 0 0 0 0 0 self% init-location
   ;attributes
 location-24% :description
@@ -5160,7 +5160,7 @@ location-24% :description
   ;description
 location-25% :attributes
   s" tramo de cueva" self% ms-name!
-  self% is-indoor-location
+  self% be-indoor-location
   location-22% location-28% location-23% location-21% 0 0 0 0 self% init-location
   ;attributes
 location-25% :description
@@ -5179,7 +5179,7 @@ location-25% :description
   ;description
 location-26% :attributes
   s" tramo de cueva" self% ms-name!
-  self% is-indoor-location
+  self% be-indoor-location
   location-26% 0 location-20% location-27% 0 0 0 0 self% init-location
   ;attributes
 location-26% :description
@@ -5202,7 +5202,7 @@ location-26% :description
   ;description
 location-27% :attributes
   s" tramo de cueva" self% ms-name!
-  self% is-indoor-location
+  self% be-indoor-location
   location-27% 0 0 location-25% 0 0 0 0 self% init-location
   ;attributes
 location-27% :description
@@ -5224,7 +5224,7 @@ location-27% :description
   ;description
 location-28% :attributes
   s" amplia estancia" self% fs-name!
-  self% is-indoor-location
+  self% be-indoor-location
   location-26% 0 0 0 0 0 0 0 self% init-location
   ;attributes
 location-28% :description
@@ -5267,7 +5267,7 @@ location-28% :description
   ;description
 location-29% :attributes
   s" espiral" self% fs-name!
-  self% is-indoor-location
+  self% be-indoor-location
   0 0 0 location-28% 0 location-30% 0 0 self% init-location
   ;attributes
 location-29% :description
@@ -5292,7 +5292,7 @@ location-29% :description
   ;description
 location-30% :attributes
   s" inicio de la espiral" self% ms-name!
-  self% is-indoor-location
+  self% be-indoor-location
   0 0 location-31% 0 location-29% 0 0 0 self% init-location
   ;attributes
 location-30% :description
@@ -5316,7 +5316,7 @@ location-30% :description
   ;description
 location-31% :attributes
   s" puerta norte" self% fs-name!
-  self% is-indoor-location
+  self% be-indoor-location
   0 0 0 location-30% 0 0 0 0 self% init-location
   ;attributes
 location-31% :description
@@ -5341,7 +5341,7 @@ location-31% :description
   ;description
 location-32% :attributes
   s" precipicio" self% ms-name!
-  self% is-indoor-location
+  self% be-indoor-location
   0 location-33% 0 location-31% 0 0 0 0 self% init-location
   ;attributes
 location-32% :description
@@ -5365,7 +5365,7 @@ location-32% :description
   ;description
 location-33% :attributes
   s" pasaje de salida" self% ms-name!
-  self% is-indoor-location
+  self% be-indoor-location
   location-32% 0 location-34% 0 0 0 0 0 self% init-location
   ;attributes
 location-33% :description
@@ -5394,7 +5394,7 @@ location-33% :description
 location-34% :attributes
   \ XXX TODO -- crear ente. gravilla
   s" pasaje de gravilla" self% ms-name!
-  self% is-indoor-location
+  self% be-indoor-location
   location-35% 0 0 location-33% 0 0 0 0 self% init-location
   ;attributes
 location-34% :description
@@ -5418,7 +5418,7 @@ location-34% :description
   ;description
 location-35% :attributes
   s" puente sobre el acueducto" self% ms-name!
-  self% is-indoor-location
+  self% be-indoor-location
   location-40% location-34% 0 location-36% 0 location-36% 0 0 self% init-location
   ;attributes
 location-35% :description
@@ -5446,7 +5446,7 @@ location-35% :description
   ;description
 location-36% :attributes
   s" remanso" self% ms-name!
-  self% is-indoor-location
+  self% be-indoor-location
   0 0 location-35% location-37% location-35% 0 0 0 self% init-location
   ;attributes
 location-36% :description
@@ -5473,7 +5473,7 @@ location-36% :description
   ;description
 location-37% :attributes
   s" canal de agua" self% ms-name!
-  self% is-indoor-location
+  self% be-indoor-location
   0 0 location-36% location-38% 0 0 0 0 self% init-location
   ;attributes
 location-37% :description
@@ -5505,7 +5505,7 @@ location-37% :description
   ;description
 location-38% :attributes
   s" gran cascada" self% fs-name!
-  self% is-indoor-location
+  self% be-indoor-location
   0 0 location-37% location-39% 0 0 0 0 self% init-location
   ;attributes
 location-38% :description
@@ -5535,7 +5535,7 @@ location-38% :description
   ;description
 location-39% :attributes
   s" interior de la cascada" self% ms-name!
-  self% is-indoor-location
+  self% be-indoor-location
   0 0 location-38% 0 0 0 0 0 self% init-location
   ;attributes
 location-39% :description
@@ -5559,7 +5559,7 @@ location-39% :description
   ;description
 location-40% :attributes
   s" explanada" self% fs-name!
-  self% is-indoor-location
+  self% be-indoor-location
   0 location-35% location-41% 0 0 0 0 0 self% init-location
   ;attributes
 location-40% :description
@@ -5595,7 +5595,7 @@ location-40% :description
   ;description
 location-41% :attributes
   \ XXX TODO -- cambiar el nombre. no se puede pasar a mayúscula un carácter pluriocteto en utf-8
-  self% is-indoor-location
+  self% be-indoor-location
   s" ídolo" self% ms-name!
   0 0 0 location-40% 0 0 0 0 self% init-location
   ;attributes
@@ -5621,7 +5621,7 @@ location-41% :description
   ;description
 location-42% :attributes
   s" pasaje estrecho" self% ms-name!
-  self% is-indoor-location
+  self% be-indoor-location
   location-41% location-43% 0 0 0 0 0 0 self% init-location
   ;attributes
 location-42% :description
@@ -5648,7 +5648,7 @@ location-42% :description
   ;description
 location-43% :attributes
   s" pasaje de la serpiente" self% ms-name!
-  self% is-indoor-location
+  self% be-indoor-location
   location-42% 0 0 0 0 0 0 0 self% init-location
   ;attributes
 location-43% :description
@@ -5673,7 +5673,7 @@ location-43% :description
   ;description
 location-44% :attributes
   s" lago interior" self% ms-name!
-  self% is-indoor-location
+  self% be-indoor-location
   location-43% 0 0 location-45% 0 0 0 0 self% init-location
   ;attributes
 location-44% :description
@@ -5699,7 +5699,7 @@ location-44% :description
   ;description
 location-45% :attributes
   s" cruce de pasajes" self% ms-name!
-  self% is-indoor-location
+  self% be-indoor-location
   0 location-47% location-44% location-46% 0 0 0 0 self% init-location
   ;attributes
 location-45% :description
@@ -5732,7 +5732,7 @@ location-45% :description
   ;description
 location-46% :attributes
   s" hogar de Ambrosio" self% ms-name!
-  self% is-indoor-location
+  self% be-indoor-location
   0 0 location-45% 0 0 0 0 0 self% init-location
   ;attributes
 location-46% :description
@@ -5753,7 +5753,7 @@ location-46% :description
   ;description
 location-47% :attributes
   s" salida de la cueva" self% fs-name!
-  self% is-indoor-location
+  self% be-indoor-location
   location-45% 0 0 0 0 0 0 0 self% init-location
   ;attributes
 location-47% :description
@@ -5903,7 +5903,7 @@ location-51% :description
 
 cave% :attributes
   s" cueva" self% fs-name!
-  \ self% is-global-indoor \ XXX
+  \ self% be-global-indoor \ XXX
   ;attributes
 cave% :description
   \ XXX TMP
@@ -5912,7 +5912,7 @@ cave% :description
   ;description
 ceiling% :attributes
   s" techo" self% ms-name!
-  self% is-global-indoor
+  self% be-global-indoor
   ;attributes
 ceiling% :description
   \ XXX TMP
@@ -5921,7 +5921,7 @@ ceiling% :description
   ;description
 clouds% :attributes
   s" nubes" self% fp-name!
-  self% is-global-outdoor
+  self% be-global-outdoor
   ;attributes
 clouds% :description
   \ XXX TODO:
@@ -5934,8 +5934,8 @@ clouds% :description
   ;description
 floor% :attributes
   s" suelo" self% ms-name!
-  self% is-global-indoor
-  self% is-global-outdoor
+  self% be-global-indoor
+  self% be-global-outdoor
   ;attributes
 floor% :description
   \ XXX TMP
@@ -5950,7 +5950,7 @@ floor% :description
   ;description
 sky% :attributes
   s" cielo" self% ms-name!
-  self% is-global-outdoor
+  self% be-global-outdoor
   ;attributes
 sky% :description
   \ XXX TMP
@@ -5959,7 +5959,7 @@ sky% :description
   ;description
 wall% :attributes
   s" pared" self% ms-name!
-  self% is-global-indoor
+  self% be-global-indoor
   ;attributes
 wall% :description
   \ XXX TMP
@@ -5971,8 +5971,8 @@ wall% :description
 
 exits% :attributes
   s" salida" self% fs-name!
-  self% is-global-outdoor
-  self% is-global-indoor
+  self% be-global-outdoor
+  self% be-global-indoor
   ;attributes
 exits% :description
   list-exits
@@ -5982,8 +5982,8 @@ inventory% :attributes
 enemy% :attributes
   \ XXX TODO -- inconcluso
   s" enemigos" self% mp-name!
-  self% is-human
-  self% is-decoration
+  self% be-human
+  self% be-decoration
   ;attributes
 enemy% :description
   \ XXX TODO -- inconcluso
@@ -6171,13 +6171,13 @@ variable used-prepositions
   then  period+ action-error  ;
   \  Informa de que un ente no está presente.
 
-1 ' (is-not-here) action-error: is-not-here
+1 ' (is-not-here) action-error: be-not-here
 to is-not-here-error#
 
 : (is-not-here-what)  ( -- )  what @ (is-not-here)  ;
   \  Informa de que el ente `what` no está presente.
 
-0 ' (is-not-here-what) action-error: is-not-here-what
+0 ' (is-not-here-what) action-error: be-not-here-what
 to is-not-here-what-error#
 
 : (cannot-see)  ( a -- )
@@ -6245,7 +6245,7 @@ to cannot-see-what-error#
   \ Informa de que una acción indicada (en infinitivo) es imposible.
   \ ca len = Acción imposible, en infinitivo, o una cadena vacía
 
-2 ' (is-impossible) action-error: is-impossible drop
+2 ' (is-impossible) action-error: be-impossible drop
 
 : (impossible)  ( -- )
   something-like-that$ (is-impossible)  ;
@@ -6296,7 +6296,7 @@ to impossible-error#
   \ ca len = Acción que no tiene sentido;
   \       es un verbo en infinitivo, un sustantivo o una cadena vacía
 
-2 ' (is-nonsense) action-error: is-nonsense drop
+2 ' (is-nonsense) action-error: be-nonsense drop
 
 : (nonsense)  ( -- )  s" eso" (is-nonsense)  ;
   \ Informa de que alguna acción no especificada no tiene sentido.
@@ -6346,7 +6346,7 @@ to nonsense-error#
   \ no tiene sentido.
   \ ca len = Acción que no tiene sentido, en infinitivo, o una cadena vacía
 
-2 ' (is-dangerous) action-error: is-dangerous drop
+2 ' (is-dangerous) action-error: be-dangerous drop
 
 : (dangerous)  ( -- )
   something-like-that$ (is-dangerous)  ;
@@ -6511,7 +6511,7 @@ to unnecessary-tool-error#
   \ Informa de que un ente no tiene nada especial.
   \ ca len = Acción que no tiene nada especial; es un verbo en infinitivo, un sustantivo o una cadena vacía
 
-1 ' (is-normal) action-error: is-normal
+1 ' (is-normal) action-error: be-normal
 to is-normal-error#
 
 [then]
@@ -6854,7 +6854,7 @@ section( Tramas comunes a todos los escenarios)  \ {{{
   \ ¿Ambrosio tiene que estar siguiéndonos?
 
 : ambrosio-must-follow  ( -- )
-  my-location ambrosio% is-there
+  my-location ambrosio% be-there
   s{ s" tu benefactor" ambrosio% full-name }s ^uppercase
   s" te sigue, esperanzado." s& narrate  ;
   \ Ambrosio tiene que estar siguiéndonos.
@@ -7601,7 +7601,7 @@ section( Tramas asociadas a lugares)  \ {{{
 \ en :before-describing-location
 
 location-01% :after-describing-location
-  soldiers% is-here
+  soldiers% be-here
   still-in-the-village?
   if  celebrating  else  going-home  then
   ;after-describing-location
@@ -7616,30 +7616,30 @@ location-02% :after-describing-location
     protagonist% previous-location location-01% =  \ ¿Venimos de la aldea?
     if  location-03%  else  location-01%  then  d-->
   [then]
-  soldiers% is-here going-home
+  soldiers% be-here going-home
   ;after-describing-location
 location-03% :after-describing-location
-  soldiers% is-here going-home
+  soldiers% be-here going-home
   ;after-describing-location
 location-04% :after-describing-location
-  soldiers% is-here going-home
+  soldiers% be-here going-home
   ;after-describing-location
 location-05% :after-describing-location
-  soldiers% is-here going-home
+  soldiers% be-here going-home
   ;after-describing-location
 location-06% :after-describing-location
-  soldiers% is-here going-home
+  soldiers% be-here going-home
   ;after-describing-location
 location-07% :after-describing-location
-  soldiers% is-here going-home
+  soldiers% be-here going-home
   ;after-describing-location
 location-08% :after-describing-location
-  soldiers% is-here
+  soldiers% be-here
   going-home
   pass-still-open? ?? ambush
   ;after-describing-location
 location-09% :after-describing-location
-  soldiers% is-here
+  soldiers% be-here
   going-home
   ;after-describing-location
 location-10% :after-describing-location
@@ -7656,7 +7656,7 @@ location-10% :after-describing-location
   then
   ;after-describing-location
 location-11% :after-describing-location
-  lake% is-here
+  lake% be-here
   ;after-describing-location
 location-16% :after-describing-location
   s" En la distancia, por entre los resquicios de las rocas,"
@@ -7673,12 +7673,12 @@ location-20% :can-i-enter-location?  ( -- f )
 location-28% :after-describing-location
   self% no-exit e-->  \ Cerrar la salida hacia el este
   recent-talks-to-the-leader off
-  refugees% is-here
+  refugees% be-here
   the-refugees-surround-you$ narrate
   the-leader-looks-at-you$ narrate
   ;after-describing-location
 location-29% :after-describing-location
-  refugees% is-here  \ Para que sean visibles en la distancia
+  refugees% be-here  \ Para que sean visibles en la distancia
   ;after-describing-location
 location-31% :after-describing-location
   \ XXX TODO -- mover a la descripción?
@@ -7690,7 +7690,7 @@ location-31% :after-describing-location
   then  narrate
   ;after-describing-location
 location-38% :after-describing-location
-  lake% is-here
+  lake% be-here
   ;after-describing-location
 location-43% :after-describing-location
   snake% is-here? if
@@ -7699,13 +7699,13 @@ location-43% :after-describing-location
   then
   ;after-describing-location
 location-44% :after-describing-location
-  lake% is-here
+  lake% be-here
   ;after-describing-location
 location-47% :after-describing-location
-  door% is-here
+  door% be-here
   ;after-describing-location
 location-48% :after-describing-location
-  door% is-here
+  door% be-here
   ;after-describing-location
 
 \ }}} ==========================================================
@@ -7715,7 +7715,7 @@ section( Trama global)  \ {{{
 \ Varios
 
 : (lock-found)  ( -- )
-  door% location lock% is-there
+  door% location lock% be-there
   lock% familiar++
   ;  ' (lock-found) is lock-found
   \ Encontrar el candado (al mirar la puerta o al intentar abrirla).
@@ -8789,7 +8789,7 @@ false [if]
 \ }}}---------------------------------------------
 subsection( Ponerse y quitarse prendas)  \ {{{
 
-: (do-put-on)  ( a -- )  is-worn  well-done  ;
+: (do-put-on)  ( a -- )  be-worn  well-done  ;
   \ Ponerse una prenda.
 
 :action do-put-on
@@ -8823,7 +8823,7 @@ subsection( Ponerse y quitarse prendas)  \ {{{
   \ quitado el complemento principal, una prenda.
 
 : (do-take-off)  ( a -- )
-  is-not-worn  do-take-off-done$ well-done-this  ;
+  be-not-worn  do-take-off-done$ well-done-this  ;
   \ Quitarse una prenda.
 
 :action do-take-off
@@ -8875,7 +8875,7 @@ subsection( Tomar y dejar)  \ {{{
 \   nonsense
 \   ;
 
-: (do-take)  ( a -- )  dup is-hold familiar++ well-done  ;
+: (do-take)  ( a -- )  dup be-hold familiar++ well-done  ;
   \ Toma un ente.
 
 :action do-take
@@ -8903,7 +8903,7 @@ subsection( Tomar y dejar)  \ {{{
   object is-worn? if
 
     [false] [if]  \ XXX TODO -- mensaje combinado:
-    object is-not-worn
+    object be-not-worn
     s" te" s{
       direct-pronoun s& s" quita" object plural-ending+
       s" quita" object plural-ending+ object full-name s&
@@ -8918,7 +8918,7 @@ subsection( Tomar y dejar)  \ {{{
     do-take-off
 
   then
-  object is-here
+  object be-here
   object >do-drop-done$ well-done-this  ;
   \ Deja un ente.
 
@@ -8941,7 +8941,7 @@ subsection( Cerrar y abrir)  \ {{{
 : first-close-the-door  ( -- )
   s" cierras" s" primero" rnd2swap s& ^uppercase
   door% full-name s& period+ narrate
-  door% is-closed  ;
+  door% be-closed  ;
   \ Informa de que la puerta está abierta
   \ y hay que cerrarla antes de poder cerrar el candado.
 
@@ -8955,7 +8955,7 @@ subsection( Cerrar y abrir)  \ {{{
   lock% {open}
   key% {hold}
   door% is-open? ?? first-close-the-door
-  lock% is-closed  .the-key-fits  ;
+  lock% be-closed  .the-key-fits  ;
   \ Cerrar el candado, si es posible.
 
 : .the-door-closes  ( -- )
@@ -8966,7 +8966,7 @@ subsection( Cerrar y abrir)  \ {{{
   \ Muestra el mensaje de cierre de la puerta.
 
 : (close-the-door)  ( -- )
-  door% is-closed .the-door-closes
+  door% be-closed .the-door-closes
   location-47% location-48% w|<-->|
   location-47% location-48% o|<-->|  ;
   \ Cerrar la puerta.
@@ -9011,7 +9011,7 @@ subsection( Cerrar y abrir)  \ {{{
 : unlock-the-door  ( -- )
   the-door-is-locked
   key% {needed}
-  lock% dup is-open
+  lock% dup be-open
   ^pronoun s" abres con" s& key% full-name s& period+ narrate  ;
   \ Abrir la puerta candada, si es posible.
   \ XXX TODO -- falta mensaje adecuado sobre la llave que gira
@@ -9020,7 +9020,7 @@ subsection( Cerrar y abrir)  \ {{{
   key% tool{this-only}
   lock% {closed}
   key% {needed}
-  lock% is-open  well-done  ;
+  lock% be-open  well-done  ;
   \ Abrir el candado, si es posible.
 
 : the-plants$  ( -- ca len )
@@ -9097,8 +9097,8 @@ subsection( Cerrar y abrir)  \ {{{
   location-47% location-48% w<-->
   location-47% location-48% o<-->
   .the-door-opens
-  door% dup is-open times-open++
-  grass% is-here  ;
+  door% dup be-open times-open++
+  grass% be-here  ;
   \ Abrir la puerta, que está cerrada.
 
 : open-the-door  ( -- )
@@ -9216,7 +9216,7 @@ subsection( Agredir)  \ {{{
   \ Acción de matar.
 
 : cloak-piece  ( a -- )
-  2 random if  is-here  else  taken  then  ;
+  2 random if  be-here  else  taken  then  ;
   \ Hace aparecer un resto de la capa rota de forma aleatoria:
   \ en el escenario o en el inventario.
 
@@ -9253,7 +9253,7 @@ subsection( Agredir)  \ {{{
 : lit-the-torch  ( -- )
   s" Poderosas chispas salen del choque entre espada y pedernal,"
   s" encendiendo la antorcha." s& narrate
-  torch% is-lit  ;
+  torch% be-lit  ;
 
 : hit-the-flint  ( -- )
   flint% {accessible}
@@ -9577,7 +9577,7 @@ subsection( Nadar)  \ {{{
     you-swim$ narrate narration-break
     you-emerge$ narrate narration-break
     location-12% enter-location  the-battle-ends
-  else  s" nadar" now-or-here-or-null$ s& is-nonsense  then
+  else  s" nadar" now-or-here-or-null$ s& be-nonsense  then
   ;action
   \ Acción de nadar.
 
@@ -9640,7 +9640,7 @@ subsection( Escalar)  \ {{{
     s" el derrumbe"
     s{ s" el muro" s" la pared" s" el montón" }s s" de" s& rocks$ s&
     s" las" rocks$ s&
-  }s& is-impossible  ;
+  }s& be-impossible  ;
   \ Imprime el mensaje de error de que
   \ es imposible escalar el derrumbe.
 
@@ -9761,7 +9761,7 @@ subsection( Hablar y presentarse)  \ {{{
     s" se la lleva"
     s{ s" se marcha" s" se va" s" desaparece" }s s" con ella" s?&
   }s& period+ narrate
-  location-18% stone% is-there  ;
+  location-18% stone% be-there  ;
   \ Un hombre te quita la piedra.
 
 : gets-angry$  ( -- ca len )
@@ -10118,7 +10118,7 @@ subsection( Hablar y presentarse)  \ {{{
 : talked-to-ambrosio  ( -- )  ambrosio% conversations++  ;
   \ Aumentar el contador de conversaciones con Ambrosio.
 
-: is-ambrosio's-name  ( ca len -- )
+: be-ambrosio's-name  ( ca len -- )
   ambrosio% ms-name!
   ambrosio% has-no-article
   ambrosio% has-personal-name  ;
@@ -10126,7 +10126,7 @@ subsection( Hablar y presentarse)  \ {{{
 
 : ambrosio-introduces-himself  ( -- )
   s" Hola, Ulfius."
-  my-name-is$ s& s" Ambrosio" 2dup is-ambrosio's-name
+  my-name-is$ s& s" Ambrosio" 2dup be-ambrosio's-name
   period+ s& speak  ;
 
 : you-cry  ( -- )
@@ -10151,7 +10151,7 @@ subsection( Hablar y presentarse)  \ {{{
   s" para" s& s" el éxito de" s?&
   s{ s" la" s" tal" s" dicha" }s& s{ s" misión" s" empresa" }s&
   s" , te son entregados." s+ narrate
-  torch% is-hold  flint% is-hold  ;
+  torch% be-hold  flint% be-hold  ;
 
 : ambrosio-let's-go  ( -- )
   s{  s" Bien"
@@ -10160,7 +10160,7 @@ subsection( Hablar y presentarse)  \ {{{
   s{  s{ s" iniciemos" s" emprendamos" }s{ s" la marcha" s" el camino" }s&
       s" pongámonos en" s{ s" marcha" s" camino" }s&
   }s& period+  speak
-  location-46% ambrosio% is-there
+  location-46% ambrosio% be-there
   s" Te" s{ s" giras" s" das la vuelta" }s& s" para" s&
   s{  s{ s" comprobar" s" ver" }s s" si" s&
       s{ s" cerciorarte" s" asegurarte" }s s" de que" s&
@@ -10293,7 +10293,7 @@ subsection( Hablar y presentarse)  \ {{{
   s{ null$ s" en vuestra mano" s" en vuestras manos" s" con vos" }s&
   s" y abrid" s& s" la puerta de" s?& this|the(f)$ s& s" cueva." s&
   speak
-  key% is-hold  ;
+  key% be-hold  ;
 
 : (conversation-2-with-ambrosio)  ( -- )
   ambrosio-gives-you-the-key
@@ -10342,7 +10342,7 @@ create conversations-with-ambrosio
 
 : talk-to-ambrosio  ( -- )
   ambrosio% is-here?
-  if  (talk-to-ambrosio)  else  ambrosio% is-not-here  then  ;
+  if  (talk-to-ambrosio)  else  ambrosio% be-not-here  then  ;
   \ Hablar con Ambrosio, si se puede.
   \ XXX TODO -- esto debería comprobarse en `do-speak` o
   \ `do-speak-if-possible`.
@@ -10353,7 +10353,7 @@ create conversations-with-ambrosio
 : talk-to-something  ( a -- )
   2 random
   if    drop nonsense
-  else  full-name s" hablar con" 2swap s& is-nonsense  then  ;
+  else  full-name s" hablar con" 2swap s& be-nonsense  then  ;
   \ Hablar con un ente que no es un personaje.
   \ XXX TODO
 
@@ -10363,7 +10363,7 @@ create conversations-with-ambrosio
   }s  ;
   \ Devuelve una variante de «hablar solo».
 
-: talk-to-yourself  ( -- )  talk-to-yourself$ is-nonsense  ;
+: talk-to-yourself  ( -- )  talk-to-yourself$ be-nonsense  ;
   \ Hablar solo.
 
 \ ----------------------------------------------
@@ -12933,11 +12933,11 @@ section( Principal)  \ {{{
   \ location-19% enter-location  \ Encuentro con Ambrosio
   \ location-28% enter-location  \ Refugiados
   \ location-47% enter-location  \ casa de Ambrosio
-  \ snake% is-here
-  \ ambrosio% is-here
-  \ key% is-hold
-  flint% is-hold
-  torch% is-hold
+  \ snake% be-here
+  \ ambrosio% be-here
+  \ key% be-hold
+  flint% be-hold
+  torch% be-hold
   ;
   \ Condiciones especiales de inicio, para forzar situaciones
   \ concretas de la trama en el arranque y así probar el código.
