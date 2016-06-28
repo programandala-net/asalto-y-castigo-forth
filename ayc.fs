@@ -9,7 +9,7 @@ cr .( Asalto y castigo )  \ {{{
 \ Project under development.
 
 \ Version: see file <VERSION.txt>.
-\ Last update: 201606281546
+\ Last update: 201606281604
 
 \ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
 
@@ -853,14 +853,6 @@ str-create tmp-str
   \ ca len = Expresión
   \ f = ¿Hay que poner los verbos en plural?
   \ XXX TODO -- no usado
-
-: char>string  ( c u -- ca len )
-  dup sb_allocate swap 2dup 2>r  rot fill  2r>  ;
-  \ Crea una cadena repitiendo un carácter.
-  \ c = Carácter
-  \ u = Longitud de la cadena
-  \ a = Dirección de la cadena
-  \ XXX TODO -- mover a la librería galope
 
 : space+  ( ca1 len1 -- ca2 len2 )  s"  " s+  ;
   \ Añade un espacio al final de una cadena.
