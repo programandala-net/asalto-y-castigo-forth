@@ -10,6 +10,19 @@
 \ Note: The comments of the code are in Spanish.
 
 \ ==============================================================
+\ Inicialización
+
+: init-plot  ( -- )
+  ambrosio-follows? off
+  battle# off
+  climbed-the-fallen-away? off
+  hacked-the-log? off
+  stone-forbidden? off
+  sword-forbidden? off
+  recent-talks-to-the-leader off  ;
+  \ Inicializa las variables de la trama.
+
+\ ==============================================================
 \ Tramas comunes a todos los escenarios
 
 \ ----------------------------------------------

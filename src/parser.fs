@@ -5,9 +5,258 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606281951
+\ Last update: 201606282033
 
 \ Note: The comments of the code are in Spanish.
+
+\ ==============================================================
+\ Errores del intérprete de comandos
+
+: please$  ( -- ca len )
+  \ Devuelve «por favor» o vacía.
+  s" por favor" s?  ;
+
+: (please&)  ( ca1 len1 ca2 len2 -- ca3 len3 )
+  2 random ?? 2swap  comma+ 2swap s&  ;
+  \ Añade una cadena _ca2 len2_ al inicio o al final de una cadena
+  \ _ca1 len1_, con una coma de separación.
+
+: please&  ( ca1 len1 -- ca1 len1 | ca2 len2 )
+  please$ dup if  (please&)  else  2drop  then  ;
+  \ Añade «por favor» al inicio o al final de una cadena _ca1 len1_,
+  \ con una coma de separación; o bien la deja sin tocar.
+
+: in-the-sentence$  ( -- ca len )
+  s{ null$ s" en la frase" s" en el comando" s" en el texto" }s  ;
+  \ Devuelve una variante de «en la frase» (o una cadena vacía).
+
+: error-comment-0$  ( -- ca len )
+  s" sé más clar" player-gender-ending$+  ;
+  \ Devuelve la variante 0 del mensaje de acompañamiento para los
+  \ errores lingüísticos.
+
+: error-comment-1$  ( -- ca len )
+  s{ s" exprésate" s" escribe" }s
+  s{
+  s" más claramente"
+  s" más sencillamente"
+  s{ s" con más" s" con mayor" }s
+  s{ s" sencillez" s" claridad" }s&
+  }s s&  ;
+  \ Devuelve la variante 1 del mensaje de acompañamiento para los
+  \ errores lingüísticos.
+
+: error-comment-2-start$  ( -- ca len )
+  s{ s" intenta" s" procura" s" prueba a" }s
+  s{ s" reescribir" s" expresar" s" escribir" s" decir" }s&
+  \ XXX TODO -- este "lo" crea problema de concordancia con el final de la frase:
+  s{ s"  la frase" s" lo" s"  la idea" }s+  ;
+  \ Devuelve el comienzo de la variante 2 del mensaje de
+  \ acompañamiento para los errores lingüísticos.
+
+: error-comment-2-end-0$  ( -- ca len )
+  s{ s" de" s" otra" }s way$ s&?
+  s{ null$ s" un poco" s" algo" }s& s" más" s&
+  s{ s" simple" s" sencilla" s" clara" }s&  ;
+  \ Devuelve el final 0 de la variante 2 del mensaje de
+  \ acompañamiento para los errores lingüísticos.
+
+: error-comment-2-end-1$  ( -- ca len )
+  s{ s" más claramente" s" con más sencillez" }s  ;
+  \ Devuelve el final 1 de la variante 2 del mensaje de
+  \ acompañamiento para los errores lingüísticos.
+
+: error-comment-2$  ( -- ca len )
+  error-comment-2-start$
+  s{ error-comment-2-end-0$ error-comment-2-end-1$ }s&  ;
+  \ Devuelve la variante 2 del mensaje de acompañamiento para los
+  \ errores lingüísticos.
+
+: error-comment$  ( -- ca len )
+  error-comment-0$ error-comment-1$ error-comment-2$
+  3 schoose please&  ;
+  \ Devuelve mensaje de acompañamiento para los errores lingüísticos.
+
+: ^error-comment$  ( -- ca len )  error-comment$ ^uppercase  ;
+  \ Devuelve mensaje de acompañamiento para los errores lingüísticos, con la primera letra mayúscula.
+
+: language-error-specific-message  ( ca len -- )
+  in-the-sentence$ s&  3 random
+  if    ^uppercase period+ ^error-comment$
+  else  ^error-comment$ comma+ 2swap
+  then  period+ s&  (language-error)  ;
+  \ Muestra un mensaje detallado _ca len_ sobre un error lingüístico,
+  \ combinándolo con una frase común.
+  \ XXX TODO -- hacer que use coma o punto y coma, al azar
+
+: language-error-general-message$  ( -- ca len )
+  'language-error-general-message$ count  ;
+  \ Devuelve el mensaje de error lingüístico para el nivel 1.
+
+: language-error-general-message  ( ca len -- )
+  2drop language-error-general-message$ (language-error)  ;
+  \ Muestra el mensaje de error lingüístico _ca len_ para el nivel 1.
+
+create 'language-error-verbosity-xt
+  ' 2drop ,
+  ' language-error-general-message ,
+  ' language-error-specific-message ,
+  \ Tabla de los tres niveles de detalle de los errores lingüísticos:
+  \ ningún mensaje, mensaje genérico y mensaje específico.
+
+: language-error  ( ca len -- )
+  'language-error-verbosity-xt
+  language-errors-verbosity @ cells + perform  ;
+  \ Muestra un mensaje sobre un error lingüístico, detallado o breve
+  \ según la configuración.  _ca len_ es el mensaje de error
+  \ detallado.
+
+: there-are$  ( -- ca len )
+  s{ s" parece haber" s" se identifican" s" se reconocen" }s  ;
+  \ Devuelve una variante de «hay» para sujeto plural, comienzo de
+  \ varios errores.
+
+: there-is$  ( -- ca len )
+  s{ s" parece haber" s" se identifica" s" se reconoce" }s  ;
+  \ Devuelve una variante de «hay» para sujeto singular, comienzo de
+  \ varios errores.
+
+: there-is-no$  ( -- ca len )
+  s" no se" s{ s" identifica" s" encuentra" s" reconoce" }s&
+  s{ s" el" s" ningún" }s&  ;
+  \ Devuelve una variante de «no hay», comienzo de varios errores.
+
+: too-many-actions  ( -- )
+  s{ there-are$ s" dos verbos" s&
+  there-is$ s" más de un verbo" s&
+  there-are$ s" al menos dos verbos" s&
+  }s  language-error  ;
+  \ Informa de que se ha producido un error porque hay dos verbos en
+  \ el comando.
+
+' too-many-actions constant (too-many-actions-error#)
+
+' (too-many-actions-error#) is too-many-actions-error#
+
+: too-many-complements  ( -- )
+  s{
+  there-are$
+  s" dos complementos secundarios" s&
+  there-is$
+  s" más de un complemento secundario" s&
+  there-are$
+  s" al menos dos complementos secundarios" s&
+  }s  language-error  ;
+  \ Informa de que se ha producido un error
+  \ porque hay dos complementos secundarios en el comando.
+  \ XXX TMP
+
+' too-many-complements constant (too-many-complements-error#)
+
+' (too-many-complements-error#) is too-many-complements-error#
+
+: no-verb  ( -- )
+  there-is-no$ s" verbo" s& language-error  ;
+  \ Informa de que se ha producido un error por falta de verbo en el comando.
+
+' no-verb constant (no-verb-error#)
+
+' (no-verb-error#) is no-verb-error#
+
+: no-main-complement  ( -- )
+  there-is-no$ s" complemento principal" s& language-error  ;
+  \ Informa de que se ha producido un error por falta de complemento
+  \ principal en el comando.
+
+' no-main-complement constant (no-main-complement-error#)
+
+' (no-main-complement-error#) is no-main-complement-error#
+
+: unexpected-main-complement  ( -- )
+  there-is$ s" un complemento principal" s&
+  s" pero el verbo no puede llevarlo" s&
+  language-error  ;
+  \ Informa de que se ha producido un error por la presencia de
+  \ complemento principal en el comando.
+
+' unexpected-main-complement constant (unexpected-main-complement-error#)
+
+' (unexpected-main-complement-error#) is unexpected-main-complement-error#
+
+: unexpected-secondary-complement  ( -- )
+  there-is$ s" un complemento secundario" s&
+  s" pero el verbo no puede llevarlo" s&
+  language-error  ;
+  \ Informa de que se ha producido un error por la presencia de
+  \ complemento secundario en el comando.
+
+' unexpected-secondary-complement constant (unexpected-secondary-complement-error#)
+
+' (unexpected-secondary-complement-error#) is unexpected-secondary-complement-error#
+
+: not-allowed-main-complement  ( -- )
+  there-is$ s" un complemento principal no permitido con esta acción" s&
+  language-error  ;
+  \ Informa de que se ha producido un error por la presencia de un
+  \ complemento principal en el comando que no está permitido.
+
+' not-allowed-main-complement constant (not-allowed-main-complement-error#)
+
+' (not-allowed-main-complement-error#) is not-allowed-main-complement-error#
+
+: not-allowed-tool-complement  ( -- )
+  there-is$ s" un complemento principal no permitido con esta acción" s&
+  language-error  ;
+  \ Informa de que se ha producido un error por la presencia de un
+  \ complemento instrumental en el comando que no está permitido.
+
+' not-allowed-tool-complement constant (not-allowed-tool-complement-error#)
+
+' (not-allowed-tool-complement-error#) is not-allowed-tool-complement-error#
+
+: useless-tool  ( -- )
+  s" [Con eso no puedes]"  narrate  ;
+  \ Informa de que se ha producido un error
+  \ porque una herramienta no especificada no es la adecuada.
+  \ XXX TODO -- inconcluso
+
+' useless-tool constant (useless-tool-error#)
+
+' (useless-tool-error#) is useless-tool-error#
+
+: useless-what-tool  ( -- )
+  s" [Con" what @ full-name s& s" no puedes]" s& narrate  ;
+  \ Informa de que se ha producido un error
+  \ porque el ente `what` no es la herramienta adecuada.
+  \ XXX TODO -- inconcluso
+  \ XXX TODO -- distinguir si la llevamos, si está presente, si es conocida...
+
+' useless-what-tool constant (useless-what-tool-error#)
+
+' (useless-what-tool-error#) is useless-what-tool-error#
+
+: unresolved-preposition  ( -- )
+  there-is$ s" un complemento (seudo)preposicional sin completar" s&
+  language-error  ;
+  \ Informa de que se ha producido un error
+  \ porque un complemento (seudo)preposicional quedó incompleto.
+
+' unresolved-preposition constant (unresolved-preposition-error#)
+
+' (unresolved-preposition-error#) is unresolved-preposition-error#
+
+: repeated-preposition  ( -- )
+  there-is$ s" una (seudo)preposición repetida" s&
+  language-error  ;
+  \ Informa de que se ha producido un error por
+  \ la repetición de una (seudo)preposición.
+
+' repeated-preposition constant (repeated-preposition-error#)
+' (repeated-preposition-error#) is repeated-preposition-error#
+
+' ?execute alias ?wrong  ( xt | 0 -- )
+  \ Informa, si es preciso, de un error en el comando.  _xt_ es tanto
+  \ la palabra que muestra el error como el código del error.
 
 \ ==============================================================
 \ Intérprete de comandos

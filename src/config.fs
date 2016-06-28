@@ -10,6 +10,12 @@
 \ Note: The comments of the code are in Spanish.
 
 \ ==============================================================
+\ Variables de configuración
+
+
+
+\ ==============================================================
+\ Fichero de configuración
 
 \ El juego tiene un fichero de configuración en que el jugador
 \ puede indicar sus preferencias. Este fichero es código en

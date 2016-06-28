@@ -5,9 +5,31 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606281947
+\ Last update: 201606282029
 
 \ Note: The comments of the code are in Spanish.
+
+\ ==============================================================
+\ Mensaje de acción completada
+
+variable silent-well-done?
+  \ XXX TODO -- no usado
+
+: (well-done)  ( -- )
+  s{ s" Hecho." s" Bien." }s narrate  ;
+  \ Informa, con un mensaje genérico, de que una acción se ha realizado.
+
+: well-done  ( -- )
+  silent-well-done? @ 0= ?? (well-done)
+  silent-well-done? off  ;
+  \ Informa, con un mensaje genérico, de que una acción se ha realizado,
+  \ si es preciso.
+
+: well-done-this  ( ca len -- )
+  silent-well-done? @ 0= if  narrate  else  2drop  then
+  silent-well-done? off  ;
+  \ Informa, con un mensaje específico, de que una acción se ha realizado,
+  \ si es preciso.
 
 \ ==============================================================
 \ Herramientas para crear las acciones
@@ -1128,7 +1150,7 @@ false [if]
   sword% taken
   using$ sword% full-name s& comma+
   s" rasgas" s& cloak% full-name s& period+ narrate
-  cloak-pieces  ;
+  cloak-pieces  cloak% vanish  ;
   \ Romper la capa.
 
 : (do-break)  ( a -- )

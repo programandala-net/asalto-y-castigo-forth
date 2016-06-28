@@ -105,5 +105,12 @@ pad 0 2constant null$
   \ XXX TODO -- confirmar este cálculo, pues depende de si el número
   \ se considera con signo o no
 
+0 value unsort#
+: unsort  ( x1 ... xu u -- x1' ... xu' )
+  dup to unsort# 0 ?do  unsort# random roll  loop  ;
+  \ Desordena al azar _u_ elementos de la pila.
+  \ XXX TODO -- mover a la librería Galope.
+
+
 \ vim:filetype=gforth:fileencoding=utf-8
 
