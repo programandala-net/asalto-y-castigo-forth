@@ -9,7 +9,7 @@ cr .( Asalto y castigo )  \ {{{
 \ Project under development.
 
 \ Version: see file <VERSION.txt>.
-\ Last update: 201606281350
+\ Last update: 201606281409
 
 \ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
 
@@ -12367,23 +12367,23 @@ false [if]
 
 \ Comandos del sistema
 
-: #recolorear  ( -- )  ['] recolor action!  ;
+: #recolorea  ( -- )  ['] recolor action!  ;
   \ Restaura los colores predeterminados.
 
-: #configurar  ( "name" | -- )
+: #configura  ( "name" | -- )
   parse-name temporary-config-file place
   ['] read-config action!  ; immediate
   \ Carga el fichero de configuración _name_.  Si no se indica _name_,
   \ se cargará el fichero de configuración predeterminado.
 
-: #reconfigurar  ( "name" | -- )
+: #reconfigura  ( "name" | -- )
   parse-name temporary-config-file place
   ['] get-config action!  ; immediate
   \ Restaura la configuración predeterminada y después carga el
   \ fichero de configuración _name_.  Si no se indica _name_, se
   \ cargará el fichero de configuración predeterminado.
 
-: #grabar  ( "name" -- )
+: #graba  ( "name" -- )
   [debug-parsing] [??] ~~
   parse-name >sb
   [debug-parsing] [??] ~~
@@ -12392,7 +12392,7 @@ false [if]
   ;  immediate
   \ Graba el estado de la partida en un fichero.
 
-: #cargar  ( "name" -- )
+: #carga  ( "name" -- )
   [debug-parsing] [??] ~~
   parse-name
   [debug-parsing] [??] ~~
@@ -12406,9 +12406,9 @@ false [if]
 : #fin  ( -- )  ['] finish action!  ;
   \ Abandonar la partida
 
-: #ayuda  ( -- )
-  \ ['] do-help action!
-  ;
+\ : #ayuda  ( -- )
+\   \ ['] do-help action!
+\   ;
   \ XXX TODO
 
 : #forth  ( -- )
@@ -12416,9 +12416,6 @@ false [if]
   \ XXX TMP -- Para usar durante el desarrollo.
 
 : #bye  ( -- )  bye  ;
-  \ XXX TMP -- Para usar durante el desarrollo.
-
-: #quit  ( -- )  quit  ;
   \ XXX TMP -- Para usar durante el desarrollo.
 
 restore-wordlists
@@ -12557,20 +12554,6 @@ svariable command
   \ detrás un salto de línea; 3) Resta uno si tras el presto no va
   \ salto de línea pero sí un espacio.
 
-: (wait-for-input)  ( -- ca len )
-  input-color command dup /command accept
-  str+strip 2dup xlowercase  ;
-  \ Espera un comando del jugador y lo devuelve sin espacios laterales
-  \ y en minúsculas.
-
-: wait-for-input  ( -- ca len )
-  player-wordlist 1 set-order
-  (wait-for-input)  restore-wordlists  ;
-  \ Espera un comando del jugador (dejando en el orden de búsqueda
-  \ solo la lista de palabras del vocabulario del jugador, para que
-  \ solo sus palabras sean completadas con el tabulador) y lo devuelve
-  \ sin espacios laterales y en minúsculas.
-
 : .command-prompt  ( -- )
   command-prompt$ command-prompt-color paragraph
   cr-after-command-prompt? @
@@ -12580,10 +12563,21 @@ svariable command
   then  ;
   \ Imprime un presto para la entrada de comandos.
 
-: listen  ( -- ca len )
-  .command-prompt wait-for-input  ;
-  \ Imprime un presto y devuelve el comando introducido por el
-  \ jugador.
+: (accept-input)  ( -- ca len )
+  input-color command dup /command accept
+  str+strip 2dup xlowercase  ;
+  \ Espera un comando del jugador y lo devuelve sin espacios laterales
+  \ y en minúsculas en la cadena _ca len_.
+
+: accept-input  ( wid -- ca len )
+  1 set-order  .command-prompt (accept-input)  restore-wordlists  ;
+  \ Espera una entrada del jugador (cuyas palabras aceptadas están en
+  \ la lista de palabras _wid_) y lo devuelve sin espacios laterales y
+  \ en minúsculas en la cadena _ca len_.
+
+: accept-command  ( -- ca len )  player-wordlist accept-input  ;
+  \ Espera un comando del jugador y lo devuelve sin espacios laterales
+  \ y en minúsculas en la cadena _ca len_.
 
 \ }}} ==========================================================
 section( Entrada de respuestas de tipo «sí o no»)  \ {{{
@@ -12609,8 +12603,12 @@ section( Entrada de respuestas de tipo «sí o no»)  \ {{{
   \ Imprime la pregunta.
   \ xt = Dirección de ejecución que devuelve una cadena con la pregunta
 
+: accept-answer  ( -- ca len )  answer-wordlist accept-input  ;
+  \ Espera una respuesta sí/no del jugador y la devuelve sin espacios
+  \ laterales y en minúsculas en la cadena _ca len_.
+
 : answer  ( xt -- n )
-  begin  dup .question listen  yes|no ?dup
+  begin  dup .question accept-answer  yes|no ?dup
   until  nip  ;
   \ Devuelve la respuesta a una pregunta del tipo «sí o no».
   \ xt = Dirección de ejecución que devuelve una cadena con la pregunta
@@ -12619,14 +12617,12 @@ section( Entrada de respuestas de tipo «sí o no»)  \ {{{
   \ la lista de palabras a usar.
 
 : yes?  ( xt -- f )  answer 0>  ;
-  \ ¿Es afirmativa la respuesta a una pregunta?
-  \ xt = Dirección de ejecución que devuelve una cadena con la pregunta
-  \ f = ¿Es la respuesta positiva?
+  \ ¿Es afirmativa la respuesta a una pregunta binaria cuyo texto
+  \ es imprimido por _xt_?
 
 : no?  ( xt -- f )  answer 0<  ;
-  \ ¿Es negativa la respuesta a una pregunta?
-  \ xt = Dirección de ejecución que devuelve una cadena con la pregunta
-  \ f = ¿Es la respuesta negativa?
+  \ ¿Es negativa la respuesta a una pregunta binaria cuyo texto
+  \ es imprimido por _xt_?
 
 \ }}} ==========================================================
 section( Fin)  \ {{{
@@ -12841,7 +12837,7 @@ section( Acerca del programa)  \ {{{
 
 : about  ( -- )
   new-page about-color
-  program cr license cr based-on
+  program print_cr license print_cr based-on
   scene-break  ;
   \ Muestra información sobre el programa.
 
@@ -12977,7 +12973,7 @@ section( Principal)  \ {{{
          [then]  ;
   \ Preparativos que hay que hacer antes de cada partida.
 
-: game  ( -- )  begin  plot listen obey  game-over?  until  ;
+: game  ( -- )  begin  plot accept-command obey  game-over?  until  ;
   \ Bucle de la partida.
 
 : (adventure)  ( -- )  begin  init-game game the-end  enough?  until  ;
