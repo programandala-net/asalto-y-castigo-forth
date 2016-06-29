@@ -12,7 +12,7 @@
 
 \ Version: see file <version.fs>.
 
-\ Last update: 201606291215
+\ Last update: 201606291714
 
 \ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
 
@@ -82,7 +82,6 @@ defer lock-found  ( -- )
 
 \ ==============================================================
 
-include error_codes.fs
 include config_variables.fs
 include plot_variables.fs
 include display.fs
