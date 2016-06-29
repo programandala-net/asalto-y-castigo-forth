@@ -5,55 +5,11 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606281926
+\ Last update: 201606292033
 
 \ Note: The comments of the code are in Spanish.
 
 \ ==============================================================
-
-variable action
-  \ Código de la acción del comando.
-
-variable previous-action
-  \ Código de la acción del comando anterior.
-
-variable main-complement
-  \ Ente complemento principal (complemento directo o destino).
-
-variable secondary-complement
-  \ Ente complemento secundario (complemento indirecto, destino u
-  \ origen).
-
-defer tool-complement
-  \ Ente complemento de herramienta (indicada con «con» o «usando»).
-
-defer actual-tool-complement
-  \ Ente complemento estricto de herramienta (indicada con «usando»).
-
-defer company-complement
-  \ Ente complemento de compañía (indicado con «con»).
-
-defer actual-company-complement
-  \ Ente complemento estricto de compañía (indicada con «con» en
-  \ presencia de «usando»).
-
-false [if]
-  \ XXX OLD
-  \ XXX TODO -- descartado, pendiente
-  variable to-complement  \ Destino \ XXX OLD -- no utilizado
-  variable from-complement  \ Origen \ XXX OLD -- no utilizado
-  variable into-complement  \ Destino dentro \ XXX OLD -- no utilizado
-[then]
-
-variable what
-  \ Ente que ha provocado un error y puede ser citado en el mensaje de
-  \ error correspondiente.
-
-variable current-preposition
-  \ Código de la (seudo)preposición abierta, o cero.
-
-variable used-prepositions
-  \ Máscara de bitios de las (seudo)preposiciones usadas en la frase.
 
 : action-error-general-message$  ( -- ca len )
   'action-error-general-message$ count  ;

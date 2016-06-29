@@ -68,9 +68,6 @@ include debug_tools.fs
 defer list-exits  ( -- )
   \ Crea e imprime la lista de salidas.
 
-defer lock-found  ( -- )
-  \ Encontrar el candado.
-
 \ ==============================================================
 
 include config_variables.fs
@@ -80,20 +77,19 @@ include strings.fs
 include random_texts.fs
 \ include sound.fs  \ XXX TODO -- not used yet
 include printing.fs
-
 include data_structure.fs
 include data_basic_interface.fs
 include entity_identifiers.fs
 include data_advanced_interface.fs
 include data_tools.fs
-
-include data.fs
-include action_errors.fs
+include calculated_texts.fs
 include lists.fs
 include config.fs
-include plot.fs
-include actions.fs
 include parser.fs
+include data.fs
+include plot.fs
+include action_errors.fs
+include actions.fs
 include player_vocabulary.fs
 include input.fs
 include answers.fs

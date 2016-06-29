@@ -5,9 +5,144 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606291130
+\ Last update: 201606292033
 
 \ Note: The comments of the code are in Spanish.
+
+\ ==============================================================
+\ Variables del intérprete de comandos
+
+variable action
+  \ Código de la acción del comando.
+
+variable previous-action
+  \ Código de la acción del comando anterior.
+
+variable main-complement
+  \ Ente complemento principal (complemento directo o destino).
+
+variable secondary-complement
+  \ Ente complemento secundario (complemento indirecto, destino u
+  \ origen).
+
+defer tool-complement
+  \ Ente complemento de herramienta (indicada con «con» o «usando»).
+
+defer actual-tool-complement
+  \ Ente complemento estricto de herramienta (indicada con «usando»).
+
+defer company-complement
+  \ Ente complemento de compañía (indicado con «con»).
+
+defer actual-company-complement
+  \ Ente complemento estricto de compañía (indicada con «con» en
+  \ presencia de «usando»).
+
+false [if]
+  \ XXX OLD
+  \ XXX TODO -- descartado, pendiente
+  variable to-complement  \ Destino \ XXX OLD -- no utilizado
+  variable from-complement  \ Origen \ XXX OLD -- no utilizado
+  variable into-complement  \ Destino dentro \ XXX OLD -- no utilizado
+[then]
+
+variable what
+  \ Ente que ha provocado un error y puede ser citado en el mensaje de
+  \ error correspondiente.
+
+variable current-preposition
+  \ Código de la (seudo)preposición abierta, o cero.
+
+variable used-prepositions
+  \ Máscara de bitios de las (seudo)preposiciones usadas en la frase.
+
+\ ==============================================================
+\ Pronombres
+
+variable last-action
+  \ Última acción utilizada por el jugador.
+
+\ La tabla `last-complement` que crearemos a continuación sirve para
+\ guardar los identificadores de entes correspondientes a los últimos
+\ complementos utilizados en los comandos del jugador. De este modo los
+\ pronombres podrán recuperarlos.
+\
+\ Necesita cinco celdas: una para el último complemento usado y cuatro
+\ para cada último complemento usado de cada género y número.  El espacio
+\ se multiplica por dos para guardar en la segunda mitad los penúltimos
+\ complementos.
+\
+\ La estructura de la tabla es la siguiente, con desplazamientos
+\ indicados en celdas:
+
+\ Último complemento usado:
+\   +0 De cualquier género y número.
+\   +1 Masculino singular.
+\   +2 Femenino singular.
+\   +3 Masculino plural.
+\   +4 Femenino plural.
+
+\ Penúltimo complemento usado:
+\   +5 De cualquier género y número.
+\   +6 Masculino singular.
+\   +7 Femenino singular.
+\   +8 Masculino plural.
+\   +9 Femenino plural.
+
+5 cells 2* constant /last-complements
+  \ Octetos necesarios para la tabla
+  \ de últimos complementos usados.
+
+create last-complement /last-complements allot
+  \ Tabla de últimos complementos usados.
+
+\ Desplazamientos para acceder a los elementos de la tabla:
+1 cells constant />masculine-complement  \ Respecto al inicio de tabla
+2 cells constant />feminine-complement  \ Respecto al inicio de tabla
+0 cells constant />singular-complement  \ Respecto a su género en singular
+2 cells constant />plural-complement  \ Respecto a su género en singular
+5 cells constant />but-one-complement  \ Respecto a la primera mitad de la tabla
+  \ XXX TODO -- mejorar comentarios
+
+: >masculine  ( a1 -- a2 )  />masculine-complement +  ;
+: >feminine  ( a1 -- a2 )  />feminine-complement +  ;
+: >singular  ( a1 -- a2 )  />singular-complement +  ;
+: >plural  ( a1 -- a2 )  />plural-complement +  ;
+: >but-one  ( a1 -- a2 )  />but-one-complement +  ;
+
+: last-but-one-complement  ( - a )  last-complement >but-one  ;
+  \ Devuelve la dirección del penúltimo complemento absoluto,
+  \ que es también el inicio de la sección «penúltimos»
+  \ de la tabla `last-complements`.
+
+: (>last-complement)  ( a1 a2 -- a3 )
+  over has-feminine-name? />feminine-complement and +
+  over has-masculine-name? />masculine-complement and +
+  swap has-plural-name? />plural-complement and +  ;
+  \ Apunta a la dirección adecuada para un ente
+  \ en una sección de la tabla `last-complement`,
+  \ bien «últimos» o «penúltimos».
+  \ Nota: Hace falta sumar los desplazamientos de ambos géneros
+  \ debido a que ambos son respecto al inicio de la tabla.
+  \ El desplazamiento para singular no es necesario,
+  \ pues sabemos que es cero, a menos que se cambie la estructura.
+  \ a1 = Ente para el que se calcula la dirección
+  \ a2 = Dirección de una de las secciones de la tabla
+
+: >last-complement  ( a1 -- a2 )
+  last-complement (>last-complement)  ;
+  \ Apunta a la dirección adecuada para un ente
+  \ en la sección «últimos» de la tabla `last-complement`.
+
+: >last-but-one-complement  ( a1 -- a2 )
+  last-but-one-complement (>last-complement)  ;
+  \ Apunta a la dirección adecuada para un ente
+  \ en la sección «penúltimos» de la tabla `last-complement`.
+
+: erase-last-command-elements  ( -- )
+  last-action off
+  last-complement /last-complements erase  ;
+  \ Borra todos los últimos elementos guardados de los comandos.
 
 \ ==============================================================
 \ Errores del intérprete de comandos
