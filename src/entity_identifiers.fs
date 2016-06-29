@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606291731
+\ Last update: 201606292015
 
 \ Note: The comments of the code are in Spanish.
 
@@ -43,7 +43,6 @@ entity ulfius~
 \ Entes personaje
 
 entity ambrosio~
-\ entity (leader~) ' (leader~) is leader~
 entity leader~
 entity soldiers~
 entity refugees~
@@ -70,20 +69,16 @@ entity idol~
 entity key~
 entity lake~
 entity lock~
-\ entity (log~) ' (log~) is log~
 entity log~
 entity piece~
 entity rags~
 entity ravine-wall~
 entity rocks~
 entity snake~
-\ entity (stone~) ' (stone~) is stone~
 entity stone~
-\ entity (sword~) ' (sword~) is sword~
 entity sword~
 entity table~
 entity thread~
-\ entity (torch~) ' (torch~) is torch~
 entity torch~
 entity wall~  \ XXX TODO -- inconcluso
 entity waterfall~
@@ -93,8 +88,7 @@ entity waterfall~
 
 \ En orden de número, según el mapa del programa original.
 
-\ entity (location-01~) ' (location-01~) is location-01~  \ XXX OLD
-entity location-01~  \ XXX NEW
+entity location-01~
 entity location-02~
 entity location-03~
 entity location-04~
@@ -161,8 +155,7 @@ entity cave~  \ XXX TODO -- inconcluso
 \ Son necesarios para algunos comandos.
 
 entity inventory~
-\ entity (exits~)  ' (exits~) is exits~  \ XXX OLD
-entity exits~  \ XXX NEW
+entity exits~
 entity north~
 entity south~
 entity east~
