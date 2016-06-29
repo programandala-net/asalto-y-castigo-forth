@@ -499,8 +499,8 @@ action: do-take-off
 
 : whom  ( -- a | 0 )
   true case
-    ambrosio% is-here? of  ambrosio%  endof
-    leader% is-here? of  leader%  endof
+    ambrosio~ is-here? of  ambrosio~  endof
+    leader~ is-here? of  leader~  endof
     false swap
   endcase  ;
   \ Devuelve un ente personaje al que probablemente se refiera un
@@ -512,8 +512,8 @@ action: do-take-off
 
 : unknown-whom  ( -- a | 0 )
   true case
-    ambrosio% is-here-and-unknown? of  ambrosio%  endof
-    leader% is-here-and-unknown? of  leader%  endof
+    ambrosio~ is-here-and-unknown? of  ambrosio~  endof
+    leader~ is-here-and-unknown? of  leader~  endof
     false swap
   endcase  ;
   \ Devuelve un ente personaje desconocido al que probablemente se
@@ -541,7 +541,7 @@ action: do-take-off
 
 :action do-look-yourself
   tool-complement{unnecessary}
-  main-complement @ ?dup 0= ?? protagonist%
+  main-complement @ ?dup 0= ?? protagonist~
   (do-look)
   ;action
   \  Acción de mirarse.
@@ -860,8 +860,8 @@ false [if]
 
 : first-close-the-door  ( -- )
   s" cierras" s" primero" rnd2swap s& ^uppercase
-  door% full-name s& period+ narrate
-  door% be-closed  ;
+  door~ full-name s& period+ narrate
+  door~ be-closed  ;
   \ Informa de que la puerta está abierta
   \ y hay que cerrarla antes de poder cerrar el candado.
 
@@ -871,11 +871,11 @@ false [if]
   narrate  ;
 
 : close-the-lock  ( -- )
-  key% tool{this-only}
-  lock% {open}
-  key% {hold}
-  door% is-open? ?? first-close-the-door
-  lock% be-closed  .the-key-fits  ;
+  key~ tool{this-only}
+  lock~ {open}
+  key~ {hold}
+  door~ is-open? ?? first-close-the-door
+  lock~ be-closed  .the-key-fits  ;
   \ Cerrar el candado, si es posible.
 
 : .the-door-closes  ( -- )
@@ -886,22 +886,22 @@ false [if]
   \ Muestra el mensaje de cierre de la puerta.
 
 : (close-the-door)  ( -- )
-  door% be-closed .the-door-closes
-  location-47% location-48% w|<-->|
-  location-47% location-48% o|<-->|  ;
+  door~ be-closed .the-door-closes
+  location-47~ location-48~ w|<-->|
+  location-47~ location-48~ o|<-->|  ;
   \ Cerrar la puerta.
 
 : close-and-lock-the-door  ( -- )
-  door% {open}  key% {hold}
+  door~ {open}  key~ {hold}
   (close-the-door) close-the-lock  ;
   \ Cerrar la puerta, si está abierta, y el candado.
 
 : just-close-the-door  ( -- )
-  door% {open} (close-the-door)  ;
+  door~ {open} (close-the-door)  ;
   \ Cerrar la puerta, sin candarla, si está abierta.
 
 : close-the-door  ( -- )
-  key% tool{this-only}
+  key~ tool{this-only}
   tool-complement @ ?dup
   if    close-and-lock-the-door
   else  just-close-the-door  then  ;
@@ -909,8 +909,8 @@ false [if]
 
 : close-it  ( a -- )
   case
-    door% of  close-the-door  endof
-    lock% of  close-the-lock  endof
+    door~ of  close-the-door  endof
+    lock~ of  close-the-lock  endof
     nonsense
   endcase  ;
   \ Cerrar un ente, si es posible.
@@ -923,24 +923,24 @@ false [if]
 : the-door-is-locked  ( -- )
   \ Informa de que la puerta está cerrada por el candado.
   \ XXX TODO -- añadir variantes
-  lock% ^full-name s" bloquea la puerta." s&
+  lock~ ^full-name s" bloquea la puerta." s&
   narrate
   lock-found  ;
   \ Acción de cerrar.
 
 : unlock-the-door  ( -- )
   the-door-is-locked
-  key% {needed}
-  lock% dup be-open
-  ^pronoun s" abres con" s& key% full-name s& period+ narrate  ;
+  key~ {needed}
+  lock~ dup be-open
+  ^pronoun s" abres con" s& key~ full-name s& period+ narrate  ;
   \ Abrir la puerta candada, si es posible.
   \ XXX TODO -- falta mensaje adecuado sobre la llave que gira
 
 : open-the-lock  ( -- )
-  key% tool{this-only}
-  lock% {closed}
-  key% {needed}
-  lock% be-open  well-done  ;
+  key~ tool{this-only}
+  lock~ {closed}
+  key~ {needed}
+  lock~ be-open  well-done  ;
   \ Abrir el candado, si es posible.
 
 : the-plants$  ( -- ca len )
@@ -1006,32 +1006,32 @@ false [if]
   \ la segunda y siguientes veces.
 
 : .the-door-opens  ( -- )
-  door% times-open
+  door~ times-open
   if    the-door-opens-once-more$ narrate
   else  the-door-opens-first-time$ narrate ambrosio-byes  then  ;
   \ Muestra el mensaje de apertura de la puerta.
 
 : (open-the-door)  ( -- )
-  key% tool{this-only}  \ XXX TODO ¿por qué aquí?
-  lock% is-closed? ?? unlock-the-door
-  location-47% location-48% w<-->
-  location-47% location-48% o<-->
+  key~ tool{this-only}  \ XXX TODO ¿por qué aquí?
+  lock~ is-closed? ?? unlock-the-door
+  location-47~ location-48~ w<-->
+  location-47~ location-48~ o<-->
   .the-door-opens
-  door% dup be-open times-open++
-  grass% be-here  ;
+  door~ dup be-open times-open++
+  grass~ be-here  ;
   \ Abrir la puerta, que está cerrada.
 
 : open-the-door  ( -- )
-  door% is-open?
-  if    door% it-is-already-open tool-complement{unnecessary}
+  door~ is-open?
+  if    door~ it-is-already-open tool-complement{unnecessary}
   else  (open-the-door)  then  ;
   \ Abrir la puerta, si es posible.
 
 : open-it  ( a -- )
   dup familiar++
   case
-    door% of  open-the-door  endof
-    lock% of  open-the-lock  endof
+    door~ of  open-the-door  endof
+    lock~ of  open-the-lock  endof
     nonsense
   endcase  ;
   \ Abrir un ente, si es posible.
@@ -1061,9 +1061,9 @@ false [if]
   \ La serpiente huye.
 
 : attack-the-snake  ( -- )
-  sword% {needed}
+  sword~ {needed}
   the-snake-runs-away
-  snake% vanish  ;
+  snake~ vanish  ;
   \ Atacar la serpiente.
   \ XXX TODO -- inconcluso
 
@@ -1075,9 +1075,9 @@ false [if]
 
 : (do-attack)  ( a -- )
   case
-    snake% of  attack-the-snake  endof
-    ambrosio% of  attack-ambrosio  endof
-    leader% of  attack-leader  endof
+    snake~ of  attack-the-snake  endof
+    ambrosio~ of  attack-ambrosio  endof
+    leader~ of  attack-leader  endof
     do-not-worry
   endcase  ;
   \ Atacar un ser vivo.
@@ -1102,9 +1102,9 @@ false [if]
   \ XXX TODO -- distinguir de las demás en grado o requisitos
 
 : kill-the-snake  ( -- )
-  sword% {needed}
+  sword~ {needed}
   the-snake-runs-away
-  snake% vanish  ;
+  snake~ vanish  ;
   \ Matar la serpiente.
 
 : kill-ambrosio  ( -- )  no-reason  ;
@@ -1118,10 +1118,10 @@ false [if]
 
 : (do-kill)  ( a -- )
   case
-    snake% of  kill-the-snake  endof
-    ambrosio% of  kill-ambrosio  endof
-    leader% of  kill-leader  endof
-    soldiers% of  kill-your-soldiers  endof
+    snake~ of  kill-the-snake  endof
+    ambrosio~ of  kill-ambrosio  endof
+    leader~ of  kill-leader  endof
+    soldiers~ of  kill-your-soldiers  endof
     do-not-worry
   endcase  ;
   \ Matar un ser vivo.
@@ -1141,22 +1141,22 @@ false [if]
   \ en el escenario o en el inventario.
 
 : cloak-pieces  ( -- )
-  rags% cloak-piece  thread% cloak-piece  piece% cloak-piece  ;
+  rags~ cloak-piece  thread~ cloak-piece  piece~ cloak-piece  ;
   \ Hace aparecer los restos de la capa rota de forma aleatoria:
   \ en el escenario o en el inventario.
 
 : shatter-the-cloak  ( -- )
-  sword% {accessible}
-  sword% taken
-  using$ sword% full-name s& comma+
-  s" rasgas" s& cloak% full-name s& period+ narrate
-  cloak-pieces  cloak% vanish  ;
+  sword~ {accessible}
+  sword~ taken
+  using$ sword~ full-name s& comma+
+  s" rasgas" s& cloak~ full-name s& period+ narrate
+  cloak-pieces  cloak~ vanish  ;
   \ Romper la capa.
 
 : (do-break)  ( a -- )
   case
-    snake% of  kill-the-snake  endof  \ XXX TMP
-    cloak% of  shatter-the-cloak  endof
+    snake~ of  kill-the-snake  endof  \ XXX TMP
+    cloak~ of  shatter-the-cloak  endof
     do-not-worry
   endcase  ;
   \ Romper un ente.
@@ -1173,20 +1173,20 @@ false [if]
 : lit-the-torch  ( -- )
   s" Poderosas chispas salen del choque entre espada y pedernal,"
   s" encendiendo la antorcha." s& narrate
-  torch% be-lit  ;
+  torch~ be-lit  ;
 
 : hit-the-flint  ( -- )
-  flint% {accessible}
-  sword% taken
-  using$ sword% full-name s& comma+
-  s" golpeas" s& flint% full-name s& period+ narrate
+  flint~ {accessible}
+  sword~ taken
+  using$ sword~ full-name s& comma+
+  s" golpeas" s& flint~ full-name s& period+ narrate
   lit-the-torch  ;
 
 : (do-hit)  ( a -- )
   case
-    snake% of  kill-the-snake     endof
-    cloak% of  shatter-the-cloak  endof
-    flint% of  hit-the-flint      endof
+    snake~ of  kill-the-snake     endof
+    cloak~ of  shatter-the-cloak  endof
+    flint~ of  hit-the-flint      endof
     do-not-worry
   endcase  ;
   \ Golpear un ente.
@@ -1258,8 +1258,8 @@ false [if]
 
 : (do-sharpen)  ( a -- )
   case
-    sword% of  sharpen-the-sword  endof
-    log% of  sharpen-the-log  endof
+    sword~ of  sharpen-the-sword  endof
+    log~ of  sharpen-the-log  endof
   endcase  ;
   \ Afila un ente que puede ser afilado.
 
@@ -1325,59 +1325,59 @@ false [if]
 
 :action do-go-north
   tool-complement{unnecessary}
-  north% main-complement{this-only}
-  north% do-go-if-possible
+  north~ main-complement{this-only}
+  north~ do-go-if-possible
   ;action
   \ Acción de ir al norte.
 
 :action do-go-south
   [debug-catch] [if]  s" Al entrar en DO-GO-SOUTH" debug  [then]  \ XXX INFORMER
   tool-complement{unnecessary}
-  south% main-complement{this-only}
-  south% do-go-if-possible
+  south~ main-complement{this-only}
+  south~ do-go-if-possible
   [debug-catch] [if]  s" Al salir de DO-GO-SOUTH" debug  [then]  \ XXX INFORMER
   ;action
   \ Acción de ir al sur.
 
 :action do-go-east
   tool-complement{unnecessary}
-  east% main-complement{this-only}
-  east% do-go-if-possible
+  east~ main-complement{this-only}
+  east~ do-go-if-possible
   ;action
   \ Acción de ir al este.
 
 :action do-go-west
   tool-complement{unnecessary}
-  west% main-complement{this-only}
-  west% do-go-if-possible
+  west~ main-complement{this-only}
+  west~ do-go-if-possible
   ;action
   \ Acción de ir al oeste.
 
 :action do-go-up
   tool-complement{unnecessary}
-  up% main-complement{this-only}
-  up% do-go-if-possible
+  up~ main-complement{this-only}
+  up~ do-go-if-possible
   ;action
   \ Acción de ir hacia arriba.
 
 :action do-go-down
   tool-complement{unnecessary}
-  down% main-complement{this-only}
-  down% do-go-if-possible
+  down~ main-complement{this-only}
+  down~ do-go-if-possible
   ;action
   \ Acción de ir hacia abajo.
 
 :action do-go-out
   tool-complement{unnecessary}
-  out% main-complement{this-only}
-  out% do-go-if-possible
+  out~ main-complement{this-only}
+  out~ do-go-if-possible
   ;action
   \ Acción de ir hacia fuera.
 
 :action do-go-in
   tool-complement{unnecessary}
-  in% main-complement{this-only}
-  in% do-go-if-possible
+  in~ main-complement{this-only}
+  in~ do-go-if-possible
   ;action
   \ Acción de ir hacia dentro.
 
@@ -1448,7 +1448,7 @@ false [if]
   \ una frase.
 
 : you-leave-the-cuirasse$  ( -- ca len )
-  cuirasse% is-worn-by-me?
+  cuirasse~ is-worn-by-me?
   if  s{ s" Como puedes," s" No sin dificultad," }s
       s{ s" logras quitártela" s" te la quitas" }s&
       s" y" s& false drop-the-cuirasse$ s&
@@ -1485,18 +1485,18 @@ false [if]
   \  Devuelve mensaje inicial sobre nadar con coraza.
 
 : you-swim$  ( -- ca len )
-  cuirasse% is-hold?
-  if  you-swim-with-cuirasse$  cuirasse% vanish
+  cuirasse~ is-hold?
+  if  you-swim-with-cuirasse$  cuirasse~ vanish
   else  null$
   then  swiming$ s&  ;
   \  Devuelve mensaje sobre nadar.
 
 :action do-swim
-  location-11% am-i-there? if
+  location-11~ am-i-there? if
     clear-screen-for-location
     you-swim$ narrate narration-break
     you-emerge$ narrate narration-break
-    location-12% enter-location  the-battle-ends
+    location-12~ enter-location  the-battle-ends
   else  s" nadar" now-or-here-or-null$ s& be-nonsense  then
   ;action
   \ Acción de nadar.
@@ -1588,10 +1588,10 @@ false [if]
   \ XXX TODO -- inconcluso
 
 : do-climb-something  ( -- )
-  location-09% am-i-there?  \ ¿Ante el derrumbe?
+  location-09~ am-i-there?  \ ¿Ante el derrumbe?
   if  do-climb-the-fallen-away exit
   then
-  location-08% am-i-there?  \ ¿En el desfiladero?
+  location-08~ am-i-there?  \ ¿En el desfiladero?
   if  s" [Escalar en el desfiladero]" narrate exit
   then
   my-location is-indoor-location?
@@ -1634,7 +1634,7 @@ false [if]
   \ Devuelve mensaje para encabezar una lista de inventario de un solo elemento.
 
 :action do-inventory
-  protagonist% content-list
+  protagonist~ content-list
   #listed @ case
     0 of  you-are-carrying-nothing$ 2swap s& endof
     1 of  you-are-carrying-only$ 2swap s& endof
@@ -1652,7 +1652,7 @@ false [if]
   \ Acción de hacer (fabricar).
 
 :action do-do
-  main-complement @ inventory% =
+  main-complement @ inventory~ =
   if  do-inventory  else  do-make  then
   ;action
   \ Acción de hacer (genérica).
@@ -1681,7 +1681,7 @@ false [if]
     s" se la lleva"
     s{ s" se marcha" s" se va" s" desaparece" }s s" con ella" s?&
   }s& period+ narrate
-  location-18% stone% be-there  ;
+  location-18~ stone~ be-there  ;
   \ Un hombre te quita la piedra.
 
 : gets-angry$  ( -- ca len )
@@ -1799,7 +1799,7 @@ false [if]
           s" os" s{ s" apropiés" s" apoderéis" s" adueñéis" }s& s" de" s&
       }s&
   }s& s" la" s" piedra del druida"
-  2dup stone% fs-name!
+  2dup stone~ fs-name!
   s& s& period+  ;
   \ Devuelve el mensaje de que no te puedes llevar la piedra.
   \ También cambia el nombre de la piedra.
@@ -1831,7 +1831,7 @@ false [if]
   \ El líder habla acerca de la piedra.
 
 : the-leader-points-to-the-north$  ( -- ca len )
-  leader% ^full-name
+  leader~ ^full-name
   s{ s" alza" s" extiende" s" levanta" }s&
   s{ s" su" s" el" }s& s" brazo" s&
   s{ s" indicando" s" en dirección" s" señalando" }s&
@@ -1892,13 +1892,13 @@ false [if]
   \ Los refugiados te dejan pasar.
 
 : the-leader-lets-you-go  ( -- )
-  location-28% location-29% e-->
+  location-28~ location-29~ e-->
   the-leader-points-to-the-east
   go-in-peace the-refugees-let-you-go  ;
   \ El jefe deja marchar al protagonista.
 
 : talked-to-the-leader  ( -- )
-  leader% conversations++
+  leader~ conversations++
   recent-talks-to-the-leader ?++  ;
   \ Aumentar el contador de conversaciones con el jefe de los refugiados.
 
@@ -1906,7 +1906,7 @@ false [if]
   s" todos" s? s" nosotros" s? rnd2swap s&
   s" somos refugiados de" s& ^uppercase
   s{ s" la gran" s" esta terrible" }s& s" guerra." s&
-  s" refugio" location-28% ms-name!  ;
+  s" refugio" location-28~ ms-name!  ;
   \ Mensaje «Somos refugiados».
 
 : we-are-refugees  ( -- )
@@ -1960,8 +1960,8 @@ false [if]
 
 : the-leader-checks-what-you-carry  ( -- )
   true case
-    stone% is-accessible? of  the-leader-forbids-the-stone  endof
-    sword% is-accessible? of  the-leader-forbids-the-sword  endof
+    stone~ is-accessible? of  the-leader-forbids-the-stone  endof
+    sword~ is-accessible? of  the-leader-forbids-the-sword  endof
     the-leader-lets-you-go
   endcase  ;
   \ El jefe controla lo que llevas.
@@ -2021,7 +2021,7 @@ false [if]
   \ XXX TODO
 
 : (talk-to-the-leader)  ( -- )
-  leader% no-conversations?
+  leader~ no-conversations?
   ?? first-conversation-with-the-leader
   the-leader-checks-what-you-carry  ;
   \ Hablar con el jefe.
@@ -2035,13 +2035,13 @@ false [if]
 \ ----------------------------------------------
 \ Conversaciones con Ambrosio
 
-: talked-to-ambrosio  ( -- )  ambrosio% conversations++  ;
+: talked-to-ambrosio  ( -- )  ambrosio~ conversations++  ;
   \ Aumentar el contador de conversaciones con Ambrosio.
 
 : be-ambrosio's-name  ( ca len -- )
-  ambrosio% ms-name!
-  ambrosio% has-no-article
-  ambrosio% has-personal-name  ;
+  ambrosio~ ms-name!
+  ambrosio~ has-no-article
+  ambrosio~ has-personal-name  ;
   \ Le pone a ambrosio su nombre de pila _ca len_.
 
 : ambrosio-introduces-himself  ( -- )
@@ -2071,7 +2071,7 @@ false [if]
   s" para" s& s" el éxito de" s?&
   s{ s" la" s" tal" s" dicha" }s& s{ s" misión" s" empresa" }s&
   s" , te son entregados." s+ narrate
-  torch% be-hold  flint% be-hold  ;
+  torch~ be-hold  flint~ be-hold  ;
 
 : ambrosio-let's-go  ( -- )
   s{  s" Bien"
@@ -2080,7 +2080,7 @@ false [if]
   s{  s{ s" iniciemos" s" emprendamos" }s{ s" la marcha" s" el camino" }s&
       s" pongámonos en" s{ s" marcha" s" camino" }s&
   }s& period+  speak
-  location-46% ambrosio% be-there
+  location-46~ ambrosio~ be-there
   s" Te" s{ s" giras" s" das la vuelta" }s& s" para" s&
   s{  s{ s" comprobar" s" ver" }s s" si" s&
       s{ s" cerciorarte" s" asegurarte" }s s" de que" s&
@@ -2113,7 +2113,7 @@ false [if]
   \ Primera conversación con Ambrosio.
 
 : conversation-0-with-ambrosio  ( -- )
-  location-19% am-i-there?
+  location-19~ am-i-there?
   ?? (conversation-0-with-ambrosio)  ;
   \ Primera conversación con Ambrosio, si se dan las condiciones.
 
@@ -2200,7 +2200,7 @@ false [if]
   \ Segunda conversación con Ambrosio.
 
 : conversation-1-with-ambrosio  ( -- )
-  location-46% am-i-there?
+  location-46~ am-i-there?
   ambrosio-follows? 0=  and
   ?? (conversation-1-with-ambrosio)  ;
   \ Segunda conversación con Ambrosio, si se dan las condiciones.
@@ -2213,7 +2213,7 @@ false [if]
   s{ null$ s" en vuestra mano" s" en vuestras manos" s" con vos" }s&
   s" y abrid" s& s" la puerta de" s?& this|the(f)$ s& s" cueva." s&
   speak
-  key% be-hold  ;
+  key~ be-hold  ;
 
 : (conversation-2-with-ambrosio)  ( -- )
   ambrosio-gives-you-the-key
@@ -2222,7 +2222,7 @@ false [if]
   \ XXX TODO -- hacer que la llave se pueda transportar
 
 : conversation-2-with-ambrosio  ( -- )
-  location-45% 1- location-47% 1+ my-location within
+  location-45~ 1- location-47~ 1+ my-location within
   ?? (conversation-2-with-ambrosio)  ;
   \ Tercera conversación con Ambrosio, si se dan las condiciones.
   \ XXX TODO -- simplificar la condición
@@ -2232,7 +2232,7 @@ false [if]
   \ XXX OLD -- Primera versión, con una estructura `case`
 
 : (talk-to-ambrosio)  ( -- )
-  ambrosio% conversations case
+  ambrosio~ conversations case
     0 of  conversation-0-with-ambrosio  endof
     1 of  conversation-1-with-ambrosio  endof
     2 of  conversation-2-with-ambrosio  endof
@@ -2255,14 +2255,14 @@ create conversations-with-ambrosio
   \ conversaciones.
 
 : (talk-to-ambrosio)  ( -- )
-  ambrosio% conversations cells conversations-with-ambrosio + perform  ;
+  ambrosio~ conversations cells conversations-with-ambrosio + perform  ;
   \ Hablar con Ambrosio.
 
 [then]
 
 : talk-to-ambrosio  ( -- )
-  ambrosio% is-here?
-  if  (talk-to-ambrosio)  else  ambrosio% be-not-here  then  ;
+  ambrosio~ is-here?
+  if  (talk-to-ambrosio)  else  ambrosio~ be-not-here  then  ;
   \ Hablar con Ambrosio, si se puede.
   \ XXX TODO -- esto debería comprobarse en `do-speak` o
   \ `do-speak-if-possible`.
@@ -2292,8 +2292,8 @@ create conversations-with-ambrosio
 : do-speak-if-possible  ( a -- )
   [debug] [if]  s" En DO-SPEAK-IF-POSSIBLE" debug  [then]  \ XXX INFORMER
   case
-    leader% of  talk-to-the-leader  endof
-    ambrosio% of  talk-to-ambrosio  endof
+    leader~ of  talk-to-the-leader  endof
+    ambrosio~ of  talk-to-ambrosio  endof
     dup talk-to-something
   endcase  ;
   \ Hablar con un ente si es posible.

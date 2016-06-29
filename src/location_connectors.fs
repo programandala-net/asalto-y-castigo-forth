@@ -20,12 +20,12 @@
 \ La primera operación se hace guardando un valor buleano «cierto»
 \ en el campo `~is-location?` del ente.  Por ejemplo:
 
-\   cave% ~is-location? bit-on
+\   cave~ ~is-location? bit-on
 
 \ O bien mediante la palabra creada para ello en la interfaz
 \ básica de campos:
 
-\   cave% be-location
+\   cave~ be-location
 
 \ La segunda operación se hace guardando en los campos de
 \ salida del ente los identificadores de los entes a que cada
@@ -33,8 +33,8 @@
 \ impracticables porque ya estarán a cero de forma
 \ predeterminada.  Por ejemplo:
 
-\   path% cave% ~south-exit !  \ Hacer que la salida sur de `cave%` conduzca a `path%`
-\   cave% path% ~north-exit !  \ Hacer que la salida norte de `path%` conduzca a `cave%`
+\   path~ cave~ ~south-exit !  \ Hacer que la salida sur de `cave~` conduzca a `path~`
+\   cave~ path~ ~north-exit !  \ Hacer que la salida norte de `path~` conduzca a `cave~`
 
 \ No obstante, para hacer más fácil este segundo paso, hemos
 \ creado unas palabras que proporcionan una sintaxis específica,
@@ -53,14 +53,14 @@ in-exit> ,
 out-exit> ,
 
 create opposite-direction-entities
-south% ,
-north% ,
-west% ,
-east% ,
-down% ,
-up% ,
-in% ,
-out% ,
+south~ ,
+north~ ,
+west~ ,
+east~ ,
+down~ ,
+up~ ,
+in~ ,
+out~ ,
 
 [then]
 
@@ -94,21 +94,21 @@ create exits-table  #exits cells allot
 \ como puntero el campo análogo de la ficha.  Haciéndolo de esta
 \ manera no importa el orden en que se rellenen los elementos.
 
-north% north-exit> exits-table!
-south% south-exit> exits-table!
-east% east-exit> exits-table!
-west% west-exit> exits-table!
-up% up-exit> exits-table!
-down% down-exit> exits-table!
-out% out-exit> exits-table!
-in% in-exit> exits-table!
+north~ north-exit> exits-table!
+south~ south-exit> exits-table!
+east~ east-exit> exits-table!
+west~ west-exit> exits-table!
+up~ up-exit> exits-table!
+down~ down-exit> exits-table!
+out~ out-exit> exits-table!
+in~ in-exit> exits-table!
 
 0 [if]  \ XXX TODO -- inconcluso
 : opposite-exit  ( a1 -- a2 )
   first-exit> - opposite-exits + @  ;
   \ Devuelve la dirección cardinal opuesta a la indicada.
 
-: opposite-exit%  ( a1 -- a2 )
+: opposite-exit~  ( a1 -- a2 )
   first-exit> - opposite-direction-entities + @  ;
   \ Devuelve el ente dirección cuya direccién es opuesta a la indicada.
   \ a1 = entidad de dirección
@@ -120,19 +120,19 @@ in% in-exit> exits-table!
 \ siguiente sintaxis (primero origen y después destino en la
 \ pila, como es convención en Forth):
 
-\   \ Hacer que la salida sur de `cave%` conduzca a `path%`
+\   \ Hacer que la salida sur de `cave~` conduzca a `path~`
 \   \ pero sin afectar al sentido contrario:
-\   cave% path% s-->
+\   cave~ path~ s-->
 
-\   \ Hacer que la salida norte de `path%` conduzca a `cave%`
+\   \ Hacer que la salida norte de `path~` conduzca a `cave~`
 \   \ pero sin afectar al sentido contrario:
-\   path% cave% n-->
+\   path~ cave~ n-->
 
 \ O en un solo paso:
 
-\   \ Hacer que la salida sur de `cave%` conduzca a `path%`
-\   \ y al contrario: la salida norte de `path%` conducirá a `cave%`:
-\   cave% path% s<-->
+\   \ Hacer que la salida sur de `cave~` conduzca a `path~`
+\   \ y al contrario: la salida norte de `path~` conducirá a `cave~`:
+\   cave~ path~ s<-->
 
 : -->  ( a1 a2 u -- )  rot + !  ;
   \ Conecta el ente _a1_ (origen) con el ente _a2_ (destino) mediante

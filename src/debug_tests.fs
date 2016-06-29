@@ -55,22 +55,22 @@
   dup my-location!
   describe-location check-stack
   cr ." == Mirar al norte:" cr
-  north% describe-direction check-stack
+  north~ describe-direction check-stack
   cr ." == Mirar al sur:" cr
-  south% describe-direction check-stack
+  south~ describe-direction check-stack
   cr ." == Mirar al este:" cr
-  east% describe-direction check-stack
+  east~ describe-direction check-stack
   cr ." == Mirar al oeste:" cr
-  west% describe-direction check-stack
+  west~ describe-direction check-stack
   cr ." == Mirar hacia arriba:" cr
-  up% describe-direction check-stack
+  up~ describe-direction check-stack
   cr ." == Mirar hacia abajo:" cr
-  down% describe-direction check-stack
+  down~ describe-direction check-stack
 \ Aún no implementado:
 \ cr ." == Mirar hacia fuera:" cr
-\ out% describe-direction check-stack
+\ out~ describe-direction check-stack
 \ cr ." == Mirar hacia dentro:" cr
-\ in% describe-direction check-stack
+\ in~ describe-direction check-stack
   ;
 
 0 value tested

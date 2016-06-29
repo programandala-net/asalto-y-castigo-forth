@@ -40,7 +40,7 @@ variable #elements
   \ listados.
 
 : can-be-listed?  ( a -- f )
-  dup protagonist% <>  \ ¿No es el protagonista?
+  dup protagonist~ <>  \ ¿No es el protagonista?
   over is-decoration? 0=  and  \ ¿Y no es decorativo?
   over is-listed? and  \ ¿Y puede ser listado?
   swap is-global? 0=  and  ;  \ ¿Y no es global?

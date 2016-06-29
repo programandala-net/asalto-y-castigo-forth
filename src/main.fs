@@ -65,14 +65,14 @@ include debug_tools.fs
 
 \ XXX TODO -- mover
 
-defer protagonist%  ( -- a )  \ Ente protagonista.
-defer sword%        ( -- a )  \ Ente espada.
-defer stone%        ( -- a )  \ Ente piedra.
-defer torch%        ( -- a )  \ Ente antorcha.
-defer leader%       ( -- a )  \ Ente líder de los refugiados.
-defer location-01%  ( -- a )  \ Primer ente escenario.
-defer exits%        ( -- a )  \ Ente salidas.
-defer log%          ( -- a )  \ Ente tronco.
+defer protagonist~  ( -- a )  \ Ente protagonista.
+defer sword~        ( -- a )  \ Ente espada.
+defer stone~        ( -- a )  \ Ente piedra.
+defer torch~        ( -- a )  \ Ente antorcha.
+defer leader~       ( -- a )  \ Ente líder de los refugiados.
+defer location-01~  ( -- a )  \ Primer ente escenario.
+defer exits~        ( -- a )  \ Ente salidas.
+defer log~          ( -- a )  \ Ente tronco.
 
 defer list-exits  ( -- )
   \ Crea e imprime la lista de salidas.
@@ -119,18 +119,18 @@ include intro.fs
   \ XXX TODO -- trasladar a su zona
 
 : init-game-for-debugging  ( -- )
-  location-01% enter-location
-  \ location-08% enter-location  \ Emboscada
-  \ location-11% enter-location  \ Lago
-  \ location-17% enter-location  \ Antes de la cueva oscura
-  \ location-19% enter-location  \ Encuentro con Ambrosio
-  \ location-28% enter-location  \ Refugiados
-  \ location-47% enter-location  \ casa de Ambrosio
-  \ snake% be-here
-  \ ambrosio% be-here
-  \ key% be-hold
-  flint% be-hold
-  torch% be-hold
+  location-01~ enter-location
+  \ location-08~ enter-location  \ Emboscada
+  \ location-11~ enter-location  \ Lago
+  \ location-17~ enter-location  \ Antes de la cueva oscura
+  \ location-19~ enter-location  \ Encuentro con Ambrosio
+  \ location-28~ enter-location  \ Refugiados
+  \ location-47~ enter-location  \ casa de Ambrosio
+  \ snake~ be-here
+  \ ambrosio~ be-here
+  \ key~ be-hold
+  flint~ be-hold
+  torch~ be-hold
   ;
   \ Condiciones especiales de inicio, para forzar situaciones
   \ concretas de la trama en el arranque y así probar el código.
@@ -140,7 +140,7 @@ include intro.fs
   randomize
   init-parser/game init-entities init-plot
   get-config new-page
-  [true] [if]    about cr intro  location-01% enter-location
+  [true] [if]    about cr intro  location-01~ enter-location
          [else]  init-game-for-debugging
          [then]  ;
   \ Preparativos que hay que hacer antes de cada partida.

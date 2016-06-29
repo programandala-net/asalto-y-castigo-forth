@@ -34,13 +34,13 @@
 \ diferente a que esté accesible.
 
 : ambrosio-must-follow?  ( -- )
-  ambrosio% not-vanished?  key% is-accessible? and
-  location-46% am-i-there?  ambrosio-follows? @ or  and  ;
+  ambrosio~ not-vanished?  key~ is-accessible? and
+  location-46~ am-i-there?  ambrosio-follows? @ or  and  ;
   \ ¿Ambrosio tiene que estar siguiéndonos?
 
 : ambrosio-must-follow  ( -- )
-  my-location ambrosio% be-there
-  s{ s" tu benefactor" ambrosio% full-name }s ^uppercase
+  my-location ambrosio~ be-there
+  s{ s" tu benefactor" ambrosio~ full-name }s ^uppercase
   s" te sigue, esperanzado." s& narrate  ;
   \ Ambrosio tiene que estar siguiéndonos.
 
@@ -62,7 +62,7 @@
 \ ==============================================================
 \ Herramientas para las tramas asociadas a escenarios
 
-: [:location-plot]  ( a -- )  to self%  ;
+: [:location-plot]  ( a -- )  to self~  ;
   \ Inicia la definición de trama de un ente escenario _a_ (cualquier
   \ tipo de trama de escenario).  Esta palabra se ejecutará al
   \ comienzo de la palabra de trama de escenario.  El identificador
@@ -80,7 +80,7 @@
   \ operaciones: 1) Guarda el _xt_ de la nueva palabra en la ficha del
   \ ente; 2) Compila el identificador de ente _a_ en la palabra de
   \ descripción recién creada, para que `[:description]` lo guarde en
-  \ `self%` en tiempo de ejecución.
+  \ `self~` en tiempo de ejecución.
 
 : :can-i-enter-location?  ( a -- xt a )
   :noname noname-roll
@@ -100,7 +100,7 @@
   \ operaciones: 1) Guarda el _xt_ de la nueva palabra en la ficha del
   \ ente; 2) Compila el identificador de ente _a_ en la palabra de
   \ descripción recién creada, para que `[:description]` lo guarde en
-  \ `self%` en tiempo de ejecución.
+  \ `self~` en tiempo de ejecución.
 
 : :before-describing-location  ( a -- xt a )
   :noname noname-roll
@@ -122,7 +122,7 @@
   \ palabra que define la trama.  Esta palabra hace dos operaciones:
   \ 1) Guarda el _xt_ de la nueva palabra en la ficha del ente;  2)
   \ Compila el identificador de ente en la palabra de descripción
-  \ recién creada, para que `[:description]` lo guarde en `self%` en
+  \ recién creada, para que `[:description]` lo guarde en `self~` en
   \ tiempo de ejecución.
 
 : :after-describing-location  ( a -- xt a )
@@ -146,7 +146,7 @@
   \ 1) Guarda el _xt_ de la nueva palabra en la ficha del ente _a_.
   \ 2) Compila el identificador de ente _a_ en la palabra de
   \ descripción recién creada, para que `[:description]` lo guarde en
-  \ `self%` en tiempo de ejecución.
+  \ `self~` en tiempo de ejecución.
 
 : :after-listing-entities  ( a -- xt a )
   :noname noname-roll
@@ -165,7 +165,7 @@
   \ palabra que define su trama.  Esta palabra hace dos operaciones:
   \ 1) Guarda el _xt_ de la nueva palabra en la ficha del ente 2)
   \ Compila el identificador de ente _a_ en la palabra de descripción
-  \ recién creada, para que `[:description]` lo guarde en `self%` en
+  \ recién creada, para que `[:description]` lo guarde en `self~` en
   \ tiempo de ejecución.
 
 : :before-leaving-location  ( a -- xt a )
@@ -216,7 +216,7 @@ true [if]
 : (leave-location)  ( a -- )
   dup visits++
   dup before-leaving-location
-  protagonist% was-there  ;
+  protagonist~ was-there  ;
   \ Tareas previas a abandonar un escenario.
 
 : leave-location  ( -- )
@@ -250,16 +250,16 @@ true [if]
 \ ----------------------------------------------
 \ Regreso a casa
 
-: pass-still-open?  ( -- f )  location-08% has-north-exit?  ;
+: pass-still-open?  ( -- f )  location-08~ has-north-exit?  ;
   \ ¿El paso del desfiladero está abierto por el norte?
 
 : still-in-the-village?  ( -- f )
-  location-01% am-i-there?
-  location-02% is-not-visited? and  ;
+  location-01~ am-i-there?
+  location-02~ is-not-visited? and  ;
   \ ¿Los soldados no se han movido aún de la aldea sajona?
 
 : back-to-the-village?  ( -- f )
-  location-01% am-i-there?  location-02% is-visited? and  ;
+  location-01~ am-i-there?  location-02~ is-visited? and  ;
   \ ¿Los soldados han regresado a la aldea sajona?
   \ XXX TODO -- no usado
 
@@ -300,7 +300,7 @@ true [if]
   \ Perseguido por los sajones.
 
 : pursue-location?  ( -- f )
-  my-location location-12% <  ;
+  my-location location-12~ <  ;
   \ ¿En un escenario en que los sajones pueden perseguir al protagonista?
 
 : you-think-you're-safe$  ( -- ca len )
@@ -560,7 +560,7 @@ here swap - cell / constant battle-phases
   \ Ejecuta la fase en curso del combate.
 
 : battle-location?  ( -- f )
-  my-location location-10% <
+  my-location location-10~ <
   pass-still-open? 0=  and  ;
   \ ¿En el escenario de la batalla?
 
@@ -586,7 +586,7 @@ here swap - cell / constant battle-phases
 \ ----------------------------------------------
 \ Emboscada de los sajones
 
-: the-pass-is-closed  ( -- )  no-exit location-08% ~north-exit !  ;
+: the-pass-is-closed  ( -- )  no-exit location-08~ ~north-exit !  ;
   \ Cerrar el paso, la salida norte.
 
 : a-group-of-saxons$  ( -- ca len )
@@ -743,8 +743,8 @@ here swap - cell / constant battle-phases
 \ Albergue de los refugiados
 
 : the-old-man-is-angry?  ( -- f )
-  stone% is-accessible?
-  sword% is-accessible?  or  ;
+  stone~ is-accessible?
+  sword~ is-accessible?  or  ;
   \ ¿El anciano se enfada porque llevas algo prohibido?
 
 : he-looks-at-you-with-anger$  ( -- ca len )
@@ -764,7 +764,7 @@ here swap - cell / constant battle-phases
   \ Texto de que el líder de los refugiados te mira.
 
 : the-leader-looks-at-you$  ( -- ca len )
-  leader% ^full-name  the-old-man-is-angry?
+  leader~ ^full-name  the-old-man-is-angry?
   if  he-looks-at-you-with-anger$
   else  he-looks-at-you-with-calm$
   then  s& period+  ;
@@ -772,7 +772,7 @@ here swap - cell / constant battle-phases
 
 : the-refugees-surround-you$  ( -- ca len )
   ^the-refugees$
-  location-28% has-east-exit?
+  location-28~ has-east-exit?
   if  they-let-you-pass$
   else  they-don't-let-you-pass$
   then  period+ s&  ;
@@ -785,62 +785,62 @@ here swap - cell / constant battle-phases
 \ de :after-describing-location
 \ en :before-describing-location
 
-location-01% :after-describing-location
-  soldiers% be-here
+location-01~ :after-describing-location
+  soldiers~ be-here
   still-in-the-village?
   if  celebrating  else  going-home  then
   ;after-describing-location
 
-location-02% :after-describing-location
+location-02~ :after-describing-location
   \ Decidir hacia dónde conduce la dirección hacia abajo
   [false] [if]  \ XXX OLD -- Primera versión
     \ Decidir al azar:
-    self% location-01% location-03% 2 choose d-->
+    self~ location-01~ location-03~ 2 choose d-->
   [else]  \ XXX NEW -- Segunda versión mejorada
     \ Decidir según el escenario de procedencia:
-    self%
-    protagonist% previous-location location-01% =  \ ¿Venimos de la aldea?
-    if  location-03%  else  location-01%  then  d-->
+    self~
+    protagonist~ previous-location location-01~ =  \ ¿Venimos de la aldea?
+    if  location-03~  else  location-01~  then  d-->
   [then]
-  soldiers% be-here going-home
+  soldiers~ be-here going-home
   ;after-describing-location
 
-location-03% :after-describing-location
-  soldiers% be-here going-home
+location-03~ :after-describing-location
+  soldiers~ be-here going-home
   ;after-describing-location
 
-location-04% :after-describing-location
-  soldiers% be-here going-home
+location-04~ :after-describing-location
+  soldiers~ be-here going-home
   ;after-describing-location
 
-location-05% :after-describing-location
-  soldiers% be-here going-home
+location-05~ :after-describing-location
+  soldiers~ be-here going-home
   ;after-describing-location
 
-location-06% :after-describing-location
-  soldiers% be-here going-home
+location-06~ :after-describing-location
+  soldiers~ be-here going-home
   ;after-describing-location
 
-location-07% :after-describing-location
-  soldiers% be-here going-home
+location-07~ :after-describing-location
+  soldiers~ be-here going-home
   ;after-describing-location
 
-location-08% :after-describing-location
-  soldiers% be-here
+location-08~ :after-describing-location
+  soldiers~ be-here
   going-home
   pass-still-open? ?? ambush
   ;after-describing-location
 
-location-09% :after-describing-location
-  soldiers% be-here
+location-09~ :after-describing-location
+  soldiers~ be-here
   going-home
   ;after-describing-location
 
-location-10% :after-describing-location
-  s" entrada a la cueva" cave-entrance% fs-name!
-  cave-entrance% familiar++
-  location-08% my-previous-location = if  \ Venimos del exterior
-    self% visits
+location-10~ :after-describing-location
+  s" entrada a la cueva" cave-entrance~ fs-name!
+  cave-entrance~ familiar++
+  location-08~ my-previous-location = if  \ Venimos del exterior
+    self~ visits
     if  ^again$  else  ^finally$ s" ya" s?&  then
     \ XXX TODO -- ampliar con otros textos alternativos
     you-think-you're-safe$ s&
@@ -850,11 +850,11 @@ location-10% :after-describing-location
   then
   ;after-describing-location
 
-location-11% :after-describing-location
-  lake% be-here
+location-11~ :after-describing-location
+  lake~ be-here
   ;after-describing-location
 
-location-16% :after-describing-location
+location-16~ :after-describing-location
   s" En la distancia, por entre los resquicios de las rocas,"
   s" y allende el canal de agua, los sajones" s&
   s{ s" intentan" s" se esfuerzan en" s" tratan de" s" se afanan en" }s&
@@ -863,26 +863,26 @@ location-16% :after-describing-location
   narrate
   ;after-describing-location
 
-location-20% :can-i-enter-location?  ( -- f )
-  location-17% am-i-there? no-torch? and
+location-20~ :can-i-enter-location?  ( -- f )
+  location-17~ am-i-there? no-torch? and
   dup 0= swap ?? dark-cave
   ;can-i-enter-location?
 
-location-28% :after-describing-location
-  self% no-exit e-->  \ Cerrar la salida hacia el este
+location-28~ :after-describing-location
+  self~ no-exit e-->  \ Cerrar la salida hacia el este
   recent-talks-to-the-leader off
-  refugees% be-here
+  refugees~ be-here
   the-refugees-surround-you$ narrate
   the-leader-looks-at-you$ narrate
   ;after-describing-location
 
-location-29% :after-describing-location
-  refugees% be-here  \ Para que sean visibles en la distancia
+location-29~ :after-describing-location
+  refugees~ be-here  \ Para que sean visibles en la distancia
   ;after-describing-location
 
-location-31% :after-describing-location
+location-31~ :after-describing-location
   \ XXX TODO -- mover a la descripción?
-  self% has-north-exit? if
+  self~ has-north-exit? if
     s" Las rocas yacen desmoronadas a lo largo del"
     pass-way$ s& period+
   else
@@ -890,27 +890,27 @@ location-31% :after-describing-location
   then  narrate
   ;after-describing-location
 
-location-38% :after-describing-location
-  lake% be-here
+location-38~ :after-describing-location
+  lake~ be-here
   ;after-describing-location
 
-location-43% :after-describing-location
-  snake% is-here? if
+location-43~ :after-describing-location
+  snake~ is-here? if
     a-snake-blocks-the-way$ period+
     narrate
   then
   ;after-describing-location
 
-location-44% :after-describing-location
-  lake% be-here
+location-44~ :after-describing-location
+  lake~ be-here
   ;after-describing-location
 
-location-47% :after-describing-location
-  door% be-here
+location-47~ :after-describing-location
+  door~ be-here
   ;after-describing-location
 
-location-48% :after-describing-location
-  door% be-here
+location-48~ :after-describing-location
+  door~ be-here
   ;after-describing-location
 
 \ ==============================================================
@@ -920,8 +920,8 @@ location-48% :after-describing-location
 \ Varios
 
 : (lock-found)  ( -- )
-  door% location lock% be-there
-  lock% familiar++
+  door~ location lock~ be-there
+  lock~ familiar++
   ;  ' (lock-found) is lock-found
   \ Encontrar el candado (al mirar la puerta o al intentar abrirla).
 

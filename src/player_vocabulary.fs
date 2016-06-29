@@ -41,9 +41,9 @@
 
 : (man) ( -- a | false )
   true case
-    leader% is-here? of  leader%  endof
-    ambrosio% is-here? of  ambrosio%  endof
-    pass-still-open? battle? or of  soldiers%  endof
+    leader~ is-here? of  leader~  endof
+    ambrosio~ is-here? of  ambrosio~  endof
+    pass-still-open? battle? or of  soldiers~  endof
     false swap
   endcase  ;
   \ Devuelve el ente adecuado a la palabra «hombre» y sus sinónimos
@@ -55,15 +55,15 @@
 : (men)  ( -- a | false )
   [false] [if] \ Primera versión.
     true case
-      location-28% am-i-there? location-29% am-i-there? or of  refugees%  endof
-      pass-still-open? battle? or of  soldiers%  endof
+      location-28~ am-i-there? location-29~ am-i-there? or of  refugees~  endof
+      pass-still-open? battle? or of  soldiers~  endof
       false swap
     endcase
   [else]  \ Segunda versión, lo mismo pero sin `case`:
-    location-28% am-i-there? location-29% am-i-there? or
-    if  refugees% exit  then
+    location-28~ am-i-there? location-29~ am-i-there? or
+    if  refugees~ exit  then
     pass-still-open? battle? or
-    if  soldiers% exit  then
+    if  soldiers~ exit  then
     false
   [then]  ;
   \ Devuelve el ente adecuado a la palabra «hombres» y sus sinónimos
@@ -71,7 +71,7 @@
   \ Puede referirse a los soldados o a los refugiados.
 
 : (ambrosio) ( -- a | false )
-  ambrosio% dup conversations? and  ;
+  ambrosio~ dup conversations? and  ;
   \ Devuelve el ente adecuado a la palabra «ambrosio»
   \ (o _false_ si la ambigüedad no puede ser resuelta).
   \ La palabra «Ambrosio» es válida únicamente si
@@ -79,8 +79,8 @@
 
 : (cave) ( -- a | false )
   true case
-    my-location location-10% location-47% between of  cave%  endof
-    the-cave-entrance-is-accessible? of  cave-entrance%  endof
+    my-location location-10~ location-47~ between of  cave~  endof
+    the-cave-entrance-is-accessible? of  cave-entrance~  endof
     false swap
   endcase  ;
   \ Devuelve el ente adecuado a la palabra «cueva»
@@ -88,13 +88,13 @@
 
 : (entrance) ( -- a | false )
   true case
-    the-cave-entrance-is-accessible? of  cave-entrance%  endof
+    the-cave-entrance-is-accessible? of  cave-entrance~  endof
 
     \ XXX TODO -- quizá no se implemente esto porque precisaría
-    \ asociar a cave-entrance% el vocablo «salida/s», lo que crearía
+    \ asociar a cave-entrance~ el vocablo «salida/s», lo que crearía
     \ una ambigüedad adicional que resolver:
 
-    \ location-10% am-i-there? of  cave-entrance%  endof
+    \ location-10~ am-i-there? of  cave-entrance~  endof
 
     false swap
   endcase  ;
@@ -104,32 +104,32 @@
 : (exits)  ( -- a )
   \ Devuelve el ente adecuado a la palabra «salida/s».
   the-cave-entrance-is-accessible?
-  if    cave-entrance%
-  else  exits%
+  if    cave-entrance~
+  else  exits~
   then  ;
 
 : (stone) ( -- a )
   true case
-    stone% is-accessible? of  stone%  endof
-    emerald% is-accessible? of  emerald%  endof
-    location-08% am-i-there? of  ravine-wall%  endof
-    rocks% swap
+    stone~ is-accessible? of  stone~  endof
+    emerald~ is-accessible? of  emerald~  endof
+    location-08~ am-i-there? of  ravine-wall~  endof
+    rocks~ swap
   endcase  ;
   \ Devuelve el ente adecuado a la palabra «piedra».  Puede referise,
   \ en orden preferente, a la piedra, a la esmeralda, a la pared de
   \ roca del desfiladero o a las rocas.
 
 : (wall) ( -- a )
-  location-08% am-i-there?
-  if  ravine-wall%  else  wall%  then  ;
+  location-08~ am-i-there?
+  if  ravine-wall~  else  wall~  then  ;
   \ Devuelve el ente adecuado a la palabra «pared».
   \ XXX TODO -- probablemente habrá que añadir más casos
 
 : (somebody) ( -- a | false )
   true case
-    pass-still-open? battle? or of  soldiers%  endof
-    location-28% am-i-there? location-29% am-i-there? or of  refugees%  endof
-    ambrosio% is-here? of  ambrosio%  endof
+    pass-still-open? battle? or of  soldiers~  endof
+    location-28~ am-i-there? location-29~ am-i-there? or of  refugees~  endof
+    ambrosio~ is-here? of  ambrosio~  endof
     false swap
   endcase  ;
   \ Devuelve el ente adecuado a la palabra «alguien».  (o _false_ si
@@ -138,10 +138,10 @@
 
 : (bridge)  ( -- a )
   true case
-    location-13% am-i-there? of  bridge%  endof
-    location-18% am-i-there? of  arch%  endof
-    bridge% is-known? of bridge%  endof
-    arch% is-known? of arch%  endof
+    location-13~ am-i-there? of  bridge~  endof
+    location-18~ am-i-there? of  arch~  endof
+    bridge~ is-known? of bridge~  endof
+    arch~ is-known? of arch~  endof
     false swap
   endcase  ;
   \ Devuelve el ente adecuado a la palabra «puente».
@@ -359,7 +359,7 @@ player-wordlist dup >order set-current
 : examinarlas  examinar éstas  ;
 ' examinarlas aliases: examínalas examinadlas examínolas examínelas  ;aliases
 
-: examinarse  ['] do-examine action! protagonist% complement!  ;
+: examinarse  ['] do-examine action! protagonist~ complement!  ;
 ' examinarse aliases:
   examínese examinaos
   examinarte examínate examínete
@@ -377,7 +377,7 @@ player-wordlist dup >order set-current
 : registrarlas  registrar éstas  ;
 ' registrarlas aliases: regístralas registradlas regístrolas regístrelas  ;aliases
 
-: i  ['] do-inventory inventory% action|complement!  ;
+: i  ['] do-inventory inventory~ action|complement!  ;
 ' i aliases:  inventario  ;aliases
 : inventariar  ['] do-inventory action!  ;
 ' inventariar aliases:
@@ -753,7 +753,7 @@ player-wordlist dup >order set-current
 \ ----------------------------------------------
 \ Nombres de objetos o personas
 
-: ulfius  ulfius% complement!  ;
+: ulfius  ulfius~ complement!  ;
 
 : ambrosio  (ambrosio) complement!  ;
 
@@ -765,12 +765,12 @@ player-wordlist dup >order set-current
 \ XXX Ambigüedad.:
 \ «jefe» podría ser también el jefe de los enemigos durante la batalla:
 
-: jefe  leader% complement!  ;
+: jefe  leader~ complement!  ;
 ' jefe aliases:
   líder viejo anciano abuelo
   ;aliases
 
-: soldados  soldiers% complement!  ;
+: soldados  soldiers~ complement!  ;
 ' soldados aliases:
   guerreros luchadores combatientes camaradas
   compañeros oficiales suboficiales militares
@@ -778,7 +778,7 @@ player-wordlist dup >order set-current
   compañero oficial suboficial militar
   ;aliases
 
-: multitud  refugees% complement!  ;
+: multitud  refugees~ complement!  ;
 ' multitud aliases:
   niño niños niña niñas
   muchacho muchachos muchacha muchachas
@@ -794,130 +794,130 @@ player-wordlist dup >order set-current
   muchedumbre masa enjambre
   ;aliases
 
-: refugiados leader% conversations? ?? multitud ;
+: refugiados leader~ conversations? ?? multitud ;
 ' refugiados aliases: refugiada refugiadas  ;aliases
 
-: refugiado leader% conversations? ?? viejo ;
+: refugiado leader~ conversations? ?? viejo ;
 
 
-: altar  altar% complement!  ;
+: altar  altar~ complement!  ;
 
-: arco  arch% complement!  ;
+: arco  arch~ complement!  ;
 
-: capa  cloak% complement!  ; \ XXX TODO -- hijuelo?
+: capa  cloak~ complement!  ; \ XXX TODO -- hijuelo?
 ' capa aliases:  lana  ;aliases
 \ ' capa aliases:  abrigo  ;aliases \ XXX TODO -- diferente género
 
-: coraza  cuirasse% complement!  ;
+: coraza  cuirasse~ complement!  ;
 ' coraza aliases:  armadura  ;aliases
 
-: puerta  door% complement!  ;
+: puerta  door~ complement!  ;
 
-: esmeralda  emerald% complement!  ;
+: esmeralda  emerald~ complement!  ;
 ' esmeralda aliases:  joya  ;aliases
 \ XXX TODO -- piedra-preciosa brillante
 
-: derrumbe fallen-away% complement!  ;
+: derrumbe fallen-away~ complement!  ;
 
-: banderas  flags% complement!  ;
+: banderas  flags~ complement!  ;
 ' banderas aliases:
     bandera pendones enseñas pendón enseña
     mástil mástiles
     estandarte estandartes
   ;aliases \ XXX TODO -- estandarte, enseña... otro género
 
-: dragones  flags% is-known? ?? banderas ;
+: dragones  flags~ is-known? ?? banderas ;
 ' dragones aliases: dragón  ;aliases
 
-: pedernal  flint% complement!  ;
+: pedernal  flint~ complement!  ;
 
-: ídolo  idol% complement!  ;
+: ídolo  idol~ complement!  ;
 ' ídolo aliases:  ojo orificio agujero  ;aliases
 \ XXX TODO -- separar los sinónimos de ídolo
 
-: llave  key% complement!  ;
+: llave  key~ complement!  ;
 
-: lago  lake% complement!  ;
+: lago  lake~ complement!  ;
 ' lago aliases:  laguna agua estanque  ;aliases  \ XXX TODO -- diferente género
 
-: candado  lock% complement!  ;
+: candado  lock~ complement!  ;
 ' candado aliases:  cerrojo  ;aliases
 
-: tronco  log% complement!  ;
+: tronco  log~ complement!  ;
 ' tronco aliases:  leño madero  ;aliases
 \ XXX TODO -- madera
 
-: trozo  piece% complement!  ;
+: trozo  piece~ complement!  ;
 ' trozo aliases:  pedazo retal tela  ;aliases
 
-: harapo  rags% complement!  ;
+: harapo  rags~ complement!  ;
 
 : rocas  ( -- )
-  location-09% am-i-there?
-  if  fallen-away%  else  rocks%  then  complement!  ;
+  location-09~ am-i-there?
+  if  fallen-away~  else  rocks~  then  complement!  ;
 ' rocas aliases:  piedras pedruscos  ;aliases
 
 : piedra  (stone) complement!  ;
 ' piedra aliases:  roca pedrusco  ;aliases
 
-: serpiente  snake% complement!  ;
+: serpiente  snake~ complement!  ;
 ' serpiente aliases:  reptil ofidio culebra animal bicho  ;aliases
 
-: espada  sword% complement!  ;
+: espada  sword~ complement!  ;
 ' espada aliases:  tizona arma  ;aliases
 \ XXX Nota.: "arma" es femenina pero usa artículo "él", contemplar en los cálculos de artículo.
 
-: hilo  thread% complement!  ;
+: hilo  thread~ complement!  ;
 ' hilo aliases:  hebra  ;aliases
 
-: antorcha  torch% complement!  ;
+: antorcha  torch~ complement!  ;
 
-: cascada  waterfall% complement!  ;
+: cascada  waterfall~ complement!  ;
 ' cascada aliases:  catarata  ;aliases
 
-: catre  s" catre" bed% ms-name! bed% complement!  ;
+: catre  s" catre" bed~ ms-name! bed~ complement!  ;
 ' catre aliases:  camastro  ;aliases
 
-: cama s" cama" bed% fs-name! bed% complement!  ;
+: cama s" cama" bed~ fs-name! bed~ complement!  ;
 
-: velas  candles% complement!  ;
+: velas  candles~ complement!  ;
 ' velas aliases:  vela  ;aliases
 
-: mesa  table% complement!  ;
+: mesa  table~ complement!  ;
 ' mesa aliases:  mesita pupitre  ;aliases
 
 : puente  (bridge) complement!  ;
 
 : alguien  (somebody) complement!  ;
 
-: hierba  s" hierba" grass% fs-name! grass% complement!  ;
+: hierba  s" hierba" grass~ fs-name! grass~ complement!  ;
 
-: hierbas  s" hierbas" grass% fp-name! grass% complement!  ;
+: hierbas  s" hierbas" grass~ fp-name! grass~ complement!  ;
 
-: hierbajo  s" hierbajo" grass% ms-name! grass% complement!  ;
+: hierbajo  s" hierbajo" grass~ ms-name! grass~ complement!  ;
 
-: hierbajos  s" hierbajos" grass% mp-name! grass% complement!  ;
+: hierbajos  s" hierbajos" grass~ mp-name! grass~ complement!  ;
 
-: hiedra  s" hiedra" grass% fs-name! grass% complement!  ;
+: hiedra  s" hiedra" grass~ fs-name! grass~ complement!  ;
 
-: hiedras  s" hiedras" grass% fp-name! grass% complement!  ;
+: hiedras  s" hiedras" grass~ fp-name! grass~ complement!  ;
 
 \ ----------------------------------------------
 \ Direcciones y sus acciones asociadas
 
-: n  ['] do-go-north north% action|complement!  ;
+: n  ['] do-go-north north~ action|complement!  ;
 ' n aliases:  norte septentrión  ;aliases
 
-: s  ['] do-go-south south% action|complement!  ;
+: s  ['] do-go-south south~ action|complement!  ;
 ' s aliases:  sur meridión  ;aliases
 
-: e  ['] do-go-east east% action|complement!  ;
+: e  ['] do-go-east east~ action|complement!  ;
 ' e aliases:  este oriente levante  ;aliases
 
-: o  ['] do-go-west west% action|complement!  ;
+: o  ['] do-go-west west~ action|complement!  ;
 ' o aliases:  oeste occidente poniente  ;aliases
 
-: ar  ['] do-go-up up% action|complement!  ;
+: ar  ['] do-go-up up~ action|complement!  ;
 ' ar aliases:  arriba  ;aliases
 
 : subir  ['] do-go-up action!  ;
@@ -926,7 +926,7 @@ player-wordlist dup >order set-current
 ' subir aliases:  subirse subíos súbese súbase  ;aliases
 ' subir aliases:  subirte súbete súbote súbate  ;aliases
 
-: ab  ['] do-go-down down% action|complement!  ;
+: ab  ['] do-go-down down~ action|complement!  ;
 ' ab aliases:  abajo  ;aliases
 
 : bajar  ['] do-go-down action!  ;
@@ -943,36 +943,36 @@ player-wordlist dup >order set-current
 ' salir aliases:  salirte  ;aliases
 \ XXX TODO -- ambigüedad. salte
 
-: fuera  ['] do-go-out out% action|complement!  ;
+: fuera  ['] do-go-out out~ action|complement!  ;
 ' fuera aliases:  afuera  ;aliases
 
-: exterior  out% complement!  ;
+: exterior  out~ complement!  ;
 
 : entrar ['] do-go-in action!  ;
 ' entrar aliases:  entra entrad entro entre  ;aliases
 ' entrar aliases:  entrarse entraos éntrese éntrase  ;aliases
 ' entrar aliases:  entrarte éntrete éntrate  ;aliases
 
-: dentro  ['] do-go-in in% action|complement!  ;
+: dentro  ['] do-go-in in~ action|complement!  ;
 ' dentro aliases:  adentro  ;aliases
 
-: interior  in% complement!  ;
+: interior  in~ complement!  ;
 
 \ ----------------------------------------------
 \ Términos asociados a entes globales o virtuales
 
-: nubes  clouds% complement!  ;
+: nubes  clouds~ complement!  ;
 \ XXX TODO ¿cúmulo-nimbos?, ¿nimbos?
 ' nubes aliases:  nube estratocúmulo estratocúmulos cirro cirros  ;aliases
 
-: suelo  floor% complement!  ;
+: suelo  floor~ complement!  ;
 ' suelo aliases:  suelos tierra firme  ;aliases
 \ XXX TODO -- Añadir «piso», que es ambiguo
 
-: cielo  sky% complement!  ;
+: cielo  sky~ complement!  ;
 ' cielo aliases:  cielos firmamento  ;aliases
 
-: techo  ceiling% complement!  ;
+: techo  ceiling~ complement!  ;
 
 : cueva  (cave) complement!  ;
 ' cueva aliases:  caverna gruta  ;aliases
@@ -981,7 +981,7 @@ player-wordlist dup >order set-current
 \ XXX TODO ¿Implementar cambio de nombre y/o género gramatical? (entrada, acceso):
 ' entrada aliases:  acceso  ;aliases
 
-: enemigo  enemy% complement!  ;
+: enemigo  enemy~ complement!  ;
 ' enemigo aliases: enemigos sajón sajones  ;aliases
 
 : todo ;  \ XXX TODO
@@ -990,7 +990,7 @@ player-wordlist dup >order set-current
 : pared  (wall) complement!  ;
 ' pared  aliases: muro  ;aliases
 
-: paredes  wall% complement!  ;
+: paredes  wall~ complement!  ;
 ' paredes  aliases: muros  ;aliases
 
 \ ----------------------------------------------

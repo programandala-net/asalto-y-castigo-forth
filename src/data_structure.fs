@@ -304,8 +304,8 @@ last-exit> cell+ first-exit> - constant /exits
 : owns  ( a1 a2 -- )  ~owner !  ;
 : belongs  ( a1 a2 -- )  swap owns  ;
 
-: belongs-to-protagonist?  ( a -- f )  owner protagonist% =  ;
-: belongs-to-protagonist  ( a -- )  ~owner protagonist% swap !  ;
+: belongs-to-protagonist?  ( a -- f )  owner protagonist~ =  ;
+: belongs-to-protagonist  ( a -- )  ~owner protagonist~ swap !  ;
 
 : is-living-being?  ( a -- f )
   dup is-vegetal?  over is-animal? or  swap is-human? or  ;
@@ -316,7 +316,7 @@ last-exit> cell+ first-exit> - constant /exits
   \ a1 = Ente que será la localización de a2
   \ a2 = Ente cuya localización será a1
 
-: taken  ( a -- )  protagonist% swap be-there  ;
+: taken  ( a -- )  protagonist~ swap be-there  ;
   \ Hace que el protagonista sea la localización de un ente.
 
 : was-there  ( a1 a2 -- )  ~previous-location !  ;
@@ -339,13 +339,13 @@ last-exit> cell+ first-exit> - constant /exits
   swap is-global-indoor? or  ;
   \ ¿Es el ente un ente global?
 
-: my-location  ( -- a )  protagonist% location  ;
+: my-location  ( -- a )  protagonist~ location  ;
   \ Devuelve la localización del protagonista.
 
-: my-previous-location  ( -- a )  protagonist% previous-location  ;
+: my-previous-location  ( -- a )  protagonist~ previous-location  ;
   \ Devuelve la localización anterior del protagonista.
 
-: my-location!  ( a -- )  protagonist% be-there  ;
+: my-location!  ( a -- )  protagonist~ be-there  ;
   \ Mueve el protagonista al ente indicado.
 
 : am-i-there?  ( a -- f )  my-location =  ;
@@ -358,13 +358,13 @@ last-exit> cell+ first-exit> - constant /exits
 : am-i-indoor?  ( -- f )  am-i-outdoor? 0=  ;
   \ ¿Está el protagonista en un escenario cerrado, no al aire libre?
 
-: is-hold?  ( a -- f )  location protagonist% =  ;
+: is-hold?  ( a -- f )  location protagonist~ =  ;
   \ ¿Es el protagonista la localización de un ente?
 
 : is-not-hold?  ( a -- f )  is-hold? 0=  ;
   \ ¿No es el protagonista la localización de un ente?
 
-: be-hold  ( a -- )  ~location protagonist% swap !  ;
+: be-hold  ( a -- )  ~location protagonist~ swap !  ;
   \ Hace que el protagonista sea la localización de un ente.
 
 : is-worn-by-me?  ( a -- f )  dup is-hold?  swap is-worn?  and  ;
@@ -408,7 +408,7 @@ last-exit> cell+ first-exit> - constant /exits
     \ XXX OLD -- Primera versión
     dup am-i-there?         \ ¿Es la localización del protagonista?
     over is-direction? or   \ ¿O es un ente dirección?
-    over exits% = or        \ ¿O es el ente "salidas"?
+    over exits~ = or        \ ¿O es el ente "salidas"?
     swap is-accessible? or  \ ¿O está accesible?
   [then]
   [false] [if]
@@ -418,7 +418,7 @@ last-exit> cell+ first-exit> - constant /exits
       entity am-i-there?    of  true  endof  \ ¿Es la localización del protagonista?
       entity is-direction?  of  true  endof  \ ¿Es un ente dirección?
       entity is-accessible? of  true  endof  \ ¿Está accesible?
-      entity exits% =       of  true  endof  \ ¿Es el ente "salidas"?
+      entity exits~ =       of  true  endof  \ ¿Es el ente "salidas"?
       false swap
     endcase
   [then]
@@ -428,7 +428,7 @@ last-exit> cell+ first-exit> - constant /exits
       \ ¿Es la localización del protagonista?
     dup is-direction?  ?dup if  nip exit  then
       \ ¿Es un ente dirección?
-    dup exits% =       ?dup if  nip exit  then
+    dup exits~ =       ?dup if  nip exit  then
       \ ¿Es el ente "salidas"?
     is-accessible?
       \ ¿Está accesible?
@@ -445,33 +445,33 @@ last-exit> cell+ first-exit> - constant /exits
 
 : may-be-climbed?  ( a -- f )
   [false] [if]
-  fallen-away%
-  bridge%
-  arch%
-  bed%
-  flags%
-  rocks%
-  table%
+  fallen-away~
+  bridge~
+  arch~
+  bed~
+  flags~
+  rocks~
+  table~
   [else]  false
   [then]  ;
   \ ¿El ente podría ser escalado? (Aunque en la práctica no sea posible).
   \ XXX TODO -- hacerlo mejor con un indicador en la ficha
 
 : can-be-sharpened?  ( a -- f )
-  dup log% =  swap sword% =  or  ;
+  dup log~ =  swap sword~ =  or  ;
   \ ¿Puede un ente ser afilado?
 
-: talked-to-the-leader?  ( -- f )  leader% conversations 0<>  ;
+: talked-to-the-leader?  ( -- f )  leader~ conversations 0<>  ;
   \ ¿El protagonista ha hablado con el líder?
 
 : do-you-hold-something-forbidden?  ( -- f )
-  sword% is-accessible?  stone% is-accessible?  or  ;
+  sword~ is-accessible?  stone~ is-accessible?  or  ;
   \ ¿Llevas algo prohibido?
   \ Cálculo usado en varios lugares del programa,
   \ en relación a los refugiados.
 
 : no-torch?  ( -- f )
-  torch% is-not-accessible?  torch% is-not-lit?  or  ;
+  torch~ is-not-accessible?  torch~ is-not-lit?  or  ;
   \ ¿La antorcha no está accesible y encendida?
 
 \ ----------------------------------------------
@@ -979,7 +979,7 @@ defer 'entities  ( -- a )
   >r r@ backup-entity  r@ erase-entity  r> restore-entity  ;
   \ Prepara la ficha de un ente para ser completada con sus datos .
 
-0 value self%
+0 value self~
   \ Ente cuyos atributos, descripción o trama están siendo definidos
   \ (usado para aligerar la sintaxis).
 
@@ -993,7 +993,7 @@ defer 'entities  ( -- a )
   \ Crea una cadena dinámica nueva para guardar el nombre del ente.
 
 : [:attributes]  ( a -- )
-  dup to self%  \ Actualizar el puntero al ente
+  dup to self~  \ Actualizar el puntero al ente
   dup :name-str  \ Crear una cadena dinámica para el campo `~name-str`
   setup-entity  ;
   \ Inicia la definición de propiedades de un ente.  Esta palabra se
@@ -1010,7 +1010,7 @@ defer 'entities  ( -- a )
 : (:attributes)  ( a xt -- )
   over ~init-xt !  \ Conservar la dirección de ejecución en la ficha del ente
   ['] default-description over ~description-xt !  \ Poner la descripción predeterminada
-  postpone literal  ;  \ Compilar el identificador de ente en la palabra de descripción recién creada, para que `[:description]` lo guarde en `self%` en tiempo de ejecución
+  postpone literal  ;  \ Compilar el identificador de ente en la palabra de descripción recién creada, para que `[:description]` lo guarde en `self~` en tiempo de ejecución
   \ Operaciones preliminares para la definición de atributos de un ente.
   \ Esta palabra solo se ejecuta una vez para cada ente,
   \ al inicio de la compilación del código de la palabra
@@ -1077,7 +1077,7 @@ false value sight
   \ (o el propio ente escenario); se usa en las palabras de
   \ descripción de escenarios
 
-: [:description]  ( a -- )  to self%  ;
+: [:description]  ( a -- )  to self~  ;
   \ Operaciones previas a la ejecución de la descripción de un ente.
   \ Esta palabra se ejecutará al comienzo de la palabra de descripción.
   \ El identificador del ente está en la pila porque se compiló con
@@ -1096,7 +1096,7 @@ false value sight
   \ Hace dos operaciones: 1) Conservar la dirección de ejecución en la
   \ ficha del ente; 2) Compilar el identificador de ente en la palabra
   \ de descripción recién creada, para que `[:description]` lo guarde
-  \ en `self%` en tiempo de ejecución.
+  \ en `self~` en tiempo de ejecución.
 
 : :description  ( a -- )
   :noname noname-roll  (:description)  postpone [:description]  ;
@@ -1119,7 +1119,7 @@ false value sight
   [debug-map] [if]  dup  [then]
   name ^uppercase location-name-color paragraph
   [debug-map] [if]
-    entity># location-01% entity># - 1+ ."  [ location #" . ." ]"
+    entity># location-01~ entity># - 1+ ."  [ location #" . ." ]"
   [then]  ;
   \ Imprime el nombre de un ente escenario, como cabecera de su descripción.
   \ XXX TODO -- añadir el artículo correspondiente o no, dependiendo
@@ -1153,7 +1153,7 @@ false value sight
   [else]
     \ XXX TODO -- terminar; no usado
     over is-direction? 2 and +
-    swap exits% = 4 and +
+    swap exits~ = 4 and +
   [then]  ;
   \ Convierte un ente _a_ en el tipo de descripción _u_ que requiere:
   \ 4=salida, 2=dirección, 1=escenario, 0=otros, 3=¡error!.  Un

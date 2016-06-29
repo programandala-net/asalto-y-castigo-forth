@@ -11,7 +11,7 @@
 
 \ ==============================================================
 
-: success?  ( -- f )  location-51% am-i-there?  ;
+: success?  ( -- f )  location-51~ am-i-there?  ;
   \ ¿Ha completado con éxito su misión el protagonista?
 
 false [if]
@@ -150,7 +150,7 @@ false [if]
 : the-sad-end  ( -- )
   s" Los sajones"
   \ XXX TODO -- añadir también el siguiente escenario, el lago
-  location-10% am-i-there? if
+  location-10~ am-i-there? if
     \ XXX TODO -- ampliar y variar
     comma+
     s" que te han visto entrar," s&
