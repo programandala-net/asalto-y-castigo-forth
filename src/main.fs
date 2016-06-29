@@ -12,7 +12,7 @@
 
 \ Version: see file <version.fs>.
 
-\ Last update: 201606291159
+\ Last update: 201606291215
 
 \ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
 
@@ -46,11 +46,11 @@ include requirements.fs
 \ Listas de palabras
 
 wordlist constant game-wordlist
-  \ Palabras del programa (no de la aventura)
+  \ Palabras del programa (no del vocabulario del jugador).
 
 : restore-wordlists  ( -- )
   only forth game-wordlist dup >order set-current  ;
-  \ Restaura las listas a su estado habitual.
+  \ Restaura las listas de palabras a su estado habitual.
 
 restore-wordlists
 
@@ -58,88 +58,12 @@ restore-wordlists
 \ Meta
 
 include version.fs
-
-: press-key  ( -- ) key drop  ;
-
-\ Indicadores para depuración
-
-false value [debug] immediate
-  \ ¿Depuración global?
-false value [debug-init] immediate
-  \ ¿Depurar la inicialización?
-false value [debug-parsing] immediate
-  \ ¿Depurar el analizador?
-false value [debug-parsing-result] immediate
-  \ ¿Mostrar el resultado del analizador?
-false value [debug-filing] immediate
-  \ ¿Depurar operaciones de ficheros?
-false value [debug-do-exits] immediate
-  \ ¿Depurar la acción `do-exits`?
-false value [debug-catch] immediate
-  \ ¿Depurar `catch` y `throw`?
-false value [debug-save] immediate
-  \ ¿Depurar la grabación de partidas?
-true value [debug-info] immediate
-  \ ¿Mostrar info sobre el presto de comandos?
-false value [debug-pause] immediate
-  \ ¿Hacer pausa en puntos de depuración?
-false value [debug-map] immediate
-  \ ¿Mostrar el número de escenario del juego original?
-
-\ Indicadores para poder elegir alternativas que aún son experimentales
-
-true dup constant [old-method] immediate
-      0= constant [new-method] immediate
-
-\ Títulos de sección
-
-: depth-warning  ( -- )
-  cr ." Aviso: La pila no está vacía. Contenido: "  ;
-
-: ?.s  ( -- )
-  depth if  depth-warning .s cr  press-key  then  ;
-  \ Imprime el contenido de la pila si no está vacía.
-
-: fatal-error  ( f ca len -- )
-  rot if  ." Error fatal: " type cr bye  else  2drop  then  ;
-  \ Si el indicador _f_ es distinto de cero,
-  \ informa de un error _ca len_ y sale del sistema.
-  \ XXX TODO -- no usado
-
-: .stack  ( -- )
-  [false] [if]  \ XXX OLD
-    ." Pila" depth
-    if    ." :" .s ." ( " depth . ." )"
-    else  ."  vacía."  then
-  [else]  \ XXX NEW
-    depth if  cr ." Pila: " .s cr  then
-  [then]  ;
-  \ Imprime el estado de la pila.
-
-: .sb  ( -- )
-  ." Espacio para cadenas:" sb# ?  ;
-  \ Imprime el estado del almacén circular de cadenas.
-
-: .system-status  ( -- )
-  ( .sb ) .stack  ;
-  \ Muestra el estado del sistema.
-
-: .debug-message  ( ca len -- )
-  dup if  cr type cr  else  2drop  then  ;
-  \ Imprime el mensaje del punto de chequeo, si no está vacío.
-
-: debug-pause  ( -- )
-  [debug-pause] [if]  depth ?? press-key [then]  ;
-  \ Pausa tras mostrar la información de depuración.
-
-defer debug-color
-
-: debug  ( ca len -- )
-  debug-color .debug-message .system-status debug-pause  ;
-  \ Punto de chequeo: imprime un mensaje y muestra el estado del sistema.
+include debug_tools.fs
 
 \ ==============================================================
 \ Vectores
+
+\ XXX TODO -- mover
 
 defer protagonist%  ( -- a )  \ Ente protagonista.
 defer sword%        ( -- a )  \ Ente espada.
@@ -210,6 +134,7 @@ include intro.fs
   ;
   \ Condiciones especiales de inicio, para forzar situaciones
   \ concretas de la trama en el arranque y así probar el código.
+  \ XXX TMP -- para depuración
 
 : init-game  ( -- )
   randomize
@@ -227,21 +152,25 @@ include intro.fs
 ' (adventure) is adventure
   \ Bucle del juego.
 
-: run  ( -- )  init-once adventure farewell  ;
-  \ Arranque del juego.
+\ ==============================================================
+\ Arranque
 
 forth-wordlist set-current
 
-\ ==============================================================
+: run  ( -- )  init-once adventure farewell  ;
+  \ Arranque del juego.
 
-cr .( Escribe RUN para jugar)  \ XXX TMP
+cr .( Escribe RUN para jugar) cr  \ XXX TMP
+
+\ ==============================================================
+\ Depuración
 
 : i0  ( -- )
-  \ XXX TMP -- hace toda la inicialización; para depuración.
   init-once init-game
   s" Datos preparados." paragraph  ;
+  \ XXX TMP -- hace toda la inicialización; para depuración
 
 \ i0 cr  \ XXX TMP -- para depuración
 
-\ include ../debug/checks.fs
+\ include debug_tests.fs
 
