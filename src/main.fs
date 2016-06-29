@@ -12,7 +12,7 @@
 
 \ Version: see file <version.fs>.
 
-\ Last update: 201606291126
+\ Last update: 201606291134
 
 \ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
 
@@ -53,12 +53,6 @@ wordlist constant game-wordlist
   \ Restaura las listas a su estado habitual.
 
 restore-wordlists
-
-wordlist constant player-wordlist
-  \ Palabras del jugador.
-
-wordlist constant restore-wordlist
-  \ Palabras de restauración de una partida.
 
 \ ==============================================================
 \ Meta

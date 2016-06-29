@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606282029
+\ Last update: 201606291134
 
 \ Note: The comments of the code are in Spanish.
 
@@ -2394,6 +2394,9 @@ variable game-file-id
   \ (sobreescribiendo otro que tuviera el mismo nombre).
   \ XXX TODO -- mensaje de error definitivo
 
+wordlist constant restore-wordlist
+  \ Palabras de restauración de una partida.
+
 : read-game-file  ( ca len -- )
   restore-wordlist 1 set-order  included  restore-wordlists  ;
   \ Lee el fichero de configuración de nombre _ca len_.
@@ -2589,7 +2592,7 @@ restore-wordlists
   \ Continúa el juego en el punto que se acaba de restaurar.
 
 : load-the-game  ( ca len -- )
-  \ main-complement{forbidden} XXX TODO
+  \ main-complement{forbidden}  \ XXX TODO
   restore-wordlist 1 set-order
   [debug-filing] [??] ~~
   \ included  \ XXX FIXME -- el sistema estalla
@@ -2626,7 +2629,8 @@ restore-wordlists
   [debug-filing] [??] ~~
   continue-the-loaded-game  ;
   \ Acción de salvar la partida.
-  \ XXX FIXME -- no funciona bien
+  \ XXX FIXME -- no funciona bien?
+  \ XXX TODO -- probarlo
 
 \ ==============================================================
 \ Acciones de configuración
