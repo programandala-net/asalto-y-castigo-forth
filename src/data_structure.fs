@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606291717
+\ Last update: 201606291902
 
 \ Note: The comments of the code are in Spanish.
 
@@ -120,7 +120,7 @@ bitfield: ~is-container  \ ¿Es un contenedor?
 
 [then]
 
-constant /entity  \ Tamaño de cada ficha
+to /entity  \ Tamaño de cada ficha
 
 \ ==============================================================
 \ Interfaz de campos
@@ -909,42 +909,6 @@ create 'articles  \ Tabla índice de los artículos
 \ ==============================================================
 \ Herramientas para crear las fichas de la base de datos
 
-\ No es posible reservar el espacio necesario para las fichas
-\ hasta saber cuántas necesitaremos (a menos que usáramos una
-\ estructura un poco más sofisticada con fichas separadas pero
-\ enlazadas entre sí, muy habitual también y fácil de crear).  Por
-\ ello la palabra "'entities" (que devuelve la dirección de la
-\ base de datos) se crea como un vector, para asignarle
-\ posteriormente su dirección de ejecución.  Esto permite crear un
-\ nuevo ente fácilmente, sin necesidad de asignar previamente el
-\ número de fichas a una constante.
-
-defer 'entities  ( -- a )
-  \ Dirección de los entes.
-
-0 value #entities
-  \ Contador de entes.
-
-: #>entity  ( u -- a )  /entity * 'entities +  ;
-  \ Devuelve la dirección de la ficha de un ente a partir de su número ordinal
-  \ (el número del primer ente es el cero).
-
-: entity>#  ( a -- u )  'entities - /entity /  ;
-  \ Devuelve el número ordinal de un ente (el primero es el cero)
-  \ a partir de la dirección de su ficha.
-
-: entity:  ( "name" -- )
-  create
-    #entities ,  \ Guardar la cuenta en el cuerpo de la palabra recién creada
-    #entities 1+ to #entities  \ Actualizar el contador
-  does>  ( pfa -- a )
-    @ #>entity  ;  \ El identificador devolverá la dirección de su ficha
-  \ Crea un nuevo identificador de ente,
-  \ que devolverá la dirección de su ficha.
-
-: erase-entity  ( a -- )  /entity erase  ;
-  \ Rellena con ceros la ficha de un ente.
-
 : backup-entity  ( a -- x0 x1 x2 x3 x4 x5 x6 )
   >r
   r@ description-xt
@@ -1036,18 +1000,29 @@ defer 'entities  ( -- a )
 
 : ;attributes  ( sys-col -- )  postpone ;  ;  immediate
 
-: init-entity  ( a -- )
-  [debug-init] [if]  s" Inicio de INIT-ENTITY" debug dup entity># cr ." Entity=" .  [then]
+' noop is init-entity
+  \ XXX TMP
+  \ XXX TODO -- mejorar el sistema de inicialización de entes en
+  \ Flibustre, para hacerlo tan potente como el de _Asalto y castigo_.
+
+: custom-init-entity ( a -- )
+  [debug-init] [if]
+    s" Inicio de `custom-init-entity`" debug dup entity># cr ." Entity=" .
+  [then]
   init-xt
-  [debug-init] [if]  s" Antes de EXECUTE" debug  [then]
+  [debug-init]
+    [if]  s" Antes de `execute`" debug
+  [then]
   execute
-  [debug-init] [if]  s" Final de INIT-ENTITY" debug  [then]  ;
+  [debug-init] [if]
+    s" Final de `custom-init-entity`" debug
+  [then]  ;
   \ Restaura la ficha de un ente a su estado original.
 
 : init-entities  ( -- )
   #entities 0 do
     [debug-init] [if]  i cr ." about to init entity #" .  [then]
-    i #>entity init-entity
+    i #>entity custom-init-entity
     \ i #>entity full-name space type ?.s  \ XXX INFORMER
   loop  ;
   \ Restaura las fichas de los entes a su estado original.

@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606291714
+\ Last update: 201606291900
 
 \ Note: Some comments of the code are in Spanish.
 
@@ -87,6 +87,7 @@ require galope/xy.fs                          \ current cursor position
 
 require flibustre/different-question.fs  \ `different?`
 require flibustre/error_codes.fs
+require flibustre/entity.fs
 
 \ ----------------------------------------------
 \ Other
