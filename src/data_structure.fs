@@ -5,44 +5,42 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606282109
+\ Last update: 201606291717
 
 \ Note: The comments of the code are in Spanish.
 
 \ ==============================================================
 \ Estructura de datos de los entes
 
-\ Denominamos «ente» a cualquier componente del mundo virtual
-\ del juego que es manipulable por el programa.  «Entes» por
-\ tanto son los objetos, manipulables o no por el jugador; los
-\ personajes, interactivos o no; los lugares; y el propio
-\ personaje protagonista.
+\ Denominamos «ente» a cualquier componente del mundo virtual del
+\ juego que es manipulable por el programa.  «Entes» por tanto son los
+\ objetos, manipulables o no por el jugador; los personajes,
+\ interactivos o no; los lugares; y el propio personaje protagonista.
 \
-\ Cada ente tiene una ficha en la base de datos del juego.  La
-\ base de datos es una zona de memoria dividida en partes
-\ iguales, una para cada ficha. El identificador de cada ficha es
-\ una palabra que al ejecutarse deja en la pila la dirección de
-\ memoria donde se encuentra la ficha.
+\ Cada ente tiene una ficha en la base de datos del juego.  La base de
+\ datos es una zona de memoria dividida en partes iguales, una para
+\ cada ficha. El identificador de cada ficha es una palabra que al
+\ ejecutarse deja en la pila la dirección de memoria donde se
+\ encuentra la ficha.
 \
-\ Los campos de la base de datos, como es habitual en Forth en
-\ este tipo de estructuras, son palabras que suman el
-\ desplazamiento adecuado a la dirección base de la ficha, que
-\ reciben en la pila, apuntando así a la dirección de memoria que
-\ contiene el campo correspondiente.
+\ Los campos de la base de datos, como es habitual en Forth en este
+\ tipo de estructuras, son palabras que suman el desplazamiento
+\ adecuado a la dirección base de la ficha, que reciben en la pila,
+\ apuntando así a la dirección de memoria que contiene el campo
+\ correspondiente.
 \
 \ Salvo los campos buleanos, que ocupan un solo bitio gracias a las
 \ palabras creadas para ello, todos los demás campos ocupan una celda.
-\ La «celda» es un concepto de ANS Forth: es la unidad en que se mide el
-\ tamaño de cada elemento de la pila, y capaz por tanto de contener una
-\ dirección de memoria.  En los sistemas Forth de 8 o 16 bitios una celda
-\ equivale a un valor de 16 bitios; en los sistemas Forth de 32 bitios,
-\ como Gforth, una celda equivale a un valor de 32 bitios.
+\ La «celda» es un concepto de ANS Forth: es la unidad en que se mide
+\ el tamaño de cada elemento de la pila, y capaz por tanto de contener
+\ una dirección de memoria.  En los sistemas Forth de 8 o 16 bitios
+\ una celda equivale a un valor de 16 bitios; en los sistemas Forth de
+\ 32 bitios, como Gforth, una celda equivale a un valor de 32 bitios.
 \
-\ Para facilitar la legibilidad, los nombres de los campos empiezan con
-\ el signo de tilde, «~»; los que contienen datos buleanos terminan con
-\ una interrogación, «?»;  los que contienen direcciones de ejecución
-\ terminan con «-xt»; los que contienen códigos de error terminan con
-\ «-error#».
+\ Para facilitar la legibilidad, los nombres de los campos empiezan
+\ con el signo de tilde, «~»; los que contienen direcciones de
+\ ejecución terminan con «-xt»; los que contienen códigos de error
+\ terminan con «-error#».
 
 0 \ Valor inicial de desplazamiento para el primer campo
 
@@ -69,7 +67,7 @@ field: ~previous-location  \ Ídem para el ente que fue la localización antes d
 field: ~owner  \ Identificador del ente al que pertenece «legalmente» o «de hecho», independientemente de su localización.
 
 \ Direcciones de ejecución de las tramas de escenario
-field: ~can-i-enter-location?-xt  \ Trama previa a la entrada al escenario
+field: ~can-i-enter-location-xt  \ Trama previa a la entrada al escenario
 field: ~before-describing-location-xt  \ Trama de entrada antes de describir el escenario
 field: ~after-describing-location-xt  \ Trama de entrada tras describir el escenario
 field: ~after-listing-entities-xt  \ Trama de entrada tras listar los entes presentes
@@ -87,26 +85,26 @@ field: ~in-exit  \ Ente de destino hacia dentro
 
 \ Indicadores
 bitfields
-  bitfield: ~has-definite-article?  \ ¿El artículo de su nombre debe ser siempre el artículo definido?
-  bitfield: ~has-feminine-name?  \ ¿El género gramatical de su nombre es femenino?
-  bitfield: ~has-no-article?  \ ¿Su nombre no debe llevar artículo?
-  bitfield: ~has-personal-name?  \ ¿Su nombre es un nombre propio?
-  bitfield: ~has-plural-name?  \ ¿Su nombre es plural?
-  bitfield: ~is-animal?  \ ¿Es animal?
-  bitfield: ~is-character?  \ ¿Es un personaje?
-  bitfield: ~is-cloth?  \ ¿Es una prenda que puede ser puesta y quitada?
-  bitfield: ~is-decoration?  \ ¿Forma parte de la decoración de su localización?
-  bitfield: ~is-global-indoor?  \ ¿Es global (común) en los escenarios interiores?
-  bitfield: ~is-global-outdoor?  \ ¿Es global (común) en los escenarios al aire libre?
-  bitfield: ~is-not-listed?  \ ¿No debe ser listado (entre los entes presentes o en inventario)?
-  bitfield: ~is-human?  \ ¿Es humano?
-  bitfield: ~is-light?  \ ¿Es una fuente de luz que puede ser encendida?
-  bitfield: ~is-lit?  \ ¿El ente, que es una fuente de luz que puede ser encendida, está encendido?
-  bitfield: ~is-location?  \ ¿Es un escenario?
-  bitfield: ~is-indoor-location?  \ ¿Es un escenario interior (no exterior, al aire libre)?
-  bitfield: ~is-open?  \ ¿Está abierto?
-  bitfield: ~is-vegetal?  \ ¿Es vegetal?
-  bitfield: ~is-worn?  \ ¿Siendo una prenda, está puesta?
+  bitfield: ~has-definite-article  \ ¿El artículo de su nombre debe ser siempre el artículo definido?
+  bitfield: ~has-feminine-name  \ ¿El género gramatical de su nombre es femenino?
+  bitfield: ~has-no-article  \ ¿Su nombre no debe llevar artículo?
+  bitfield: ~has-personal-name  \ ¿Su nombre es un nombre propio?
+  bitfield: ~has-plural-name  \ ¿Su nombre es plural?
+  bitfield: ~is-animal  \ ¿Es animal?
+  bitfield: ~is-character  \ ¿Es un personaje?
+  bitfield: ~is-cloth  \ ¿Es una prenda que puede ser puesta y quitada?
+  bitfield: ~is-decoration  \ ¿Forma parte de la decoración de su localización?
+  bitfield: ~is-global-indoor  \ ¿Es global (común) en los escenarios interiores?
+  bitfield: ~is-global-outdoor  \ ¿Es global (común) en los escenarios al aire libre?
+  bitfield: ~is-not-listed  \ ¿No debe ser listado (entre los entes presentes o en inventario)?
+  bitfield: ~is-human  \ ¿Es humano?
+  bitfield: ~is-light  \ ¿Es una fuente de luz que puede ser encendida?
+  bitfield: ~is-lit  \ ¿El ente, que es una fuente de luz que puede ser encendida, está encendido?
+  bitfield: ~is-location  \ ¿Es un escenario?
+  bitfield: ~is-indoor-location  \ ¿Es un escenario interior (no exterior, al aire libre)?
+  bitfield: ~is-open  \ ¿Está abierto?
+  bitfield: ~is-vegetal  \ ¿Es vegetal?
+  bitfield: ~is-worn  \ ¿Siendo una prenda, está puesta?
 field: ~flags-0  \ Campo para albergar los indicadores anteriores
 
 [false] [if]  \ XXX OLD -- campos que aún no se usan.:
@@ -115,10 +113,10 @@ field: ~times-closed  \ Contador de veces que ha sido cerrado.
 field: ~desambiguation-xt  \ Dirección de ejecución de la palabra que desambigua e identifica el ente
 field: ~stamina  \ Energía de los entes vivos
 
-bitfield: ~is-lock?  \ ¿Está cerrado con llave?
-bitfield: ~is-openable?  \ ¿Es abrible?
-bitfield: ~is-lockable?  \ ¿Es cerrable con llave?
-bitfield: ~is-container?  \ ¿Es un contenedor?
+bitfield: ~is-lock  \ ¿Está cerrado con llave?
+bitfield: ~is-openable  \ ¿Es abrible?
+bitfield: ~is-lockable  \ ¿Es cerrable con llave?
+bitfield: ~is-container  \ ¿Es un contenedor?
 
 [then]
 
@@ -192,38 +190,38 @@ last-exit> cell+ first-exit> - constant /exits
 : direction  ( a -- u )  ~direction @  ;
 : familiar  ( a -- u )  ~familiar @  ;
 : flags-0  ( a -- x )  ~flags-0 @  ;
-: has-definite-article?  ( a -- f )  ~has-definite-article? bit@  ;
-: has-feminine-name?  ( a -- f )  ~has-feminine-name? bit@  ;
+: has-definite-article?  ( a -- f )  ~has-definite-article bit@  ;
+: has-feminine-name?  ( a -- f )  ~has-feminine-name bit@  ;
 : has-masculine-name?  ( a -- f )  has-feminine-name? 0=  ;
-: has-no-article?  ( a -- f )  ~has-no-article? bit@  ;
-: has-personal-name?  ( a -- f )  ~has-personal-name? bit@  ;
-: has-plural-name?  ( a -- f )  ~has-plural-name? bit@  ;
+: has-no-article?  ( a -- f )  ~has-no-article bit@  ;
+: has-personal-name?  ( a -- f )  ~has-personal-name bit@  ;
+: has-plural-name?  ( a -- f )  ~has-plural-name bit@  ;
 : has-singular-name?  ( a -- f )  has-plural-name? 0=  ;
 : init-xt  ( a -- xt )  ~init-xt @  ;
-: is-animal?  ( a -- f )  ~is-animal? bit@  ;
-: is-character?  ( a -- f )  ~is-character? bit@  ;
-: is-cloth?  ( a -- f )  ~is-cloth? bit@  ;
-: is-decoration?  ( a -- f )  ~is-decoration? bit@  ;
-: is-global-indoor?  ( a -- f )  ~is-global-indoor? bit@  ;
-: is-global-outdoor?  ( a -- f )  ~is-global-outdoor? bit@  ;
-: is-human?  ( a -- f )  ~is-human? bit@  ;
-: is-light?  ( a -- f )  ~is-light? bit@  ;
-: is-not-listed?  ( a -- f )  ~is-not-listed? bit@  ;
+: is-animal?  ( a -- f )  ~is-animal bit@  ;
+: is-character?  ( a -- f )  ~is-character bit@  ;
+: is-cloth?  ( a -- f )  ~is-cloth bit@  ;
+: is-decoration?  ( a -- f )  ~is-decoration bit@  ;
+: is-global-indoor?  ( a -- f )  ~is-global-indoor bit@  ;
+: is-global-outdoor?  ( a -- f )  ~is-global-outdoor bit@  ;
+: is-human?  ( a -- f )  ~is-human bit@  ;
+: is-light?  ( a -- f )  ~is-light bit@  ;
+: is-not-listed?  ( a -- f )  ~is-not-listed bit@  ;
 : is-listed?  ( a -- f )  is-not-listed? 0=  ;
-: is-lit?  ( a -- f )  ~is-lit? bit@  ;
+: is-lit?  ( a -- f )  ~is-lit bit@  ;
 : is-not-lit?  ( a -- f )  is-lit? 0=  ;
-: is-location?  ( a -- f )  ~is-location? bit@  ;
-: is-indoor-location?  ( a -- f )  dup is-location? swap ~is-indoor-location? bit@ and  ;
+: is-location?  ( a -- f )  ~is-location bit@  ;
+: is-indoor-location?  ( a -- f )  dup is-location? swap ~is-indoor-location bit@ and  ;
 : is-outdoor-location?  ( a -- f )  is-indoor-location? 0=  ;
-: is-open?  ( a -- f )  ~is-open? bit@  ;
+: is-open?  ( a -- f )  ~is-open bit@  ;
 : is-closed?  ( a -- f )  is-open? 0=  ;
 : name-str  ( a1 -- a2 )  ~name-str @  ;
 : times-open  ( a -- u )  ~times-open @  ;
 : owner  ( a1 -- a2 )  ~owner @  ;
-: is-vegetal?  ( a -- f )  ~is-vegetal? bit@  ;
-: is-worn?  ( a -- f )  ~is-worn? bit@  ;
+: is-vegetal?  ( a -- f )  ~is-vegetal bit@  ;
+: is-worn?  ( a -- f )  ~is-worn bit@  ;
 : location  ( a1 -- a2 )  ~location @  ;
-: can-i-enter-location?-xt  ( a -- xt )  ~can-i-enter-location?-xt @  ;
+: can-i-enter-location-xt  ( a -- xt )  ~can-i-enter-location-xt @  ;
 : before-describing-location-xt  ( a -- xt )  ~before-describing-location-xt @  ;
 : after-describing-location-xt  ( a -- xt )  ~after-describing-location-xt @  ;
 : after-listing-entities-xt  ( a -- xt )  ~after-listing-entities-xt @  ;
@@ -245,32 +243,32 @@ last-exit> cell+ first-exit> - constant /exits
 
 : conversations++  ( a -- )  ~conversations ?++  ;
 : familiar++  ( a -- )  ~familiar ?++  ;
-: has-definite-article  ( a -- )  ~has-definite-article? bit-on  ;
-: has-feminine-name  ( a -- )  ~has-feminine-name? bit-on  ;
-: has-masculine-name  ( a -- )  ~has-feminine-name? bit-off  ;
-: has-no-article  ( a -- )  ~has-no-article? bit-on  ;
-: has-personal-name  ( a -- )  ~has-personal-name? bit-on  ;
-: has-plural-name  ( a -- )  ~has-plural-name? bit-on  ;
-: has-singular-name  ( a -- )  ~has-plural-name? bit-off  ;
-: be-character  ( a -- )  ~is-character? bit-on  ;
-: be-animal  ( a -- )  ~is-animal? bit-on  ;
-: be-light  ( a -- )  ~is-light? bit-on  ;
-: be-not-listed  ( a -- f )  ~is-not-listed? bit-on  ;
-: be-lit  ( a -- )  ~is-lit? bit-on  ;
-: be-not-lit  ( a -- )  ~is-lit? bit-off  ;
-: be-cloth  ( a -- )  ~is-cloth? bit-on  ;
-: be-decoration  ( a -- )  ~is-decoration? bit-on  ;
-: be-global-indoor  ( a -- )  ~is-global-indoor? bit-on  ;
-: be-global-outdoor  ( a -- )  ~is-global-outdoor? bit-on  ;
-: be-human  ( a -- )  ~is-human? bit-on  ;
-: be-location  ( a -- )  ~is-location? bit-on  ;
-: be-indoor-location  ( a -- )  dup be-location ~is-indoor-location? bit-on  ;
-: be-outdoor-location  ( a -- )  dup be-location ~is-indoor-location? bit-off  ;
-: be-open  ( a -- )  ~is-open? bit-on  ;
-: be-closed  ( a -- )  ~is-open? bit-off  ;
+: has-definite-article  ( a -- )  ~has-definite-article bit-on  ;
+: has-feminine-name  ( a -- )  ~has-feminine-name bit-on  ;
+: has-masculine-name  ( a -- )  ~has-feminine-name bit-off  ;
+: has-no-article  ( a -- )  ~has-no-article bit-on  ;
+: has-personal-name  ( a -- )  ~has-personal-name bit-on  ;
+: has-plural-name  ( a -- )  ~has-plural-name bit-on  ;
+: has-singular-name  ( a -- )  ~has-plural-name bit-off  ;
+: be-character  ( a -- )  ~is-character bit-on  ;
+: be-animal  ( a -- )  ~is-animal bit-on  ;
+: be-light  ( a -- )  ~is-light bit-on  ;
+: be-not-listed  ( a -- f )  ~is-not-listed bit-on  ;
+: be-lit  ( a -- )  ~is-lit bit-on  ;
+: be-not-lit  ( a -- )  ~is-lit bit-off  ;
+: be-cloth  ( a -- )  ~is-cloth bit-on  ;
+: be-decoration  ( a -- )  ~is-decoration bit-on  ;
+: be-global-indoor  ( a -- )  ~is-global-indoor bit-on  ;
+: be-global-outdoor  ( a -- )  ~is-global-outdoor bit-on  ;
+: be-human  ( a -- )  ~is-human bit-on  ;
+: be-location  ( a -- )  ~is-location bit-on  ;
+: be-indoor-location  ( a -- )  dup be-location ~is-indoor-location bit-on  ;
+: be-outdoor-location  ( a -- )  dup be-location ~is-indoor-location bit-off  ;
+: be-open  ( a -- )  ~is-open bit-on  ;
+: be-closed  ( a -- )  ~is-open bit-off  ;
 : times-open++  ( a -- )  ~times-open ?++  ;
-: be-worn  ( a -- )  ~is-worn? bit-on  ;
-: be-not-worn  ( a -- )  ~is-worn? bit-off  ;
+: be-worn  ( a -- )  ~is-worn bit-on  ;
+: be-not-worn  ( a -- )  ~is-worn bit-off  ;
 : visits++  ( a -- )  ~visits ?++  ;
 
 \ ----------------------------------------------
@@ -951,7 +949,7 @@ defer 'entities  ( -- a )
   >r
   r@ description-xt
   r@ init-xt
-  r@ can-i-enter-location?-xt
+  r@ can-i-enter-location-xt
   r@ after-describing-location-xt
   r@ after-listing-entities-xt
   r@ before-describing-location-xt
@@ -968,7 +966,7 @@ defer 'entities  ( -- a )
   r@ ~before-describing-location-xt !
   r@ ~after-listing-entities-xt !
   r@ ~after-describing-location-xt !
-  r@ ~can-i-enter-location?-xt !
+  r@ ~can-i-enter-location-xt !
   r@ ~init-xt !
   r> ~description-xt !  ;
   \ Restaura los datos de un ente _a_

@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606281939
+\ Last update: 201606291716
 
 \ Note: The comments of the code are in Spanish.
 
@@ -71,7 +71,7 @@
   \ actualizar el puntero al ente, usado para aligerar la sintaxis.
 
 : (:can-i-enter-location?)  ( a xt -- )
-  over ~can-i-enter-location?-xt !
+  over ~can-i-enter-location-xt !
   postpone literal  ;
   \ Operaciones preliminares para la definición de la trama previa
   \ _xt_ de entrada a un ente escenario _a_.  Esta palabra solo se
@@ -234,7 +234,7 @@ true [if]
   \ Entra en un escenario.
 
 : enter-location?  ( a -- f )
-  can-i-enter-location?-xt ?dup if  execute  else  true  then  ;
+  can-i-enter-location-xt ?dup if  execute  else  true  then  ;
   \ Ejecuta la trama previa a la entrada a un ente escenario _a_, que
   \ devolverá un indicador _f_ de que puede entrarse en el escenario;
   \ si esta trama no está definida para el ente, el indicador será
