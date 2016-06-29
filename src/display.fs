@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606281829
+\ Last update: 201606291155
 
 \ Note: The comments of the code are in Spanish.
 
@@ -102,8 +102,8 @@ variable action-error-paper
   command-prompt-paper command-prompt-ink @colors  ;
   \ Pone el color de texto del presto de entrada de comandos.
 
-: debug-color  ( -- )
-  debug-paper debug-ink @colors  ;
+:noname  ( -- )
+  debug-paper debug-ink @colors  ; is debug-color
   \ Pone el color de texto usado en los mensajes de depuración.
 
 : background-color  ( -- )
