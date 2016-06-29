@@ -12,7 +12,7 @@
 
 \ Version: see file <version.fs>.
 
-\ Last update: 201606291714
+\ Last update: 201606292008
 
 \ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
 
@@ -65,15 +65,6 @@ include debug_tools.fs
 
 \ XXX TODO -- mover
 
-defer protagonist~  ( -- a )  \ Ente protagonista.
-defer sword~        ( -- a )  \ Ente espada.
-defer stone~        ( -- a )  \ Ente piedra.
-defer torch~        ( -- a )  \ Ente antorcha.
-defer leader~       ( -- a )  \ Ente líder de los refugiados.
-defer location-01~  ( -- a )  \ Primer ente escenario.
-defer exits~        ( -- a )  \ Ente salidas.
-defer log~          ( -- a )  \ Ente tronco.
-
 defer list-exits  ( -- )
   \ Crea e imprime la lista de salidas.
 
@@ -89,8 +80,13 @@ include strings.fs
 include random_texts.fs
 \ include sound.fs  \ XXX TODO -- not used yet
 include printing.fs
+
 include data_structure.fs
+include data_basic_interface.fs
 include entity_identifiers.fs
+include data_advanced_interface.fs
+include data_tools.fs
+
 include location_connectors.fs
 include data.fs
 include action_errors.fs

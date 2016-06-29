@@ -33,17 +33,25 @@
 \ irrelevante.  Si están agrupados por tipos y en orden
 \ alfabético es solo por claridad.
 
-entity ulfius~
-' ulfius~ is protagonist~  \ Actualizar el vector que apunta al ente protagonista
+\ ----------------------------------------------
+\ Ente protagonista
 
-\ Entes que son (seudo)personajes:
+entity ulfius~
+' ulfius~ alias protagonist~
+
+\ ----------------------------------------------
+\ Entes personaje
+
 entity ambrosio~
-entity (leader~) ' (leader~) is leader~
+\ entity (leader~) ' (leader~) is leader~
+entity leader~
 entity soldiers~
 entity refugees~
 entity officers~
 
-\ Entes que son objetos:
+\ ----------------------------------------------
+\ Entes objeto
+
 entity altar~
 entity arch~
 entity bed~
@@ -62,22 +70,31 @@ entity idol~
 entity key~
 entity lake~
 entity lock~
-entity (log~) ' (log~) is log~
+\ entity (log~) ' (log~) is log~
+entity log~
 entity piece~
 entity rags~
 entity ravine-wall~
 entity rocks~
 entity snake~
-entity (stone~) ' (stone~) is stone~
-entity (sword~) ' (sword~) is sword~
+\ entity (stone~) ' (stone~) is stone~
+entity stone~
+\ entity (sword~) ' (sword~) is sword~
+entity sword~
 entity table~
 entity thread~
-entity (torch~) ' (torch~) is torch~
+\ entity (torch~) ' (torch~) is torch~
+entity torch~
 entity wall~  \ XXX TODO -- inconcluso
 entity waterfall~
 
-\ Entes escenario (en orden de número):
-entity (location-01~) ' (location-01~) is location-01~
+\ ----------------------------------------------
+\ Entes escenario
+
+\ En orden de número, según el mapa del programa original.
+
+\ entity (location-01~) ' (location-01~) is location-01~  \ XXX OLD
+entity location-01~  \ XXX NEW
 entity location-02~
 entity location-03~
 entity location-04~
@@ -129,17 +146,23 @@ entity location-49~
 entity location-50~
 entity location-51~
 
-\ Entes globales:
+\ ----------------------------------------------
+\ Entes globales
+
 entity sky~
 entity floor~
 entity ceiling~
 entity clouds~
 entity cave~  \ XXX TODO -- inconcluso
 
+\ ----------------------------------------------
 \ Entes virtuales
-\ (necesarios para la ejecución de algunos comandos):
+
+\ Son necesarios para algunos comandos.
+
 entity inventory~
-entity (exits~)  ' (exits~) is exits~
+\ entity (exits~)  ' (exits~) is exits~  \ XXX OLD
+entity exits~  \ XXX NEW
 entity north~
 entity south~
 entity east~
