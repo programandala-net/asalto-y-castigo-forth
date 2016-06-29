@@ -12,7 +12,7 @@
 
 \ Version: see file <version.fs>.
 
-\ Last update: 201606291143
+\ Last update: 201606291159
 
 \ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
 
@@ -100,35 +100,6 @@ true dup constant [old-method] immediate
   depth if  depth-warning .s cr  press-key  then  ;
   \ Imprime el contenido de la pila si no está vacía.
 
-\ ==============================================================
-\ Vectores
-
-defer protagonist%  ( -- a )  \ Ente protagonista.
-defer sword%        ( -- a )  \ Ente espada.
-defer stone%        ( -- a )  \ Ente piedra.
-defer torch%        ( -- a )  \ Ente antorcha.
-defer leader%       ( -- a )  \ Ente líder de los refugiados.
-defer location-01%  ( -- a )  \ Primer ente escenario.
-defer exits%        ( -- a )  \ Ente salidas.
-defer log%          ( -- a )  \ Ente tronco.
-
-defer list-exits  ( -- )
-  \ Crea e imprime la lista de salidas.
-
-defer lock-found  ( -- )
-  \ Encontrar el candado.
-
-\ ==============================================================
-\ Códigos de error
-
-include error_codes.fs
-include config_variables.fs
-include plot_variables.fs
-include display.fs
-
-\ ==============================================================
-\ Depuración
-
 : fatal-error  ( f ca len -- )
   rot if  ." Error fatal: " type cr bye  else  2drop  then  ;
   \ Si el indicador _f_ es distinto de cero,
@@ -161,12 +132,36 @@ include display.fs
   [debug-pause] [if]  depth ?? press-key [then]  ;
   \ Pausa tras mostrar la información de depuración.
 
+defer debug-color
+
 : debug  ( ca len -- )
   debug-color .debug-message .system-status debug-pause  ;
   \ Punto de chequeo: imprime un mensaje y muestra el estado del sistema.
 
 \ ==============================================================
+\ Vectores
 
+defer protagonist%  ( -- a )  \ Ente protagonista.
+defer sword%        ( -- a )  \ Ente espada.
+defer stone%        ( -- a )  \ Ente piedra.
+defer torch%        ( -- a )  \ Ente antorcha.
+defer leader%       ( -- a )  \ Ente líder de los refugiados.
+defer location-01%  ( -- a )  \ Primer ente escenario.
+defer exits%        ( -- a )  \ Ente salidas.
+defer log%          ( -- a )  \ Ente tronco.
+
+defer list-exits  ( -- )
+  \ Crea e imprime la lista de salidas.
+
+defer lock-found  ( -- )
+  \ Encontrar el candado.
+
+\ ==============================================================
+
+include error_codes.fs
+include config_variables.fs
+include plot_variables.fs
+include display.fs
 include strings.fs
 include random_texts.fs
 \ include sound.fs  \ XXX TODO -- not used yet
