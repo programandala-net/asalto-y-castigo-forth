@@ -12,7 +12,7 @@
 
 \ Version: see file <version.fs>.
 
-\ Last update: 201606292008
+\ Last update: 201606292015
 
 \ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
 
@@ -87,7 +87,6 @@ include entity_identifiers.fs
 include data_advanced_interface.fs
 include data_tools.fs
 
-include location_connectors.fs
 include data.fs
 include action_errors.fs
 include lists.fs
