@@ -1,27 +1,21 @@
 #! /usr/bin/env gforth
 
 \ main.fs
-
+\
 \ This file is part of _Asalto y castigo_
 \ http://programandala.net/es.program.asalto_y_castigo.forth.html
-
-\ A text adventure in Spanish,
-\ written in Forth with Gforth.
-
-\ Project under development.
-
-\ Version: see file <version.fs>.
-
-\ Last update: 201606292015
-
-\ Copyright (C) 2011..2016 Marcos Cruz (programandala.net)
-
+\
+\ Author: Marcos Cruz (programandala.net), 2011..2016
+\
+\ Last update: 201606292052
+\
+\
 \ 'Asalto y castigo' is free software; you can redistribute
 \ it and/or modify it under the terms of the GNU General
 \ Public License as published by the Free Software
 \ Foundation; either version 2 of the License, or (at your
 \ option) any later version. See:
-
+\
 \ http://gnu.org/licenses/
 \ http://gnu.org/licenses/gpl-2.0.html
 
@@ -38,12 +32,8 @@
 \ http://baltasarq.info
 
 \ ==============================================================
-\ Requisitos
 
 include requirements.fs
-
-\ ==============================================================
-\ Listas de palabras
 
 wordlist constant game-wordlist
   \ Palabras del programa (no del vocabulario del jugador).
@@ -54,22 +44,8 @@ wordlist constant game-wordlist
 
 restore-wordlists
 
-\ ==============================================================
-\ Meta
-
 include version.fs
 include debug_tools.fs
-
-\ ==============================================================
-\ Vectores
-
-\ XXX TODO -- mover
-
-defer list-exits  ( -- )
-  \ Crea e imprime la lista de salidas.
-
-\ ==============================================================
-
 include config_variables.fs
 include plot_variables.fs
 include display.fs

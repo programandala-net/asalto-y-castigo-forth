@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606282022
+\ Last update: 201606292052
 
 \ Note: The comments of the code are in Spanish.
 
@@ -2150,6 +2150,8 @@ exits~ :attributes
   self~ be-global-outdoor
   self~ be-global-indoor
   ;attributes
+
+defer list-exits  ( -- )
 
 exits~ :description
   list-exits
