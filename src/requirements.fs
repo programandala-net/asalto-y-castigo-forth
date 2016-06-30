@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606291900
+\ Last update: 201606301026
 
 \ Note: Some comments of the code are in Spanish.
 
@@ -92,8 +92,9 @@ require flibustre/entity.fs
 \ ----------------------------------------------
 \ Other
 
-require ../debug/halto2.fs \ XXX TMP -- check points for debugging
+require ../debug/halto2.fs
 false to halto?
+  \ XXX TMP -- check points for debugging
 
 pad 0 2constant null$
   \ Null string.
