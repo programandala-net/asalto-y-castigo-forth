@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606291902
+\ Last update: 201606300932
 
 \ Note: The comments of the code are in Spanish.
 
@@ -122,7 +122,7 @@ bitfield: ~is-container  \ ¿Es un contenedor?
 
 to /entity  \ Tamaño de cada ficha
 
-' noop is init-entity
+' drop is init-entity  ( a -- )
   \ XXX TMP
 
 \ vim:filetype=gforth:fileencoding=utf-8
