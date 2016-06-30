@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606282005
+\ Last update: 201606300958
 
 \ Note: The comments of the code are in Spanish.
 
@@ -219,20 +219,20 @@ svariable narration-prompt
   narration-prompt-color narration-prompt$ .prompt  ;
   \ Imprime el presto de fin de escena.
 
-: (break)  ( +n|-n -- )
+: (break)  ( n -- )
   [false] [if]
     \ XXX OLD -- antiguo. versión primera, que no coloreaba la línea
-    press-key  trm+erase-line print_start_of_line
+    ?key-pause  trm+erase-line print_start_of_line
   [else]
     \ XXX NEW
-    press-key  print_start_of_line
+    ?key-pause  print_start_of_line
     trm+save-current-state background-line trm+restore-current-state
   [then]  ;
-  \ Hace una pausa de _+n_
-  \ segundos (o _-n_ para hacer una pausa indefinida hasta la
-  \ pulsación de una tecla) borra la línea en que se ha mostrado el
-  \ presto de pausa y restaura la situación de impresión para no
-  \ afectar al siguiente párrafo.
+  \ Si _n_ es menor de cero, haz una pausa indefinida hasta la
+  \ pulsación de una tecla; de otro modo haz una pausa de _n_ segundos
+  \ o hasta la pulsación de una tecla.  Después borra la línea en que
+  \ se ha mostrado el presto de pausa y restaura la situación de
+  \ impresión para no afectar al siguiente párrafo.
 
 : (narration-break)  ( +n|-n -- )
   .narration-prompt (break)  ;

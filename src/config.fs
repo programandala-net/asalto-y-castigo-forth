@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606300953
+\ Last update: 201606301008
 
 \ Note: The comments of the code are in Spanish.
 
@@ -236,7 +236,7 @@ false [if]
   s" Se ha producido un error #"
   rot n>str s+
   s"  leyendo el fichero de configuración." s+
-  system-error press-key  ;
+  system-error  ;
   \ XXX TODO -- El error no es significativo porque siempre es #-37,
   \ no el que ha causado el fallo de interpretación del fichero.
   \ Por eso de momento esta versión está desactivada.
@@ -245,7 +245,7 @@ false [if]
 
 : read-config-error  ( -- )
   s" Se ha producido un error leyendo el fichero de configuración."
-  system-error press-key  ;
+  system-error  ;
 
 [then]
 

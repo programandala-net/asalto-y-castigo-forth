@@ -12,8 +12,6 @@
 \ ==============================================================
 \ Herramientas para depuración
 
-: press-key  ( -- ) key drop  ;
-
 \ ----------------------------------------------
 \ Indicadores genéricos
 
@@ -53,7 +51,7 @@ true dup constant [old-method] immediate
   cr ." Aviso: La pila no está vacía. Contenido: "  ;
 
 : ?.s  ( -- )
-  depth if  depth-warning .s cr  press-key  then  ;
+  depth if  depth-warning .s cr  key drop  then  ;
   \ Imprime el contenido de la pila si no está vacía.
 
 \ ----------------------------------------------
@@ -94,7 +92,7 @@ true dup constant [old-method] immediate
   \ Imprime el mensaje del punto de chequeo, si no está vacío.
 
 : debug-pause  ( -- )
-  [debug-pause] [if]  depth ?? press-key [then]  ;
+  [debug-pause] [if]  depth ?? key drop [then]  ;
   \ Pausa tras mostrar la información de depuración.
 
 defer debug-color

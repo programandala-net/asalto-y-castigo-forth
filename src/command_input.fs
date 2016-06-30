@@ -1,11 +1,11 @@
-\ input.fs
+\ keyboard_input.fs
 \
 \ This file is part of _Asalto y castigo_
 \ http://programandala.net/es.program.asalto_y_castigo.forth.html
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606300953
+\ Last update: 201606301014
 
 \ Note: The comments of the code are in Spanish.
 
