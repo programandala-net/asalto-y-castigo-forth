@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606300953
+\ Last update: 201606301007
 
 \ Note: The comments of the code are in Spanish.
 
@@ -78,7 +78,7 @@ variable cr-after-command-prompt?
 : player-gender-ending$+  ( ca1 len1 -- ca2 len2 )
   player-gender-ending$ s+  ;
   \ Añade a una cadena _ca1 len1_ la terminación «a» u «o» según el
-  \ sexo del jugador, devolviendo el resultado on _ca2 len2_.
+  \ sexo del jugador, devolviendo el resultado en _ca2 len2_.
 
 \ vim:filetype=gforth:fileencoding=utf-8
 
