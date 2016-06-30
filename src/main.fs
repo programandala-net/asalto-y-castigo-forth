@@ -7,7 +7,7 @@
 \
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 \
-\ Last update: 201606292052
+\ Last update: 201606300937
 \
 \
 \ 'Asalto y castigo' is free software; you can redistribute
@@ -46,32 +46,37 @@ restore-wordlists
 
 include version.fs
 include debug_tools.fs
-include config_variables.fs
-include plot_variables.fs
-include display.fs
-include strings.fs
-include random_texts.fs
-\ include sound.fs  \ XXX TODO -- not used yet
-include printing.fs
-include data_structure.fs
-include data_basic_interface.fs
-include entity_identifiers.fs
-include data_advanced_interface.fs
-include data_tools.fs
-include calculated_texts.fs
-include lists.fs
-include config.fs
-include parser.fs
-include data.fs
-include plot.fs
-include action_errors.fs
-include actions.fs
-include player_vocabulary.fs
-include input.fs
-include answers.fs
-include the_end.fs
-include about.fs
-include intro.fs
+
+: including  ( ca len -- )  2dup cr type included ?.s  ;
+  \ Include file _ca len_ and check the stack.
+  \ XXX TMP -- for debugging
+
+s" config_variables.fs" including
+s" plot_variables.fs" including
+s" display.fs" including
+s" strings.fs" including
+s" random_texts.fs" including
+\ s" sound.fs" including  \ XXX TODO -- not used yet
+s" printing.fs" including
+s" data_structure.fs" including
+s" data_basic_interface.fs" including
+s" entity_identifiers.fs" including
+s" data_advanced_interface.fs" including
+s" data_tools.fs" including
+s" calculated_texts.fs" including
+s" lists.fs" including
+s" config.fs" including
+s" parser.fs" including
+s" data.fs" including
+s" plot.fs" including
+s" action_errors.fs" including
+s" actions.fs" including
+s" player_vocabulary.fs" including
+s" input.fs" including
+s" answers.fs" including
+s" the_end.fs" including
+s" about.fs" including
+s" intro.fs" including
 
 \ ==============================================================
 \ Principal
@@ -138,5 +143,5 @@ cr .( Escribe RUN para jugar) cr  \ XXX TMP
 
 \ i0 cr  \ XXX TMP -- para depuración
 
-\ include debug_tests.fs
+\ s" debug_tests.fs" including
 
