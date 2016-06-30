@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606292052
+\ Last update: 201606301408
 
 \ Note: The comments of the code are in Spanish.
 
@@ -25,20 +25,21 @@ ulfius~ :attributes
   ;attributes
 
 ulfius~ :description
-  \ XXX TMP
-  s" [descripción de Ulfius]"
-  paragraph
+  s" Sientes sobre ti la carga de tanto"
+  s{ s" sucedido" s" acontecido" s" acontecido" s" vivido" }s&
+  period+ paragraph
   ;description
 
 \ ----------------------------------------------
 \ Entes personaje
 
 ambrosio~ :attributes
-  s" hombre" self~ ms-name!  \ El nombre cambiará a «Ambrosio» durante el juego
+  s" hombre" self~ ms-name!
   self~ be-character
   self~ be-human
   location-19~ self~ be-there
   ;attributes
+  \ N.B. El nombre cambiará a «Ambrosio» durante el juego.
 
 ambrosio~ :description
   self~ conversations if
