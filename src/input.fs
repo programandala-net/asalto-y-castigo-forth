@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606281953
+\ Last update: 201606300953
 
 \ Note: The comments of the code are in Spanish.
 
@@ -17,6 +17,9 @@
 
 svariable command
   \ Zona de almacenamiento del comando.
+
+svariable command-prompt
+  \ Presto de entrada de comandos.
 
 : command-prompt$  ( -- ca len )  command-prompt count  ;
   \ Devuelve el presto de entrada de comandos.

@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606281838
+\ Last update: 201606300953
 
 \ Note: The comments of the code are in Spanish.
 
@@ -44,14 +44,6 @@ svariable temporary-config-file  temporary-config-file off
 : config-file$  ( -- ca len )
   path$ config-dir$ s+ current-config-file$ s+  ;
   \ Fichero de configuración con su ruta completa.
-
-svariable command-prompt
-
-variable space-after-command-prompt?
-  \ ¿Separar el presto de comandos con un espacio posterior?
-
-variable cr-after-command-prompt?
-  \ ¿Hacer un salto de línea tras el presto de comando?
 
 : verbosity-range  ( n -- n' )
   min-errors-verbosity max max-errors-verbosity min  ;

@@ -7,7 +7,7 @@
 \
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 \
-\ Last update: 201606300937
+\ Last update: 201606300953
 \
 \
 \ 'Asalto y castigo' is free software; you can redistribute
@@ -44,6 +44,9 @@ wordlist constant game-wordlist
 
 restore-wordlists
 
+wordlist constant player-wordlist
+  \ Palabras del vocabulario del jugador.
+
 include version.fs
 include debug_tools.fs
 
@@ -58,6 +61,7 @@ s" strings.fs" including
 s" random_texts.fs" including
 \ s" sound.fs" including  \ XXX TODO -- not used yet
 s" printing.fs" including
+s" input.fs" including
 s" data_structure.fs" including
 s" data_basic_interface.fs" including
 s" entity_identifiers.fs" including
@@ -72,7 +76,6 @@ s" plot.fs" including
 s" action_errors.fs" including
 s" actions.fs" including
 s" player_vocabulary.fs" including
-s" input.fs" including
 s" answers.fs" including
 s" the_end.fs" including
 s" about.fs" including

@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606282055
+\ Last update: 201606300953
 
 \ Note: The comments of the code are in Spanish.
 
@@ -55,6 +55,12 @@ svariable 'action-error-general-message$
 variable repeat-previous-action?
   \ ¿Repetir la acción anterior cuando no se especifica otra en el
   \ comando?
+
+variable space-after-command-prompt?
+  \ ¿Separar el presto de comandos con un espacio posterior?
+
+variable cr-after-command-prompt?
+  \ ¿Hacer un salto de línea tras el presto de comando?
 
 \ ==============================================================
 \ Textos calculados relacionados

@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606292033
+\ Last update: 201606300953
 
 \ Note: The comments of the code are in Spanish.
 
@@ -429,9 +429,6 @@ create 'language-error-verbosity-xt
 \ del comando que represente, verbo o complemento, tras comprobar si ya
 \ ha habido una palabra previa que realice la misma función y en su caso
 \ deteniendo el proceso con un error.
-
-wordlist constant player-wordlist
-  \ Palabras del vocabulario del jugador.
 
 variable 'prepositions#
   \ Número de (seudo)preposiciones.
