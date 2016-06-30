@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606291134
+\ Last update: 201606301356
 
 \ Note: The comments of the code are in Spanish.
 
@@ -32,29 +32,6 @@ variable silent-well-done?
   \ si es preciso.
 
 \ ==============================================================
-\ Herramientas para crear las acciones
-
-\ Los nombres de las acciones empiezan por el prefijo «do-»
-\ (algunas palabras secundarias de las acciones
-\ también usan el mismo prefijo).
-
-\ XXX TODO -- explicación sobre la sintaxis
-
-: action:  ( "name" -- )
-  create  ['] noop ,
-  does>  ( pfa -- )  perform  ;
-  \ Crea un identificador de acción _name_.
-
-: :action  ( "name" -- )  :noname 4 roll ( xt ) ' >body !  ;
-  \ Inicia la definición de una palabra _name_ que ejecutará una acción.
-  \ Guarda en el campo de datos del identificador de la acción el _xt_
-  \ de la definición, que se crea sin nombre.
-  \ XXX TODO -- esta palabra no es compatible, depende de Gforth
-
-: ;action  ( -- )  postpone ;  ; immediate
-  \ Termina la definición de una acción.
-
-\ ----------------------------------------------
 \ Comprobación de los requisitos de las acciones
 
 \ En las siguientes palabras usamos las llaves en sus nombres
@@ -334,73 +311,6 @@ variable silent-well-done?
   \ Provoca un error si el complemento principal existe y no es una dirección.
 
 \ ==============================================================
-\ Acciones
-
-\ XXX TODO -- usar `defer` en lugar de este sistema
-
-\ Para crear una acción, primero es necesario crear su
-\ identificador con la palabra `action:`, que funciona de forma
-\ parecida a `defer`. Después hay que definir la palabra de la
-\ acción con las palabras previstas para ello, que se ocupan
-\ de darle al identificador el valor de ejecución
-\ correspondiente. Ejemplo de la sintaxis:
-
-\ action: identificador
-
-\ :action identificador
-\   \ definición de la acción
-\   ;action
-
-\ Todos los identificadores deben ser creados antes de las
-\ definiciones, pues su objetivo es posibilitar que las
-\ acciones se llamen unas a otras sin importar el orden en que
-\ estén definidas en el código fuente.
-
-\ ----------------------------------------------
-\ Identificadores
-
-\ Acciones del juego
-
-action: do-attack
-action: do-break
-action: do-climb
-action: do-close
-action: do-do
-action: do-drop
-action: do-examine
-action: do-exits
-action: do-frighten
-action: do-go
-action: do-go-ahead
-action: do-go-back
-action: do-go-down
-action: do-go-east
-action: do-go-in
-action: do-go-north
-action: do-go|do-break
-action: do-go-out
-action: do-go-south
-action: do-go-up
-action: do-go-west
-action: do-hit
-action: do-introduce-yourself
-action: do-inventory
-action: do-kill
-action: do-look
-action: do-look-to-direction
-action: do-look-yourself
-action: do-make
-action: do-open
-action: do-put-on
-action: do-search
-action: do-sharpen
-action: do-speak
-action: do-swim
-action: do-take
-action: do-take|do-eat \ XXX TODO -- cambiar do-eat por ingerir
-action: do-take-off
-
-\ ----------------------------------------------
 \ Herramientas para averiguar complemento omitido
 
 : whom  ( -- a | 0 )
@@ -426,6 +336,48 @@ action: do-take-off
   \ refiera un comando.  Se usa para averiguar el objeto de algunas
   \ acciones cuando el jugador no lo especifica
 
+\ ==============================================================
+\ Acciones
+
+defer do-attack  ( -- )
+defer do-break  ( -- )
+defer do-climb  ( -- )
+defer do-close  ( -- )
+defer do-do  ( -- )
+defer do-drop  ( -- )
+defer do-examine  ( -- )
+defer do-exits  ( -- )
+defer do-frighten  ( -- )
+defer do-go  ( -- )
+defer do-go-ahead  ( -- )
+defer do-go-back  ( -- )
+defer do-go-down  ( -- )
+defer do-go-east  ( -- )
+defer do-go-in  ( -- )
+defer do-go-north  ( -- )
+defer do-go|do-break  ( -- )
+defer do-go-out  ( -- )
+defer do-go-south  ( -- )
+defer do-go-up  ( -- )
+defer do-go-west  ( -- )
+defer do-hit  ( -- )
+defer do-introduce-yourself  ( -- )
+defer do-inventory  ( -- )
+defer do-kill  ( -- )
+defer do-look  ( -- )
+defer do-look-to-direction  ( -- )
+defer do-look-yourself  ( -- )
+defer do-make  ( -- )
+defer do-open  ( -- )
+defer do-put-on  ( -- )
+defer do-search  ( -- )
+defer do-sharpen  ( -- )
+defer do-speak  ( -- )
+defer do-swim  ( -- )
+defer do-take  ( -- )
+defer do-take|do-eat  ( -- )  \ XXX TODO -- cambiar do-eat por ingerir
+defer do-take-off  ( -- )
+
 \ ----------------------------------------------
 \ Mirar, examinar y registrar
 
@@ -439,38 +391,38 @@ action: do-take-off
   \ Devuelve qué mirar.  Si falta el complemento principal, usar el
   \ escenario.
 
-:action do-look
+:noname  ( -- )
   tool-complement{unnecessary}
   do-look-by-default dup {looked} (do-look)
-  ;action
+  ; is do-look
   \  Acción de mirar.
 
-:action do-look-yourself
+:noname  ( -- )
   tool-complement{unnecessary}
   main-complement @ ?dup 0= ?? protagonist~
   (do-look)
-  ;action
+  ; is do-look-yourself
   \  Acción de mirarse.
 
-:action do-look-to-direction
+:noname  ( -- )
   tool-complement{unnecessary}
   main-complement{required}
   main-complement{direction}
   main-complement @ (do-look)
-  ;action
+  ; is do-look-to-direction
   \  Acción de otear.
   \ XXX TODO -- traducir «otear» en el nombre de la palabra
 
-:action do-examine
+:noname  ( -- )
   do-look
-  ;action
+  ; is do-examine
   \ Acción de examinar.
   \ XXX TMP
   \ XXX TODO -- implementar `x salida`
 
-:action do-search
+:noname  ( -- )
   do-look
-  ;action
+  ; is do-search
   \ Acción de registrar.
   \ XXX TMP
 
@@ -554,7 +506,7 @@ false [if]
   [debug-do-exits] [if]  cr .stack  [then]  ;  \ XXX INFORMER
   \ Devuelve el número de salidas posibles de un ente.
 
-:action do-exits
+:noname  ( -- )
   «»-clear
   #listed off
   my-location dup free-exits #free-exits !
@@ -565,7 +517,7 @@ false [if]
     if  i exit>list  then
   cell  +loop  drop
   .exits
-  ;action
+  ; is do-exits
   \ Acción de listar las salidas posibles de la localización del protagonista.
 
 [else]
@@ -600,14 +552,14 @@ false [if]
 
 ' (list-exits) is list-exits
 
-:action do-exits
+:noname  ( -- )
   tool-complement{unnecessary}
   secondary-complement{forbidden}
   main-complement @ ?dup if
     dup my-location <> swap direction 0= and
     nonsense-error# and throw
   then  list-exits
-  ;action
+  ; is do-exits
   \ Lista las salidas posibles de la localización del protagonista.
 
 [then]
@@ -618,7 +570,7 @@ false [if]
 : (do-put-on)  ( a -- )  be-worn  well-done  ;
   \ Ponerse una prenda.
 
-:action do-put-on
+:noname  ( -- )
   tool-complement{unnecessary}
   main-complement{required}
   main-complement{cloth}
@@ -627,7 +579,7 @@ false [if]
   main-complement @ is-not-hold? if  do-take  then
   main-complement{hold}
   main-complement @ (do-put-on)
-  ;action
+  ; is do-put-on
   \ Acción de ponerse una prenda.
 
 : do-take-off-done-v1$  ( -- ca len )
@@ -652,12 +604,12 @@ false [if]
   be-not-worn  do-take-off-done$ well-done-this  ;
   \ Quitarse una prenda.
 
-:action do-take-off
+:noname  ( -- )
   tool-complement{unnecessary}
   main-complement{required}
   main-complement{worn}
   main-complement @ (do-take-off)
-  ;action
+  ; is do-take-off
   \ Acción de quitarse una prenda.
 
 \ ----------------------------------------------
@@ -704,13 +656,13 @@ false [if]
 : (do-take)  ( a -- )  dup be-hold familiar++ well-done  ;
   \ Toma un ente.
 
-:action do-take
+:noname  ( -- )
   main-complement{required}
   main-complement{not-hold}
   main-complement{here}
   main-complement{takeable}
   main-complement @ (do-take)
-  ;action
+  ; is do-take
   \ Toma un ente, si es posible.
 
 : >do-drop-done-v1$  ( a -- ca1 len1 ) { object }
@@ -748,18 +700,18 @@ false [if]
   object >do-drop-done$ well-done-this  ;
   \ Deja un ente.
 
-:action do-drop
+:noname  ( -- )
   \ Acción de dejar.
   main-complement{required}
   main-complement{hold}
   main-complement @ (do-drop)
-  ;action
+  ; is do-drop
 
-:action do-take|do-eat
+:noname  ( -- )
   \ Acción de desambiguación.
   \ XXX TODO
   do-take
-  ;action
+  ; is do-take|do-eat
 
 \ ----------------------------------------------
 \ Cerrar y abrir
@@ -821,11 +773,11 @@ false [if]
   endcase  ;
   \ Cerrar un ente, si es posible.
 
-:action do-close
+:noname  ( -- )
   main-complement{required}
   main-complement{accessible}
   main-complement @ close-it
-  ;action
+  ; is do-close
 
 : the-door-is-locked  ( -- )
   \ Informa de que la puerta está cerrada por el candado.
@@ -943,12 +895,12 @@ false [if]
   endcase  ;
   \ Abrir un ente, si es posible.
 
-:action do-open
+:noname  ( -- )
   s" do-open" halto  \ XXX INFORMER
   main-complement{required}
   main-complement{accessible}
   main-complement @ open-it
-  ;action
+  ; is do-open
   \ Acción de abrir.
 
 \ ----------------------------------------------
@@ -989,22 +941,22 @@ false [if]
   endcase  ;
   \ Atacar un ser vivo.
 
-:action do-attack
+:noname  ( -- )
   main-complement{required}
   main-complement{accessible}
   main-complement{living} \ XXX TODO -- también es posible atacar otras cosas, como la ciudad u otros lugares, o el enemigo
   tool-complement{hold}
   main-complement @ (do-attack)
-  ;action
+  ; is do-attack
   \ Acción de atacar.
 
-:action do-frighten
+:noname  ( -- )
   main-complement{required}
   main-complement{accessible}
   main-complement{living}
   tool-complement{hold}
   main-complement @ (do-attack)
-  ;action
+  ; is do-frighten
   \ Acción de asustar.
   \ XXX TODO -- distinguir de las demás en grado o requisitos
 
@@ -1033,13 +985,13 @@ false [if]
   endcase  ;
   \ Matar un ser vivo.
 
-:action do-kill
+:noname  ( -- )
   main-complement{required}
   main-complement{accessible}
   main-complement{living}  \ XXX TODO -- también es posible matar otras cosas, como el enemigo
   tool-complement{hold}
   main-complement @ (do-kill)
-  ;action
+  ; is do-kill
   \ Acción de matar.
 
 : cloak-piece  ( a -- )
@@ -1068,13 +1020,13 @@ false [if]
   endcase  ;
   \ Romper un ente.
 
-:action do-break
+:noname  ( -- )
   main-complement{required}
   main-complement{accessible}
   main-complement{breakable}
   tool-complement{hold}
   main-complement @ (do-break)
-  ;action
+  ; is do-break
   \ Acción de romper.
 
 : lit-the-torch  ( -- )
@@ -1098,12 +1050,12 @@ false [if]
   endcase  ;
   \ Golpear un ente.
 
-:action do-hit
+:noname  ( -- )
   main-complement{required}
   main-complement{accessible}
   main-complement @ (do-hit)
   \ s" golpear"  main-complement+is-nonsense \ XXX TMP
-  ;action
+  ; is do-hit
   \ Acción de golpear.
 
 : log-already-sharpened$  ( -- ca len )
@@ -1170,7 +1122,7 @@ false [if]
   endcase  ;
   \ Afila un ente que puede ser afilado.
 
-:action do-sharpen
+:noname  ( -- )
   \ Acción de afilar.
   main-complement{required}
   main-complement{accessible}
@@ -1178,7 +1130,7 @@ false [if]
   if    main-complement @ (do-sharpen)
   else  nonsense
   then
-  ;action
+  ; is do-sharpen
 
 \ ----------------------------------------------
 \ Movimiento
@@ -1219,7 +1171,7 @@ false [if]
   \ Ir sin dirección específica.
   \ XXX TODO -- inconcluso
 
-:action do-go
+:noname  ( -- )
   [debug] [if]  s" Al entrar en DO-GO" debug  [then]  \ XXX INFORMER
   tool-complement{unnecessary}
   main-complement @ ?dup
@@ -1227,94 +1179,94 @@ false [if]
   else  simply-do-go
   then
   [debug] [if]  s" Al salir de DO-GO" debug  [then]  \ XXX INFORMER
-  ;action
+  ; is do-go
   \ Acción de ir.
 
-:action do-go-north
+:noname  ( -- )
   tool-complement{unnecessary}
   north~ main-complement{this-only}
   north~ do-go-if-possible
-  ;action
+  ; is do-go-north
   \ Acción de ir al norte.
 
-:action do-go-south
+:noname  ( -- )
   [debug-catch] [if]  s" Al entrar en DO-GO-SOUTH" debug  [then]  \ XXX INFORMER
   tool-complement{unnecessary}
   south~ main-complement{this-only}
   south~ do-go-if-possible
   [debug-catch] [if]  s" Al salir de DO-GO-SOUTH" debug  [then]  \ XXX INFORMER
-  ;action
+  ; is do-go-south
   \ Acción de ir al sur.
 
-:action do-go-east
+:noname  ( -- )
   tool-complement{unnecessary}
   east~ main-complement{this-only}
   east~ do-go-if-possible
-  ;action
+  ; is do-go-east
   \ Acción de ir al este.
 
-:action do-go-west
+:noname  ( -- )
   tool-complement{unnecessary}
   west~ main-complement{this-only}
   west~ do-go-if-possible
-  ;action
+  ; is do-go-west
   \ Acción de ir al oeste.
 
-:action do-go-up
+:noname  ( -- )
   tool-complement{unnecessary}
   up~ main-complement{this-only}
   up~ do-go-if-possible
-  ;action
+  ; is do-go-up
   \ Acción de ir hacia arriba.
 
-:action do-go-down
+:noname  ( -- )
   tool-complement{unnecessary}
   down~ main-complement{this-only}
   down~ do-go-if-possible
-  ;action
+  ; is do-go-down
   \ Acción de ir hacia abajo.
 
-:action do-go-out
+:noname  ( -- )
   tool-complement{unnecessary}
   out~ main-complement{this-only}
   out~ do-go-if-possible
-  ;action
+  ; is do-go-out
   \ Acción de ir hacia fuera.
 
-:action do-go-in
+:noname  ( -- )
   tool-complement{unnecessary}
   in~ main-complement{this-only}
   in~ do-go-if-possible
-  ;action
+  ; is do-go-in
   \ Acción de ir hacia dentro.
 
-:action do-go-back
+:noname  ( -- )
   tool-complement{unnecessary}
   main-complement{forbidden}
   s" [voy hacia atrás, pero es broma]" narrate \ XXX TMP
-  ;action
+  ; is do-go-back
   \ Acción de ir hacia atrás.
   \ XXX TODO
 
-:action do-go-ahead
+:noname  ( -- )
   tool-complement{unnecessary}
   main-complement{forbidden}
   s" [voy hacia delante, pero es broma]" narrate \ XXX TMP
-  ;action
+  ; is do-go-ahead
   \ Acción de ir hacia delante.
   \ XXX TODO
 
 \ ----------------------------------------------
 \ Partir (desambiguación)
 
-:action do-go|do-break
+:noname  ( -- )
   main-complement @ ?dup
   if  ( a )
     is-direction? if  do-go  else  do-break  then
   else
     tool-complement @ if do-break  else  simply-do-go  then
   then
-  ;action
+  ; is do-go|do-break
   \ Acción de partir (desambiguar: romper o marchar).
 
 \ ----------------------------------------------
@@ -1398,14 +1350,14 @@ false [if]
   then  swiming$ s&  ;
   \  Devuelve mensaje sobre nadar.
 
-:action do-swim
+:noname  ( -- )
   location-11~ am-i-there? if
     clear-screen-for-location
     you-swim$ narrate narration-break
     you-emerge$ narrate narration-break
     location-12~ enter-location  the-battle-ends
   else  s" nadar" now-or-here-or-null$ s& be-nonsense  then
-  ;action
+  ; is do-swim
   \ Acción de nadar.
 
 \ ----------------------------------------------
@@ -1508,10 +1460,10 @@ false [if]
   \ Escalar algo no especificado.
   \ XXX TODO -- inconcluso
 
-:action do-climb
+:noname  ( -- )
   main-complement @ ?dup
   if  do-climb-if-possible  else  do-climb-something  then
-  ;action
+  ; is do-climb
   \ Acción de escalar.
   \ XXX TODO -- inconcluso
 
@@ -1540,28 +1492,28 @@ false [if]
            else  ^only-or-null$ you-are-carrying$ s&  then  ;
   \ Devuelve mensaje para encabezar una lista de inventario de un solo elemento.
 
-:action do-inventory
+:noname  ( -- )
   protagonist~ content-list
   #listed @ case
     0 of  you-are-carrying-nothing$ 2swap s& endof
     1 of  you-are-carrying-only$ 2swap s& endof
     >r ^you-are-carrying$ 2swap s& r>
   endcase  narrate
-  ;action
+  ; is do-inventory
   \ Acción de hacer inventario.
 
 \ ----------------------------------------------
 \ Hacer
 
-:action do-make
+:noname  ( -- )
   main-complement @ if  nonsense  else  do-not-worry  then
-  ;action
+  ; is do-make
   \ Acción de hacer (fabricar).
 
-:action do-do
+:noname  ( -- )
   main-complement @ inventory~ =
   if  do-inventory  else  do-make  then
-  ;action
+  ; is do-do
   \ Acción de hacer (genérica).
 
 \ ----------------------------------------------
@@ -2215,21 +2167,21 @@ create conversations-with-ambrosio
 
 : you-speak-to  ( a | 0 -- )  ?dup ?? (you-speak-to)  ;
 
-:action do-speak
+:noname  ( -- )
   [debug] [??] debug  \ XXX INFORMER
   main-complement{forbidden}
   actual-tool-complement{unnecessary}
   company-complement @ ?dup 0=  \ Si no hay complemento...
   ?? whom dup you-speak-to  \ ...buscar y mostrar el más probable.
   (do-speak)
-  ;action
+  ; is do-speak
   \ Acción de hablar.
 
-:action do-introduce-yourself
+:noname  ( -- )
   main-complement @ ?dup 0=  \ Si no hay complemento...
   ?? unknown-whom  \ ...buscar el (desconocido) más probable.
   (do-speak)
-  ;action
+  ; is do-introduce-yourself
   \ Acción de presentarse a alguien.
 
 \ ----------------------------------------------
@@ -2539,19 +2491,15 @@ restore-wordlists
   \ XXX FIXME -- no funciona bien?
   \ XXX TODO -- probarlo
 
-\ ==============================================================
+\ ----------------------------------------------
 \ Acciones de configuración
-
-\ XXX TMP -- esto no soluciona el problema
-
-\ :action do-color  ( -- )
-\   init-colors  new-page  my-location describe
-\   ;action
 
 : recolor  ( -- )
   init-colors  new-page  my-location describe  ;
+  \ XXX TODO rename
 
-defer finish
+defer finish  ( -- )
+  \ XXX TODO rename
 
 \ vim:filetype=gforth:fileencoding=utf-8
 
