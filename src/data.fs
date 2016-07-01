@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606301408
+\ Last update: 201607011226
 
 \ Note: The comments of the code are in Spanish.
 
@@ -21,7 +21,7 @@ ulfius~ :attributes
   self~ be-human
   self~ has-personal-name
   self~ has-no-article
-  \ location-01~ self~ be-there
+  location-01~ self~ be-there
   ;attributes
 
 ulfius~ :description
@@ -42,9 +42,9 @@ ambrosio~ :attributes
   \ N.B. El nombre cambiará a «Ambrosio» durante el juego.
 
 ambrosio~ :description
-  self~ conversations if
-    s" Ambrosio"
-    s" es un hombre de mediana edad, que te mira afable." s&
+  self~ conversations
+  if    s" Ambrosio"
+        s" es un hombre de mediana edad, que te mira afable." s&
   else  s" Es de mediana edad y mirada afable."
   then  paragraph
   ;description
@@ -58,49 +58,46 @@ leader~ :attributes
   ;attributes
 
 leader~ :description
-  \ XXX TODO -- elaborar esto según la trama
   leader~ conversations?
-  if
-    s" Es el jefe de los refugiados."
-  else
-    s" Es un anciano."
-  then
-  paragraph
+  if    s" Es el jefe de los refugiados."
+  else  s" Es un anciano."
+  then  paragraph
   ;description
+  \ XXX TODO -- elaborar esto según la trama
 
 soldiers~ :attributes
   s" soldados" self~ mp-name!
   self~ be-human
   self~ familiar++
   self~ be-decoration
-  \ self~ has-definite-article  \ XXX TODO -- mejor implementar que tenga posesivo...
-  self~ belongs-to-protagonist  \ XXX TODO -- ...aunque quizá esto baste
+  self~ belongs-to-protagonist
   ;attributes
 
-defer soldiers-description  \ Vector a la futura descripción
+defer soldiers-description  ( -- )
+
 soldiers~ :description
-  \ La descripción de los soldados
-  \ necesita usar palabras que aún no están definidas,
-  \ y por ello es mejor crearla después.
   soldiers-description
   ;description
+  \ XXX REMARK -- La descripción de los soldados
+  \ necesita usar palabras que aún no están definidas,
+  \ y por ello es mejor crearla después.
 
 officers~ :attributes
   s" oficiales" self~ mp-name!
   self~ be-human
   self~ familiar++
   self~ be-decoration
-  \ self~ has-definite-article  \ XXX TODO -- mejor implementar que tenga posesivo...
-  self~ belongs-to-protagonist  \ XXX TODO -- ...aunque quizá esto baste
+  self~ belongs-to-protagonist
   ;attributes
 
-defer officers-description  \ Vector a la futura descripción
+defer officers-description  ( -- )
+
 officers~ :description
-  \ La descripción de los oficiales
-  \ necesita usar palabras que aún no están definidas,
-  \ y por ello es mejor crearla después.
   officers-description
   ;description
+  \ XXX REMARK -- La descripción de los oficiales necesita usar
+  \ palabras que aún no están definidas, y por ello es mejor crearla
+  \ después.
 
 refugees~ :attributes
   s" refugiados" self~ mp-name!
@@ -111,12 +108,11 @@ refugees~ :attributes
 refugees~ :description
   my-location case
   location-28~ of  refugees-description  endof
-  location-29~ of
-    \ XXX TODO -- provisional
-    s" Todos los refugiados quedaron atrás." paragraph
-    endof
+  location-29~ of  s" Todos los refugiados quedaron atrás."
+                   paragraph  endof
   endcase
   ;description
+  \ XXX TODO -- ampliar el texto
 
 \ ----------------------------------------------
 \ Entes objeto
@@ -131,9 +127,8 @@ altar~ :attributes
 altar~ :description
   s" Está" s{ s" situado" s" colocado" }s&
   s" justo en la mitad del puente." s&
-  idol~ is-unknown? if
-    s" Debe de sostener algo importante." s&
-  then
+  idol~ is-unknown?
+  if  s" Debe de sostener algo importante." s&   then
   paragraph
   ;description
 
@@ -144,10 +139,10 @@ arch~ :attributes
   ;attributes
 
 arch~ :description
-  \ XXX TMP
   s" Un sólido arco de piedra, de una sola pieza."
   paragraph
   ;description
+  \ XXX TODO -- mejorar texto
 
 bed~ :attributes
   s" catre" self~ ms-name!
@@ -169,10 +164,10 @@ bridge~ :attributes
   ;attributes
 
 bridge~ :description
-  \ XXX TMP
   s" Está semipodrido."
   paragraph
   ;description
+  \ XXX TODO -- mejorar texto
 
 candles~ :attributes
   s" velas" self~ fp-name!
@@ -214,8 +209,8 @@ cuirasse~ :attributes
   s" coraza" self~ fs-name!
   self~ be-cloth
   self~ belongs-to-protagonist
-  self~ be-worn
   self~ taken
+  self~ be-worn
   ;attributes
 
 door~ :attributes
@@ -262,7 +257,8 @@ fallen-away~ :description
   s{
     s" Muchas," s" Muchísimas," s" Numerosas,"
     s" Un gran número de" s" Una gran cantidad de"
-    \ XXX TODO -- si se añade lo que sigue, hay que crear los entes "pared" y "muro":
+    \ XXX TODO -- si se añade lo que sigue,
+    \ hay que crear los entes "pared" y "muro":
     \ s" Un muro de" s" Una pared de"
   }s
   s{ s" inalcanzables" s" inaccesibles" }s&
@@ -281,10 +277,13 @@ fallen-away~ :description
   paragraph
   ;description
 
-
 : don't-take-the-flags  ( -- )
-  s" [Yo no lo haría]." narrate  ;
-  \ XXX TODO
+  s" No hay" s{ s" motivo" s" razón" s" lugar" }s&
+  s" para ofender a"
+  talked-to-the-leader?
+  if    s" los refugiados."
+  else  s" nadie."
+  then  s& narrate  ;
 
 flags~ :attributes
   s" banderas" self~ fp-name!
@@ -351,8 +350,7 @@ key~ :attributes
   ;attributes
 
 key~ :description
-  \ XXX TODO -- crear ente. hierro, herrumbre y óxido, visibles con la llave en la mano
-  s" Grande, de hierro herrumboso."
+  s" Es una llave grande, de hierro herrumboso."
   paragraph
   ;description
 
@@ -365,7 +363,8 @@ lake~ :attributes
 
 lake~ :description
   s{ s" La" s" Un rayo de" }s
-  s" luz entra por un resquicio, y sus caprichosos reflejos te maravillan." s&
+  s" luz entra por un resquicio," s&
+  s" y sus caprichosos reflejos te maravillan." s&
   paragraph
   ;description
 
@@ -399,9 +398,9 @@ log~ :description
 
 piece~ :attributes
   s" trozo de tela" self~ ms-name!
-  \ XXX NOTE: ojo con este «de tela»: «tela» es sinónimo de trozo;
-  \ hay que contemplar estos casos en el cálculo de los genitivos.
   ;attributes
+  \ XXX TODO -- ojo con este «de tela»: «tela» es sinónimo de trozo;
+  \ hay que contemplar estos casos en el cálculo de los genitivos.
 
 piece~ :description
   s" Un pequeño" s{ s" retal" s" pedazo" s" trozo" s" resto" }s&
@@ -464,11 +463,11 @@ snake~ :attributes
   ;attributes
 
 snake~ :description
-  \ XXX TODO -- distinguir si está muerta
-  \ XXX NOTE: en el programa original no hace falta
-  s" Una serpiente muy maja."
+  s" Una serpiente grande, muy atenta a tu más mínimo movimiento."
   paragraph
   ;description
+  \ XXX TODO -- distinguir si está muerta; en el programa original no
+  \ hace falta
 
 stone~ :attributes
   s" piedra" self~ fs-name!
@@ -510,8 +509,6 @@ thread~ :attributes
   ;attributes
 
 thread~ :description
-  \ XXX TODO -- mover esto al evento de cortar la capa
-  \ s" Un hilo se ha desprendido al cortar la capa con la espada."
   s" Un hilo" of-your-ex-cloak$ s&
   paragraph
   ;description
@@ -556,7 +553,6 @@ location-01~ :attributes
   ;attributes
 
 location-01~ :description
-  \ XXX TODO -- crear colina en los tres escenarios
   sight case
   self~ of
     s" No ha quedado nada en pie, ni piedra sobre piedra."
@@ -602,13 +598,14 @@ location-01~ :description
   endcase
   ;description
 
+  \ XXX TODO -- crear colina en los tres primeros escenarios
+
 location-02~ :attributes
   s" cima de la colina" self~ fs-name!
   location-01~ 0 0 location-03~ 0 0 0 0 self~ init-location
   ;attributes
 
 location-02~ :description
-  \ XXX TODO -- crear ente. aldea, niebla
   sight case
   self~ of
     s" Sobre" s" la cima de" s?&
@@ -628,17 +625,19 @@ location-02~ :description
     paragraph
     endof
   down~ of
-    \ Bajar la colina
-    \ puede equivaler a bajar por el sur o por el oeste; esto
-    \ se decide al azar cada vez que se
-    \ entra en el escenario, por lo que su descripción
-    \ debe tenerlo en cuenta y redirigir a la descripción adecuada:
     self~ down-exit self~ north-exit =
     if  north~  else  west~  then  describe
     endof
   uninteresting-direction
   endcase
   ;description
+  \ N.B. Desde este escenario, uno puede bajar por el sur o por el
+  \ oeste; esto se decide al azar cada vez que se entra en el
+  \ escenario. Por ello descripción tiene esto en cuenta y
+  \ redirige a la descripción adecuada.
+
+
+  \ XXX TODO -- crear entes en escenario 2: aldea, niebla
 
 location-03~ :attributes
   s" camino entre colinas" self~ ms-name!
@@ -785,24 +784,24 @@ location-08~ :attributes
   ;attributes
 
 location-08~ :description
-  \ XXX TODO -- crear pared y roca y desfiladero
   sight case
   self~ of
     ^the-pass-way$ s" entre el desfiladero sigue de norte a este" s&
     s" junto a una" s&
     s{  s" pared" rocky(f)$ s& s" rocosa pared" }s& period+
-    \ XXX TODO -- completar con entrada a caverna, tras ser descubierta
+      \ XXX TODO -- completar con entrada a caverna, tras ser descubierta
     paragraph
     endof
   north~ of
-    s" El camino" s{ s" tuerce" s" gira" }s& \ XXX TODO -- independizar gira/tuerce
+    s" El camino" s{ s" tuerce" s" gira" }s&
+      \ XXX TODO -- independizar gira/tuerce
     s" hacia el inquietante paso del Perro." s&
     paragraph
     endof
   south~ of
     s{ ^in-that-direction$ s" Hacia el sur" }s
     s{ s" se alza" s" se levanta" }s&
-    \ s" una pared" s& rocky(f)$ s& \ XXX OLD -- antiguo
+    \ s" una pared" s& rocky(f)$ s& \ XXX OLD
     ravine-wall~ full-name s&
     the-cave-entrance-was-discovered? if
       comma+ s" en la" s&{ s" que" s" cual" }s&
@@ -820,6 +819,7 @@ location-08~ :description
   uninteresting-direction
   endcase
   ;description
+  \ XXX TODO -- crear pared y roca y desfiladero
 
 location-09~ :attributes
   s" derrumbe" self~ ms-name!
@@ -877,7 +877,6 @@ location-11~ :attributes
   ;attributes
 
 location-11~ :description
-  \ XXX TODO -- crear ente. estancia y aguas
   sight case
   self~ of
     s" Una" s{
@@ -914,6 +913,7 @@ location-11~ :description
   uninteresting-direction
   endcase
   ;description
+  \ XXX TODO -- crear ente. estancia y aguas
 
 location-12~ :attributes
   s" salida del paso secreto" self~ fs-name!
@@ -922,7 +922,6 @@ location-12~ :attributes
   ;attributes
 
 location-12~ :description
-  \ XXX TODO -- crear ente. agua aquí
   sight case
   self~ of
     s" Una" s{ s" gran" s" amplia" }s&
@@ -945,6 +944,7 @@ location-12~ :description
   uninteresting-direction
   endcase
   ;description
+  \ XXX TODO -- crear ente. agua aquí
 
 location-13~ :attributes
   s" puente semipodrido" self~ ms-name!
@@ -953,7 +953,6 @@ location-13~ :attributes
   ;attributes
 
 location-13~ :description
-  \ XXX TODO -- crear ente. canal, agua, lecho(~catre)
   sight case
   self~ of
     s" La sala se abre en"
@@ -973,6 +972,7 @@ location-13~ :description
   uninteresting-direction
   endcase
   ;description
+  \ XXX TODO -- crear ente. canal, agua, lecho(~catre)
 
 location-14~ :attributes
   s" recodo de la cueva" self~ ms-name!
@@ -1037,7 +1037,6 @@ location-16~ :attributes
   ;attributes
 
 location-16~ :description
-\ XXX TODO -- el examen del agua aquí debe dar más pistas
   sight case
   self~ of
     s" Como un acueducto, el agua"
@@ -1059,6 +1058,7 @@ location-16~ :description
   uninteresting-direction
   endcase
   ;description
+  \ XXX TODO -- el examen del agua aquí debe dar más pistas
 
 location-17~ :attributes
   s" estalactitas" self~ fs-name!
@@ -1067,7 +1067,6 @@ location-17~ :attributes
   ;attributes
 
 location-17~ :description
-  \ XXX TODO -- crear ente. estalactitas
   sight case
   self~ of
     s" Muchas estalactitas se agrupan encima de tu cabeza,"
@@ -1085,6 +1084,7 @@ location-17~ :description
   uninteresting-direction
   endcase
   ;description
+  \ XXX TODO -- crear ente. estalactitas
 
 location-18~ :attributes
   s" puente de piedra" self~ ms-name!
@@ -1093,7 +1093,6 @@ location-18~ :attributes
   ;attributes
 
 location-18~ :description
-  \ XXX TODO -- crear ente. puente, arco
   sight case
   self~ of
     s" Un arco de piedra se extiende,"
@@ -1119,6 +1118,7 @@ location-18~ :description
   uninteresting-direction
   endcase
   ;description
+  \ XXX TODO -- crear ente. puente, arco
 
 location-19~ :attributes
   s" recodo arenoso del canal" self~ ms-name!
@@ -1129,7 +1129,6 @@ location-19~ :attributes
 location-19~ :description
   sight case
   self~ of
-    \ XXX TODO -- hacer variaciones
     ^the-water-current$ comma+
     s" que discurre" s?&
     s" de norte a este," s& (it)-blocks$ s&
@@ -1137,6 +1136,7 @@ location-19~ :description
     s{ s" Al" s" Del" s" Hacia el" s" Proveniente del" s" Procedente del" }s&
     s" fondo" s& s{ s" se oye" s" se escucha" s" puede oírse" }s&
     s" un gran estruendo." s&
+      \ XXX TODO -- hacer variaciones de todo este texto
     paragraph
     endof
   north~ of
@@ -1146,7 +1146,9 @@ location-19~ :description
     water-that-way$ paragraph
     endof
   west~ of
-    s" Se puede" to-go-back$ s& toward-the(m)$ s& s" arco de piedra" s& in-that-direction$ s& period+
+    s" Se puede" to-go-back$ s&
+    toward-the(m)$ s& s" arco de piedra" s&
+    in-that-direction$ s& period+
     paragraph
     endof
   uninteresting-direction
@@ -1160,8 +1162,11 @@ location-20~ :attributes
   ;attributes
 
 location-20~ :description
-  \ XXX TODO -- aplicar el filtro de la antorcha a todos los escenarios afectados, quizá en una capa superior
+
+  \ XXX TODO -- aplicar el filtro de la antorcha a todos los
+  \ escenarios afectados, quizá en una capa superior
   \ sight no-torch? 0= abs *  case
+
   sight case
   self~ of
     north~ south~ east~ 3 exits-cave-description paragraph
@@ -1297,7 +1302,6 @@ location-26~ :attributes
   ;attributes
 
 location-26~ :description
-  \ XXX TODO -- crear ente. pasaje/camino/senda tramo/cueva (en todos los tramos)
   sight case
   self~ of
     north~ east~ west~ 3 exits-cave-description paragraph
@@ -1314,6 +1318,8 @@ location-26~ :description
   uninteresting-direction
   endcase
   ;description
+  \ XXX TODO -- crear ente. pasaje/camino/senda tramo/cueva (en todos
+  \ los tramos)
 
 location-27~ :attributes
   s" tramo de cueva" self~ ms-name!
@@ -1344,11 +1350,12 @@ location-28~ :attributes
   self~ be-indoor-location
   location-26~ 0 0 0 0 0 0 0 self~ init-location
   ;attributes
+  \ XXX TODO -- crear ente. estancia(para todos),albergue y refugio
+  \ (tras hablar con anciano)
 
 location-28~ :description
   sight case
   self~ of
-    \ XXX TODO -- crear ente. estancia(para todos),albergue y refugio (tras hablar con anciano)
     self~ ^full-name s" se extiende de norte a este." s&
     leader~ conversations?
     if  s" Hace de albergue para los refugiados."
@@ -1391,7 +1398,6 @@ location-29~ :attributes
   ;attributes
 
 location-29~ :description
-  \ XXX TODO -- crear ente. escalera/espiral, refugiados
   sight case
   self~ of
     s" Cual escalera de caracol gigante,"
@@ -1410,6 +1416,7 @@ location-29~ :description
   uninteresting-direction
   endcase
   ;description
+  \ XXX TODO -- crear ente. escalera/espiral, refugiados
 
 location-30~ :attributes
   s" inicio de la espiral" self~ ms-name!
@@ -1444,7 +1451,6 @@ location-31~ :attributes
   ;attributes
 
 location-31~ :description
-  \ XXX TODO -- crear ente. arco, columnas, hueco/s(entre rocas)
   sight case
   self~ of
     s" En este pasaje grandes rocas se encuentran entre las columnas de un arco de medio punto."
@@ -1463,6 +1469,7 @@ location-31~ :description
   uninteresting-direction
   endcase
   ;description
+  \ XXX TODO -- crear ente. arco, columnas, hueco/s(entre rocas)
 
 location-32~ :attributes
   s" precipicio" self~ ms-name!
@@ -1471,7 +1478,6 @@ location-32~ :attributes
   ;attributes
 
 location-32~ :description
-  \ XXX TODO -- crear ente. precipicio, abismo, cornisa, camino, roca/s
   sight case
   self~ of
     s" El camino ahora no excede de dos palmos de cornisa sobre un abismo insondable."
@@ -1489,6 +1495,7 @@ location-32~ :description
   uninteresting-direction
   endcase
   ;description
+  \ XXX TODO -- crear ente. precipicio, abismo, cornisa, camino, roca/s
 
 location-33~ :attributes
   s" pasaje de salida" self~ ms-name!
@@ -1497,7 +1504,6 @@ location-33~ :attributes
   ;attributes
 
 location-33~ :description
-  \ XXX TODO -- crear ente. camino/paso/sendero
   sight case
   self~ of
     s" El paso se va haciendo menos estrecho a medida que se avanza hacia el sur, para entonces comenzar hacia el este."
@@ -1519,16 +1525,16 @@ location-33~ :description
   uninteresting-direction
   endcase
   ;description
+  \ XXX TODO -- crear ente. camino/paso/sendero
 
 location-34~ :attributes
-  \ XXX TODO -- crear ente. gravilla
   s" pasaje de gravilla" self~ ms-name!
   self~ be-indoor-location
   location-35~ 0 0 location-33~ 0 0 0 0 self~ init-location
   ;attributes
+  \ XXX TODO -- crear ente. gravilla
 
 location-34~ :description
-  \ XXX TODO -- crear ente. camino/paso/sendero, guijarros, moho, roca, suelo..
   sight case
   self~ of
     s" El paso" gets-wider$ s& s" de oeste a norte," s&
@@ -1546,6 +1552,8 @@ location-34~ :description
   uninteresting-direction
   endcase
   ;description
+  \ XXX TODO -- crear ente. camino/paso/sendero, guijarros, moho,
+  \ roca, suelo..
 
 location-35~ :attributes
   s" puente sobre el acueducto" self~ ms-name!
@@ -1554,7 +1562,6 @@ location-35~ :attributes
   ;attributes
 
 location-35~ :description
-  \ XXX TODO -- crear ente. escaleras, puente, río/curso/agua
   sight case
   self~ of
     s" Un puente" s{ s" se tiende" s" cruza" }s& s" de norte a sur sobre el curso del agua." s&
@@ -1576,6 +1583,7 @@ location-35~ :description
   uninteresting-direction
   endcase
   ;description
+  \ XXX TODO -- crear ente. escaleras, puente, río/curso/agua
 
 location-36~ :attributes
   s" remanso" self~ ms-name!
@@ -1663,7 +1671,6 @@ location-38~ :description
     water-that-way$ paragraph
     endof
   west~ of
-    \ XXX TODO -- el artículo de «cascada» debe depender también de si se ha visitado el escenario 39 o este mismo 38
     ^water-from-there$
     s" , de" s+ waterfall~ full-name s& period+
     paragraph
@@ -1671,6 +1678,8 @@ location-38~ :description
   uninteresting-direction
   endcase
   ;description
+  \ XXX TODO -- el artículo de «cascada» debe depender también de si
+  \ se ha visitado el escenario 39 o este mismo 38
 
 location-39~ :attributes
   s" interior de la cascada" self~ ms-name!
@@ -1681,7 +1690,6 @@ location-39~ :attributes
 location-39~ :description
   sight case
   self~ of
-    \ XXX TODO -- crear ente. musgo, cortina, agua, hueco
     s" Musgoso y rocoso, con la cortina de agua"
     s{ s" tras de ti," s" a tu espalda," }s&
     s{ s" el nivel" s" la altura" }s& s" del agua ha" s&
@@ -1691,12 +1699,13 @@ location-39~ :description
     paragraph
     endof
   east~ of
-    \ XXX TODO -- variar
     s" Es la única salida." paragraph
+      \ XXX TODO -- variar
     endof
   uninteresting-direction
   endcase
   ;description
+  \ XXX TODO -- crear ente. musgo, cortina, agua, hueco
 
 location-40~ :attributes
   s" explanada" self~ fs-name!
@@ -1705,7 +1714,6 @@ location-40~ :attributes
   ;attributes
 
 location-40~ :description
-  \ XXX TODO -- crear ente. losas y losetas, estalactitas, panorama, escalones
   sight case
   self~ of
     s" Una gran explanada enlosetada contempla un bello panorama de estalactitas."
@@ -1735,9 +1743,10 @@ location-40~ :description
   uninteresting-direction
   endcase
   ;description
+  \ XXX TODO -- crear ente. losas y losetas, estalactitas, panorama,
+  \ escalones
 
 location-41~ :attributes
-  \ XXX TODO -- cambiar el nombre. no se puede pasar a mayúscula un carácter pluriocteto en utf-8
   self~ be-indoor-location
   s" ídolo" self~ ms-name!
   0 0 0 location-40~ 0 0 0 0 self~ init-location
@@ -1827,7 +1836,6 @@ location-44~ :attributes
   ;attributes
 
 location-44~ :description
-  \ XXX TODO -- crear ente. lago, escaleras, pasaje, lago
   sight case
   self~ of
     s" Unas escaleras" s{ s" dan" s" permiten el" }s& s{ s" paso" s" acceso" }s&
@@ -1847,6 +1855,7 @@ location-44~ :description
   uninteresting-direction
   endcase
   ;description
+  \ XXX TODO -- crear ente. lago, escaleras, pasaje, lago
 
 location-45~ :attributes
   s" cruce de pasajes" self~ ms-name!
@@ -1855,7 +1864,6 @@ location-45~ :attributes
   ;attributes
 
 location-45~ :description
-  \ XXX TODO -- crear ente. pasaje/camino/paso/senda
   sight case
   self~ of
     ^narrow(mp)$ pass-ways$ s&
@@ -1882,6 +1890,7 @@ location-45~ :description
   uninteresting-direction
   endcase
   ;description
+  \ XXX TODO -- crear ente. pasaje/camino/paso/senda
 
 location-46~ :attributes
   s" hogar de Ambrosio" self~ ms-name!
@@ -1913,7 +1922,6 @@ location-47~ :attributes
   ;attributes
 
 location-47~ :description
-  \ XXX TODO -- descripción inacabada.
   sight case
   self~ of
     s" Por el oeste,"
@@ -1931,21 +1939,20 @@ location-47~ :description
     paragraph
     endof
   north~ of
-    \ XXX TODO -- variar
     s" Hay salida" that-way$ s& period+ paragraph
+      \ XXX TODO -- variar el texto
     endof
   west~ of
-    \ XXX TODO -- variar
-    door~ is-open? if
-      s" La luz diurna entra por la puerta."
-    else
-      s" Se adivina la luz diurna al otro lado de la puerta."
-    then
-    paragraph
+    door~ is-open?
+    if    s" La luz diurna entra por la puerta."
+    else  s" Se adivina la luz diurna al otro lado de la puerta."
+    then  paragraph
+      \ XXX TODO -- variar el texto
     endof
   uninteresting-direction
   endcase
   ;description
+  \ XXX TODO -- descripción inacabada.
 
 location-48~ :attributes
   s" bosque a la entrada" self~ ms-name!
@@ -1959,7 +1966,6 @@ location-48~ :attributes
   s" , como ahora" s?+  ;
 
 location-48~ :description
-  \ XXX TODO -- crear ente. cueva
   sight case
   self~ of
     s{ s" Apenas si" s" Casi no" }s
@@ -1989,6 +1995,7 @@ location-48~ :description
   uninteresting-direction
   endcase
   ;description
+  \ XXX TODO -- crear ente. cueva
 
 location-49~ :attributes
   s" sendero del bosque" self~ ms-name!
@@ -2048,7 +2055,6 @@ location-51~ :attributes
   ;attributes
 
 location-51~ :description
-  \ XXX TODO -- crear ente. mercado, plaza, villa, pueblo, castillo
   sight case
   self~ of
     ^the-village$ s" bulle de actividad con el mercado en el centro de la plaza," s&
@@ -2062,20 +2068,21 @@ location-51~ :description
   uninteresting-direction
   endcase
   ;description
+  \ XXX TODO -- crear ente. mercado, plaza, villa, pueblo, castillo
 
 \ ----------------------------------------------
 \ Entes globales
 
 cave~ :attributes
   s" cueva" self~ fs-name!
-  \ self~ be-global-indoor \ XXX
+  \ self~ be-global-indoor \ XXX OLD
   ;attributes
 
 cave~ :description
-  \ XXX TMP
-  s" La cueva es chachi."
+  s" La cueva es húmeda y sombría."
   paragraph
   ;description
+  \ XXX TODO -- mejorar
 
 ceiling~ :attributes
   s" techo" self~ ms-name!
@@ -2083,10 +2090,10 @@ ceiling~ :attributes
   ;attributes
 
 ceiling~ :description
-  \ XXX TMP
   s" El techo es muy bonito."
   paragraph
   ;description
+  \ XXX TODO
 
 clouds~ :attributes
   s" nubes" self~ fp-name!
@@ -2094,14 +2101,15 @@ clouds~ :attributes
   ;attributes
 
 clouds~ :description
+  s" Los estratocúmulos que traen la nieve y que cuelgan sobre la Tierra"
+  s" en la estación del frío se han alejado por el momento. " s&
+    \ XXX TMP
+  2 random if  paragraph  else  2drop sky~ describe  then
+    \ XXX TODO -- comprobar
+  ;description
   \ XXX TODO:
   \ Distinguir no solo interiores, sino escenarios en
   \ que se puede vislumbrar el exterior.
-  \ XXX TMP.:
-  s" Los estratocúmulos que traen la nieve y que cuelgan sobre la Tierra"
-  s" en la estación del frío se han alejado por el momento. " s&
-  2 random if  paragraph  else  2drop sky~ describe  then  \ XXX TODO -- comprobar
-  ;description
 
 floor~ :attributes
   s" suelo" self~ ms-name!
@@ -2110,27 +2118,26 @@ floor~ :attributes
   ;attributes
 
 floor~ :description
-  \ XXX TMP
-  am-i-outdoor? if
-    s" El suelo fuera es muy bonito."
-    paragraph
-  else
-    \ XXX FIXME -- se muestra esto en exteriores
-    s" El suelo dentro es muy bonito."
-    paragraph
-  then
+  am-i-outdoor?
+  if    s" [El suelo fuera es muy bonito.]" paragraph
+  else  s" [El suelo dentro es muy bonito.]" paragraph  then
   ;description
+  \ XXX TMP
+  \ XXX TODO
 
 sky~ :attributes
   s" cielo" self~ ms-name!
   self~ be-global-outdoor
   ;attributes
+  \ XXX TODO
+  \ XXX TMP
 
 sky~ :description
-  \ XXX TMP
-  s" [El cielo es mu bonito]"
+  s" [El cielo es muy bonito.]"
   paragraph
   ;description
+  \ XXX TODO
+  \ XXX TMP
 
 wall~ :attributes
   s" pared" self~ ms-name!
@@ -2138,10 +2145,11 @@ wall~ :attributes
   ;attributes
 
 wall~ :description
-  \ XXX TMP
-  s" [La pared es mu bonita]"
+  s" [La pared es muy bonita.]"
   paragraph
   ;description
+  \ XXX TODO
+  \ XXX TMP
 
 \ ----------------------------------------------
 \ Entes virtuales
@@ -2162,20 +2170,20 @@ inventory~ :attributes
   ;attributes
 
 enemy~ :attributes
-  \ XXX TODO -- inconcluso
   s" enemigos" self~ mp-name!
   self~ be-human
   self~ be-decoration
   ;attributes
+  \ XXX TODO -- inconcluso
 
 enemy~ :description
-  \ XXX TODO -- inconcluso
-  battle# @ if
-    s" Enemigo en batalla!!!"  \ XXX TMP
-  else
-    s" Enemigo en paz!!!"  \ XXX TMP
+  battle# @
+  if    s" [Enemigo en batalla.]"
+  else  s" [Enemigo en paz.]"
   then  paragraph
   ;description
+  \ XXX TMP
+  \ XXX TODO -- inconcluso
 
 \ ----------------------------------------------
 \ Entes dirección
@@ -2231,13 +2239,13 @@ down~ :attributes
   ;attributes
 
 down~ :description
-  \ XXX TMP
-  am-i-outdoor? if
-    s" El suelo exterior es muy bonito." paragraph
-  else
-    s" El suelo interior es muy bonito." paragraph
+  am-i-outdoor?
+  if    s" [El suelo exterior es muy bonito.]" paragraph
+  else  s" [El suelo interior es muy bonito.]" paragraph
   then
   ;description
+  \ XXX TMP
+  \ XXX TODO
 
 out~ :attributes
   s" afuera" self~ name!
