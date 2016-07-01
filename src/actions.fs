@@ -5,12 +5,14 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607020010
+\ Last update: 201607020023
 
 \ Note: The comments of the code are in Spanish.
 
 \ ==============================================================
 \ Mensaje de acción completada
+
+\ XXX TODO -- mover a Flibustre
 
 variable silent-well-done
   \ XXX TODO -- no usado
@@ -34,6 +36,8 @@ defer well-done$  ( -- ca len )
 
 \ ==============================================================
 \ Comprobación de los requisitos de las acciones
+
+\ XXX TODO -- mover a Flibustre
 
 \ En las siguientes palabras usamos las llaves en sus nombres
 \ como una notación, para hacer más legible y más fácil de
@@ -259,18 +263,18 @@ defer well-done$  ( -- ca len )
   main-complement @ ?{breakable}  ;
   \ Provoca un error si el complemento principal existe y no puede ser roto.
 
-: {looked}  ( a -- )
+: {lookable}  ( a -- )
   dup what !
   can-be-looked-at? 0= cannot-see-what-error# and throw  ;
   \ Provoca un error si un ente no puede ser mirado.  Nota: los
   \ errores apuntados por el campo `~take-error#` no deben necesitar
   \ parámetros, o esperarlo en `what`.
 
-: ?{looked}  ( a | 0 -- )  ?dup ?? {looked}  ;
+: ?{lookable}  ( a | 0 -- )  ?dup ?? {lookable}  ;
   \ Provoca un error si un supuesto ente lo es y no puede ser mirado.
 
-: main-complement{looked}  ( -- )
-  main-complement @ ?{looked}  ;
+: main-complement{lookable}  ( -- )
+  main-complement @ ?{lookable}  ;
   \ Provoca un error si el complemento principal existe y no puede ser
   \ mirado.
 
@@ -394,7 +398,7 @@ defer do-take-off  ( -- )
 
 :noname  ( -- )
   tool-complement{unnecessary}
-  do-look-by-default dup {looked} (do-look)
+  do-look-by-default dup {lookable} (do-look)
   ; is do-look
   \  Acción de mirar.
 
