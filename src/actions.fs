@@ -5,30 +5,31 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607011231
+\ Last update: 201607020010
 
 \ Note: The comments of the code are in Spanish.
 
 \ ==============================================================
 \ Mensaje de acción completada
 
-variable silent-well-done?
+variable silent-well-done
   \ XXX TODO -- no usado
 
-: (well-done)  ( -- )
-  s{ s" Hecho." s" Bien." }s narrate  ;
-  \ Informa, con un mensaje genérico, de que una acción se ha realizado.
-
-: well-done  ( -- )
-  silent-well-done? @ 0= ?? (well-done)
-  silent-well-done? off  ;
-  \ Informa, con un mensaje genérico, de que una acción se ha realizado,
+: well-done-this  ( ca len -- )
+  silent-well-done @ 0= if  narrate  else  2drop  then
+  silent-well-done off  ;
+  \ Informa, con un mensaje específico, de que una acción se ha realizado,
   \ si es preciso.
 
-: well-done-this  ( ca len -- )
-  silent-well-done? @ 0= if  narrate  else  2drop  then
-  silent-well-done? off  ;
-  \ Informa, con un mensaje específico, de que una acción se ha realizado,
+defer well-done$  ( -- ca len )
+  \ Mensaje genérico, de que una acción se ha realizado.
+
+:noname  ( -- ca len )
+  s{ s" Hecho." s" Bien." }s  ; is well-done$
+  \ Mensaje genérico, de que una acción se ha realizado.
+
+: well-done  ( -- )  well-done$ well-done-this  ;
+  \ Informa, con un mensaje genérico, de que una acción se ha realizado,
   \ si es preciso.
 
 \ ==============================================================
