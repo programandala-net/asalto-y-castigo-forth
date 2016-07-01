@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606281849
+\ Last update: 201607011232
 
 \ Note: The comments of the code are in Spanish.
 
@@ -836,9 +836,11 @@ player-wordlist dup >order set-current
 \ XXX TODO -- separar los sinónimos de ídolo
 
 : llave  key~ complement!  ;
+' llave aliases:  hierro herrumbe óxido  ;aliases
 
 : lago  lake~ complement!  ;
-' lago aliases:  laguna agua estanque  ;aliases  \ XXX TODO -- diferente género
+' lago aliases:  laguna agua estanque  ;aliases
+  \ XXX TODO -- diferente género
 
 : candado  lock~ complement!  ;
 ' candado aliases:  cerrojo  ;aliases
