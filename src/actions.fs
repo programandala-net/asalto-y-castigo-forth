@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606301356
+\ Last update: 201607011231
 
 \ Note: The comments of the code are in Spanish.
 
@@ -998,6 +998,8 @@ false [if]
   2 random if  be-here  else  taken  then  ;
   \ Hace aparecer un resto de la capa rota de forma aleatoria:
   \ en el escenario o en el inventario.
+  \ XXX TODO -- mejorar con mensajes, ejemplo:
+  \ s" Un hilo se ha desprendido al cortar la capa con la espada."
 
 : cloak-pieces  ( -- )
   rags~ cloak-piece  thread~ cloak-piece  piece~ cloak-piece  ;
