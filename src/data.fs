@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607040011
+\ Last update: 201607040046
 
 \ Note: The comments of the code are in Spanish.
 
@@ -32,7 +32,7 @@ ulfius~ :init  ( -- )
 \ Entes personaje
 
 : describe-ambrosio  ( -- )
-  self~ conversations
+  ambrosio~ conversations
   if    s" Ambrosio"
         s" es un hombre de mediana edad, que te mira afable." s&
   else  s" Es de mediana edad y mirada afable."
@@ -146,7 +146,7 @@ arch~ :init  ( -- )
 : describe-bed  ( -- )
   s{ s" Parece poco" s" No tiene el aspecto de ser muy"
   s" No parece especialmente" }s
-  s{ s" confortable" s" cómod" self~ adjective-ending s+ }s& period+
+  s{ s" confortable" s" cómod" bed~ adjective-ending s+ }s& period+
   paragraph  ;
 
 bed~ :init  ( -- )
@@ -211,7 +211,7 @@ cuirasse~ :init  ( -- )
   \ Encontrar el candado.
 
 : describe-door  ( -- )
-  self~ times-open if  s" Es"  else  s" Parece"  then
+  door~ times-open if  s" Es"  else  s" Parece"  then
   s" muy" s?& s{ s" recia" s" gruesa" s" fuerte" }s&
   location-47~ am-i-there? if
     lock~ is-known?
@@ -298,13 +298,13 @@ flint~ :init  ( -- )
 
 : describe-grass  ( -- )
   door~ times-open if
-    s" Está" self~ verb-number-ending+
-    s" aplastad" self~ adjective-ending+ s&
+    s" Está" grass~ verb-number-ending+
+    s" aplastad" grass~ adjective-ending+ s&
     s{ s" en el" s" bajo el" s" a lo largo del" }s&
     s{ s" trazado" s" recorrido" }s&
     s{ s" de la puerta." s" que hizo la puerta al abrirse." }s&
   else
-    s" Cubre" self~ verb-number-ending+
+    s" Cubre" grass~ verb-number-ending+
     s" el suelo junto a la puerta, lo" s&
     s{ s" que" s" cual" }s&
     s{ s" indica" s" significa" s" delata" }s
@@ -355,7 +355,7 @@ lake~ :init  ( -- )
 
 : describe-lock  ( -- )
   s" Es grande y parece" s{ s" fuerte." s" resistente." }s&
-  s" Está" s&{ s" fijad" s" unid" }s& self~ adjective-ending+
+  s" Está" s&{ s" fijad" s" unid" }s& lock~ adjective-ending+
   s" a la puerta y" s&
   lock~ «open»|«closed» s& period+
   paragraph  ;
@@ -488,7 +488,7 @@ thread~ :init  ( -- )
   s" hilo" self~ ms-name!  ;
 
 : describe-torch  ( -- )
-  s" Está" self~ is-lit?
+  s" Está" torch~ is-lit?
   if  s" encendida."  else  s" apagada."  then  s& paragraph  ;
 
 torch~ :init  ( -- )
@@ -597,7 +597,7 @@ location-01~ :init  ( -- )
     paragraph
     endof
   down~ of
-    self~ down-exit self~ north-exit =
+    location-02~ down-exit location-02~ north-exit =
     if  north~  else  west~  then  describe
     endof
   uninteresting-direction
@@ -607,10 +607,10 @@ location-01~ :init  ( -- )
   \ Decidir hacia dónde conduce la dirección hacia abajo
   [false] [if]  \ XXX OLD -- Primera versión
     \ Decidir al azar:
-    self~ location-01~ location-03~ 2 choose d-->
+    location-02~ location-01~ location-03~ 2 choose d-->
   [else]  \ XXX NEW -- Segunda versión mejorada
     \ Decidir según el escenario de procedencia:
-    self~
+    location-02~
     protagonist~ previous-location location-01~ =  \ ¿Venimos de la aldea?
     if  location-03~  else  location-01~  then  d-->
   [then]
@@ -862,7 +862,7 @@ location-09~ :init  ( -- )
   s" entrada a la cueva" cave-entrance~ fs-name!
   cave-entrance~ familiar++
   location-08~ my-previous-location = if  \ Venimos del exterior
-    self~ visits
+    location-10~ visits
     if  ^again$  else  ^finally$ s" ya" s?&  then
     \ XXX TODO -- ampliar con otros textos alternativos
     you-think-you're-safe$ s&
@@ -1361,10 +1361,10 @@ location-27~ :init  ( -- )
 : describe-location-28  ( -- )
   sight case
   my-location of
-    self~ ^full-name s" se extiende de norte a este." s&
+    location-28~ ^full-name s" se extiende de norte a este." s&
     leader~ conversations?
     if  s" Hace de albergue para los refugiados."
-    else  s" Está llen" self~ gender-ending+ s" de gente." s&
+    else  s" Está llen" location-28~ gender-ending+ s" de gente." s&
     then  s&
     flags~ is-known?
     if
@@ -1380,14 +1380,14 @@ location-27~ :init  ( -- )
     paragraph
     endof
   north~ of
-    self~ has-east-exit?
+    location-28~ has-east-exit?
     if    s" Es por donde viniste."
     else  s" Es la única salida."
     then  paragraph
     endof
   east~ of
     ^the-refugees$
-    self~ has-east-exit?
+    location-28~ has-east-exit?
     if    they-let-you-pass$ s&
     else  they-don't-let-you-pass$ s&
     then  period+ paragraph
@@ -1396,7 +1396,7 @@ location-27~ :init  ( -- )
   endcase  ;
 
 : after-describing-location-28  ( -- )
-  self~ no-exit e-->  \ Cerrar la salida hacia el este
+  location-28~ no-exit e-->  \ Cerrar la salida hacia el este
   recent-talks-to-the-leader off
   refugees~ be-here
   the-refugees-surround-you$ narrate
@@ -1476,7 +1476,7 @@ location-30~ :init  ( -- )
     paragraph
     endof
   north~ of
-    s" Las rocas"  self~ has-north-exit?
+    s" Las rocas" location-31~ has-north-exit?
     if  (rocks)-on-the-floor$
     else  (they)-block$ the-pass$ s&
     then  s& period+ paragraph
@@ -1489,8 +1489,8 @@ location-30~ :init  ( -- )
   endcase  ;
 
 : after-describing-location-31  ( -- )
-  \ XXX TODO -- mover a la descripción?
-  self~ has-north-exit? if
+  \ XXX TODO -- mover a la descripción
+  location-31~ has-north-exit? if
     s" Las rocas yacen desmoronadas a lo largo del"
     pass-way$ s& period+
   else
