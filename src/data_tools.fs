@@ -5,33 +5,23 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607032336
+\ Last update: 201607040015
 
 \ Note: The comments of the code are in Spanish.
 
 \ ==============================================================
 \ Herramientas para crear las fichas de la base de datos
 
-: backup-entity  ( a -- x0 x1 x2 x3 x4 x5 x6 )
+: backup-entity  ( a -- x0 x1 )
   >r
   r@ init-xt
-  r@ can-i-enter-location-xt
-  r@ after-describing-location-xt
-  r@ after-listing-entities-xt
-  r@ before-describing-location-xt
-  r@ before-leaving-location-xt
   r> name-str  ;
   \ Respalda los datos de un ente _a_ que se crearon durante la
   \ compilación del código y deben preservarse.  (En orden alfabético,
   \ para facilitar la edición).
 
-: restore-entity  ( x0 x1 x2 x3 x4 x5 x6 a -- )
+: restore-entity  ( x0 x1 a -- )
   tuck ~name-str !
-  tuck ~before-leaving-location-xt !
-  tuck ~before-describing-location-xt !
-  tuck ~after-listing-entities-xt !
-  tuck ~after-describing-location-xt !
-  tuck ~can-i-enter-location-xt !
        ~init-xt !  ;
   \ Restaura los datos de un ente _a_ que se crearon durante la
   \ compilación del código y deben preservarse.  (En orden alfabético

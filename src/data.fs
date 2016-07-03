@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607032350
+\ Last update: 201607040011
 
 \ Note: The comments of the code are in Spanish.
 
@@ -61,10 +61,17 @@ leader~ :init  ( -- )
   self~ be-not-listed
   location-28~ self~ be-there  ;
 
-defer describe-soldiers  ( -- )
-  \ XXX REMARK -- La descripción de los soldados
-  \ necesita usar palabras que aún no están definidas,
-  \ y por ello es mejor crearla después.
+: describe-soldiers  ( -- )
+  true case
+    still-in-the-village? of  soldiers-steal-spite-of-officers  endof
+\   back-to-the-village? of  soldiers-go-home  endof
+      \ XXX TODO -- no usado
+    pass-still-open? of  soldiers-go-home  endof
+\   battle? of  battle-phase  endof
+    \ XXX TODO -- no usado. redundante, porque tras la descripción se
+    \ mostrará otra vez la situación de la batalla
+  endcase  ;
+  \ Describe a tus soldados.
 
 soldiers~ :init  ( -- )
   ['] describe-soldiers self~ be-description-xt
@@ -74,10 +81,17 @@ soldiers~ :init  ( -- )
   self~ be-decoration
   self~ belongs-to-protagonist  ;
 
-defer describe-officers  ( -- )
-  \ XXX REMARK -- La descripción de los oficiales necesita usar
-  \ palabras que aún no están definidas, y por ello es mejor crearla
-  \ después.
+: describe-officers  ( -- )
+  true case
+    still-in-the-village? of  ^officers-forbid-to-steal$  endof
+\   back-to-the-village? of  officers-go-home  endof
+    \ XXX TODO -- no usado
+    pass-still-open? of  officers-go-home  endof
+\   battle? of  battle-phase  endof
+    \ XXX TODO -- no usado. redundante, porque tras la descripción se
+    \ mostrará otra vez la situación de la batalla
+  endcase  ;
+  \ Describe a tus soldados.
 
 officers~ :init  ( -- )
   ['] describe-officers self~ be-description-xt
@@ -550,8 +564,14 @@ waterfall~ :init  ( -- )
   uninteresting-direction
   endcase  ;
 
+: after-describing-location-01  ( -- )
+  soldiers~ be-here
+  still-in-the-village?
+  if  celebrating  else  going-home  then  ;
+
 location-01~ :init  ( -- )
   ['] describe-location-01 self~ be-description-xt
+  ['] after-describing-location-01 self~ be-after-describing-location-xt
   s" aldea sajona" self~ fs-name!
   0 location-02~ 0 0 0 0 0 0 self~ init-location  ;
 
@@ -583,8 +603,22 @@ location-01~ :init  ( -- )
   uninteresting-direction
   endcase  ;
 
+: after-describing-location-02  ( -- )
+  \ Decidir hacia dónde conduce la dirección hacia abajo
+  [false] [if]  \ XXX OLD -- Primera versión
+    \ Decidir al azar:
+    self~ location-01~ location-03~ 2 choose d-->
+  [else]  \ XXX NEW -- Segunda versión mejorada
+    \ Decidir según el escenario de procedencia:
+    self~
+    protagonist~ previous-location location-01~ =  \ ¿Venimos de la aldea?
+    if  location-03~  else  location-01~  then  d-->
+  [then]
+  soldiers~ be-here going-home  ;
+
 location-02~ :init  ( -- )
   ['] describe-location-02 self~ be-description-xt
+  ['] after-describing-location-02 self~ be-after-describing-location-xt
   s" cima de la colina" self~ fs-name!
   location-01~ 0 0 location-03~ 0 0 0 0 self~ init-location  ;
 
@@ -617,6 +651,7 @@ location-02~ :init  ( -- )
 
 location-03~ :init  ( -- )
   ['] describe-location-03 self~ be-description-xt
+  ['] soldiers-are-here self~ be-after-describing-location-xt
   s" camino entre colinas" self~ ms-name!
   0 0 location-02~ location-04~ 0 0 0 0 self~ init-location  ;
 
@@ -642,6 +677,7 @@ location-03~ :init  ( -- )
 
 location-04~ :init  ( -- )
   ['] describe-location-04 self~ be-description-xt
+  ['] soldiers-are-here self~ be-after-describing-location-xt
   s" cruce de caminos" self~ ms-name!
   location-05~ 0 location-03~ location-09~ 0 0 0 0 self~ init-location  ;
 
@@ -670,6 +706,7 @@ location-04~ :init  ( -- )
 
 location-05~ :init  ( -- )
   ['] describe-location-05 self~ be-description-xt
+  ['] soldiers-are-here self~ be-after-describing-location-xt
   s" linde del bosque" self~ fs-name!
   0 location-04~ 0 location-06~ 0 0 0 0 self~ init-location  ;
 
@@ -699,6 +736,7 @@ location-05~ :init  ( -- )
 
 location-06~ :init  ( -- )
   ['] describe-location-06 self~ be-description-xt
+  ['] soldiers-are-here self~ be-after-describing-location-xt
   s" bosque" self~ ms-name!
   0 0 location-05~ location-07~ 0 0 0 0 self~ init-location  ;
 
@@ -727,6 +765,7 @@ location-06~ :init  ( -- )
 
 location-07~ :init  ( -- )
   ['] describe-location-07 self~ be-description-xt
+  ['] soldiers-are-here self~ be-after-describing-location-xt
   s" paso del Perro" self~ ms-name!
   0 location-08~ location-06~ 0 0 0 0 0 self~ init-location  ;
 
@@ -766,8 +805,12 @@ location-07~ :init  ( -- )
   uninteresting-direction
   endcase  ;
 
+: after-describing-location-08  ( -- )
+  soldiers-are-here pass-still-open? ?? ambush  ;
+
 location-08~ :init  ( -- )
   ['] describe-location-08 self~ be-description-xt
+  ['] after-describing-location-08 self~ be-after-describing-location-xt
   s" desfiladero" self~ ms-name!
   location-07~ 0 0 0 0 0 0 0 self~ init-location  ;
 
@@ -796,6 +839,7 @@ location-08~ :init  ( -- )
 
 location-09~ :init  ( -- )
   ['] describe-location-09 self~ be-description-xt
+  ['] soldiers-are-here self~ be-after-describing-location-xt
   s" derrumbe" self~ ms-name!
   0 0 location-04~ 0 0 0 0 0 self~ init-location  ;
 
@@ -814,8 +858,22 @@ location-09~ :init  ( -- )
   uninteresting-direction
   endcase  ;
 
+: after-describing-location-10  ( -- )
+  s" entrada a la cueva" cave-entrance~ fs-name!
+  cave-entrance~ familiar++
+  location-08~ my-previous-location = if  \ Venimos del exterior
+    self~ visits
+    if  ^again$  else  ^finally$ s" ya" s?&  then
+    \ XXX TODO -- ampliar con otros textos alternativos
+    you-think-you're-safe$ s&
+    but-it's-an-impression$ s?+
+    period+ narrate
+  \ XXX TODO -- si venimos del interior, mostrar otros textos
+  then  ;
+
 location-10~ :init  ( -- )
   ['] describe-location-10 self~ be-description-xt
+  ['] after-describing-location-10 self~ be-after-describing-location-xt
   s" gruta de entrada" self~ fs-name!
   self~ be-indoor-location
   location-08~ 0 0 location-11~ 0 0 0 0 self~ init-location  ;
@@ -859,6 +917,7 @@ location-10~ :init  ( -- )
 
 location-11~ :init  ( -- )
   ['] describe-location-11 self~ be-description-xt
+  ['] lake-is-here self~ be-after-describing-location-xt
   s" gran lago" self~ ms-name!
   self~ be-indoor-location
   0 0 location-10~ 0 0 0 0 0 self~ init-location  ;
@@ -1000,8 +1059,17 @@ location-15~ :init  ( -- )
   uninteresting-direction
   endcase  ;
 
+: after-describing-location-16  ( -- )
+  s" En la distancia, por entre los resquicios de las rocas,"
+  s" y allende el canal de agua, los sajones" s&
+  s{ s" intentan" s" se esfuerzan en" s" tratan de" s" se afanan en" }s&
+  s{ s" hallar" s" buscar" s" localizar" }s&
+  s" la salida que encontraste por casualidad." s&
+  narrate  ;
+
 location-16~ :init  ( -- )
   ['] describe-location-16 self~ be-description-xt
+  ['] after-describing-location-16 self~ be-after-describing-location-xt
   s" pasaje del agua" self~ ms-name!
   self~ be-indoor-location
   0 0 0 location-15~ 0 0 0 0 self~ init-location  ;
@@ -1120,8 +1188,13 @@ location-19~ :init  ( -- )
   uninteresting-direction
   endcase  ;
 
+: can-i-enter-location-20?  ( -- f )
+  location-17~ am-i-there? no-torch? and
+  dup 0= swap ?? dark-cave  ;
+
 location-20~ :init  ( -- )
   ['] describe-location-20 self~ be-description-xt
+  ['] can-i-enter-location-20? self~ be-can-i-enter-location-xt
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
   location-17~ location-22~ location-25~ 0 0 0 0 0 self~ init-location  ;
@@ -1322,8 +1395,16 @@ location-27~ :init  ( -- )
   uninteresting-direction
   endcase  ;
 
+: after-describing-location-28  ( -- )
+  self~ no-exit e-->  \ Cerrar la salida hacia el este
+  recent-talks-to-the-leader off
+  refugees~ be-here
+  the-refugees-surround-you$ narrate
+  the-leader-looks-at-you$ narrate  ;
+
 location-28~ :init  ( -- )
   ['] describe-location-28 self~ be-description-xt
+  ['] after-describing-location-28 self~ be-after-describing-location-xt
   s" amplia estancia" self~ fs-name!
   self~ be-indoor-location
   location-26~ 0 0 0 0 0 0 0 self~ init-location  ;
@@ -1349,8 +1430,13 @@ location-28~ :init  ( -- )
   uninteresting-direction
   endcase  ;
 
+: after-describing-location-29  ( -- )
+  refugees~ be-here  ;
+  \ Para que sean visibles en la distancia
+
 location-29~ :init  ( -- )
   ['] describe-location-29 self~ be-description-xt
+  ['] after-describing-location-29 self~ be-after-describing-location-xt
   s" espiral" self~ fs-name!
   self~ be-indoor-location
   0 0 0 location-28~ 0 location-30~ 0 0 self~ init-location  ;
@@ -1402,8 +1488,18 @@ location-30~ :init  ( -- )
   uninteresting-direction
   endcase  ;
 
+: after-describing-location-31  ( -- )
+  \ XXX TODO -- mover a la descripción?
+  self~ has-north-exit? if
+    s" Las rocas yacen desmoronadas a lo largo del"
+    pass-way$ s& period+
+  else
+    s" Las rocas" (they)-block$ s& s" el paso." s&
+  then  narrate  ;
+
 location-31~ :init  ( -- )
   ['] describe-location-31 self~ be-description-xt
+  ['] after-describing-location-31 self~ be-after-describing-location-xt
   s" puerta norte" self~ fs-name!
   self~ be-indoor-location
   0 0 0 location-30~ 0 0 0 0 self~ init-location  ;
@@ -1614,6 +1710,7 @@ location-37~ :init  ( -- )
 
 location-38~ :init  ( -- )
   ['] describe-location-38 self~ be-description-xt
+  ['] lake-is-here self~ be-after-describing-location-xt
   s" gran cascada" self~ fs-name!
   self~ be-indoor-location
   0 0 location-37~ location-39~ 0 0 0 0 self~ init-location  ;
@@ -1762,8 +1859,15 @@ location-42~ :init  ( -- )
   uninteresting-direction
   endcase  ;
 
+: after-describing-location-43  ( -- )
+  snake~ is-here? if
+    a-snake-blocks-the-way$ period+
+    narrate
+  then  ;
+
 location-43~ :init  ( -- )
   ['] describe-location-43 self~ be-description-xt
+  ['] after-describing-location-43 self~ be-after-describing-location-xt
   s" pasaje de la serpiente" self~ ms-name!
   self~ be-indoor-location
   location-42~ 0 0 0 0 0 0 0 self~ init-location  ;
@@ -1790,6 +1894,7 @@ location-43~ :init  ( -- )
 
 location-44~ :init  ( -- )
   ['] describe-location-44 self~ be-description-xt
+  ['] lake-is-here self~ be-after-describing-location-xt
   s" lago interior" self~ ms-name!
   self~ be-indoor-location
   location-43~ 0 0 location-45~ 0 0 0 0 self~ init-location  ;
@@ -1887,6 +1992,7 @@ location-46~ :init  ( -- )
 
 location-47~ :init  ( -- )
   ['] describe-location-47 self~ be-description-xt
+  ['] door-is-here self~ be-after-describing-location-xt
   s" salida de la cueva" self~ fs-name!
   self~ be-indoor-location
   location-45~ 0 0 0 0 0 0 0 self~ init-location  ;
@@ -1931,6 +2037,7 @@ location-47~ :init  ( -- )
 
 location-48~ :init  ( -- )
   ['] describe-location-48 self~ be-description-xt
+  ['] door-is-here self~ be-after-describing-location-xt
   s" bosque a la entrada" self~ ms-name!
   0 0 location-47~ location-49~ 0 0 0 0 self~ init-location  ;
 

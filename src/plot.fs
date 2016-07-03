@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607032349
+\ Last update: 201607040032
 
 \ Note: The comments of the code are in Spanish.
 
@@ -28,23 +28,29 @@
 \ ----------------------------------------------
 \ Ambrosio nos sigue
 
-: ambrosio-must-follow?  ( -- )
+: does-ambrosio-follow?  ( -- f )
   ambrosio~ not-vanished?  key~ is-accessible? and
   location-46~ am-i-there?  ambrosio-follows? @ or  and  ;
-  \ ¿Ambrosio tiene que estar siguiéndonos?
+  \ ¿Ambrosio nos sigue?
   \
   \ XXX TODO -- Confirmar la función de la llave aquí. En el código
   \ original solo se distingue que sea manipulable o no, lo que es
   \ diferente a que esté accesible.
 
-: ambrosio-must-follow  ( -- )
+: ambrosio-follows  ( -- )
   my-location ambrosio~ be-there
   s{ s" tu benefactor" ambrosio~ full-name }s ^uppercase
   s" te sigue, esperanzado." s& narrate  ;
-  \ Ambrosio tiene que estar siguiéndonos.
+  \ Ambrosio nos sigue.
+
+: maybe-ambrosio-follows  ( -- )
+  does-ambrosio-follow? ?? ambrosio-follows  ;
+  \ Quizá Ambrosio nos sigue.
 
 \ ----------------------------------------------
 \ Lanzadores de las tramas comunes a todos los escenarios
+
+\ XXX TODO -- convertir en diferidas y mover a Flibustre
 
 : before-describing-any-location  ( -- )  ;
   \ Trama de entrada común a todos los entes escenario.
@@ -55,126 +61,17 @@
   \ XXX TODO -- no usado
 
 : after-listing-entities-of-any-location  ( a -- )
-  ambrosio-must-follow? ?? ambrosio-must-follow  ;
+  maybe-ambrosio-follows  ;
   \ Trama final de entrada común a todos los entes escenario.
+
+: before-leaving-any-location  ( -- )  ;
+  \ Trama de salida común a todos los entes escenario.
+  \ XXX TODO -- no usado
 
 \ ==============================================================
 \ Herramientas para las tramas asociadas a escenarios
 
-: [:location-plot]  ( a -- )  to self~  ;
-  \ Inicia la definición de trama de un ente escenario _a_ (cualquier
-  \ tipo de trama de escenario).  Esta palabra se ejecutará al
-  \ comienzo de la palabra de trama de escenario.  El identificador
-  \ del ente está en la pila porque se compiló con `literal` cuando se
-  \ creó la palabra de trama.  Lo único que hace esta palabra es
-  \ actualizar el puntero al ente, usado para aligerar la sintaxis.
-
-: (:can-i-enter-location?)  ( a xt -- )
-  over ~can-i-enter-location-xt !
-  postpone literal  ;
-  \ Operaciones preliminares para la definición de la trama previa
-  \ _xt_ de entrada a un ente escenario _a_.  Esta palabra solo se
-  \ ejecuta una vez para cada ente, al inicio de la compilación del
-  \ código de la palabra que define la trama.  Esta palabra hace dos
-  \ operaciones: 1) Guarda el _xt_ de la nueva palabra en la ficha del
-  \ ente; 2) Compila el identificador de ente _a_ en la palabra de
-  \ descripción recién creada, para que `[:description]` lo guarde en
-  \ `self~` en tiempo de ejecución.
-
-: :can-i-enter-location?  ( a -- xt a )
-  :noname noname-roll
-  (:can-i-enter-location?)  postpone [:location-plot]  ;
-  \ Crea una palabra sin nombre _xt_ que manejará la trama previa de
-  \ entrada a un ente escenario _a_, hace las operaciones preliminares
-  \ llamando a `(:can-i-enter-location?)` y compila la palabra
-  \ `[:location-plot]` en la palabra creada, para que se ejecute
-  \ cuando sea llamada.
-
-: (:before-describing-location)  ( a xt -- )
-  over ~before-describing-location-xt !  postpone literal  ;
-  \ Operaciones preliminares para la definición de una trama _xt_ de
-  \ entrada a un ente escenario _a_.  Esta palabra solo se
-  \ ejecuta una vez para cada ente, al inicio de la compilación del
-  \ código de la palabra que define la trama.  Esta palabra hace dos
-  \ operaciones: 1) Guarda el _xt_ de la nueva palabra en la ficha del
-  \ ente; 2) Compila el identificador de ente _a_ en la palabra de
-  \ descripción recién creada, para que `[:description]` lo guarde en
-  \ `self~` en tiempo de ejecución.
-
-: :before-describing-location  ( a -- xt a )
-  :noname noname-roll
-  (:before-describing-location)
-  postpone [:location-plot]  ;
-  \ Crea una palabra sin nombre _xt_ que manejará una trama de entrada
-  \ a un ente escenario _a_.  Esta palabra hace dos operaciones: 1)
-  \ Ejecuta las operaciones preliminares, con
-  \ `(:before-describing-location)`; 2) Compila la palabra
-  \ `[:location-plot]` en la palabra creada, para que se ejecute
-  \ cuando sea llamada.
-
-: (:after-describing-location)  ( a xt -- )
-  over ~after-describing-location-xt !
-  postpone literal  ;
-  \ Operaciones preliminares para la definición de una trama _xt_ de
-  \ entrada a un ente escenario _a_.  Esta palabra solo se ejecuta una
-  \ vez para cada ente, al inicio de la compilación del código de la
-  \ palabra que define la trama.  Esta palabra hace dos operaciones:
-  \ 1) Guarda el _xt_ de la nueva palabra en la ficha del ente;  2)
-  \ Compila el identificador de ente en la palabra de descripción
-  \ recién creada, para que `[:description]` lo guarde en `self~` en
-  \ tiempo de ejecución.
-
-: :after-describing-location  ( a -- xt a )
-  :noname noname-roll
-  (:after-describing-location)
-  postpone [:location-plot]  ;
-  \ Crea una palabra sin nombre _xt_ que manejará una trama de entrada
-  \ a un ente escenario _a_.  Esta palabra hace dos operaciones: 1)
-  \ Ejecuta las operaciones preliminares llamando a
-  \ `(:after-describing-location)`; 2) Compila la palabra
-  \ `[:location-plot]` en la palabra creada, para que se ejecute
-  \ cuando sea llamada.
-
-: (:after-listing-entities)  ( a xt -- )
-  over ~after-listing-entities-xt !
-  postpone literal  ;
-  \ Operaciones preliminares para la definición de la trama final de
-  \ entrada a un ente escenario.  Esta palabra solo se ejecuta una vez
-  \ para cada ente, al inicio de la compilación del código de la
-  \ palabra que define la trama.  Esta palabra hace dos operaciones:
-  \ 1) Guarda el _xt_ de la nueva palabra en la ficha del ente _a_.
-  \ 2) Compila el identificador de ente _a_ en la palabra de
-  \ descripción recién creada, para que `[:description]` lo guarde en
-  \ `self~` en tiempo de ejecución.
-
-: :after-listing-entities  ( a -- xt a )
-  :noname noname-roll
-  (:after-listing-entities)  postpone [:location-plot]  ;
-  \ Crea una palabra sin nombre que manejará la trama de entrada a un
-  \ ente escenario. Esta palabra hace dos operaciones: 1) Hace las
-  \ operaciones preliminares, con `(:after-listing-entities)`; 2)
-  \ Compila la palabra `[:location-plot]` en la palabra creada, para
-  \ que se ejecute cuando sea llamada.
-
-: (:before-leaving-location)  ( a xt -- )
-  over ~before-leaving-location-xt !  postpone literal  ;
-  \ Operaciones preliminares para la definición de la trama _xt_ de
-  \ salida de un ente escenario _a_.  Esta palabra solo se ejecuta una
-  \ vez para cada ente, al inicio de la compilación del código de la
-  \ palabra que define su trama.  Esta palabra hace dos operaciones:
-  \ 1) Guarda el _xt_ de la nueva palabra en la ficha del ente 2)
-  \ Compila el identificador de ente _a_ en la palabra de descripción
-  \ recién creada, para que `[:description]` lo guarde en `self~` en
-  \ tiempo de ejecución.
-
-: :before-leaving-location  ( a -- xt a )
-  :noname noname-roll
-  (:before-leaving-location)  postpone [:location-plot]  ;
-  \ Crea una palabra sin nombre _xt_ que manejará la trama de salida
-  \ de un ente escenario _a_ 1) Hace las operaciones preliminares con
-  \ `(:before-leaving-location)`; 2) Compila la palabra
-  \ `[:location-plot]` en la palabra creada, para que se ejecute
-  \ cuando sea llamada.
+\ XXX TODO -- mover a Flibustre
 
 : before-describing-location  ( a -- )
   before-describing-any-location
@@ -190,10 +87,6 @@
   after-listing-entities-of-any-location
   after-listing-entities-xt ?execute  ;
   \ Trama final de entrada a un ente escenario.
-
-: before-leaving-any-location  ( -- )  ;
-  \ Trama de salida común a todos los entes escenario.
-  \ XXX TODO -- no usado
 
 : before-leaving-location  ( a -- )
   before-leaving-any-location
@@ -768,115 +661,11 @@ here swap - cell / constant battle-phases
 \ ==============================================================
 \ Tramas asociadas a lugares
 
-\ XXX TODO -- convertir las tramas que corresponda de
-\ `:after-describing-location` - `:before-describing-location`.
+: soldiers-are-here  ( -- )  soldiers~ be-here going-home  ;
 
-location-01~ :after-describing-location  ( -- )
-  soldiers~ be-here
-  still-in-the-village?
-  if  celebrating  else  going-home  then  ;
+: lake-is-here  ( -- )  lake~ be-here  ;
 
-location-02~ :after-describing-location  ( -- )
-  \ Decidir hacia dónde conduce la dirección hacia abajo
-  [false] [if]  \ XXX OLD -- Primera versión
-    \ Decidir al azar:
-    self~ location-01~ location-03~ 2 choose d-->
-  [else]  \ XXX NEW -- Segunda versión mejorada
-    \ Decidir según el escenario de procedencia:
-    self~
-    protagonist~ previous-location location-01~ =  \ ¿Venimos de la aldea?
-    if  location-03~  else  location-01~  then  d-->
-  [then]
-  soldiers~ be-here going-home  ;
-
-location-03~ :after-describing-location  ( -- )
-  soldiers~ be-here going-home  ;
-
-location-04~ :after-describing-location  ( -- )
-  soldiers~ be-here going-home  ;
-
-location-05~ :after-describing-location  ( -- )
-  soldiers~ be-here going-home  ;
-
-location-06~ :after-describing-location  ( -- )
-  soldiers~ be-here going-home  ;
-
-location-07~ :after-describing-location  ( -- )
-  soldiers~ be-here going-home  ;
-
-location-08~ :after-describing-location  ( -- )
-  soldiers~ be-here
-  going-home
-  pass-still-open? ?? ambush  ;
-
-location-09~ :after-describing-location  ( -- )
-  soldiers~ be-here
-  going-home  ;
-
-location-10~ :after-describing-location  ( -- )
-  s" entrada a la cueva" cave-entrance~ fs-name!
-  cave-entrance~ familiar++
-  location-08~ my-previous-location = if  \ Venimos del exterior
-    self~ visits
-    if  ^again$  else  ^finally$ s" ya" s?&  then
-    \ XXX TODO -- ampliar con otros textos alternativos
-    you-think-you're-safe$ s&
-    but-it's-an-impression$ s?+
-    period+ narrate
-  \ XXX TODO -- si venimos del interior, mostrar otros textos
-  then  ;
-
-location-11~ :after-describing-location  ( -- )
-  lake~ be-here  ;
-
-location-16~ :after-describing-location  ( -- )
-  s" En la distancia, por entre los resquicios de las rocas,"
-  s" y allende el canal de agua, los sajones" s&
-  s{ s" intentan" s" se esfuerzan en" s" tratan de" s" se afanan en" }s&
-  s{ s" hallar" s" buscar" s" localizar" }s&
-  s" la salida que encontraste por casualidad." s&
-  narrate  ;
-
-location-20~ :can-i-enter-location?  ( -- f )
-  location-17~ am-i-there? no-torch? and
-  dup 0= swap ?? dark-cave  ;
-
-location-28~ :after-describing-location  ( -- )
-  self~ no-exit e-->  \ Cerrar la salida hacia el este
-  recent-talks-to-the-leader off
-  refugees~ be-here
-  the-refugees-surround-you$ narrate
-  the-leader-looks-at-you$ narrate  ;
-
-location-29~ :after-describing-location  ( -- )
-  refugees~ be-here  \ Para que sean visibles en la distancia  ;
-
-location-31~ :after-describing-location  ( -- )
-  \ XXX TODO -- mover a la descripción?
-  self~ has-north-exit? if
-    s" Las rocas yacen desmoronadas a lo largo del"
-    pass-way$ s& period+
-  else
-    s" Las rocas" (they)-block$ s& s" el paso." s&
-  then  narrate  ;
-
-location-38~ :after-describing-location  ( -- )
-  lake~ be-here  ;
-
-location-43~ :after-describing-location  ( -- )
-  snake~ is-here? if
-    a-snake-blocks-the-way$ period+
-    narrate
-  then  ;
-
-location-44~ :after-describing-location  ( -- )
-  lake~ be-here  ;
-
-location-47~ :after-describing-location  ( -- )
-  door~ be-here  ;
-
-location-48~ :after-describing-location  ( -- )
-  door~ be-here  ;
+: door-is-here  ( -- )  door~ be-here  ;
 
 \ ==============================================================
 \ Trama global
@@ -904,15 +693,9 @@ location-48~ :after-describing-location  ( -- )
 \ ==============================================================
 \ Descripciones especiales
 
-  \ XXX TODO move to data.fs
-
-\ Esta sección contiene palabras que muestran descripciones
-\ que necesitan un tratamiento especial porque hacen
-\ uso de palabras relacionadas con la trama.
-\
-\ En lugar de crear vectores para las palabras que estas
-\ descripciones utilizan, es más sencillo crearlos para las
-\ descripciones y definirlas aquí, a continuación de la trama.
+\ Esta sección contiene palabras que calculan o muestran descripciones
+\ que necesitan un tratamiento especial porque hacen uso de palabras
+\ relacionadas con la trama.
 
 : officers-forbid-to-steal$  ( -- )
   s{ s" los" s" tus" }s s" oficiales" s&
@@ -989,12 +772,13 @@ location-48~ :after-describing-location  ( -- )
   soldiers-steal-spite-of-officers$ period+ paragraph  ;
   \ Describe a tus soldados en la aldea arrasada.
 
-: will-follow-you-forever$  ( -- )
+: will-follow-you-forever$  ( -- ca len )
   s" te seguirían hasta el"
   s{ s{ s" mismo" s" mismísimo" }s s" infierno" s&
   s" último rincón de la Tierra"
   }s&  ;
-  \ Describe a tus hombres durante el regreso a casa, sin citarlos.
+  \ Devuelve la descripción de tus hombres durante el regreso a casa,
+  \ sin citarlos.
 
 : will-follow-you-forever  ( ca len -- )
   will-follow-you-forever$ s& period+ paragraph  ;
@@ -1011,31 +795,6 @@ location-48~ :after-describing-location  ( -- )
   s{ s" el resto de tus" all-your$ }s& soldiers$ s& comma+ s?+
   will-follow-you-forever  ;
   \ Describe a tus soldados durante el regreso a casa.
-
-: describe-soldiers  ( -- )
-  true case
-    still-in-the-village? of  soldiers-steal-spite-of-officers  endof
-\   back-to-the-village? of  soldiers-go-home  endof  \ XXX TODO -- no usado
-    pass-still-open? of  soldiers-go-home  endof
-\   battle? of  battle-phase  endof  \ XXX TODO -- no usado. redundante, porque tras la descripción se mostrará otra vez la situación de la batalla
-  endcase  ;
-  \ Describe a tus soldados.
-  \ XXX TODO move to data.fs
-
-\ ' (describe-soldiers) is describe-soldiers  \ XXX OLD
-
-: describe-officers  ( -- )
-  true case
-    still-in-the-village? of  ^officers-forbid-to-steal$  endof
-\   back-to-the-village? of  officers-go-home  endof  \ XXX TODO -- no usado
-    pass-still-open? of  officers-go-home  endof
-\   battle? of  battle-phase  endof  \ XXX TODO -- no usado. redundante, porque tras la descripción se mostrará otra vez la situación de la batalla
-  endcase  ;
-  \ Describe a tus soldados.
-  \ XXX TODO move to data.fs
-
-\ ' (describe-officers) is describe-officers \ XXX OLD
-
 
 \ vim:filetype=gforth:fileencoding=utf-8
 

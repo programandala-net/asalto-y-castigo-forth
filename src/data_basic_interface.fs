@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607032318
+\ Last update: 201607040011
 
 \ Note: The comments of the code are in Spanish.
 
@@ -143,7 +143,12 @@ last-exit> cell+ first-exit> - constant /exits
 \ ----------------------------------------------
 \ Modificadores de campos
 
+: be-before-describing-location-xt  ( xt a -- )  ~before-describing-location-xt !  ;
 : be-description-xt  ( xt a -- )  ~description-xt !  ;
+: be-after-describing-location-xt  ( xt a -- )  ~after-describing-location-xt !  ;
+: be-after-listing-entities-xt  ( xt a -- )  ~after-listing-entities-xt !  ;
+: be-before-leaving-location-xt  ( xt a -- )  ~before-leaving-location-xt !  ;
+: be-can-i-enter-location-xt  ( a xt -- )  ~can-i-enter-location-xt !  ;
 
 : have-definite-article  ( a -- )  ~has-definite-article bit-on  ;
 : have-feminine-name  ( a -- )  ~has-feminine-name bit-on  ;

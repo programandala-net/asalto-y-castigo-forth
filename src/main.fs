@@ -9,7 +9,6 @@
 \
 \ Last update: 201607032349
 \
-\
 \ 'Asalto y castigo' is free software; you can redistribute
 \ it and/or modify it under the terms of the GNU General
 \ Public License as published by the Free Software

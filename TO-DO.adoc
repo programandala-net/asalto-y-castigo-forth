@@ -5,20 +5,11 @@
 
 2016-07-03:
 
-Hacer una simplificación análoga a la de `:description` con las
-palabras que definen acciones que han de hacerse antes o después de
-las descripciones de escenarios. Convertir esas definiciones en
-palabras normales y guardar su xt en el campo correspondiente en la
-definición creada con `:attributes`.  Así se podrían eliminar
-`:before-describing-location`, `:after-describing-location`,
-`:before-leaving-location`, `:after-listing-entities` y
-`:can-i-enter-location?`.
-
-El objetivo es hacer `setup-entity` innecesario, para que no haya que
-salvar y restaurar campos durante la inicialización de los entes. El
-campo que guarda el xt de inicialización podría salvarse muy
-fácilmente: basta con definirlo en la primera posición de la
-estructura, y tenerlo en cuenta al hacer `erase`.
+Hacer `setup-entity` innecesario, para que no haya que salvar y
+restaurar campos durante la inicialización de los entes. El campo que
+guarda el xt de inicialización podría salvarse muy fácilmente: basta
+con definirlo en la primera posición de la estructura, y tenerlo en
+cuenta al hacer `erase`.
 
 Solucionar error:
 
