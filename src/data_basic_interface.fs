@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607031856
+\ Last update: 201607032318
 
 \ Note: The comments of the code are in Spanish.
 
@@ -142,6 +142,8 @@ last-exit> cell+ first-exit> - constant /exits
 
 \ ----------------------------------------------
 \ Modificadores de campos
+
+: be-description-xt  ( xt a -- )  ~description-xt !  ;
 
 : have-definite-article  ( a -- )  ~has-definite-article bit-on  ;
 : have-feminine-name  ( a -- )  ~has-feminine-name bit-on  ;

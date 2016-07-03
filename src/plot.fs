@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606301057
+\ Last update: 201607032314
 
 \ Note: The comments of the code are in Spanish.
 
@@ -1010,7 +1010,7 @@ location-48~ :after-describing-location  ( -- )
   will-follow-you-forever  ;
   \ Describe a tus soldados durante el regreso a casa.
 
-: (soldiers-description)  ( -- )
+: (describe-soldiers)  ( -- )
   true case
     still-in-the-village? of  soldiers-steal-spite-of-officers  endof
 \   back-to-the-village? of  soldiers-go-home  endof  \ XXX TODO -- no usado
@@ -1019,8 +1019,9 @@ location-48~ :after-describing-location  ( -- )
   endcase  ;
   \ Describe a tus soldados.
 
-' (soldiers-description) is soldiers-description
-: (officers-description)  ( -- )
+' (describe-soldiers) is describe-soldiers
+
+: (describe-officers)  ( -- )
   true case
     still-in-the-village? of  ^officers-forbid-to-steal$  endof
 \   back-to-the-village? of  officers-go-home  endof  \ XXX TODO -- no usado
@@ -1029,7 +1030,7 @@ location-48~ :after-describing-location  ( -- )
   endcase  ;
   \ Describe a tus soldados.
 
-' (officers-description) is officers-description
+' (describe-officers) is describe-officers
 
 
 \ vim:filetype=gforth:fileencoding=utf-8

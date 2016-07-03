@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607031930
+\ Last update: 201607032314
 
 \ Note: The comments of the code are in Spanish.
 
@@ -15,13 +15,13 @@
 \ ----------------------------------------------
 \ Ente protagonista
 
-ulfius~ :description
+: describe-ulfius  ( -- )
   s" Sientes sobre ti la carga de tanto"
   s{ s" sucedido" s" acontecido" s" acontecido" s" vivido" }s&
-  period+ paragraph
-  ;description
+  period+ paragraph  ;
 
 ulfius~ :attributes
+  ['] describe-ulfius self~ be-description-xt
   s" Ulfius" self~ ms-name!
   self~ be-human
   self~ have-personal-name
@@ -32,7 +32,15 @@ ulfius~ :attributes
 \ ----------------------------------------------
 \ Entes personaje
 
+: describe-ambrosio  ( -- )
+  self~ conversations
+  if    s" Ambrosio"
+        s" es un hombre de mediana edad, que te mira afable." s&
+  else  s" Es de mediana edad y mirada afable."
+  then  paragraph  ;
+
 ambrosio~ :attributes
+  ['] describe-ambrosio self~ be-description-xt
   s" hombre" self~ ms-name!
   self~ be-character
   self~ be-human
@@ -40,23 +48,15 @@ ambrosio~ :attributes
   ;attributes
   \ N.B. El nombre cambiará a «Ambrosio» durante el juego.
 
-ambrosio~ :description
-  self~ conversations
-  if    s" Ambrosio"
-        s" es un hombre de mediana edad, que te mira afable." s&
-  else  s" Es de mediana edad y mirada afable."
-  then  paragraph
-  ;description
-
-leader~ :description
+: describe-leader  ( -- )
   leader~ conversations?
   if    s" Es el jefe de los refugiados."
   else  s" Es un anciano."
-  then  paragraph
-  ;description
+  then  paragraph  ;
   \ XXX TODO -- elaborar esto según la trama
 
 leader~ :attributes
+  ['] describe-leader self~ be-description-xt
   s" anciano" self~ ms-name!
   self~ be-character
   self~ be-human
@@ -64,7 +64,13 @@ leader~ :attributes
   location-28~ self~ be-there
   ;attributes
 
+defer describe-soldiers  ( -- )
+  \ XXX REMARK -- La descripción de los soldados
+  \ necesita usar palabras que aún no están definidas,
+  \ y por ello es mejor crearla después.
+
 soldiers~ :attributes
+  ['] describe-soldiers self~ be-description-xt
   s" soldados" self~ mp-name!
   self~ be-human
   self~ familiar++
@@ -72,16 +78,13 @@ soldiers~ :attributes
   self~ belongs-to-protagonist
   ;attributes
 
-defer soldiers-description  ( -- )
-
-soldiers~ :description
-  soldiers-description
-  ;description
-  \ XXX REMARK -- La descripción de los soldados
-  \ necesita usar palabras que aún no están definidas,
-  \ y por ello es mejor crearla después.
+defer describe-officers  ( -- )
+  \ XXX REMARK -- La descripción de los oficiales necesita usar
+  \ palabras que aún no están definidas, y por ello es mejor crearla
+  \ después.
 
 officers~ :attributes
+  ['] describe-officers self~ be-description-xt
   s" oficiales" self~ mp-name!
   self~ be-human
   self~ familiar++
@@ -89,25 +92,16 @@ officers~ :attributes
   self~ belongs-to-protagonist
   ;attributes
 
-defer officers-description  ( -- )
-
-officers~ :description
-  officers-description
-  ;description
-  \ XXX REMARK -- La descripción de los oficiales necesita usar
-  \ palabras que aún no están definidas, y por ello es mejor crearla
-  \ después.
-
-refugees~ :description
+: describe-refugees  ( -- )
   my-location case
   location-28~ of  refugees-description  endof
   location-29~ of  s" Todos los refugiados quedaron atrás."
                    paragraph  endof
-  endcase
-  ;description
+  endcase  ;
   \ XXX TODO -- ampliar el texto
 
 refugees~ :attributes
+  ['] describe-refugees self~ be-description-xt
   s" refugiados" self~ mp-name!
   self~ be-human
   self~ be-decoration
@@ -116,87 +110,87 @@ refugees~ :attributes
 \ ----------------------------------------------
 \ Entes objeto
 
-altar~ :description
+: describe-altar  ( -- )
   s" Está" s{ s" situado" s" colocado" }s&
   s" justo en la mitad del puente." s&
   idol~ is-unknown?
   if  s" Debe de sostener algo importante." s&   then
-  paragraph
-  ;description
+  paragraph  ;
 
 altar~ :attributes
+  ['] describe-altar self~ be-description-xt
   s" altar" self~ ms-name!
   self~ be-decoration
   impossible-error# self~ ~take-error# !
   location-18~ self~ be-there
   ;attributes
 
-arch~ :description
+: describe-arch  ( -- )
   s" Un sólido arco de piedra, de una sola pieza."
-  paragraph
-  ;description
+  paragraph  ;
   \ XXX TODO -- mejorar texto
 
 arch~ :attributes
+  ['] describe-arch self~ be-description-xt
   s" arco" self~ ms-name!
   self~ be-decoration
   location-18~ self~ be-there
   ;attributes
 
-bed~ :description
+: describe-bed  ( -- )
   s{ s" Parece poco" s" No tiene el aspecto de ser muy"
   s" No parece especialmente" }s
   s{ s" confortable" s" cómod" self~ adjective-ending s+ }s& period+
-  paragraph
-  ;description
+  paragraph  ;
 
 bed~ :attributes
+  ['] describe-bed self~ be-description-xt
   s" catre" self~ ms-name!
   location-46~ self~ be-there
   self~ ambrosio~ be-owner
   ;attributes
 
-bridge~ :description
+: describe-bridge  ( -- )
   s" Está semipodrido."
-  paragraph
-  ;description
+  paragraph  ;
   \ XXX TODO -- mejorar texto
 
 bridge~ :attributes
+  ['] describe-bridge self~ be-description-xt
   s" puente" self~ ms-name!
   self~ be-decoration
   location-13~ self~ be-there
   ;attributes
 
-candles~ :description
+: describe-candles  ( -- )
   s" Están muy consumidas."
-  paragraph
-  ;description
+  paragraph  ;
 
 candles~ :attributes
+  ['] describe-candles self~ be-description-xt
   s" velas" self~ fp-name!
   location-46~ self~ be-there
   self~ ambrosio~ be-owner
   ;attributes
 
-cave-entrance~ :description
+: describe-cave-entrance  ( -- )
   the-cave-entrance-is-hidden$
   you-were-lucky-discovering-it$ s&
   it's-your-last-hope$ s&
-  paragraph
-  ;description
+  paragraph  ;
 
 cave-entrance~ :attributes
+  ['] describe-cave-entrance self~ be-description-xt
   s" entrada a una cueva" self~ fs-name!
   ;attributes
 
-cloak~ :description
+: describe-cloak  ( -- )
   s" Tu capa de general, de fina lana"
   s{ s" tintada de negro." s" negra." }s&
-  paragraph
-  ;description
+  paragraph  ;
 
 cloak~ :attributes
+  ['] describe-cloak self~ be-description-xt
   s" capa" self~ fs-name!
   self~ be-cloth
   self~ belongs-to-protagonist
@@ -205,6 +199,7 @@ cloak~ :attributes
   ;attributes
 
 cuirasse~ :attributes
+  \ ['] describe-cuirasse self~ be-description-xt
   s" coraza" self~ fs-name!
   self~ be-cloth
   self~ belongs-to-protagonist
@@ -212,18 +207,10 @@ cuirasse~ :attributes
   self~ be-worn
   ;attributes
 
-door~ :attributes
-  s" puerta" self~ fs-name!
-  self~ be-closed
-  impossible-error# self~ ~take-error# !
-  location-47~ self~ be-there
-  self~ ambrosio~ be-owner
-  ;attributes
-
 defer lock-found  ( -- )
   \ Encontrar el candado.
 
-door~ :description
+: describe-door  ( -- )
   self~ times-open if  s" Es"  else  s" Parece"  then
   s" muy" s?& s{ s" recia" s" gruesa" s" fuerte" }s&
   location-47~ am-i-there? if
@@ -232,20 +219,28 @@ door~ :description
     else  s"  y tiene un gran candado"
     then  s+ lock-found
   then  period+
-  s" Está" s& door~ «open»|«closed» s& period+ paragraph
-  ;description
+  s" Está" s& door~ «open»|«closed» s& period+ paragraph  ;
 
-emerald~ :description
+door~ :attributes
+  ['] describe-door self~ be-description-xt
+  s" puerta" self~ fs-name!
+  self~ be-closed
+  impossible-error# self~ ~take-error# !
+  location-47~ self~ be-there
+  self~ ambrosio~ be-owner
+  ;attributes
+
+: describe-emerald  ( -- )
   s" Es preciosa."
-  paragraph
-  ;description
+  paragraph  ;
 
 emerald~ :attributes
+  ['] describe-emerald self~ be-description-xt
   s" esmeralda" self~ fs-name!
   location-39~ self~ be-there
   ;attributes
 
-fallen-away~ :description
+: describe-fallen-away  ( -- )
   s{
     s" Muchas," s" Muchísimas," s" Numerosas,"
     s" Un gran número de" s" Una gran cantidad de"
@@ -266,10 +261,10 @@ fallen-away~ :description
     s" la una sobre la otra"
     s" las unas sobre las otras"
   }s& period+
-  paragraph
-  ;description
+  paragraph  ;
 
 fallen-away~ :attributes
+  ['] describe-fallen-away self~ be-description-xt
   s" derrumbe" self~ ms-name!
   self~ be-decoration
   nonsense-error# self~ ~take-error# !
@@ -284,29 +279,29 @@ fallen-away~ :attributes
   else  s" nadie."
   then  s& narrate  ;
 
-flags~ :description
+: describe-flags  ( -- )
   s" Son las banderas britana y sajona."
   s" Dos dragones rampantes, rojo y blanco respectivamente, enfrentados." s&
-  paragraph
-  ;description
+  paragraph  ;
 
 flags~ :attributes
+  ['] describe-flags self~ be-description-xt
   s" banderas" self~ fp-name!
   self~ be-decoration
   ['] don't-take-the-flags self~ ~take-error# !
   location-28~ self~ be-there
   ;attributes
 
-flint~ :description
+: describe-flint  ( -- )
   s" Es una piedra dura y afilada."
-  paragraph
-  ;description
+  paragraph  ;
 
 flint~ :attributes
+  ['] describe-flint self~ be-description-xt
   s" pedernal" self~ ms-name!
   ;attributes
 
-grass~ :description
+: describe-grass  ( -- )
   door~ times-open if
     s" Está" self~ verb-number-ending+
     s" aplastad" self~ adjective-ending+ s&
@@ -322,60 +317,60 @@ grass~ :description
     s{ s" no ha sido abierta en" s" lleva cerrada"
     s" ha permanecido cerrada" s" durante" s?& }s
     s" mucho tiempo." s&
-  then  paragraph
-  ;description
+  then  paragraph  ;
 
 grass~ :attributes
+  ['] describe-grass self~ be-description-xt
   s" hierba" self~ fs-name!
   self~ be-decoration
   ;attributes
 
-idol~ :description
+: describe-idol  ( -- )
   s" El ídolo tiene dos agujeros por ojos."
-  paragraph
-  ;description
+  paragraph  ;
 
 idol~ :attributes
+  ['] describe-idol self~ be-description-xt
   s" ídolo" self~ ms-name!
   self~ be-decoration
   impossible-error# self~ ~take-error# !
   location-41~ self~ be-there
   ;attributes
 
-key~ :description
+: describe-key  ( -- )
   s" Es una llave grande, de hierro herrumboso."
-  paragraph
-  ;description
+  paragraph  ;
 
 key~ :attributes
+  ['] describe-key self~ be-description-xt
   s" llave" self~ fs-name!
   location-46~ self~ be-there
   self~ ambrosio~ be-owner
   ;attributes
 
-lake~ :description
+: describe-lake  ( -- )
   s{ s" La" s" Un rayo de" }s
   s" luz entra por un resquicio," s&
   s" y sus caprichosos reflejos te maravillan." s&
-  paragraph
-  ;description
+  paragraph  ;
 
 lake~ :attributes
+  ['] describe-lake self~ be-description-xt
   s" lago" self~ ms-name!
   self~ be-decoration
   nonsense-error# self~ ~take-error# !
   location-44~ self~ be-there
   ;attributes
 
-lock~ :description
+: describe-lock  ( -- )
   s" Es grande y parece" s{ s" fuerte." s" resistente." }s&
   s" Está" s&{ s" fijad" s" unid" }s& self~ adjective-ending+
   s" a la puerta y" s&
   lock~ «open»|«closed» s& period+
-  paragraph
-  ;description
+  paragraph  ;
 
 lock~ :attributes
+  ['] describe-lock self~ be-description-xt
   s" candado" self~ ms-name!
   self~ be-decoration
   self~ be-closed
@@ -383,42 +378,42 @@ lock~ :attributes
   self~ ambrosio~ be-owner
   ;attributes
 
-log~ :description
+: describe-log  ( -- )
   s" Es un tronco"
   s{ s" recio," s" resistente," s" fuerte," }s&
   but$ s& s{ s" liviano." s" ligero." }s&
-  paragraph
-  ;description
+  paragraph  ;
 
 log~ :attributes
+  ['] describe-log self~ be-description-xt
   s" tronco" self~ ms-name!
   location-15~ self~ be-there
   ;attributes
 
+: describe-piece  ( -- )
+  s" Un pequeño" s{ s" retal" s" pedazo" s" trozo" s" resto" }s&
+  of-your-ex-cloak$ s&
+  paragraph  ;
+
 piece~ :attributes
+  ['] describe-piece self~ be-description-xt
   s" trozo de tela" self~ ms-name!
   ;attributes
   \ XXX TODO -- ojo con este «de tela»: «tela» es sinónimo de trozo;
   \ hay que contemplar estos casos en el cálculo de los genitivos.
 
-piece~ :description
-  s" Un pequeño" s{ s" retal" s" pedazo" s" trozo" s" resto" }s&
-  of-your-ex-cloak$ s&
-  paragraph
-  ;description
-
-rags~ :description
+: describe-rags  ( -- )
   s" Un" s{ s" retal" s" pedazo" s" trozo" }s&
   s{ s" un poco" s" algo" }s?& s" grande" s&
   of-your-ex-cloak$ s&
-  paragraph
-  ;description
+  paragraph  ;
 
 rags~ :attributes
+  ['] describe-rags self~ be-description-xt
   s" harapo" self~ ms-name!
   ;attributes
 
-ravine-wall~ :description
+: describe-ravine-wall  ( -- )
   s" en" the-cave-entrance-was-discovered? ?keep
   s" la pared" s& rocky(f)$ s& ^uppercase
   the-cave-entrance-was-discovered? if
@@ -431,35 +426,35 @@ ravine-wall~ :description
     if    you-maybe-discover-the-cave-entrance
     else  period+ paragraph
     then
-  then
-  ;description
+  then  ;
 
 ravine-wall~ :attributes
+  ['] describe-ravine-wall self~ be-description-xt
   s" pared" rocky(f)$ s& self~ fs-name!
   location-08~ self~ be-there
   self~ be-not-listed  \ XXX OLD -- innecesario
   self~ be-decoration
   ;attributes
 
-rocks~ :description
+: describe-rocks  ( -- )
   location-31~ has-north-exit?
   if  (rocks)-on-the-floor$ ^uppercase
   else  (rocks)-clue$
-  then  period+ paragraph
-  ;description
+  then  period+ paragraph  ;
 
 rocks~ :attributes
+  ['] describe-rocks self~ be-description-xt
   s" rocas" self~ fp-name!
   self~ be-decoration
   location-31~ self~ be-there
   ;attributes
 
-snake~ :description
+: describe-snake  ( -- )
   s" Una serpiente grande, muy atenta a tu más mínimo movimiento."
-  paragraph
-  ;description
+  paragraph  ;
 
 snake~ :attributes
+  ['] describe-snake self~ be-description-xt
   s" serpiente" self~ fs-name!
   self~ be-animal
   dangerous-error# self~ ~take-error# !
@@ -468,68 +463,68 @@ snake~ :attributes
   \ XXX TODO -- distinguir si está muerta; en el programa original no
   \ hace falta
 
-stone~ :description
+: describe-stone  ( -- )
   s" Recia y pesada, pero no muy grande, de forma piramidal."
-  paragraph
-  ;description
+  paragraph  ;
 
 stone~ :attributes
+  ['] describe-stone self~ be-description-xt
   s" piedra" self~ fs-name!
   location-18~ self~ be-there
   ;attributes
 
-sword~ :description
+: describe-sword  ( -- )
   s{ s" Legado" s" Herencia" }s s" de tu padre," s&
   s{ s" fiel herramienta" s" arma fiel" }s& s" en" s&
   s{ s" mil" s" incontables" s" innumerables" }s&
   s" batallas." s&
-  paragraph
-  ;description
+  paragraph  ;
 
 sword~ :attributes
+  ['] describe-sword self~ be-description-xt
   s" espada" self~ fs-name!
   self~ belongs-to-protagonist
   self~ taken
   ;attributes
 
-table~ :description
+: describe-table  ( -- )
   s" Es pequeña y de" s{ s" basta" s" tosca" }s& s" madera." s&
-  paragraph
-  ;description
+  paragraph  ;
 
 table~ :attributes
+  ['] describe-table self~ be-description-xt
   s" mesa" self~ fs-name!
   location-46~ self~ be-there
   self~ ambrosio~ be-owner
   ;attributes
 
-thread~ :description
+: describe-thread  ( -- )
   s" Un hilo" of-your-ex-cloak$ s&
-  paragraph
-  ;description
+  paragraph  ;
 
 thread~ :attributes
+  ['] describe-thread self~ be-description-xt
   s" hilo" self~ ms-name!
   ;attributes
 
-torch~ :description
+: describe-torch  ( -- )
   s" Está" self~ is-lit?
-  if  s" encendida."  else  s" apagada."  then  s& paragraph
-  ;description
+  if  s" encendida."  else  s" apagada."  then  s& paragraph  ;
 
 torch~ :attributes
+  ['] describe-torch self~ be-description-xt
   s" antorcha" self~ fs-name!
   self~ be-light
   self~ be-not-lit
   ;attributes
 
-waterfall~ :description
+: describe-waterfall  ( -- )
   s" No ves nada por la cortina de agua."
   s" El lago es muy poco profundo." s&
-  paragraph
-  ;description
+  paragraph  ;
 
 waterfall~ :attributes
+  ['] describe-waterfall self~ be-description-xt
   s" cascada" self~ fs-name!
   self~ be-decoration
   nonsense-error# self~ ~take-error# !
@@ -546,9 +541,9 @@ waterfall~ :attributes
 \ permite describir lo que hay más allá de cada escenario en
 \ cualquier dirección.
 
-location-01~ :description
+: describe-location-01  ( -- )
   sight case
-  self~ of
+  my-location of
     s" No ha quedado nada en pie, ni piedra sobre piedra."
     s{ s" El entorno es desolador." s" Todo alrededor es desolación." }s
     rnd2swap s&
@@ -589,19 +584,19 @@ location-01~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-01~ :attributes
+  ['] describe-location-01 self~ be-description-xt
   s" aldea sajona" self~ fs-name!
   0 location-02~ 0 0 0 0 0 0 self~ init-location
   ;attributes
 
   \ XXX TODO -- crear colina en los tres primeros escenarios
 
-location-02~ :description
+: describe-location-02  ( -- )
   sight case
-  self~ of
+  my-location of
     s" Sobre" s" la cima de" s?&
     s" la colina, casi" s& s{ s" sobre" s" por encima de" }s&
     s" la" s&
@@ -623,10 +618,10 @@ location-02~ :description
     if  north~  else  west~  then  describe
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-02~ :attributes
+  ['] describe-location-02 self~ be-description-xt
   s" cima de la colina" self~ fs-name!
   location-01~ 0 0 location-03~ 0 0 0 0 self~ init-location
   ;attributes
@@ -639,9 +634,9 @@ location-02~ :attributes
 
   \ XXX TODO -- crear entes en escenario 2: aldea, niebla
 
-location-03~ :description
+: describe-location-03  ( -- )
   sight case
-  self~ of
+  my-location of
     ^the-path$ s" avanza por el valle," s&
     s" desde la parte alta, al este," s&
     s" a una zona" s& very-or-null$ s& s" boscosa, al oeste." s&
@@ -656,17 +651,17 @@ location-03~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-03~ :attributes
+  ['] describe-location-03 self~ be-description-xt
   s" camino entre colinas" self~ ms-name!
   0 0 location-02~ location-04~ 0 0 0 0 self~ init-location
   ;attributes
 
-location-04~ :description
+: describe-location-04  ( -- )
   sight case
-  self~ of
+  my-location of
     s" Una senda parte al oeste, a la sierra por el paso del Perro,"
     s" y otra hacia el norte, por un frondoso bosque que la rodea." s&
     paragraph
@@ -682,17 +677,17 @@ location-04~ :description
   down~ of  endof
   up~ of  endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-04~ :attributes
+  ['] describe-location-04 self~ be-description-xt
   s" cruce de caminos" self~ ms-name!
   location-05~ 0 location-03~ location-09~ 0 0 0 0 self~ init-location
   ;attributes
 
-location-05~ :description
+: describe-location-05  ( -- )
   sight case
-  self~ of
+  my-location of
     ^toward-the(m)$ s" oeste se extiende" s&
     s{ s" frondoso" s" exhuberante" }s& \ XXX TODO -- independizar
     s" el bosque que rodea la sierra." s&
@@ -711,17 +706,17 @@ location-05~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-05~ :attributes
+  ['] describe-location-05 self~ be-description-xt
   s" linde del bosque" self~ fs-name!
   0 location-04~ 0 location-06~ 0 0 0 0 self~ init-location
   ;attributes
 
-location-06~ :description
+: describe-location-06  ( -- )
   sight case
-  self~ of
+  my-location of
     s" Jirones de niebla se enzarcen en frondosas ramas y arbustos."
     ^the-path$ s& s" serpentea entre raíces, de un luminoso este" s&
     toward-the(m)$ s& s" oeste." s&
@@ -741,17 +736,17 @@ location-06~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-06~ :attributes
+  ['] describe-location-06 self~ be-description-xt
   s" bosque" self~ ms-name!
   0 0 location-05~ location-07~ 0 0 0 0 self~ init-location
   ;attributes
 
-location-07~ :description
+: describe-location-07  ( -- )
   sight case
-  self~ of
+  my-location of
     s" Abruptamente, el bosque desaparece y deja paso a un estrecho camino entre altas rocas."
     s" El" s& s{ s" inquietante" s" sobrecogedor" }s&
     s" desfiladero" s& s{ s" tuerce" s" gira" }s&
@@ -770,17 +765,17 @@ location-07~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-07~ :attributes
+  ['] describe-location-07 self~ be-description-xt
   s" paso del Perro" self~ ms-name!
   0 location-08~ location-06~ 0 0 0 0 0 self~ init-location
   ;attributes
 
-location-08~ :description
+: describe-location-08  ( -- )
   sight case
-  self~ of
+  my-location of
     ^the-pass-way$ s" entre el desfiladero sigue de norte a este" s&
     s" junto a una" s&
     s{  s" pared" rocky(f)$ s& s" rocosa pared" }s& period+
@@ -812,19 +807,19 @@ location-08~ :description
     then
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-08~ :attributes
+  ['] describe-location-08 self~ be-description-xt
   s" desfiladero" self~ ms-name!
   location-07~ 0 0 0 0 0 0 0 self~ init-location
   ;attributes
 
   \ XXX TODO -- crear pared y roca y desfiladero en escenario 08
 
-location-09~ :description
+: describe-location-09  ( -- )
   sight case
-  self~ of
+  my-location of
     ^the-path$ goes-down$ s& s" hacia la agreste sierra, al oeste," s&
     s" desde los" s& s" verdes" s" valles" rnd2swap s& s& s" al este." s&
     ^but$ s& s" un" s&{ s" gran" s" enorme" }s?& s" derrumbe" s&
@@ -841,17 +836,17 @@ location-09~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-09~ :attributes
+  ['] describe-location-09 self~ be-description-xt
   s" derrumbe" self~ ms-name!
   0 0 location-04~ 0 0 0 0 0 self~ init-location
   ;attributes
 
-location-10~ :description
+: describe-location-10  ( -- )
   sight case
-  self~ of
+  my-location of
     s" El estrecho paso se adentra hacia el oeste, desde la boca, al norte."
     paragraph
     endof
@@ -862,18 +857,18 @@ location-10~ :description
   east~ of
   endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-10~ :attributes
+  ['] describe-location-10 self~ be-description-xt
   s" gruta de entrada" self~ fs-name!
   self~ be-indoor-location
   location-08~ 0 0 location-11~ 0 0 0 0 self~ init-location
   ;attributes
 
-location-11~ :description
+: describe-location-11  ( -- )
   sight case
-  self~ of
+  my-location of
     s" Una" s{
       s{ s" gran" s" amplia" }s s" estancia" s&
       s" estancia" s" muy" s?& s{ s" grande" s" amplia" }s&
@@ -906,10 +901,10 @@ location-11~ :description
     paragraph
   endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-11~ :attributes
+  ['] describe-location-11 self~ be-description-xt
   s" gran lago" self~ ms-name!
   self~ be-indoor-location
   0 0 location-10~ 0 0 0 0 0 self~ init-location
@@ -917,9 +912,9 @@ location-11~ :attributes
 
   \ XXX TODO -- crear ente. estancia y aguas en escenario 11
 
-location-12~ :description
+: describe-location-12  ( -- )
   sight case
-  self~ of
+  my-location of
     s" Una" s{ s" gran" s" amplia" }s&
     s" estancia se abre hacia el oeste," s&
     s" y se estrecha hasta" s& s{ s" morir" s" terminar" }s&
@@ -938,10 +933,10 @@ location-12~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-12~ :attributes
+  ['] describe-location-12 self~ be-description-xt
   s" salida del paso secreto" self~ fs-name!
   self~ be-indoor-location
   0 0 0 location-13~ 0 0 0 0 self~ init-location
@@ -949,9 +944,9 @@ location-12~ :attributes
 
   \ XXX TODO -- crear ente agua en escentario 12
 
-location-13~ :description
+: describe-location-13  ( -- )
   sight case
-  self~ of
+  my-location of
     s" La sala se abre en"
     s{ s" semioscuridad" s" penumbra" }s&
     s" a un puente cubierto de podredumbre" s&
@@ -967,10 +962,10 @@ location-13~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-13~ :attributes
+  ['] describe-location-13 self~ be-description-xt
   s" puente semipodrido" self~ ms-name!
   self~ be-indoor-location
   0 0 location-12~ location-14~ 0 0 0 0 self~ init-location
@@ -978,9 +973,9 @@ location-13~ :attributes
 
   \ XXX TODO -- crear ente. canal, agua, lecho(~catre) en escenario 14
 
-location-14~ :description
+: describe-location-14  ( -- )
   sight case
-  self~ of
+  my-location of
     s" La iridiscente cueva gira de este a sur."
     paragraph
     endof
@@ -991,18 +986,18 @@ location-14~ :description
     you-glimpse-the-cave$ paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-14~ :attributes
+  ['] describe-location-14 self~ be-description-xt
   s" recodo de la cueva" self~ ms-name!
   self~ be-indoor-location
   0 location-15~ location-13~ 0 0 0 0 0 self~ init-location
   ;attributes
 
-location-15~ :description
+: describe-location-15  ( -- )
   sight case
-  self~ of
+  my-location of
     s" La gruta" goes-down$ s& s" de norte a sur" s&
     s" sobre un lecho arenoso." s&
     s" Al este, un agujero del que llega" s&
@@ -1025,18 +1020,18 @@ location-15~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-15~ :attributes
+  ['] describe-location-15 self~ be-description-xt
   s" pasaje arenoso" self~ ms-name!
   self~ be-indoor-location
   location-14~ location-17~ location-16~ 0 0 0 0 0 self~ init-location
   ;attributes
 
-location-16~ :description
+: describe-location-16  ( -- )
   sight case
-  self~ of
+  my-location of
     s" Como un acueducto, el agua"
     goes-down$ s& s" con gran fuerza de norte a este," s&
     s" aunque la salida practicable es la del oeste." s&
@@ -1054,10 +1049,10 @@ location-16~ :description
     s" Es la única salida." paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-16~ :attributes
+  ['] describe-location-16 self~ be-description-xt
   s" pasaje del agua" self~ ms-name!
   self~ be-indoor-location
   0 0 0 location-15~ 0 0 0 0 self~ init-location
@@ -1066,9 +1061,9 @@ location-16~ :attributes
   \ XXX TODO -- el examen del agua aquí debe dar más pistas en
   \ escenario 16
 
-location-17~ :description
+: describe-location-17  ( -- )
   sight case
-  self~ of
+  my-location of
     s" Muchas estalactitas se agrupan encima de tu cabeza,"
     s" y se abren cual arco de entrada hacia el este y sur." s&
     paragraph
@@ -1082,10 +1077,10 @@ location-17~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-17~ :attributes
+  ['] describe-location-17 self~ be-description-xt
   s" estalactitas" self~ fs-name!
   self~ be-indoor-location
   location-15~ location-20~ location-18~ 0 0 0 0 0 self~ init-location
@@ -1093,9 +1088,9 @@ location-17~ :attributes
 
   \ XXX TODO -- crear ente. estalactitas en escenario 17
 
-location-18~ :description
+: describe-location-18  ( -- )
   sight case
-  self~ of
+  my-location of
     s" Un arco de piedra se extiende,"
     s{ s" cual" s" como si fuera un" s" a manera de" }s&
     s" puente" s&
@@ -1117,10 +1112,10 @@ location-18~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-18~ :attributes
+  ['] describe-location-18 self~ be-description-xt
   s" puente de piedra" self~ ms-name!
   self~ be-indoor-location
   0 0 location-19~ location-17~ 0 0 0 0 self~ init-location
@@ -1128,9 +1123,9 @@ location-18~ :attributes
 
   \ XXX TODO -- crear ente. puente, arco en escenario 18
 
-location-19~ :description
+: describe-location-19  ( -- )
   sight case
-  self~ of
+  my-location of
     ^the-water-current$ comma+
     s" que discurre" s?&
     s" de norte a este," s& (it)-blocks$ s&
@@ -1154,18 +1149,18 @@ location-19~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-19~ :attributes
+  ['] describe-location-19 self~ be-description-xt
   s" recodo arenoso del canal" self~ ms-name!
   self~ be-indoor-location
   0 0 0 location-18~ 0 0 0 0 self~ init-location
   ;attributes
 
-location-20~ :description
+: describe-location-20  ( -- )
   sight case
-  self~ of
+  my-location of
     north~ south~ east~ 3 exits-cave-description paragraph
     endof
   north~ of
@@ -1178,10 +1173,10 @@ location-20~ :description
     cave-exit-description$ paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-20~ :attributes
+  ['] describe-location-20 self~ be-description-xt
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
   location-17~ location-22~ location-25~ 0 0 0 0 0 self~ init-location
@@ -1191,9 +1186,9 @@ location-20~ :attributes
   \ escenarios afectados, quizá en una capa superior
   \ sight no-torch? 0= abs *  case
 
-location-21~ :description
+: describe-location-21  ( -- )
   sight case
-  self~ of
+  my-location of
     east~ west~ south~ 3 exits-cave-description paragraph
     endof
   south~ of
@@ -1206,18 +1201,18 @@ location-21~ :description
     cave-exit-description$ paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-21~ :attributes
+  ['] describe-location-21 self~ be-description-xt
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
   0 location-27~ location-23~ location-20~ 0 0 0 0 self~ init-location
   ;attributes
 
-location-22~ :description
+: describe-location-22  ( -- )
   sight case
-  self~ of
+  my-location of
     south~ east~ west~ 3 exits-cave-description paragraph
     endof
   south~ of
@@ -1230,18 +1225,18 @@ location-22~ :description
     cave-exit-description$ paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-22~ :attributes
+  ['] describe-location-22 self~ be-description-xt
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
   0 location-24~ location-27~ location-22~ 0 0 0 0 self~ init-location
   ;attributes
 
-location-23~ :description
+: describe-location-23  ( -- )
   sight case
-  self~ of
+  my-location of
     west~ south~ 2 exits-cave-description paragraph
     endof
   south~ of
@@ -1251,18 +1246,18 @@ location-23~ :description
     cave-exit-description$ paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-23~ :attributes
+  ['] describe-location-23 self~ be-description-xt
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
   0 location-25~ 0 location-21~ 0 0 0 0 self~ init-location
   ;attributes
 
-location-24~ :description
+: describe-location-24  ( -- )
   sight case
-  self~ of
+  my-location of
     east~ north~ 2 exits-cave-description paragraph
     endof
   north~ of
@@ -1272,18 +1267,18 @@ location-24~ :description
     cave-exit-description$ paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-24~ :attributes
+  ['] describe-location-24 self~ be-description-xt
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
   location-22~ 0 location-26~ 0 0 0 0 0 self~ init-location
   ;attributes
 
-location-25~ :description
+: describe-location-25  ( -- )
   sight case
-  self~ of
+  my-location of
     north~ south~ east~ west~ 4 exits-cave-description paragraph
     endof
   east~ of
@@ -1293,18 +1288,18 @@ location-25~ :description
     cave-exit-description$ paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-25~ :attributes
+  ['] describe-location-25 self~ be-description-xt
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
   location-22~ location-28~ location-23~ location-21~ 0 0 0 0 self~ init-location
   ;attributes
 
-location-26~ :description
+: describe-location-26  ( -- )
   sight case
-  self~ of
+  my-location of
     north~ east~ west~ 3 exits-cave-description paragraph
     endof
   north~ of
@@ -1317,10 +1312,10 @@ location-26~ :description
     cave-exit-description$ paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-26~ :attributes
+  ['] describe-location-26 self~ be-description-xt
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
   location-26~ 0 location-20~ location-27~ 0 0 0 0 self~ init-location
@@ -1329,9 +1324,9 @@ location-26~ :attributes
   \ XXX TODO -- crear ente. pasaje/camino/senda tramo/cueva (en todos
   \ los tramos)
 
-location-27~ :description
+: describe-location-27  ( -- )
   sight case
-  self~ of
+  my-location of
     north~ east~ west~ 3 exits-cave-description paragraph
     endof
   north~ of
@@ -1344,18 +1339,18 @@ location-27~ :description
     cave-exit-description$ paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-27~ :attributes
+  ['] describe-location-27 self~ be-description-xt
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
   location-27~ 0 0 location-25~ 0 0 0 0 self~ init-location
   ;attributes
 
-location-28~ :description
+: describe-location-28  ( -- )
   sight case
-  self~ of
+  my-location of
     self~ ^full-name s" se extiende de norte a este." s&
     leader~ conversations?
     if  s" Hace de albergue para los refugiados."
@@ -1388,10 +1383,10 @@ location-28~ :description
     then  period+ paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-28~ :attributes
+  ['] describe-location-28 self~ be-description-xt
   s" amplia estancia" self~ fs-name!
   self~ be-indoor-location
   location-26~ 0 0 0 0 0 0 0 self~ init-location
@@ -1399,9 +1394,9 @@ location-28~ :attributes
   \ (tras hablar con anciano) en escenario 28
   ;attributes
 
-location-29~ :description
+: describe-location-29  ( -- )
   sight case
-  self~ of
+  my-location of
     s" Cual escalera de caracol gigante,"
     goes-down-into-the-deep$ comma+ s&
     s" dejando a los refugiados al oeste." s&
@@ -1416,10 +1411,10 @@ location-29~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-29~ :attributes
+  ['] describe-location-29 self~ be-description-xt
   s" espiral" self~ fs-name!
   self~ be-indoor-location
   0 0 0 location-28~ 0 location-30~ 0 0 self~ init-location
@@ -1428,9 +1423,9 @@ location-29~ :attributes
   \ XXX TODO -- crear ente. escalera/espiral, refugiados en escenario
   \ 29
 
-location-30~ :description
+: describe-location-30  ( -- )
   sight case
-  self~ of
+  my-location of
     s" Se eleva en la penumbra."
     s" La" s& cave$ s& gets-narrower(f)$ s&
     s" ahora como para una sola persona, hacia el este." s&
@@ -1445,18 +1440,18 @@ location-30~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-30~ :attributes
+  ['] describe-location-30 self~ be-description-xt
   s" inicio de la espiral" self~ ms-name!
   self~ be-indoor-location
   0 0 location-31~ 0 location-29~ 0 0 0 self~ init-location
   ;attributes
 
-location-31~ :description
+: describe-location-31  ( -- )
   sight case
-  self~ of
+  my-location of
     s" En este pasaje grandes rocas se encuentran entre las columnas de un arco de medio punto."
     paragraph
     endof
@@ -1471,10 +1466,10 @@ location-31~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-31~ :attributes
+  ['] describe-location-31 self~ be-description-xt
   s" puerta norte" self~ fs-name!
   self~ be-indoor-location
   0 0 0 location-30~ 0 0 0 0 self~ init-location
@@ -1483,9 +1478,9 @@ location-31~ :attributes
   \ XXX TODO -- crear ente. arco, columnas, hueco/s(entre rocas) en
   \ escenario 31
 
-location-32~ :description
+: describe-location-32  ( -- )
   sight case
-  self~ of
+  my-location of
     s" El camino ahora no excede de dos palmos de cornisa sobre un abismo insondable."
     s" El soporte de roca gira en forma de «U» de oeste a sur." s&
     paragraph
@@ -1499,10 +1494,10 @@ location-32~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-32~ :attributes
+  ['] describe-location-32 self~ be-description-xt
   s" precipicio" self~ ms-name!
   self~ be-indoor-location
   0 location-33~ 0 location-31~ 0 0 0 0 self~ init-location
@@ -1511,9 +1506,9 @@ location-32~ :attributes
   \ XXX TODO -- crear ente. precipicio, abismo, cornisa, camino,
   \ roca/s en escenario 32
 
-location-33~ :description
+: describe-location-33  ( -- )
   sight case
-  self~ of
+  my-location of
     s" El paso se va haciendo menos estrecho a medida que se avanza hacia el sur, para entonces comenzar hacia el este."
     paragraph
     endof
@@ -1531,10 +1526,10 @@ location-33~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-33~ :attributes
+  ['] describe-location-33 self~ be-description-xt
   s" pasaje de salida" self~ ms-name!
   self~ be-indoor-location
   location-32~ 0 location-34~ 0 0 0 0 0 self~ init-location
@@ -1542,9 +1537,9 @@ location-33~ :attributes
 
   \ XXX TODO -- crear ente. camino/paso/sendero en escenario 33
 
-location-34~ :description
+: describe-location-34  ( -- )
   sight case
-  self~ of
+  my-location of
     s" El paso" gets-wider$ s& s" de oeste a norte," s&
     s" y guijarros mojados y mohosos tachonan el suelo de roca." s&
     paragraph
@@ -1558,10 +1553,10 @@ location-34~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-34~ :attributes
+  ['] describe-location-34 self~ be-description-xt
   s" pasaje de gravilla" self~ ms-name!
   self~ be-indoor-location
   location-35~ 0 0 location-33~ 0 0 0 0 self~ init-location
@@ -1571,9 +1566,9 @@ location-34~ :attributes
   \ roca, suelo, gravillla en escenario 34
 
 
-location-35~ :description
+: describe-location-35  ( -- )
   sight case
-  self~ of
+  my-location of
     s" Un puente" s{ s" se tiende" s" cruza" }s& s" de norte a sur sobre el curso del agua." s&
     s" Unas resbaladizas escaleras" s& (they)-go-down$ s& s" hacia el oeste." s&
     paragraph
@@ -1591,10 +1586,10 @@ location-35~ :description
     stairway-to-river$ paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-35~ :attributes
+  ['] describe-location-35 self~ be-description-xt
   s" puente sobre el acueducto" self~ ms-name!
   self~ be-indoor-location
   location-40~ location-34~ 0 location-36~ 0 location-36~ 0 0 self~ init-location
@@ -1603,9 +1598,9 @@ location-35~ :attributes
   \ XXX TODO -- crear ente. escaleras, puente, río/curso/agua en
   \ escenario 35
 
-location-36~ :description
+: describe-location-36  ( -- )
   sight case
-  self~ of
+  my-location of
     s" Una" s{ s" ruidosa" s" estruendosa" s" ensordecedora" }s&
     s" corriente" s& goes-down$ s&
     s{ s" con" s" siguiendo" }s& s" el" s& pass-way$ s&
@@ -1623,18 +1618,18 @@ location-36~ :description
     stairway-that-way$ paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-36~ :attributes
+  ['] describe-location-36 self~ be-description-xt
   s" remanso" self~ ms-name!
   self~ be-indoor-location
   0 0 location-35~ location-37~ location-35~ 0 0 0 self~ init-location
   ;attributes
 
-location-37~ :description
+: describe-location-37  ( -- )
   sight case
-  self~ of
+  my-location of
     s" El agua" goes-down$ s& s" por un canal" s?&
     from-the(m)$ s& s" oeste con" s&
     s{ s" renovadas fuerzas" s" renovada energía" s" renovado ímpetu" }s& comma+
@@ -1657,18 +1652,18 @@ location-37~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-37~ :attributes
+  ['] describe-location-37 self~ be-description-xt
   s" canal de agua" self~ ms-name!
   self~ be-indoor-location
   0 0 location-36~ location-38~ 0 0 0 0 self~ init-location
   ;attributes
 
-location-38~ :description
+: describe-location-38  ( -- )
   sight case
-  self~ of
+  my-location of
     s" Cae el agua hacia el este,"
     s{ s" descendiendo" s" bajando" }s&
     s{ s" con mucha fuerza" s" con gran fuerza" s" fuertemente" }s&
@@ -1688,10 +1683,10 @@ location-38~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-38~ :attributes
+  ['] describe-location-38 self~ be-description-xt
   s" gran cascada" self~ fs-name!
   self~ be-indoor-location
   0 0 location-37~ location-39~ 0 0 0 0 self~ init-location
@@ -1700,9 +1695,9 @@ location-38~ :attributes
   \ XXX TODO -- el artículo de «cascada» debe depender también de si
   \ se ha visitado el escenario 39 o este mismo 38
 
-location-39~ :description
+: describe-location-39  ( -- )
   sight case
-  self~ of
+  my-location of
     s" Musgoso y rocoso, con la cortina de agua"
     s{ s" tras de ti," s" a tu espalda," }s&
     s{ s" el nivel" s" la altura" }s& s" del agua ha" s&
@@ -1716,10 +1711,10 @@ location-39~ :description
       \ XXX TODO -- variar
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-39~ :attributes
+  ['] describe-location-39 self~ be-description-xt
   s" interior de la cascada" self~ ms-name!
   self~ be-indoor-location
   0 0 location-38~ 0 0 0 0 0 self~ init-location
@@ -1728,9 +1723,9 @@ location-39~ :attributes
   \ XXX TODO -- crear ente. musgo, cortina, agua, hueco en escenario
   \ 39
 
-location-40~ :description
+: describe-location-40  ( -- )
   sight case
-  self~ of
+  my-location of
     s" Una gran explanada enlosetada contempla un bello panorama de estalactitas."
     s" Unos casi imperceptibles escalones conducen al este." s&
     paragraph
@@ -1756,10 +1751,10 @@ location-40~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-40~ :attributes
+  ['] describe-location-40 self~ be-description-xt
   s" explanada" self~ fs-name!
   self~ be-indoor-location
   0 location-35~ location-41~ 0 0 0 0 0 self~ init-location
@@ -1768,9 +1763,9 @@ location-40~ :attributes
   \ XXX TODO -- crear ente. losas y losetas, estalactitas, panorama,
   \ escalones en escenario 40
 
-location-41~ :description
+: describe-location-41  ( -- )
   sight case
-  self~ of
+  my-location of
     s" El ídolo parece un centinela siniestro de una gran roca que se encuentra al sur."
     s" Se puede" s& to-go-back$ s& toward$ s& s" la explanada hacia el oeste." s&
     paragraph
@@ -1785,10 +1780,10 @@ location-41~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-41~ :attributes
+  ['] describe-location-41 self~ be-description-xt
   self~ be-indoor-location
   s" ídolo" self~ ms-name!
   0 0 0 location-40~ 0 0 0 0 self~ init-location
@@ -1796,9 +1791,9 @@ location-41~ :attributes
 
   \ XXX TODO -- crear ente. roca, centinela en escenario 41
 
-location-42~ :description
+: describe-location-42  ( -- )
   sight case
-  self~ of
+  my-location of
     s" Como un pasillo que corteja el canal de agua, a su lado, baja de norte a sur."
     paragraph
     endof
@@ -1816,18 +1811,18 @@ location-42~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-42~ :attributes
+  ['] describe-location-42 self~ be-description-xt
   s" pasaje estrecho" self~ ms-name!
   self~ be-indoor-location
   location-41~ location-43~ 0 0 0 0 0 0 self~ init-location
   ;attributes
 
-location-43~ :description
+: describe-location-43  ( -- )
   sight case
-  self~ of
+  my-location of
     ^the-pass-way$ s" sigue de norte a sur." s&
     paragraph
     endof
@@ -1843,18 +1838,18 @@ location-43~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-43~ :attributes
+  ['] describe-location-43 self~ be-description-xt
   s" pasaje de la serpiente" self~ ms-name!
   self~ be-indoor-location
   location-42~ 0 0 0 0 0 0 0 self~ init-location
   ;attributes
 
-location-44~ :description
+: describe-location-44  ( -- )
   sight case
-  self~ of
+  my-location of
     s" Unas escaleras" s{ s" dan" s" permiten el" }s& s{ s" paso" s" acceso" }s&
     s" a un" s& beautiful(m)$ s& s" lago interior, hacia el oeste." s&
     s" Al norte, un oscuro y"
@@ -1870,10 +1865,10 @@ location-44~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-44~ :attributes
+  ['] describe-location-44 self~ be-description-xt
   s" lago interior" self~ ms-name!
   self~ be-indoor-location
   location-43~ 0 0 location-45~ 0 0 0 0 self~ init-location
@@ -1882,9 +1877,9 @@ location-44~ :attributes
   \ XXX TODO -- crear ente. lago, escaleras, pasaje, lago en escenario
   \ 44
 
-location-45~ :description
+: describe-location-45  ( -- )
   sight case
-  self~ of
+  my-location of
     ^narrow(mp)$ pass-ways$ s&
     s" permiten ir al oeste, al este y al sur." s&
     paragraph
@@ -1907,10 +1902,10 @@ location-45~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-45~ :attributes
+  ['] describe-location-45 self~ be-description-xt
   s" cruce de pasajes" self~ ms-name!
   self~ be-indoor-location
   0 location-47~ location-44~ location-46~ 0 0 0 0 self~ init-location
@@ -1918,9 +1913,9 @@ location-45~ :attributes
 
   \ XXX TODO -- crear ente. pasaje/camino/paso/senda en escenario 45
 
-location-46~ :description
+: describe-location-46  ( -- )
   sight case
-  self~ of
+  my-location of
     s" Un catre, algunas velas y una mesa es todo lo que"
     s{ s" tiene" s" posee" }s s" Ambrosio" rnd2swap s& s&
     period+  paragraph
@@ -1932,18 +1927,18 @@ location-46~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-46~ :attributes
+  ['] describe-location-46 self~ be-description-xt
   s" hogar de Ambrosio" self~ ms-name!
   self~ be-indoor-location
   0 0 location-45~ 0 0 0 0 0 self~ init-location
   ;attributes
 
-location-47~ :description
+: describe-location-47  ( -- )
   sight case
-  self~ of
+  my-location of
     s" Por el oeste,"
     door~ full-name s& door~ «open»|«closed» s& comma+
     door~ is-open? if  \ La puerta está abierta
@@ -1970,10 +1965,10 @@ location-47~ :description
       \ XXX TODO -- variar el texto
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-47~ :attributes
+  ['] describe-location-47 self~ be-description-xt
   s" salida de la cueva" self~ fs-name!
   self~ be-indoor-location
   location-45~ 0 0 0 0 0 0 0 self~ init-location
@@ -1987,9 +1982,9 @@ location-47~ :attributes
 : like-now$+  ( ca1 len1 -- ca1 len1 | ca2 len2 )
   s" , como ahora" s?+  ;
 
-location-48~ :description
+: describe-location-48  ( -- )
   sight case
-  self~ of
+  my-location of
     s{ s" Apenas si" s" Casi no" }s
     s{ s" se puede" s" es posible" }s&
     s" reconocer la entrada de la cueva, al este." s&
@@ -2015,19 +2010,19 @@ location-48~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-48~ :attributes
+  ['] describe-location-48 self~ be-description-xt
   s" bosque a la entrada" self~ ms-name!
   0 0 location-47~ location-49~ 0 0 0 0 self~ init-location
   ;attributes
 
   \ XXX TODO -- crear ente. cueva en escenario 48
 
-location-49~ :description
+: describe-location-49  ( -- )
   sight case
-  self~ of
+  my-location of
     ^the-path$ s" recorre" s& s" toda" s?&
     s" esta" s& s{ s" parte" s" zona" }s&
     s" del bosque de este a oeste." s&
@@ -2043,17 +2038,17 @@ location-49~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-49~ :attributes
+  ['] describe-location-49 self~ be-description-xt
   s" sendero del bosque" self~ ms-name!
   0 0 location-48~ location-50~ 0 0 0 0 self~ init-location
   ;attributes
 
-location-50~ :description
+: describe-location-50  ( -- )
   sight case
-  self~ of
+  my-location of
     s" El camino norte" s{ s" que sale" s" que parte" s" procedente" }s&
     s" de Westmorland se" s{ s" interna" s" adentra" }s& s" en el bosque," s&
     s" aunque en tu estado no puedes ir." s&
@@ -2068,17 +2063,17 @@ location-50~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-50~ :attributes
+  ['] describe-location-50 self~ be-description-xt
   s" camino norte" self~ ms-name!
   0 location-51~ location-49~ 0 0 0 0 0 self~ init-location
   ;attributes
 
-location-51~ :description
+: describe-location-51  ( -- )
   sight case
-  self~ of
+  my-location of
     ^the-village$ s" bulle de actividad con el mercado en el centro de la plaza," s&
     s" donde se encuentra el castillo." s&
     paragraph
@@ -2088,10 +2083,10 @@ location-51~ :description
     paragraph
     endof
   uninteresting-direction
-  endcase
-  ;description
+  endcase  ;
 
 location-51~ :attributes
+  ['] describe-location-51 self~ be-description-xt
   s" Westmorland" self~ fs-name!
   self~ have-no-article
   location-50~ 0 0 0 0 0 0 0 self~ init-location
@@ -2101,37 +2096,37 @@ location-51~ :attributes
 \ ----------------------------------------------
 \ Entes globales
 
-cave~ :description
+: describe-cave  ( -- )
   s" La cueva es húmeda y sombría."
-  paragraph
+  paragraph  ;
   \ XXX TODO -- mejorar
-  ;description
 
 cave~ :attributes
+  ['] describe-cave self~ be-description-xt
   s" cueva" self~ fs-name!
   \ self~ be-global-indoor \ XXX OLD
   ;attributes
 
-ceiling~ :description
+: describe-ceiling  ( -- )
   s" El techo es muy bonito."
-  paragraph
+  paragraph  ;
   \ XXX TODO
-  ;description
 
 ceiling~ :attributes
+  ['] describe-ceiling self~ be-description-xt
   s" techo" self~ ms-name!
   self~ be-global-indoor
   ;attributes
 
-clouds~ :description
+: describe-clouds  ( -- )
   s" Los estratocúmulos que traen la nieve y que cuelgan sobre la Tierra"
   s" en la estación del frío se han alejado por el momento. " s&
     \ XXX TMP
-  2 random if  paragraph  else  2drop sky~ describe  then
+  2 random if  paragraph  else  2drop sky~ describe  then  ;
     \ XXX TODO -- comprobar
-  ;description
 
 clouds~ :attributes
+  ['] describe-clouds self~ be-description-xt
   s" nubes" self~ fp-name!
   self~ be-global-outdoor
   ;attributes
@@ -2139,42 +2134,42 @@ clouds~ :attributes
   \ Distinguir no solo interiores, sino escenarios en
   \ que se puede vislumbrar el exterior.
 
-floor~ :description
+: describe-floor  ( -- )
   am-i-outdoor?
   if    s" [El suelo fuera es muy bonito.]" paragraph
-  else  s" [El suelo dentro es muy bonito.]" paragraph  then
+  else  s" [El suelo dentro es muy bonito.]" paragraph  then  ;
   \ XXX TMP
   \ XXX TODO
-  ;description
 
 floor~ :attributes
+  ['] describe-floor self~ be-description-xt
   s" suelo" self~ ms-name!
   self~ be-global-indoor
   self~ be-global-outdoor
   ;attributes
 
-sky~ :description
+: describe-sky  ( -- )
   s" [El cielo es muy bonito.]"
-  paragraph
+  paragraph  ;
   \ XXX TODO
   \ XXX TMP
-  ;description
 
 sky~ :attributes
+  ['] describe-sky self~ be-description-xt
   s" cielo" self~ ms-name!
   self~ be-global-outdoor
-  \ XXX TODO
-  \ XXX TMP
   ;attributes
-
-wall~ :description
-  s" [La pared es muy bonita.]"
-  paragraph
   \ XXX TODO
   \ XXX TMP
-  ;description
+
+: describe-wall  ( -- )
+  s" [La pared es muy bonita.]"
+  paragraph  ;
+  \ XXX TODO
+  \ XXX TMP
 
 wall~ :attributes
+  ['] describe-wall self~ be-description-xt
   s" pared" self~ ms-name!
   self~ be-global-indoor
   ;attributes
@@ -2182,36 +2177,36 @@ wall~ :attributes
 \ ----------------------------------------------
 \ Entes virtuales
 
-defer list-exits  ( -- )
-
-exits~ :description
-  list-exits
-  ;description
+defer describe-exits  ( -- )
 
 exits~ :attributes
+  ['] describe-exits self~ be-description-xt
   s" salida" self~ fs-name!
   self~ be-global-outdoor
   self~ be-global-indoor
   ;attributes
 
+defer describe-inventory  ( -- )
+
 inventory~ :attributes
+  ['] describe-inventory self~ be-description-xt
   ;attributes
 
-enemy~ :description
+: describe-enemy  ( -- )
   battle# @
   if    s" [Enemigo en batalla.]"
   else  s" [Enemigo en paz.]"
-  then  paragraph
+  then  paragraph  ;
   \ XXX TMP
   \ XXX TODO -- inconcluso
-  ;description
 
 enemy~ :attributes
+  ['] describe-enemy self~ be-description-xt
   s" enemigos" self~ mp-name!
   self~ be-human
   self~ be-decoration
-  \ XXX TODO -- inconcluso
   ;attributes
+  \ XXX TODO -- inconcluso
 
 \ ----------------------------------------------
 \ Entes dirección
@@ -2224,64 +2219,70 @@ enemy~ :attributes
 \ y para hacer los cálculos en las acciones de movimiento.
 
 north~ :attributes
+  \ ['] describe-north self~ be-description-xt
   s" norte" self~ ms-name!
   self~ have-definite-article
   north-exit> self~ ~direction !
   ;attributes
 
 south~ :attributes
+  \ ['] describe-south self~ be-description-xt
   s" sur" self~ ms-name!
   self~ have-definite-article
   south-exit> self~ ~direction !
   ;attributes
 
 east~ :attributes
+  \ ['] describe-east self~ be-description-xt
   s" este" self~ ms-name!
   self~ have-definite-article
   east-exit> self~ ~direction !
   ;attributes
 
 west~ :attributes
+  \ ['] describe-west self~ be-description-xt
   s" oeste" self~ name!
   self~ have-definite-article
   west-exit> self~ ~direction !
   ;attributes
 
-up~ :description
+: describe-up  ( -- )
   am-i-outdoor?
   if  sky~ describe
   else  ceiling~ describe
-  then
-  ;description
+  then  ;
 
 up~ :attributes
+  ['] describe-up self~ be-description-xt
   s" arriba" self~ name!
   self~ have-no-article
   up-exit> self~ ~direction !
   ;attributes
 
-down~ :description
+: describe-down  ( -- )
   am-i-outdoor?
   if    s" [El suelo exterior es muy bonito.]" paragraph
   else  s" [El suelo interior es muy bonito.]" paragraph
-  then
+  then  ;
   \ XXX TMP
   \ XXX TODO
-  ;description
 
 down~ :attributes
+  ['] describe-down self~ be-description-xt
   s" abajo" self~ name!
   self~ have-no-article
   down-exit> self~ ~direction !
   ;attributes
 
 out~ :attributes
+  \ ['] describe-out self~ be-description-xt
   s" afuera" self~ name!
   self~ have-no-article
   out-exit> self~ ~direction !
   ;attributes
 
 in~ :attributes
+  \ ['] describe-in self~ be-description-xt
   s" adentro" self~ name!
   self~ have-no-article
   in-exit> self~ ~direction !

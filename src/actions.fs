@@ -555,7 +555,7 @@ false [if]
   0 ?do  exit>list  loop  .exits  ;
   \ Crea la lista de salidas y la imprime
 
-' (list-exits) is list-exits
+' (list-exits) is describe-exits
 
 :noname  ( -- )
   tool-complement{unnecessary}
@@ -563,7 +563,7 @@ false [if]
   main-complement @ ?dup if
     dup my-location <> swap direction 0= and
     nonsense-error# and throw
-  then  list-exits
+  then  describe-exits
   ; is do-exits
   \ Lista las salidas posibles de la localización del protagonista.
 
@@ -1508,6 +1508,8 @@ false [if]
   endcase  narrate
   ; is do-inventory
   \ Acción de hacer inventario.
+
+' do-inventory is describe-inventory
 
 \ ----------------------------------------------
 \ Hacer

@@ -5,37 +5,34 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606292013
+\ Last update: 201607032323
 
 \ Note: The comments of the code are in Spanish.
 
 \ ==============================================================
 \ Herramientas para crear las fichas de la base de datos
 
-: backup-entity  ( a -- x0 x1 x2 x3 x4 x5 x6 x7 )
+: backup-entity  ( a -- x0 x1 x2 x3 x4 x5 x6 )
   >r
-  r@ description-xt
   r@ init-xt
   r@ can-i-enter-location-xt
   r@ after-describing-location-xt
   r@ after-listing-entities-xt
   r@ before-describing-location-xt
   r@ before-leaving-location-xt
-  r> name-str
-  ;
-  \ Respalda los datos de un ente _a_
-  \ que se crearon durante la compilación del código y deben preservarse.
-  \ (En orden alfabético, para facilitar la edición).
+  r> name-str  ;
+  \ Respalda los datos de un ente _a_ que se crearon durante la
+  \ compilación del código y deben preservarse.  (En orden alfabético,
+  \ para facilitar la edición).
 
-: restore-entity  ( x0 x1 x2 x3 x4 x5 x6 x7 a -- )
+: restore-entity  ( x0 x1 x2 x3 x4 x5 x6 a -- )
   tuck ~name-str !
   tuck ~before-leaving-location-xt !
   tuck ~before-describing-location-xt !
   tuck ~after-listing-entities-xt !
   tuck ~after-describing-location-xt !
   tuck ~can-i-enter-location-xt !
-  tuck ~init-xt !
-       ~description-xt !  ;
+       ~init-xt !  ;
   \ Restaura los datos de un ente _a_ que se crearon durante la
   \ compilación del código y deben preservarse.  (En orden alfabético
   \ inverso, para facilitar la edición).
@@ -83,23 +80,16 @@
   \ pila porque se compiló con `literal` cuando se creó la palabra de
   \ atributos.
 
-: default-description  ( -- )  ^is-normal$ paragraph  ;
-  \ Descripción predeterminada de los entes
-  \ para los que no se ha creado una palabra propia de descripción.
-
 : (:attributes)  ( a xt -- )
-  over ~init-xt !
-  ['] default-description over ~description-xt !
-  postpone literal  ;
+  over ~init-xt !  postpone literal  ;
   \ Operaciones preliminares para la definición de atributos de un
   \ ente _a_.  Esta palabra solo se ejecuta una vez para cada ente, al
   \ inicio de la compilación del código de la palabra que define sus
   \ atributos.  _xt_ es la dirección de ejecución de la palabra recién
   \ creada. Operaciones: 1) Conserva la dirección de ejecución en la
-  \ ficha del ente; 2) Pone la descripción predeterminada; 3) Compila
-  \ el identificador de ente en la palabra de descripción recién
-  \ creada, para que `[:description]` lo guarde en `self~` en tiempo
-  \ de ejecución.
+  \ ficha del ente; 2) Compila el identificador de ente en la palabra
+  \ de descripción recién creada, para que `[:description]` lo guarde
+  \ en `self~` en tiempo de ejecución.
 
 : noname-roll  ( a xt colon-sys -- colon-sys a xt )  5 roll 5 roll  ;
   \ Mueve los parámetros que nos interesan a la parte alta de la pila;
@@ -149,65 +139,33 @@
   \ Restaura las fichas de los entes a su estado original.
 
 \ ==============================================================
-\ Herramientas para crear las descripciones
+\ Herramientas para mostrar las descripciones
 
-\ No almacenamos las descripciones en la base de datos junto
-\ con el resto de atributos de los entes, sino que para cada
-\ ente creamos una palabra que imprime su descripción, lo que
-\ es mucho más flexible: La descripción podrá variar en
-\ función del desarrollo del juego y adaptarse a las
-\ circunstancias, e incluso sustituir en algunos casos al
-\ código que controla la trama del juego.
-\
-\ Así pues, lo que almacenamos en la ficha del ente, en el
-\ campo `~description-xt`, es la dirección de ejecución de la
-\ palabra que imprime su descripción.
-\
-\ Por tanto, para describir un ente basta tomar de su ficha el
-\ contenido de `~description-xt`, y llamar a `execute`.
+\ En el campo `~description-xt` de cada ente se almacena la dirección
+\ de ejecución de una palabra que imprime su descripción.
 
 false value sight
   \ Ente dirección al que se mira en un escenario
   \ (o el propio ente escenario); se usa en las palabras de
   \ descripción de escenarios
 
-: [:description]  ( a -- )  to self~  ;
-  \ Operaciones previas a la ejecución de la descripción de un ente.
-  \ Esta palabra se ejecutará al comienzo de la palabra de descripción.
-  \ El identificador del ente está en la pila porque se compiló con
-  \ `literal` cuando se creó la palabra de descripción.  Actualmente
-  \ lo único que hace es actualizar el puntero al ente, usado para
-  \ aligerar la sintaxis.
+defer default-description  ( -- )
+  \ Descripción predeterminada de los entes
+  \ para los que no se ha creado una palabra propia de descripción.
 
-: (:description)  ( a xt -- )
-  over ~description-xt !
-  postpone literal  ;
-  \ Operaciones preliminares para la definición de la descripción
-  \ _xt_ de
-  \ un ente _a_,
-  \ Esta palabra solo se ejecuta una vez para cada ente, al inicio de
-  \ la compilación del código de la palabra que crea su descripción.
-  \ Hace dos operaciones: 1) Conservar la dirección de ejecución en la
-  \ ficha del ente; 2) Compilar el identificador de ente en la palabra
-  \ de descripción recién creada, para que `[:description]` lo guarde
-  \ en `self~` en tiempo de ejecución.
+: (default-description)  ( -- )  ^is-normal$ paragraph  ;
+  \ Comportamiento predeterminado de la descripción predeterminada de
+  \ los entes para los que no se ha creado una palabra propia de
+  \ descripción.
 
-: :description  ( a -- )
-  :noname noname-roll  (:description)  postpone [:description]  ;
-  \ Inicia la definición de una palabra de descripción para un ente
-  \ _a_.
+' (default-description) is default-description
 
-: [;description]  ( -- )  false to sight  ;
-  \ Operaciones finales tras la ejecución de la descripción de un ente.
-  \ Esta palabra se ejecutará al final de la palabra de descripción.
-  \ Pone a cero el selector de vista, para evitar posibles errores.
-
-: ;description  ( colon-sys -- )
-  postpone [;description]  postpone ;  ; immediate
-  \ Termina la definición de una palabra de descripción de un ente.
-
-: (describe)  ( a -- )  ~description-xt perform  ;
-  \ Ejecuta la palabra de descripción de un ente _a_.
+: (describe)  ( a -- )
+  description-xt ?dup if    execute
+                      else  default-description  then  ;
+  \ Ejecuta la palabra de descripción de un ente _a_, si está
+  \ inicializada; en caso contrario ejecuta la descripción
+  \ predeterminada.
 
 : .location-name  ( a -- )
   [debug-map] [if]  dup  [then]
@@ -229,7 +187,8 @@ false value sight
   \ Describe un ente escenario _a_.
 
 : describe-location  ( a -- )
-  clear-screen-for-location dup .location-name  (describe-location)  ;
+  clear-screen-for-location
+  dup .location-name  (describe-location)  ;
   \ Describe un ente escenario _a_,
   \ con borrado de pantalla y título.
 
@@ -264,7 +223,8 @@ false value sight
   endcase  ;
   \ Describe un ente _a_, según su tipo.
 
-: uninteresting-direction  ( -- )  uninteresting-direction$ paragraph  ;
+: uninteresting-direction  ( -- )
+  uninteresting-direction$ paragraph  ;
   \ Muestra la descripción de la direcciones que no tienen nada especial.
 
 \ ==============================================================
