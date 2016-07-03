@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607032323
+\ Last update: 201607032336
 
 \ Note: The comments of the code are in Spanish.
 
@@ -64,8 +64,8 @@
   \ Crea una cadena dinámica nueva para guardar el nombre del ente
   \ _a_.
 
-: [:attributes]  ( a -- )
-  [debug-init] [if]  s" Inicio de `[:attributes]`" debug [then]
+: [:init]  ( a -- )
+  [debug-init] [if]  s" Inicio de `[:init]`" debug [then]
   dup to self~
   [debug-init] [if]  s" Antes de `:name-str`" debug [then]
   dup :name-str
@@ -80,7 +80,7 @@
   \ pila porque se compiló con `literal` cuando se creó la palabra de
   \ atributos.
 
-: (:attributes)  ( a xt -- )
+: (:init)  ( a xt -- )
   over ~init-xt !  postpone literal  ;
   \ Operaciones preliminares para la definición de atributos de un
   \ ente _a_.  Esta palabra solo se ejecuta una vez para cada ente, al
@@ -99,18 +99,14 @@
   \ son tres elementos, para ser consumidos al finalizar la
   \ compilación de la palabra creada.
 
-: :attributes  ( a -- )
-  :noname noname-roll  (:attributes)  postpone [:attributes]  ;
+: :init  ( a -- )
+  :noname noname-roll  (:init)  postpone [:init]  ;
   \ Inicia la creación de una palabra sin nombre que definirá las
   \ propiedades de un ente _a_. Hace tres operaciones: 1) Crea la palabra
   \ con `:noname`;
-  \ 2) Hace las operaciones preliminares, mediante `(:attributes)`; 3)
-  \ Compila la palabra `[:attributes]` en la palabra creada, para que
+  \ 2) Hace las operaciones preliminares, mediante `(:init)`; 3)
+  \ Compila la palabra `[:init]` en la palabra creada, para que
   \ se ejecute cuando sea llamada.
-
-: ;attributes  ( sys-col -- )  postpone ;  ;  immediate
-  \ Termina la definición de la palabra de definición de atributos de
-  \ un ente.
 
   \ XXX TODO -- mejorar el sistema de inicialización de entes en
   \ Flibustre, para hacerlo tan potente como el de _Asalto y castigo_.
