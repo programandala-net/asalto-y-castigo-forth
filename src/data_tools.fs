@@ -12,7 +12,7 @@
 \ ==============================================================
 \ Herramientas para crear las fichas de la base de datos
 
-: backup-entity  ( a -- x0 x1 x2 x3 x4 x5 x6 )
+: backup-entity  ( a -- x0 x1 x2 x3 x4 x5 x6 x7 )
   >r
   r@ description-xt
   r@ init-xt
@@ -26,22 +26,30 @@
   \ que se crearon durante la compilación del código y deben preservarse.
   \ (En orden alfabético, para facilitar la edición).
 
-: restore-entity  ( x0 x1 x2 x3 x4 x5 x6 a -- )
-  >r
-  r@ ~name-str !
-  r@ ~before-leaving-location-xt !
-  r@ ~before-describing-location-xt !
-  r@ ~after-listing-entities-xt !
-  r@ ~after-describing-location-xt !
-  r@ ~can-i-enter-location-xt !
-  r@ ~init-xt !
-  r> ~description-xt !  ;
-  \ Restaura los datos de un ente _a_
-  \ que se crearon durante la compilación del código y deben preservarse.
-  \ (En orden alfabético inverso, para facilitar la edición).
+: restore-entity  ( x0 x1 x2 x3 x4 x5 x6 x7 a -- )
+  tuck ~name-str !
+  tuck ~before-leaving-location-xt !
+  tuck ~before-describing-location-xt !
+  tuck ~after-listing-entities-xt !
+  tuck ~after-describing-location-xt !
+  tuck ~can-i-enter-location-xt !
+  tuck ~init-xt !
+       ~description-xt !  ;
+  \ Restaura los datos de un ente _a_ que se crearon durante la
+  \ compilación del código y deben preservarse.  (En orden alfabético
+  \ inverso, para facilitar la edición).
 
 : setup-entity  ( a -- )
-  >r r@ backup-entity  r@ erase-entity  r> restore-entity  ;
+  [debug-init] [if]  s" En `setup-entity`" debug [then]
+  dup >r backup-entity
+  [debug-init] [if]  s" Después de `backup-entity`" debug [then]
+  r@ erase-entity
+  [debug-init] [if]  s" Después de `erase-entity`" debug [then]
+  r> restore-entity
+  [debug-init] [if]
+  s" Después de `restore-entity`" debug  ." hola!"
+  [then]
+  ;
   \ Prepara la ficha de un ente para ser completada con sus datos .
 
 0 value self~
@@ -49,18 +57,24 @@
   \ (usado para aligerar la sintaxis).
 
 : :name-str  ( a -- )
-  [debug-init] [if]  s" Inicio de :NAME-STR" debug [then]
+  [debug-init] [if]  s" Inicio de `:name-str`" debug [then]
   dup name-str ?dup
-  [debug-init] [if]  s" A punto para STR-FREE" debug [then]
+  [debug-init] [if]  s" A punto para `str-free`" debug [then]
   ?? str-free
   str-new swap ~name-str !
-  [debug-init] [if]  s" Final de :NAME-STR" debug [then]  ;
-  \ Crea una cadena dinámica nueva para guardar el nombre del ente.
+  [debug-init] [if]  s" Final de `:name-str`" debug [then]  ;
+  \ Crea una cadena dinámica nueva para guardar el nombre del ente
+  \ _a_.
 
 : [:attributes]  ( a -- )
-  dup to self~  \ Actualizar el puntero al ente
-  dup :name-str  \ Crear una cadena dinámica para el campo `~name-str`
-  setup-entity  ;
+  [debug-init] [if]  s" Inicio de `[:attributes]`" debug [then]
+  dup to self~
+  [debug-init] [if]  s" Antes de `:name-str`" debug [then]
+  dup :name-str
+  [debug-init] [if]  s" Antes de `setup-entity`" debug [then]
+  setup-entity
+  [debug-init] [if]  s" Después de `setup-entity`" debug [then]
+  ;
   \ Inicia la definición de propiedades de un ente.  Esta palabra se
   \ ejecuta cada vez que hay que restaurar los datos del ente, y antes
   \ de la definición de atributos contenida en la palabra
@@ -108,7 +122,8 @@
 
 : custom-init-entity ( a -- )
   [debug-init] [if]
-    s" Inicio de `custom-init-entity`" debug dup entity># cr ." Entity=" .
+    s" Inicio de `custom-init-entity`" debug
+    dup entity># cr ." Entity=" .
   [then]
   init-xt
   [debug-init]
@@ -122,7 +137,7 @@
 
 : init-entities  ( -- )
   #entities 0 do
-    [debug-init] [if]  i cr ." about to init entity #" .  [then]
+    [debug-init] [if]  i cr ." About to init entity #" .  [then]
     i #>entity custom-init-entity
     \ i #>entity full-name space type ?.s  \ XXX INFORMER
   loop  ;

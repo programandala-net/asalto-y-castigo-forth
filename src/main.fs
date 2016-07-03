@@ -7,7 +7,7 @@
 \
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 \
-\ Last update: 201606301017
+\ Last update: 201607031729
 \
 \
 \ 'Asalto y castigo' is free software; you can redistribute
@@ -135,6 +135,7 @@ forth-wordlist set-current
 : run  ( -- )  init-once adventure farewell  ;
   \ Arranque del juego.
 
+\ run  \ XXX TMP
 cr .( Escribe RUN para jugar) cr  \ XXX TMP
 
 \ ==============================================================
