@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607032314
+\ Last update: 201607032349
 
 \ Note: The comments of the code are in Spanish.
 
@@ -718,13 +718,13 @@ here swap - cell / constant battle-phases
   s{ s" se puede" s" puedes" s" es posible" }s s" ver" s& s" algo" s?&  ;
 
 : dark-cave  ( -- )
-  \ En la cueva y sin luz.
   new-page
   considering-the-darkness$ you-go-back$ s& to-the-place-where$ s&
   s{  there-is-some-light$
       there-are-some-sun-rays$
       it's-possible-to-see$
   }s& period+ narrate  ;
+  \ En la cueva y sin luz.
 
 \ ----------------------------------------------
 \ Albergue de los refugiados
@@ -884,10 +884,10 @@ location-48~ :after-describing-location  ( -- )
 \ ----------------------------------------------
 \ Varios
 
-: (lock-found)  ( -- )
+: lock-found  ( -- )
   door~ location lock~ be-there
-  lock~ familiar++
-  ;  ' (lock-found) is lock-found
+  lock~ familiar++  ;
+  \ ;  ' (lock-found) is lock-found  \ XXX OLD
   \ Encontrar el candado (al mirar la puerta o al intentar abrirla).
 
 \ ----------------------------------------------
@@ -903,6 +903,8 @@ location-48~ :after-describing-location  ( -- )
 
 \ ==============================================================
 \ Descripciones especiales
+
+  \ XXX TODO move to data.fs
 
 \ Esta sección contiene palabras que muestran descripciones
 \ que necesitan un tratamiento especial porque hacen
@@ -1010,7 +1012,7 @@ location-48~ :after-describing-location  ( -- )
   will-follow-you-forever  ;
   \ Describe a tus soldados durante el regreso a casa.
 
-: (describe-soldiers)  ( -- )
+: describe-soldiers  ( -- )
   true case
     still-in-the-village? of  soldiers-steal-spite-of-officers  endof
 \   back-to-the-village? of  soldiers-go-home  endof  \ XXX TODO -- no usado
@@ -1018,10 +1020,11 @@ location-48~ :after-describing-location  ( -- )
 \   battle? of  battle-phase  endof  \ XXX TODO -- no usado. redundante, porque tras la descripción se mostrará otra vez la situación de la batalla
   endcase  ;
   \ Describe a tus soldados.
+  \ XXX TODO move to data.fs
 
-' (describe-soldiers) is describe-soldiers
+\ ' (describe-soldiers) is describe-soldiers  \ XXX OLD
 
-: (describe-officers)  ( -- )
+: describe-officers  ( -- )
   true case
     still-in-the-village? of  ^officers-forbid-to-steal$  endof
 \   back-to-the-village? of  officers-go-home  endof  \ XXX TODO -- no usado
@@ -1029,8 +1032,9 @@ location-48~ :after-describing-location  ( -- )
 \   battle? of  battle-phase  endof  \ XXX TODO -- no usado. redundante, porque tras la descripción se mostrará otra vez la situación de la batalla
   endcase  ;
   \ Describe a tus soldados.
+  \ XXX TODO move to data.fs
 
-' (describe-officers) is describe-officers
+\ ' (describe-officers) is describe-officers \ XXX OLD
 
 
 \ vim:filetype=gforth:fileencoding=utf-8

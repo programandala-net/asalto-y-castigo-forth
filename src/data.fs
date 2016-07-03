@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607032336
+\ Last update: 201607032350
 
 \ Note: The comments of the code are in Spanish.
 
@@ -193,7 +193,7 @@ cuirasse~ :init  ( -- )
   self~ taken
   self~ be-worn  ;
 
-defer lock-found  ( -- )
+\ defer lock-found  ( -- )  \ XXX OLD
   \ Encontrar el candado.
 
 : describe-door  ( -- )
