@@ -21,7 +21,8 @@
   r@ after-listing-entities-xt
   r@ before-describing-location-xt
   r@ before-leaving-location-xt
-  r> name-str  ;
+  r> name-str
+  ;
   \ Respalda los datos de un ente _a_
   \ que se crearon durante la compilación del código y deben preservarse.
   \ (En orden alfabético, para facilitar la edición).
@@ -87,35 +88,39 @@
   \ para los que no se ha creado una palabra propia de descripción.
 
 : (:attributes)  ( a xt -- )
-  over ~init-xt !  \ Conservar la dirección de ejecución en la ficha del ente
-  ['] default-description over ~description-xt !  \ Poner la descripción predeterminada
-  postpone literal  ;  \ Compilar el identificador de ente en la palabra de descripción recién creada, para que `[:description]` lo guarde en `self~` en tiempo de ejecución
-  \ Operaciones preliminares para la definición de atributos de un ente.
-  \ Esta palabra solo se ejecuta una vez para cada ente,
-  \ al inicio de la compilación del código de la palabra
-  \ que define sus atributos.
-  \ a = Ente para la definición de cuyos atributos se ha creado una palabra
-  \ xt = Dirección de ejecución de la palabra recién creada
+  over ~init-xt !
+  ['] default-description over ~description-xt !
+  postpone literal  ;
+  \ Operaciones preliminares para la definición de atributos de un
+  \ ente _a_.  Esta palabra solo se ejecuta una vez para cada ente, al
+  \ inicio de la compilación del código de la palabra que define sus
+  \ atributos.  _xt_ es la dirección de ejecución de la palabra recién
+  \ creada. Operaciones: 1) Conserva la dirección de ejecución en la
+  \ ficha del ente; 2) Pone la descripción predeterminada; 3) Compila
+  \ el identificador de ente en la palabra de descripción recién
+  \ creada, para que `[:description]` lo guarde en `self~` en tiempo
+  \ de ejecución.
 
 : noname-roll  ( a xt colon-sys -- colon-sys a xt )  5 roll 5 roll  ;
   \ Mueve los parámetros que nos interesan a la parte alta de la pila;
-  \ se usa tras crear con `:noname` una palabra relativa a un ente.
-  \ Esta palabra es necesaria porque `:noname` deja en la pila
-  \ sus valores de control (colon-sys), que en el caso de Gforth
-  \ son tres elementos, para ser consumidos al finalizar la compilación de la
-  \ palabra creada.
-  \ a = Ente para el que se creó la palabra
-  \ xt = Dirección de ejecución de la palabra sin nombre creada por `:noname`
-  \ colon-sys = Valores de control dejados por `:noname`
+  \ se usa tras crear con `:noname` una palabra _xt_ relativa a un
+  \ ente _a_.  Esta palabra es necesaria porque `:noname` deja en la
+  \ pila sus valores de control, _colon-sys_, que en el caso de Gforth
+  \ son tres elementos, para ser consumidos al finalizar la
+  \ compilación de la palabra creada.
 
 : :attributes  ( a -- )
-  :noname noname-roll
-  (:attributes)  \ Crear la palabra y hacer las operaciones preliminares
-  postpone [:attributes]  ;  \ Compilar la palabra `[:attributes]` en la palabra creada, para que se ejecute cuando sea llamada
+  :noname noname-roll  (:attributes)  postpone [:attributes]  ;
   \ Inicia la creación de una palabra sin nombre que definirá las
-  \ propiedades de un ente.
+  \ propiedades de un ente _a_. Hace tres operaciones: 1) Crea la palabra
+  \ con `:noname`;
+  \ 2) Hace las operaciones preliminares, mediante `(:attributes)`; 3)
+  \ Compila la palabra `[:attributes]` en la palabra creada, para que
+  \ se ejecute cuando sea llamada.
 
 : ;attributes  ( sys-col -- )  postpone ;  ;  immediate
+  \ Termina la definición de la palabra de definición de atributos de
+  \ un ente.
 
   \ XXX TODO -- mejorar el sistema de inicialización de entes en
   \ Flibustre, para hacerlo tan potente como el de _Asalto y castigo_.

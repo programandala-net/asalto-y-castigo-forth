@@ -5,53 +5,23 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607031757
+\ Last update: 201607031856
 
 \ Note: The comments of the code are in Spanish.
 
 \ ==============================================================
 \ Interfaz de datos avanzada
 
-: is-direction?  ( a -- f )  direction 0<>  ;
-: is-familiar?  ( a -- f )  familiar 0>  ;
-: is-visited?  ( a -- f )  visits 0>  ;
-: is-not-visited?  ( a -- f )  visits 0=  ;
-: conversations?  ( a -- f )  conversations 0<>  ;
-: no-conversations?  ( a -- f )  conversations 0=  ;
-: has-north-exit?  ( a -- f )  north-exit exit?  ;
-: has-east-exit?  ( a -- f )  east-exit exit?  ;
-: has-south-exit?  ( a -- f )  south-exit exit?  ;
+\ Esta interfaz de datos depende de algunos identificadores de entes.
 
-: owns?  ( a1 a2 -- f )  owner =  ;
-: belongs?  ( a1 a2 -- f )  swap owns?  ;
-: owns  ( a1 a2 -- )  ~owner !  ;
-: belongs  ( a1 a2 -- )  swap owns  ;
-
-: belongs-to-protagonist?  ( a -- f )  owner protagonist~ =  ;
-: belongs-to-protagonist  ( a -- )  ~owner protagonist~ swap !  ;
-
-: is-living-being?  ( a -- f )
-  dup is-vegetal?  over is-animal? or  swap is-human? or  ;
-  \ ¿El ente es un ser vivo (aunque esté muerto)?
-
-: be-there  ( a1 a2 -- )  ~location !  ;
-  \ Hace que el ente _a1_ sea la localización del ente _a2_.
+: belongs-to-protagonist?  ( a -- f )  protagonist~ is-owner?  ;
+: belongs-to-protagonist  ( a -- )  protagonist~ be-owner  ;
 
 : taken  ( a -- )  protagonist~ swap be-there  ;
   \ Hace que el protagonista sea la localización de un ente _a_.
 
 : was-there  ( a1 a2 -- )  ~previous-location !  ;
   \ Hace que el ente _a1_ sea la localización previa del ente _a2_.
-
-: is-there?  ( a1 a2 -- f )  location =  ;
-  \ ¿Está el ente _a1_ localizado en el ente _a2_?
-
-: was-there?  ( a1 a2 -- f )  previous-location =  ;
-  \ ¿Estuvo el ente _a1_ localizado en el ente _a2_?
-
-: is-global?  ( a -- f )
-  dup is-global-outdoor? swap is-global-indoor? or  ;
-  \ ¿Es el ente un ente global?
 
 : my-location  ( -- a )  protagonist~ location  ;
   \ Devuelve la localización del protagonista.
@@ -85,28 +55,37 @@
   \ ¿El protagonista lleva puesto el ente indicado?
 
 : is-known?  ( a -- f )
-  dup belongs-to-protagonist?  \ ¿Es propiedad del protagonista?
-  over is-visited? or  \ ¿O es un escenario ya visitado? (si no es un escenario, la comprobación no tendrá efecto)
-  over conversations? or  \ ¿O ha hablado ya con él? (si no es un personaje, la comprobación no tendrá efecto)
-  swap is-familiar?  or  ;  \ ¿O ya le es familiar?
-  \ ¿El protagonista ya conoce el ente?
+  dup belongs-to-protagonist?
+  over is-visited? or
+  over conversations? or
+  swap is-familiar?  or  ;
+  \ ¿El protagonista ya conoce el ente?  El resultado depende de
+  \ cualquiera de cuatro condiciones: 1) ¿Es propiedad del
+  \ protagonista?; 2) ¿Es un escenario ya visitado? (si no es un
+  \ escenario, la comprobación no tendrá efecto); 3) ¿Ha hablado ya
+  \ con él? (si no es un personaje, la comprobación no tendrá efecto);
+  \ 4) ¿O ya le es familiar?.
 
 : is-unknown?  ( a -- f )  is-known? 0=  ;
   \ ¿El protagonista aún no conoce el ente?
 
 : is-here?  ( a -- f )
-  dup location am-i-there?  \ ¿Está efectivamente en la misma localización?
-  over is-global-outdoor? am-i-outdoor? and or \ ¿O es un «global exterior» y estamos en un escenario exterior?
-  swap is-global-indoor? am-i-indoor? and or  ; \ ¿O es un «global interior» y estamos en un escenario interior?
+  dup location am-i-there?
+  over is-global-outdoor? am-i-outdoor? and or
+  swap is-global-indoor? am-i-indoor? and or  ;
   \ ¿Está un ente en la misma localización que el protagonista?
   \ El resultado depende de cualquiera de tres condiciones:
+  \ 1) ¿Está efectivamente en la misma localización?;
+  \ 2) ¿Es un «global exterior» y estamos en un escenario exterior?;
+  \ 3) ¿Es un «global interior» y estamos en un escenario interior?.
 
 : is-not-here?  ( a -- f )  is-here? 0=  ;
   \ ¿Está un ente en otra localización que la del protagonista?
   \ XXX TODO -- no usado
 
 : is-here-and-unknown?  ( a -- f )  dup is-here? swap is-unknown? and  ;
-  \ ¿Está un ente en la misma localización que el protagonista y aún no es conocido por él?
+  \ ¿Está un ente en la misma localización que el protagonista y aún
+  \ no es conocido por él?
 
 : be-here  ( a -- )  my-location swap be-there  ;
   \ Hace que un ente esté en la misma localización que el protagonista.
@@ -148,14 +127,6 @@
       \ ¿Está accesible?
   [then]  ;
   \ ¿El ente puede ser mirado?
-
-: can-be-taken?  ( a -- f )
-  dup is-decoration?
-  over is-human? or
-  swap is-character? or 0=  ;
-  \ ¿El ente puede ser tomado?
-  \ Se usa como norma general, para aquellos entes
-  \ que no tienen un error específico indicado en el campo `~take-error#`
 
 : may-be-climbed?  ( a -- f )
   [false] [if]

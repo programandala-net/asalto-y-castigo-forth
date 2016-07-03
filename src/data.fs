@@ -146,7 +146,7 @@ arch~ :description
 bed~ :attributes
   s" catre" self~ ms-name!
   location-46~ self~ be-there
-  self~ ambrosio~ belongs
+  self~ ambrosio~ be-owner
   ;attributes
 
 bed~ :description
@@ -171,7 +171,7 @@ bridge~ :description
 candles~ :attributes
   s" velas" self~ fp-name!
   location-46~ self~ be-there
-  self~ ambrosio~ belongs
+  self~ ambrosio~ be-owner
   ;attributes
 
 candles~ :description
@@ -217,7 +217,7 @@ door~ :attributes
   self~ be-closed
   impossible-error# self~ ~take-error# !
   location-47~ self~ be-there
-  self~ ambrosio~ belongs
+  self~ ambrosio~ be-owner
   ;attributes
 
 defer lock-found  ( -- )
@@ -345,7 +345,7 @@ idol~ :description
 key~ :attributes
   s" llave" self~ fs-name!
   location-46~ self~ be-there
-  self~ ambrosio~ belongs
+  self~ ambrosio~ be-owner
   ;attributes
 
 key~ :description
@@ -372,7 +372,7 @@ lock~ :attributes
   self~ be-decoration
   self~ be-closed
   impossible-error# self~ ~take-error# !
-  self~ ambrosio~ belongs
+  self~ ambrosio~ be-owner
   ;attributes
 
 lock~ :description
@@ -495,7 +495,7 @@ sword~ :description
 table~ :attributes
   s" mesa" self~ fs-name!
   location-46~ self~ be-there
-  self~ ambrosio~ belongs
+  self~ ambrosio~ be-owner
   ;attributes
 
 table~ :description

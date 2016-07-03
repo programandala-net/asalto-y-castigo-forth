@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607031758
+\ Last update: 201607031856
 
 \ Note: The comments of the code are in Spanish.
 
@@ -105,11 +105,44 @@ last-exit> cell+ first-exit> - constant /exits
 : out-exit  ( a1 -- a2 )  ~out-exit @  ;
 : in-exit  ( a1 -- a2 )  ~in-exit @  ;
 
+: is-direction?  ( a -- f )  direction 0<>  ;
+: is-familiar?  ( a -- f )  familiar 0>  ;
+: is-visited?  ( a -- f )  visits 0>  ;
+: is-not-visited?  ( a -- f )  visits 0=  ;
+: conversations?  ( a -- f )  conversations 0<>  ;
+: no-conversations?  ( a -- f )  conversations 0=  ;
+: has-north-exit?  ( a -- f )  north-exit exit?  ;
+: has-south-exit?  ( a -- f )  south-exit exit?  ;
+: has-east-exit?  ( a -- f )  east-exit exit?  ;
+: has-west-exit?  ( a -- f )  west-exit exit?  ;
+
+: is-owner?  ( a1 a2 -- f )  owner =  ;
+
+: is-there?  ( a1 a2 -- f )  location =  ;
+  \ ¿Está el ente _a1_ localizado en el ente _a2_?
+
+: was-there?  ( a1 a2 -- f )  previous-location =  ;
+  \ ¿Estuvo el ente _a1_ localizado en el ente _a2_?
+
+: is-global?  ( a -- f )
+  dup is-global-outdoor? swap is-global-indoor? or  ;
+  \ ¿Es el ente un ente global?
+
+: is-living-being?  ( a -- f )
+  dup is-vegetal?  over is-animal? or  swap is-human? or  ;
+  \ ¿El ente es un ser vivo (aunque esté muerto)?
+
+: can-be-taken?  ( a -- f )
+  dup is-decoration?
+  over is-human? or
+  swap is-character? or 0=  ;
+  \ ¿El ente puede ser tomado?  Se usa como norma general, para
+  \ aquellos entes que no tienen un error específico indicado en el
+  \ campo `~take-error#`.
+
 \ ----------------------------------------------
 \ Modificadores de campos
 
-: conversations++  ( a -- )  ~conversations ?++  ;
-: familiar++  ( a -- )  ~familiar ?++  ;
 : have-definite-article  ( a -- )  ~has-definite-article bit-on  ;
 : have-feminine-name  ( a -- )  ~has-feminine-name bit-on  ;
 : have-masculine-name  ( a -- )  ~has-feminine-name bit-off  ;
@@ -117,25 +150,40 @@ last-exit> cell+ first-exit> - constant /exits
 : have-personal-name  ( a -- )  ~has-personal-name bit-on  ;
 : have-plural-name  ( a -- )  ~has-plural-name bit-on  ;
 : have-singular-name  ( a -- )  ~has-plural-name bit-off  ;
+
 : be-character  ( a -- )  ~is-character bit-on  ;
 : be-animal  ( a -- )  ~is-animal bit-on  ;
+
 : be-light  ( a -- )  ~is-light bit-on  ;
-: be-not-listed  ( a -- f )  ~is-not-listed bit-on  ;
 : be-lit  ( a -- )  ~is-lit bit-on  ;
 : be-not-lit  ( a -- )  ~is-lit bit-off  ;
+
 : be-cloth  ( a -- )  ~is-cloth bit-on  ;
+
+: be-not-listed  ( a -- f )  ~is-not-listed bit-on  ;
 : be-decoration  ( a -- )  ~is-decoration bit-on  ;
 : be-global-indoor  ( a -- )  ~is-global-indoor bit-on  ;
 : be-global-outdoor  ( a -- )  ~is-global-outdoor bit-on  ;
+
 : be-human  ( a -- )  ~is-human bit-on  ;
+
 : be-location  ( a -- )  ~is-location bit-on  ;
 : be-indoor-location  ( a -- )  dup be-location ~is-indoor-location bit-on  ;
 : be-outdoor-location  ( a -- )  dup be-location ~is-indoor-location bit-off  ;
+
 : be-open  ( a -- )  ~is-open bit-on  ;
 : be-closed  ( a -- )  ~is-open bit-off  ;
 : times-open++  ( a -- )  ~times-open ?++  ;
+
 : be-worn  ( a -- )  ~is-worn bit-on  ;
 : be-not-worn  ( a -- )  ~is-worn bit-off  ;
+
 : visits++  ( a -- )  ~visits ?++  ;
+: conversations++  ( a -- )  ~conversations ?++  ;
+: familiar++  ( a -- )  ~familiar ?++  ;
+
+: be-owner  ( a1 a2 -- )  swap ~owner !  ;
+
+: be-there  ( a1 a2 -- )  ~location !  ;
 
 \ vim:filetype=gforth:fileencoding=utf-8
