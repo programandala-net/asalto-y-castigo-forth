@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606292008
+\ Last update: 201607031757
 
 \ Note: The comments of the code are in Spanish.
 
@@ -499,27 +499,27 @@ create 'articles
 : name!  ( ca len a -- )  name-str str-set  ;
   \ Guarda el nombre _ca len_ de un ente _a_.
 
-: p-name!  ( ca len a -- )  dup has-plural-name name!  ;
+: p-name!  ( ca len a -- )  dup have-plural-name name!  ;
   \ Guarda el nombre _ca len_ de un ente _a_,
   \ y lo marca como plural.
 
-: s-name!  ( ca len a -- )  dup has-singular-name name!  ;
+: s-name!  ( ca len a -- )  dup have-singular-name name!  ;
   \ Guarda el nombre _ca len_ de un ente _a_,
   \ y lo marca como singular.
 
-: fs-name!  ( ca len a -- )  dup has-feminine-name s-name!  ;
+: fs-name!  ( ca len a -- )  dup have-feminine-name s-name!  ;
   \ Guarda el nombre _ca len_ de un ente _a_,
   \ indicando también que es de género gramatical femenino y singular.
 
-: fp-name!  ( ca len a -- )  dup has-feminine-name p-name!  ;
+: fp-name!  ( ca len a -- )  dup have-feminine-name p-name!  ;
   \ Guarda el nombre _ca len_ de un ente _a_,
   \ indicando también que es de género gramatical femenino y plural.
 
-: ms-name!  ( ca len a -- )  dup has-masculine-name s-name!  ;
+: ms-name!  ( ca len a -- )  dup have-masculine-name s-name!  ;
   \ Guarda el nombre _ca len_ de un ente _a_,
   \ indicando también que es de género gramatical masculino y singular.
 
-: mp-name!  ( ca len a -- )  dup has-masculine-name p-name!  ;
+: mp-name!  ( ca len a -- )  dup have-masculine-name p-name!  ;
   \ Guarda el nombre _ca len_ de un ente _a_,
   \ indicando también que es de género gramatical masculino y plural.
 

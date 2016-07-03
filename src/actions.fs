@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607020023
+\ Last update: 201607031757
 
 \ Note: The comments of the code are in Spanish.
 
@@ -1906,8 +1906,8 @@ false [if]
 
 : be-ambrosio's-name  ( ca len -- )
   ambrosio~ ms-name!
-  ambrosio~ has-no-article
-  ambrosio~ has-personal-name  ;
+  ambrosio~ have-no-article
+  ambrosio~ have-personal-name  ;
   \ Le pone a ambrosio su nombre de pila _ca len_.
 
 : ambrosio-introduces-himself  ( -- )

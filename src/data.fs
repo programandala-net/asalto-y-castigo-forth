@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607031724
+\ Last update: 201607031758
 
 \ Note: The comments of the code are in Spanish.
 
@@ -18,8 +18,8 @@
 ulfius~ :attributes
   s" Ulfius" self~ ms-name!
   self~ be-human
-  self~ has-personal-name
-  self~ has-no-article
+  self~ have-personal-name
+  self~ have-no-article
   location-01~ self~ be-there
   ;attributes
 
@@ -2049,7 +2049,7 @@ location-50~ :description
 
 location-51~ :attributes
   s" Westmorland" self~ fs-name!
-  self~ has-no-article
+  self~ have-no-article
   location-50~ 0 0 0 0 0 0 0 self~ init-location
   ;attributes
 
@@ -2196,31 +2196,31 @@ enemy~ :description
 
 north~ :attributes
   s" norte" self~ ms-name!
-  self~ has-definite-article
+  self~ have-definite-article
   north-exit> self~ ~direction !
   ;attributes
 
 south~ :attributes
   s" sur" self~ ms-name!
-  self~ has-definite-article
+  self~ have-definite-article
   south-exit> self~ ~direction !
   ;attributes
 
 east~ :attributes
   s" este" self~ ms-name!
-  self~ has-definite-article
+  self~ have-definite-article
   east-exit> self~ ~direction !
   ;attributes
 
 west~ :attributes
   s" oeste" self~ name!
-  self~ has-definite-article
+  self~ have-definite-article
   west-exit> self~ ~direction !
   ;attributes
 
 up~ :attributes
   s" arriba" self~ name!
-  self~ has-no-article
+  self~ have-no-article
   up-exit> self~ ~direction !
   ;attributes
 
@@ -2233,7 +2233,7 @@ up~ :description
 
 down~ :attributes
   s" abajo" self~ name!
-  self~ has-no-article
+  self~ have-no-article
   down-exit> self~ ~direction !
   ;attributes
 
@@ -2248,13 +2248,13 @@ down~ :description
 
 out~ :attributes
   s" afuera" self~ name!
-  self~ has-no-article
+  self~ have-no-article
   out-exit> self~ ~direction !
   ;attributes
 
 in~ :attributes
   s" adentro" self~ name!
-  self~ has-no-article
+  self~ have-no-article
   in-exit> self~ ~direction !
   ;attributes
 

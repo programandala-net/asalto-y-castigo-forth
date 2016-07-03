@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606292008
+\ Last update: 201607031758
 
 \ Note: The comments of the code are in Spanish.
 
@@ -108,17 +108,15 @@ last-exit> cell+ first-exit> - constant /exits
 \ ----------------------------------------------
 \ Modificadores de campos
 
-\ XXX TODO -- renombrar "has-" a "have-".
-
 : conversations++  ( a -- )  ~conversations ?++  ;
 : familiar++  ( a -- )  ~familiar ?++  ;
-: has-definite-article  ( a -- )  ~has-definite-article bit-on  ;
-: has-feminine-name  ( a -- )  ~has-feminine-name bit-on  ;
-: has-masculine-name  ( a -- )  ~has-feminine-name bit-off  ;
-: has-no-article  ( a -- )  ~has-no-article bit-on  ;
-: has-personal-name  ( a -- )  ~has-personal-name bit-on  ;
-: has-plural-name  ( a -- )  ~has-plural-name bit-on  ;
-: has-singular-name  ( a -- )  ~has-plural-name bit-off  ;
+: have-definite-article  ( a -- )  ~has-definite-article bit-on  ;
+: have-feminine-name  ( a -- )  ~has-feminine-name bit-on  ;
+: have-masculine-name  ( a -- )  ~has-feminine-name bit-off  ;
+: have-no-article  ( a -- )  ~has-no-article bit-on  ;
+: have-personal-name  ( a -- )  ~has-personal-name bit-on  ;
+: have-plural-name  ( a -- )  ~has-plural-name bit-on  ;
+: have-singular-name  ( a -- )  ~has-plural-name bit-off  ;
 : be-character  ( a -- )  ~is-character bit-on  ;
 : be-animal  ( a -- )  ~is-animal bit-on  ;
 : be-light  ( a -- )  ~is-light bit-on  ;
