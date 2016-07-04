@@ -1,7 +1,7 @@
 \ action_errors.fs
 \
 \ This file is part of _Asalto y castigo_
-\ http://programandala.net/es.program.asalto_y_castigo.forth.html
+\ http://programandala.net/es.programa.asalto_y_castigo.forth.html
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
@@ -22,7 +22,7 @@
 : unerror  ( i*j pfa -- )  cell+ @ drops  ;
   \ Borra de la pila los parámetros de un error operativo.
 
-: action-error:  ( n xt "name1" -- xt2 )
+: action-error:  ( n xt1 "name" -- xt2 )
   create , , latestxt
   does>  ( pfa )
     action-errors-verbosity @ case
@@ -30,18 +30,18 @@
       1 of  unerror action-error-general-message  endof
       2 of  perform  endof
     endcase  ;
-  \ Crea un error operativo.
+  \ Crea un error operativo con nombre _name_.
   \ n = número de parámetros del error operativo efectivo
-  \ xt = dirección de ejecución del error operativo efectivo
+  \ xt1 = dirección de ejecución del error operativo efectivo
   \ "name1" = nombre de la palabra de error a crear
   \ xt2 = dirección de ejecución de la palabra de error creada
 
-: known-entity-is-not-here$  ( a -- ca1 len1 )
+: known-entity-is-not-here$  ( a -- ca len )
   full-name s" no está" s&
   s{ s" aquí" s" por aquí" }s&  ;
   \  Devuelve mensaje de que un ente conocido no está presente.
 
-: unknown-entity-is-not-here$  ( a -- ca1 len1 )
+: unknown-entity-is-not-here$  ( a -- ca len )
   s{ s" Aquí" s" Por aquí" }s
   s" no hay" s&
   rot subjective-negative-name s&  ;
@@ -204,8 +204,11 @@ to nonsense-error#
   s" sería peligroso"
   s" sería una insensatez"
   }s  ;
-  \ Devuelve una variante de «es peligroso», que formará parte de mensajes personalizados por cada acción.
-  \ XXX TODO -- quitar las variantes que no sean adecuadas a todos los casos y unificar
+  \ Devuelve una variante de «es peligroso», que formará parte de
+  \ mensajes personalizados por cada acción.
+  \
+  \ XXX TODO -- quitar las variantes que no sean adecuadas a todos los
+  \ casos y unificar
 
 : ^dangerous$  ( -- ca len )  dangerous$ ^uppercase  ;
   \ Devuelve una variante de «Es peligroso» (con la primera letra en
@@ -238,12 +241,10 @@ to nonsense-error#
 0 ' (dangerous) action-error: dangerous
 to dangerous-error#
 
-: ?full-name&  ( ca1 len1 a2 -- )
+: ?full-name&  ( ca len a | ca len 0 -- )
   ?dup if  full-name s&  then  ;
-  \ Añade a una cadena el nombre de un posible ente.
+  \ Añade a una cadena _ca len_ el nombre de un posible ente _a_.
   \ XXX TODO -- no usado
-  \ ca1 len1 = Cadena
-  \ a2 = Ente (o cero)
 
 : (+is-nonsense)  ( ca len a1 -- )
   ?dup if    full-name s& (is-nonsense)
@@ -348,13 +349,11 @@ to dangerous-error#
   \ Informa de que una acción no tiene importancia.
   \ XXX TMP, no se usa
 
-: (unnecessary-tool-for-that)  ( ca1 len1 a2 -- )
+: (unnecessary-tool-for-that)  ( ca len a -- )
   full-name s" No necesitas" 2swap s& s" para" s& 2swap s&
   period+ action-error  ;
-  \ Informa de que un ente es innecesario como herramienta
-  \ para ejecutar una acción.
-  \ ca1 len1 = Acción (una frase con verbo en infinitivo)
-  \ a2 = Ente innecesario
+  \ Informa de que un ente _a_ es innecesario como herramienta
+  \ para ejecutar una acción _ca len_ (frase con verbo en infinitivo).
   \ XXX TODO -- inconcluso
 
 3 ' (unnecessary-tool-for-that) action-error: unnecessary-tool-for-that
@@ -391,17 +390,17 @@ to unnecessary-tool-error#
   ['] x-is-normal$
   ['] it-is-normal-x$
   2 choose execute  period+ action-error  ;
-  \ Informa de que un ente no tiene nada especial.
-  \ ca len = Acción que no tiene nada especial; es un verbo en infinitivo, un sustantivo o una cadena vacía
+  \ Informa de que un ente _a_ no tiene nada especial.
 
 1 ' (is-normal) action-error: be-normal
 to is-normal-error#
 
 [then]
 
-: that$  ( a -- ca1 len1 )
+: that$  ( a -- ca len )
   2 random if  drop s" eso"  else  full-name  then  ;
-  \  Devuelve el nombre de un ente, o un pronombre demostrativo.
+  \  Devuelve en _ca len_ el nombre de un ente _a_,
+  \  o bien, al azar, "eso".
 
 : you-do-not-have-it-(0)$  ( a -- )
   s" No" you-carry$ s& rot that$ s& with-you$ s&  ;

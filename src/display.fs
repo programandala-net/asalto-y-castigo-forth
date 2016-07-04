@@ -1,7 +1,7 @@
 \ display.fs
 \
 \ This file is part of _Asalto y castigo_
-\ http://programandala.net/es.program.asalto_y_castigo.forth.html
+\ http://programandala.net/es.programa.asalto_y_castigo.forth.html
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
