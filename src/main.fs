@@ -114,9 +114,9 @@ s" intro.fs" including
   randomize
   init-parser/game init-entities init-plot
   get-config new-page
-  [true] [if]    about cr intro  location-01~ enter-location
-         [else]  init-game-for-debugging
-         [then]  ;
+  [false] [if]    about cr intro  location-01~ enter-location
+          [else]  init-game-for-debugging
+          [then]  ;
   \ Preparativos que hay que hacer antes de cada partida.
 
 : game  ( -- )  begin  plot accept-command obey  game-over?  until  ;

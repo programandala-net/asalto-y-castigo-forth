@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607041421
+\ Last update: 201607041716
 
 \ Note: The comments of the code are in Spanish.
 
@@ -135,21 +135,6 @@
   s{ s" personas" s" hombres, mujeres y niños" }s
   s" de toda" s& s" edad y" s?& s" condición" s&  ;
 
-: refugees-description  ( -- )
-  talked-to-the-leader?
-  if    s" Los refugiados son"
-  else  s" Hay"
-  then  diverse-people$ s&
-  talked-to-the-leader?
-  if    the-leader-said-they-want-peace$
-  else  period+ you-don't-know-why-they're-here$
-  then  s&
-  do-you-hold-something-forbidden?
-  if    the-refugees-don't-trust$
-  else  the-refugees-trust$
-  then  s& period+ narrate  ;
-  \ Descripición de los refugiados.
-
 \ ----------------------------------------------
 \ Tramos de cueva (laberinto)
 
@@ -167,17 +152,18 @@
   \ Devuelve una variante de «estrecho tramo de cueva», con el
   \ artículo adecuado y la primera letra mayúscula.
 
-: toward-the(m/f)  ( a -- ca1 len1 )
+: toward-the(m/f)  ( a -- ca len )
   has-feminine-name? if  toward-the(f)$  else  toward-the(m)$  then  ;
   \ Devuelve una variante de «hacia el» con el artículo adecuado a un
-  \ ente.
+  \ ente _a_.
 
-: toward-(the)-name  ( a -- ca1 len1 )
+: toward-(the)-name  ( a -- ca len )
   dup has-no-article?
   if    s" hacia"
   else  dup toward-the(m/f)
   then  rot name s&  ;
-  \ Devuelve una variante de «hacia el nombre-de-ente» adecuada a un ente.
+  \ Devuelve una variante de «hacia el nombre-de-ente» adecuada a un
+  \ ente _a_.
 
 : main-cave-exits-are$  ( -- ca len )
   ^this-narrow-cave-pass$ lets-you$ s& to-keep-going$ s&  ;
@@ -192,7 +178,7 @@
   \ Devuelve la primera variante de la descripción de una salida de un
   \ tramo de cueva.
 
-: cave-exit-description-1$ ( -- ca1 len1 )
+: cave-exit-description-1$ ( -- ca len )
   ^a-pass-way$
   s{ s" surge" s" se ve" s" nace" s" sale" s" puede verse" }s&
   in-that-direction$ s&  ;
@@ -261,7 +247,7 @@ false [if]  \ XXX OLD -- código obsoleto
   \ ca1 len1 = Cadena con el número de pasajes
   \ ca2 len2 = Cadena con el resultado
 
-: secondary-exit-in-cave&  ( a1 ca2 len2 -- ca3 len3 )
+: secondary-exit-in-cave&  ( a ca2 len2 -- ca3 len3 )
   rot toward-(the)-name s&  ;
   \ Devuelve la descripción de una salida adicional en un tramo de cueva.
   \ a1 = Ente dirección cuya descripción hay que añadir
@@ -420,7 +406,7 @@ create 'cave-descriptions
   \ a1 ... an = Entes de dirección correspondientes a las salidas
   \ u = Número de entes de dirección suministrados
 
-: cave-exit-description$  ( -- ca1 len1 )
+: cave-exit-description$  ( -- ca len )
   ['] cave-exit-description-0$  \ Primera variante posible
   ['] cave-exit-description-1$  \ Segunda variante posible
   2 choose execute period+  ;
@@ -469,18 +455,6 @@ create 'cave-descriptions
 \ ----------------------------------------------
 \ Entrada a la cueva
 
-: the-cave-entrance-was-discovered?  ( -- )
-  location-08~ has-south-exit?  ;
-  \ ¿La entrada a la cueva ya fue descubierta?
-
-: the-cave-entrance-is-accessible?  ( -- )
-  location-08~ am-i-there? the-cave-entrance-was-discovered? and  ;
-  \ ¿La entrada a la cueva está accesible (presente y descubierta)?
-
-: open-the-cave-entrance  ( -- )
-  location-08~ dup location-10~ s<-->  location-10~ i<-->  ;
-  \ Comunica el escenario 8 con el 10 (de dos formas y en ambos sentidos).
-
 : you-discover-the-cave-entrance$  ( -- ca len )
   ^but$ comma+
   s{  s" reconociendo" s" el terreno" more-carefully$ rnd2swap s& s&
@@ -489,17 +463,6 @@ create 'cave-descriptions
   s" sin duda" s?& s{ s" parece ser" s" es" s" debe de ser" }s&
   s{ s" la entrada" s" el acceso" }s& s" a una" s& cave$ s&  ;
   \ Mensaje de que descubres la cueva.
-
-: you-discover-the-cave-entrance  ( -- )
-  you-discover-the-cave-entrance$ period+ narrate
-  open-the-cave-entrance  cave-entrance~ be-here  ;
-  \ Descubres la cueva.
-
-: you-maybe-discover-the-cave-entrance  ( ca len -- )
-  s" ..." s+ narrate
-  3 random if  narration-break you-discover-the-cave-entrance  then  ;
-  \ Descubres la cueva con un 66% de probabilidad.
-  \ ca len = Texto introductorio
 
 : the-cave-entrance-is-hidden$  ( -- ca len )
   s" La entrada" s" a la cueva" s?&

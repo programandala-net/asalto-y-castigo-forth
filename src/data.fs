@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607041348
+\ Last update: 201607041716
 
 \ Note: The comments of the code are in Spanish.
 
@@ -101,9 +101,23 @@ officers~ :init  ( -- )
   self~ be-decoration
   self~ belongs-to-protagonist  ;
 
+: describe-present-refugees  ( -- )
+  talked-to-the-leader?
+  if    s" Los refugiados son"
+  else  s" Hay"
+  then  diverse-people$ s&
+  talked-to-the-leader?
+  if    the-leader-said-they-want-peace$
+  else  period+ you-don't-know-why-they're-here$
+  then  s&
+  do-you-hold-something-forbidden?
+  if    the-refugees-don't-trust$
+  else  the-refugees-trust$
+  then  s& period+ narrate  ;
+
 : describe-refugees  ( -- )
   my-location case
-  location-28~ of  refugees-description  endof
+  location-28~ of  describe-present-refugees  endof
   location-29~ of  s" Todos los refugiados quedaron atrás."
                    paragraph  endof
   endcase  ;
@@ -400,10 +414,21 @@ rags~ :init  ( -- )
   ['] describe-rags self~ be-description-xt
   s" harapo" self~ ms-name!  ;
 
+: you-discover-the-cave-entrance  ( -- )
+  you-discover-the-cave-entrance$ period+ narrate
+  open-the-cave-entrance  cave-entrance~ be-here  ;
+  \ Descubres la cueva.
+
+: you-maybe-discover-the-cave-entrance  ( ca len -- )
+  s" ..." s+ narrate
+  3 random if  narration-break you-discover-the-cave-entrance  then  ;
+  \ Descubres la cueva con un 66% de probabilidad.
+  \ ca len = Texto introductorio
+
 : describe-ravine-wall  ( -- )
-  s" en" the-cave-entrance-was-discovered? ?keep
+  s" en" was-the-cave-entrance-discovered? ?keep
   s" la pared" s& rocky(f)$ s& ^uppercase
-  the-cave-entrance-was-discovered? if
+  was-the-cave-entrance-discovered? if
     s" , que" it-looks-impassable$ s& comma+ s?+
     the-cave-entrance-is-visible$ s&
     period+ paragraph
@@ -796,7 +821,7 @@ location-07~ :init  ( -- )
     s{ s" se alza" s" se levanta" }s&
     \ s" una pared" s& rocky(f)$ s& \ XXX OLD
     ravine-wall~ full-name s&
-    the-cave-entrance-was-discovered? if
+    was-the-cave-entrance-discovered? if
       comma+ s" en la" s&{ s" que" s" cual" }s&
       the-cave-entrance-is-visible$ s&
       period+ paragraph

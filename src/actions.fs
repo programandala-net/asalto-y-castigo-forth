@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607031757
+\ Last update: 201607041711
 
 \ Note: The comments of the code are in Spanish.
 
@@ -68,7 +68,7 @@ defer well-done$  ( -- ca len )
 
 : main-complement{this-only}  ( a -- )
   main-complement @ swap over different?
-  not-allowed-main-complement-error# and throw  ;
+  not-allowed-main-complement-error# and ~~ throw  ;
   \ Provoca un error si hay complemento principal y no es el indicado.
   \ a = Ente que será aceptado como complemento
 
@@ -2314,7 +2314,7 @@ immediate
   #>entity r@ ~previous-location !
   #>entity r@ ~location !
   r@ ~owner !
-  r@ ~flags-0 !
+  r@ ~bitfields !
   r@ ~times-open !
   r@ ~conversations !
   \ 2dup cr type .s  \ XXX INFORMER
@@ -2381,7 +2381,7 @@ restore-wordlists
   r@ name string>file
   r@ conversations n>file
   r@ times-open n>file
-  r@ flags-0 n>file
+  r@ ~bitfields @ n>file
   r@ owner n>file
   r@ location entity>file
   r@ previous-location entity>file

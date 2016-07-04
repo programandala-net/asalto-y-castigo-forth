@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607041354
+\ Last update: 201607041652
 
 \ Note: The comments of the code are in Spanish.
 
@@ -80,7 +80,7 @@
 : (cave) ( -- a | false )
   true case
     my-location location-10~ location-47~ between of  cave~  endof
-    the-cave-entrance-is-accessible? of  cave-entrance~  endof
+    is-the-cave-entrance-accessible? of  cave-entrance~  endof
     false swap
   endcase  ;
   \ Devuelve el ente adecuado a la palabra «cueva»
@@ -88,7 +88,7 @@
 
 : (entrance) ( -- a | false )
   true case
-    the-cave-entrance-is-accessible? of  cave-entrance~  endof
+    is-the-cave-entrance-accessible? of  cave-entrance~  endof
 
     \ XXX TODO -- quizá no se implemente esto porque precisaría
     \ asociar a cave-entrance~ el vocablo «salida/s», lo que crearía
@@ -102,11 +102,9 @@
   \ (o _false_ si la ambigüedad no puede ser resuelta).
 
 : (exits)  ( -- a )
+  is-the-cave-entrance-accessible?
+  if  cave-entrance~  else  exits~  then  ;
   \ Devuelve el ente adecuado a la palabra «salida/s».
-  the-cave-entrance-is-accessible?
-  if    cave-entrance~
-  else  exits~
-  then  ;
 
 : (stone) ( -- a )
   true case
@@ -259,7 +257,8 @@ player-wordlist dup >order set-current
   recogerlas recógelas recogedlas recójolas recójalas
   ;aliases
 
-: tomar  ['] do-take|do-eat action!  ; \ XXX TODO -- inconcluso
+: tomar  ['] do-take|do-eat action!  ;
+  \ XXX TODO -- inconcluso
 ' tomar  aliases:
   toma tomad tomo tome
   ;aliases
@@ -480,7 +479,9 @@ player-wordlist dup >order set-current
   colocarte colócate colóquete
   colocarme colócame colócome colóqueme
   ;aliases
-\ XXX TODO -- crear acción. vestir [con], parte como sinónimo y parte independiente
+  \ XXX TODO -- crear acción. vestir [con], parte como sinónimo y
+  \ parte independiente.
+
 : ponérselo  ponerse éste  ;
 ' ponérselo aliases:
   póngaselo ponéoslo
@@ -699,7 +700,8 @@ player-wordlist dup >order set-current
 : partirlas  partir éstas  ;
 ' partirlas aliases:  pártelas pártolas partidlas pártalas  ;aliases
 
-: esperar  ;  \ XXX TODO
+: esperar  ;
+  \ XXX TODO
 
 ' esperar aliases:
   z espera esperad espero espere
@@ -731,8 +733,9 @@ player-wordlist dup >order set-current
 ' escalar aliases:  trepar trepa trepo trepe  ;aliases
 
 : hablar  ['] do-speak action!  ;
-\ XXX TODO -- Crear nuevas palabras según la preposición que necesiten.
-\ XXX TODO -- Separar matices.
+  \ XXX TODO -- Crear nuevas palabras según la preposición que necesiten.
+  \ XXX TODO -- Separar matices.
+
 ' hablar aliases:
   habla hablad hablo hable
   hablarle háblale háblole háblele
@@ -752,8 +755,8 @@ player-wordlist dup >order set-current
   presentarte preséntate presentaos preséntete
   ;aliases
 
-\ XXX TODO:
-\ meter introducir insertar colar encerrar
+  \ XXX TODO:
+  \ meter introducir insertar colar encerrar
 
 \ ----------------------------------------------
 \ Nombres de objetos o personas
@@ -809,9 +812,12 @@ player-wordlist dup >order set-current
 
 : arco  arch~ complement!  ;
 
-: capa  cloak~ complement!  ; \ XXX TODO -- hijuelo?
+: capa  cloak~ complement!  ;
+  \ XXX TODO -- hijuelo?
 ' capa aliases:  lana  ;aliases
-\ ' capa aliases:  abrigo  ;aliases \ XXX TODO -- diferente género
+
+\ ' capa aliases:  abrigo  ;aliases
+  \ XXX TODO -- diferente género
 
 : coraza  cuirasse~ complement!  ;
 ' coraza aliases:  armadura  ;aliases
@@ -820,7 +826,7 @@ player-wordlist dup >order set-current
 
 : esmeralda  emerald~ complement!  ;
 ' esmeralda aliases:  joya  ;aliases
-\ XXX TODO -- piedra-preciosa brillante
+  \ XXX TODO -- piedra-preciosa brillante
 
 : derrumbe fallen-away~ complement!  ;
 
@@ -829,7 +835,8 @@ player-wordlist dup >order set-current
     bandera pendones enseñas pendón enseña
     mástil mástiles
     estandarte estandartes
-  ;aliases \ XXX TODO -- estandarte, enseña... otro género
+  ;aliases
+  \ XXX TODO -- estandarte, enseña... otro género
 
 : dragones  flags~ is-known? ?? banderas ;
 ' dragones aliases: dragón  ;aliases
@@ -838,7 +845,7 @@ player-wordlist dup >order set-current
 
 : ídolo  idol~ complement!  ;
 ' ídolo aliases:  ojo orificio agujero  ;aliases
-\ XXX TODO -- separar los sinónimos de ídolo
+  \ XXX TODO -- separar los sinónimos de ídolo
 
 : llave  key~ complement!  ;
 ' llave aliases:  hierro herrumbe óxido  ;aliases
@@ -852,7 +859,7 @@ player-wordlist dup >order set-current
 
 : tronco  log~ complement!  ;
 ' tronco aliases:  leño madero  ;aliases
-\ XXX TODO -- madera
+  \ XXX TODO -- madera
 
 : trozo  piece~ complement!  ;
 ' trozo aliases:  pedazo retal tela  ;aliases
@@ -944,11 +951,11 @@ player-wordlist dup >order set-current
 
 : salir  ['] do-go-out action!  ;
 ' salir aliases:  sal salid salgo salga  ;aliases
-\ XXX TODO -- ambigüedad. sal
+  \ XXX TODO -- ambigüedad. sal
 ' salir aliases:  salirse  ;aliases
 ' salir aliases:  salirme sálgome  ;aliases
 ' salir aliases:  salirte  ;aliases
-\ XXX TODO -- ambigüedad. salte
+  \ XXX TODO -- ambigüedad. salte
 
 : fuera  ['] do-go-out out~ action|complement!  ;
 ' fuera aliases:  afuera  ;aliases
@@ -969,12 +976,12 @@ player-wordlist dup >order set-current
 \ Términos asociados a entes globales o virtuales
 
 : nubes  clouds~ complement!  ;
-\ XXX TODO ¿cúmulo-nimbos?, ¿nimbos?
+  \ XXX TODO ¿cúmulo-nimbos?, ¿nimbos?
 ' nubes aliases:  nube estratocúmulo estratocúmulos cirro cirros  ;aliases
 
 : suelo  floor~ complement!  ;
 ' suelo aliases:  suelos tierra firme  ;aliases
-\ XXX TODO -- Añadir «piso», que es ambiguo
+  \ XXX TODO -- Añadir «piso», que es ambiguo
 
 : cielo  sky~ complement!  ;
 ' cielo aliases:  cielos firmamento  ;aliases
@@ -985,17 +992,20 @@ player-wordlist dup >order set-current
 ' cueva aliases:  caverna gruta  ;aliases
 
 : entrada  (entrance) complement!  ;
-\ XXX TODO ¿Implementar cambio de nombre y/o género gramatical? (entrada, acceso):
 ' entrada aliases:  acceso  ;aliases
+  \ XXX TODO ¿Implementar cambio de nombre y/o género gramatical?
+\ (entrada, acceso).
 
 : enemigo  enemy~ complement!  ;
 ' enemigo aliases: enemigos sajón sajones  ;aliases
 
-: todo ;  \ XXX TODO
-\ XXX TODO ¿Implementar cambio de nombre y/o género gramatical? (pared/es, muro/s):
+: todo ;
+  \ XXX TODO
 
 : pared  (wall) complement!  ;
 ' pared  aliases: muro  ;aliases
+  \ XXX TODO ¿Implementar cambio de nombre y/o género gramatical?
+  \ (pared/es, muro/s).
 
 : paredes  wall~ complement!  ;
 ' paredes  aliases: muros  ;aliases

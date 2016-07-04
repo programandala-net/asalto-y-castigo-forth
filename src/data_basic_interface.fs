@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607041348
+\ Last update: 201607041712
 
 \ Note: The comments of the code are in Spanish.
 
@@ -24,15 +24,15 @@
 \ Guardar el desplazamiento de cada campo de dirección respecto al
 \ primero de ellos:
 0 ~first-exit constant first-exit>
-0 ~last-exit constant last-exit>
+0 ~last-exit  constant last-exit>
 0 ~north-exit constant north-exit>
 0 ~south-exit constant south-exit>
-0 ~east-exit constant east-exit>
-0 ~west-exit constant west-exit>
-0 ~up-exit constant up-exit>
-0 ~down-exit constant down-exit>
-0 ~out-exit constant out-exit>
-0 ~in-exit constant in-exit>
+0 ~east-exit  constant east-exit>
+0 ~west-exit  constant west-exit>
+0 ~up-exit    constant up-exit>
+0 ~down-exit  constant down-exit>
+0 ~out-exit   constant out-exit>
+0 ~in-exit    constant in-exit>
 
 last-exit> cell+ first-exit> - constant /exits
   \ Espacio en octetos ocupado por los campos de salidas.
@@ -58,7 +58,6 @@ last-exit> cell+ first-exit> - constant /exits
 : description-xt  ( a -- xt )  ~description-xt @  ;
 : direction  ( a -- u )  ~direction @  ;
 : familiar  ( a -- u )  ~familiar @  ;
-: flags-0  ( a -- x )  ~flags-0 @  ;
 : has-definite-article?  ( a -- f )  ~has-definite-article bit@  ;
 : has-feminine-name?  ( a -- f )  ~has-feminine-name bit@  ;
 : has-masculine-name?  ( a -- f )  has-feminine-name? 0=  ;

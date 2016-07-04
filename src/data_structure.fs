@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607041346
+\ Last update: 201607041717
 
 \ Note: The comments of the code are in Spanish.
 
@@ -132,7 +132,7 @@ field: ~in-exit
 \ ----------------------------------------------
 \ Indicadores
 
-:noname  ( -- ca len )  s" ~flags-0"  ; is bitfields-name
+:noname  ( -- ca len )  s" ~bitfields"  ; is bitfields-name
 
 begin-bitfields
 
