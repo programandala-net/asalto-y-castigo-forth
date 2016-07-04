@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607041136
+\ Last update: 201607041348
 
 \ Note: The comments of the code are in Spanish.
 
@@ -1207,14 +1207,14 @@ location-19~ :init  ( -- )
   uninteresting-direction
   endcase  ;
 
-: can-i-enter-location-20?  ( -- f )
+: can-be-entered-location-20?  ( -- f )
   location-17~ am-i-there? no-torch? and
   dup 0= swap ?? dark-cave  ;
 
 location-20~ :init  ( -- )
   self~ be-location
   ['] describe-location-20 self~ be-description-xt
-  ['] can-i-enter-location-20? self~ be-can-i-enter-location-xt
+  ['] can-be-entered-location-20? self~ ~can-be-entered-xt !
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
   location-17~ location-22~ location-25~ 0 0 0 0 0 self~ set-exits  ;

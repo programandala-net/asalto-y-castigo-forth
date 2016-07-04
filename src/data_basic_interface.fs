@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607041144
+\ Last update: 201607041348
 
 \ Note: The comments of the code are in Spanish.
 
@@ -89,7 +89,7 @@ last-exit> cell+ first-exit> - constant /exits
 : is-vegetal?  ( a -- f )  ~is-vegetal bit@  ;
 : is-worn?  ( a -- f )  ~is-worn bit@  ;
 : location  ( a1 -- a2 )  ~location @  ;
-: can-i-enter-location-xt  ( a -- xt )  ~can-i-enter-location-xt @  ;
+: can-be-entered-xt  ( a -- xt )  ~can-be-entered-xt @  ;
 : before-describing-location-xt  ( a -- xt )  ~before-describing-location-xt @  ;
 : after-describing-location-xt  ( a -- xt )  ~after-describing-location-xt @  ;
 : after-listing-entities-xt  ( a -- xt )  ~after-listing-entities-xt @  ;
@@ -152,7 +152,6 @@ last-exit> cell+ first-exit> - constant /exits
 : be-after-describing-location-xt  ( xt a -- )  ~after-describing-location-xt !  ;
 : be-after-listing-entities-xt  ( xt a -- )  ~after-listing-entities-xt !  ;
 : be-before-leaving-location-xt  ( xt a -- )  ~before-leaving-location-xt !  ;
-: be-can-i-enter-location-xt  ( a xt -- )  ~can-i-enter-location-xt !  ;
 
 : have-definite-article  ( a -- )  ~has-definite-article bit-on  ;
 : have-feminine-name  ( a -- )  ~has-feminine-name bit-on  ;

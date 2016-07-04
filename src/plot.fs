@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607040032
+\ Last update: 201607041349
 
 \ Note: The comments of the code are in Spanish.
 
@@ -113,15 +113,15 @@
       after-listing-entities  ;
   \ Entra en un escenario.
 
-: enter-location?  ( a -- f )
-  can-i-enter-location-xt ?dup if  execute  else  true  then  ;
+: can-be-entered?  ( a -- f )
+  can-be-entered-xt ?dup if  execute  else  true  then  ;
   \ Ejecuta la trama previa a la entrada a un ente escenario _a_, que
   \ devolverá un indicador _f_ de que puede entrarse en el escenario;
   \ si esta trama no está definida para el ente, el indicador será
   \ `true`.
 
 : enter-location  ( a -- )
-  dup enter-location? and ?dup ?? actually-enter-location  ;
+  dup can-be-entered? and ?dup ?? actually-enter-location  ;
   \ Entra en un escenario _a_, si es posible.
 
 \ ==============================================================

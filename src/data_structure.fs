@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607041246
+\ Last update: 201607041346
 
 \ Note: The comments of the code are in Spanish.
 
@@ -98,7 +98,7 @@ field: ~owner
 \ ----------------------------------------------
 \ Tramas de escenario
 
-field: ~can-i-enter-location-xt
+field: ~can-be-entered-xt
   \ Trama previa a la entrada al escenario.
 field: ~before-describing-location-xt
   \ Trama de entrada antes de describir el escenario.
