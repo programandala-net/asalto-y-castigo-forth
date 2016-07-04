@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607041834
+\ Last update: 201607042040
 
 \ Note: The comments of the code are in Spanish.
 
@@ -265,7 +265,7 @@ create 'language-error-verbosity-xt
   s{ there-are$ s" dos verbos" s&
   there-is$ s" más de un verbo" s&
   there-are$ s" al menos dos verbos" s&
-  }s  language-error  ; is too-many-actions-error#
+  }s  language-error  ; to too-many-actions-error#
   \ Informa de que se ha producido un error porque hay dos verbos en
   \ el comando.
 
@@ -277,58 +277,58 @@ create 'language-error-verbosity-xt
   s" más de un complemento secundario" s&
   there-are$
   s" al menos dos complementos secundarios" s&
-  }s  language-error  ; is too-many-complements-error#
+  }s  language-error  ; to too-many-complements-error#
   \ Informa de que se ha producido un error
   \ porque hay dos complementos secundarios en el comando.
   \ XXX TMP
 
 :noname  ( -- )
   there-is-no$ s" verbo" s&
-  language-error  ; is no-verb-error#
+  language-error  ; to no-verb-error#
   \ Informa de que se ha producido un error por falta de verbo en el comando.
 
 :noname  ( -- )
   there-is-no$ s" complemento principal" s&
-  language-error  ; is no-main-complement-error#
+  language-error  ; to no-main-complement-error#
   \ Informa de que se ha producido un error por falta de complemento
   \ principal en el comando.
 
 :noname  ( -- )
   there-is$ s" un complemento principal" s&
   s" pero el verbo no puede llevarlo" s&
-  language-error  ; is unexpected-main-complement-error#
+  language-error  ; to unexpected-main-complement-error#
   \ Informa de que se ha producido un error por la presencia de
   \ complemento principal en el comando.
 
 :noname  ( -- )
   there-is$ s" un complemento secundario" s&
   s" pero el verbo no puede llevarlo" s&
-  language-error  ; is unexpected-secondary-complement-error#
+  language-error  ; to unexpected-secondary-complement-error#
   \ Informa de que se ha producido un error por la presencia de
   \ complemento secundario en el comando.
 
 :noname  ( -- )
   there-is$ s" un complemento principal no permitido con esta acción" s&
-  language-error  ; is not-allowed-main-complement-error#
+  language-error  ; to not-allowed-main-complement-error#
   \ Informa de que se ha producido un error por la presencia de un
   \ complemento principal en el comando que no está permitido.
 
 :noname  ( -- )
   there-is$ s" un complemento principal no permitido con esta acción" s&
-  language-error  ; is not-allowed-tool-complement-error#
+  language-error  ; to not-allowed-tool-complement-error#
   \ Informa de que se ha producido un error por la presencia de un
   \ complemento instrumental en el comando que no está permitido.
 
 :noname  ( -- )
   s" [Con eso no puedes]"
-  narrate  ; is useless-tool-error#
+  narrate  ; to useless-tool-error#
   \ Informa de que se ha producido un error
   \ porque una herramienta no especificada no es la adecuada.
   \ XXX TODO -- inconcluso
 
 :noname  ( -- )
   s" [Con" what @ full-name s& s" no puedes]" s&
-  narrate  ; is useless-what-tool-error#
+  narrate  ; to useless-what-tool-error#
   \ Informa de que se ha producido un error
   \ porque el ente `what` no es la herramienta adecuada.
   \ XXX TODO -- inconcluso
@@ -336,13 +336,13 @@ create 'language-error-verbosity-xt
 
 :noname  ( -- )
   there-is$ s" un complemento (seudo)preposicional sin completar" s&
-  language-error  ; is unresolved-preposition-error#
+  language-error  ; to unresolved-preposition-error#
   \ Informa de que se ha producido un error
   \ porque un complemento (seudo)preposicional quedó incompleto.
 
 :noname  ( -- )
   there-is$ s" una (seudo)preposición repetida" s&
-  language-error  ; is repeated-preposition-error#
+  language-error  ; to repeated-preposition-error#
   \ Informa de que se ha producido un error por
   \ la repetición de una (seudo)preposición.
 
