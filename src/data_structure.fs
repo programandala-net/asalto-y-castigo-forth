@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607031159
+\ Last update: 201607041246
 
 \ Note: The comments of the code are in Spanish.
 
@@ -42,11 +42,14 @@
 \ ----------------------------------------------
 \ Campos de identificación
 
-field: ~name-str
-  \ Dirección de una cadena dinámica que contendrá el nombre del ente.
 field: ~init-xt
   \ Dirección de ejecución de la palabra que inicializa las
   \ propiedades de un ente.
+field: ~name-str
+  \ Dirección de una cadena dinámica que contendrá el nombre del ente.
+
+preserve-to-here
+
 field: ~description-xt
   \ Dirección de ejecución de la palabra que describe el ente.
 field: ~direction

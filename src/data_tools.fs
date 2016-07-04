@@ -5,78 +5,42 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607041136
+\ Last update: 201607041238
 
 \ Note: The comments of the code are in Spanish.
 
 \ ==============================================================
 \ Herramientas para crear las fichas de la base de datos
 
-: backup-entity  ( a -- x0 x1 )
-  >r
-  r@ init-xt
-  r> name-str  ;
-  \ Respalda los datos de un ente _a_ que se crearon durante la
-  \ compilación del código y deben preservarse.  (En orden alfabético,
-  \ para facilitar la edición).
-
-: restore-entity  ( x0 x1 a -- )
-  tuck ~name-str !
-       ~init-xt !  ;
-  \ Restaura los datos de un ente _a_ que se crearon durante la
-  \ compilación del código y deben preservarse.  (En orden alfabético
-  \ inverso, para facilitar la edición).
-
-: setup-entity  ( a -- )
-  [debug-init] [if]  s" En `setup-entity`" debug [then]
-  dup >r backup-entity
-  [debug-init] [if]  s" Después de `backup-entity`" debug [then]
-  r@ erase-entity
-  [debug-init] [if]  s" Después de `erase-entity`" debug [then]
-  r> restore-entity
-  [debug-init] [if]
-  s" Después de `restore-entity`" debug  ." hola!"
-  [then]
-  ;
-  \ Prepara la ficha de un ente para ser completada con sus datos .
-
 0 value self~
-  \ Ente cuyos atributos, descripción o trama están siendo definidos
-  \ (usado para aligerar la sintaxis).
-  \ XXX TODO -- quitar, usar el identificador del ente
+  \ Ente cuya inicialización está ejecutándose en una palabra definida
+  \ con `:init`. Se usa para aligerar la sintaxis.
 
-: :name-str  ( a -- )
-  [debug-init] [if]  s" Inicio de `:name-str`" debug [then]
-  dup name-str ?dup
-  [debug-init] [if]  s" A punto para `str-free`" debug [then]
-  ?? str-free
-  str-new swap ~name-str !
-  [debug-init] [if]  s" Final de `:name-str`" debug [then]  ;
+: ?free-name-str  ( a -- )  name-str ?dup ?? str-free  ;
+  \ Libera el espacio ocupado por la cadena dinámica del nombre
+  \ de la entidad _a_, si no es cero, es decir, si ha sido creada
+  \ anteriormente.
+
+: new-name-str  ( a -- )
+  dup ?free-name-str str-new swap ~name-str !  ;
   \ Crea una cadena dinámica nueva para guardar el nombre del ente
   \ _a_.
 
 : [:init]  ( a -- )
-  [debug-init] [if]  s" Inicio de `[:init]`" debug [then]
-  dup to self~
-  [debug-init] [if]  s" Antes de `:name-str`" debug [then]
-  dup :name-str
-  [debug-init] [if]  s" Antes de `setup-entity`" debug [then]
-  setup-entity
-  [debug-init] [if]  s" Después de `setup-entity`" debug [then]
-  ;
-  \ Inicia la definición de propiedades de un ente.  Esta palabra se
-  \ ejecuta cada vez que hay que restaurar los datos del ente, y antes
-  \ de la definición de atributos contenida en la palabra
-  \ correspondiente al ente.  El identificador del ente está en la
-  \ pila porque se compiló con `literal` cuando se creó la palabra de
-  \ atributos.
+  dup to self~  dup new-name-str  erase-entity  ;
+  \ Comienza la inicialización de un ente _a_.  Esta palabra se
+  \ ejecuta cada vez que hay que restaurar los datos originales del
+  \ ente, y antes del código que hace la inicialización programada.
+  \ El identificador del ente está en la pila porque se compiló con
+  \ `literal` cuando se creó la palabra con de inicialización con
+  \ `:init`.
 
 : (:init)  ( a xt -- )
   over ~init-xt !  postpone literal  ;
-  \ Operaciones preliminares para la definición de atributos de un
+  \ Operaciones preliminares para la inicialización de un
   \ ente _a_.  Esta palabra solo se ejecuta una vez para cada ente, al
-  \ inicio de la compilación del código de la palabra que define sus
-  \ atributos.  _xt_ es la dirección de ejecución de la palabra recién
+  \ inicio de la compilación del código de la palabra que inicializa
+  \ el ente.  _xt_ es la dirección de ejecución de la palabra recién
   \ creada. Operaciones: 1) Conserva la dirección de ejecución en la
   \ ficha del ente; 2) Compila el identificador de ente en la palabra
   \ de descripción recién creada, para que `[:description]` lo guarde
