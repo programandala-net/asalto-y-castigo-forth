@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607041358
+\ Last update: 201607041407
 
 \ Note: The comments of the code are in Spanish.
 
@@ -587,7 +587,9 @@ create prepositional-complements /prepositional-complements allot
   if    (execute-action)
   else  execute-previous-action
   then
-  [debug-catch] [debug-parsing] [or] [??] ~~  ;
+  [debug-catch] [debug-parsing] [or] [??] ~~  
+  .system-status  \ XXX INFORMER
+  ;
   \ Ejecuta la acción del comando, si es posible.
 
 : (evaluate-command)  ( -- )

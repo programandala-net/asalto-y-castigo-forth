@@ -72,7 +72,7 @@ require galope/seconds.fs                     \ `seconds`
 require galope/sourcepath.fs
 require galope/svariable.fs                   \ string variables
 require galope/system_colors.fs
-require galope/tilde-tilde.fs                 \ improved `~~`
+\ require galope/tilde-tilde.fs                 \ improved `~~`
 require galope/to-yyyymmddhhmmss.fs           \ `>yyyymmddhhss`
 require galope/two-choose.fs                  \ `2schoose`
 ' 2choose alias schoose

@@ -1241,9 +1241,10 @@ false [if]
   \ Acción de ir hacia fuera.
 
 :noname  ( -- )
-  tool-complement{unnecessary}
-  in~ main-complement{this-only}
-  in~ do-go-if-possible
+  ~~ tool-complement{unnecessary}
+  ~~ in~ main-complement{this-only}
+  ~~ in~ do-go-if-possible
+  ~~
   ; is do-go-in
   \ Acción de ir hacia dentro.
 

@@ -93,8 +93,8 @@ s" intro.fs" including
   \ XXX TODO -- trasladar a su zona
 
 : init-game-for-debugging  ( -- )
-  location-01~ enter-location
-  \ location-08~ enter-location  \ Emboscada
+  \ location-01~ enter-location
+  location-08~ enter-location  \ Emboscada
   \ location-11~ enter-location  \ Lago
   \ location-17~ enter-location  \ Antes de la cueva oscura
   \ location-19~ enter-location  \ Encuentro con Ambrosio

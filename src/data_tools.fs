@@ -62,8 +62,9 @@ defer default-description  ( -- )
 : .location-name  ( a -- )
   [debug-map] [if]  dup  [then]
   name ^uppercase location-name-color paragraph
-  [debug-map] [if]
-    entity># location-01~ entity># - 1+ ."  [ location #" . ." ]"
+  \ [debug-map] [ true or ] [if]
+  [true] [if]
+    dup entity># location-01~ entity># - 1+ ."  [ location #" . ." ]"
   [then]  ;
   \ Imprime el nombre de un ente escenario, como cabecera de su descripción.
   \ XXX TODO -- añadir el artículo correspondiente o no, dependiendo

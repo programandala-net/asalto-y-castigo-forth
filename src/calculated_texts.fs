@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606292026
+\ Last update: 201607041421
 
 \ Note: The comments of the code are in Spanish.
 
@@ -497,8 +497,8 @@ create 'cave-descriptions
 
 : you-maybe-discover-the-cave-entrance  ( ca len -- )
   s" ..." s+ narrate
-  2 random 0= if  narration-break you-discover-the-cave-entrance  then  ;
-  \ Descubres la cueva con un 50% de probabilidad.
+  3 random if  narration-break you-discover-the-cave-entrance  then  ;
+  \ Descubres la cueva con un 66% de probabilidad.
   \ ca len = Texto introductorio
 
 : the-cave-entrance-is-hidden$  ( -- ca len )
