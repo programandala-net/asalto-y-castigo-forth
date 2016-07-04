@@ -5,16 +5,12 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607041238
+\ Last update: 201607041305
 
-\ Note: The comments of the code are in Spanish.
+\ Note: Most comments of the code are in Spanish.
 
 \ ==============================================================
 \ Herramientas para crear las fichas de la base de datos
-
-0 value self~
-  \ Ente cuya inicialización está ejecutándose en una palabra definida
-  \ con `:init`. Se usa para aligerar la sintaxis.
 
 : ?free-name-str  ( a -- )  name-str ?dup ?? str-free  ;
   \ Libera el espacio ocupado por la cadena dinámica del nombre
@@ -26,72 +22,13 @@
   \ Crea una cadena dinámica nueva para guardar el nombre del ente
   \ _a_.
 
-: [:init]  ( a -- )
-  dup to self~  dup new-name-str  erase-entity  ;
-  \ Comienza la inicialización de un ente _a_.  Esta palabra se
-  \ ejecuta cada vez que hay que restaurar los datos originales del
-  \ ente, y antes del código que hace la inicialización programada.
-  \ El identificador del ente está en la pila porque se compiló con
-  \ `literal` cuando se creó la palabra con de inicialización con
-  \ `:init`.
+' new-name-str is init-entity  ( a -- )
+  \ Configure the deferred word defined in the `entity` module of
+  \ Flibustre.
 
-: (:init)  ( a xt -- )
-  over ~init-xt !  postpone literal  ;
-  \ Operaciones preliminares para la inicialización de un
-  \ ente _a_.  Esta palabra solo se ejecuta una vez para cada ente, al
-  \ inicio de la compilación del código de la palabra que inicializa
-  \ el ente.  _xt_ es la dirección de ejecución de la palabra recién
-  \ creada. Operaciones: 1) Conserva la dirección de ejecución en la
-  \ ficha del ente; 2) Compila el identificador de ente en la palabra
-  \ de descripción recién creada, para que `[:description]` lo guarde
-  \ en `self~` en tiempo de ejecución.
-
-: noname-roll  ( a xt colon-sys -- colon-sys a xt )  5 roll 5 roll  ;
-  \ Mueve los parámetros que nos interesan a la parte alta de la pila;
-  \ se usa tras crear con `:noname` una palabra _xt_ relativa a un
-  \ ente _a_.  Esta palabra es necesaria porque `:noname` deja en la
-  \ pila sus valores de control, _colon-sys_, que en el caso de Gforth
-  \ son tres elementos, para ser consumidos al finalizar la
-  \ compilación de la palabra creada.
-
-: :init  ( a -- )
-  :noname noname-roll  (:init)  postpone [:init]  ;
-  \ Inicia la creación de una palabra sin nombre que definirá las
-  \ propiedades de un ente _a_. Hace tres operaciones: 1) Crea la
-  \ palabra con `:noname`; 2) Hace las operaciones preliminares,
-  \ mediante `(:init)`; 3) Compila la palabra `[:init]` en la palabra
-  \ creada, para que se ejecute cuando sea llamada.
-  \
-  \ XXX TODO -- move a Flibustre
-  \ XXX TODO -- reescribir de forma estándar, más sencilla, con
-  \ `create builds>`, pues `noname-roll` depende de Gforth.
-
-  \ XXX TODO -- mejorar el sistema de inicialización de entes en
-  \ Flibustre, para hacerlo tan potente como el de _Asalto y castigo_.
-
-: custom-init-entity ( a -- )
-  [debug-init] [if]
-    s" Inicio de `custom-init-entity`" debug
-    dup entity># cr ." Entity=" .
-  [then]
-  init-xt
-  [debug-init]
-    [if]  s" Antes de `execute`" debug
-  [then]
-  execute
-  [debug-init] [if]
-    s" Final de `custom-init-entity`" debug
-  [then]  ;
-  \ Restaura la ficha de un ente a su estado original.
-
-: init-entities  ( -- )
-  #entities 0 do
-    [debug-init] [if]  i cr ." About to init entity #" .  [then]
-    i #>entity custom-init-entity
-    \ i #>entity full-name space type ?.s  \ XXX INFORMER
-  loop  ;
-  \ Restaura las fichas de los entes a su estado original.
-  \ XXX TODO -- mover a Flibustre
+' ~init-xt is init-xt-entity-field  ( a1 -- a2 )
+  \ Configure the deferred word defined in the `entity` module of
+  \ Flibustre.
 
 \ ==============================================================
 \ Herramientas para mostrar las descripciones
@@ -177,6 +114,7 @@ defer default-description  ( -- )
     abort" Error fatal en `describe`: dato incorrecto"  \ XXX INFORMER
   endcase  ;
   \ Describe un ente _a_, según su tipo.
+  \ XXX TODO -- rewrite
 
 : uninteresting-direction  ( -- )
   uninteresting-direction$ paragraph  ;
@@ -184,6 +122,8 @@ defer default-description  ( -- )
 
 \ ==============================================================
 \ Herramientas para crear conexiones entre escenarios
+
+\ XXX TODO -- move to Flibustre when possible
 
 \ Para crear el mapa hay que hacer dos operaciones con los
 \ entes escenario: marcarlos como tales, para poder
