@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607040046
+\ Last update: 201607041136
 
 \ Note: The comments of the code are in Spanish.
 
@@ -570,10 +570,11 @@ waterfall~ :init  ( -- )
   if  celebrating  else  going-home  then  ;
 
 location-01~ :init  ( -- )
+  self~ be-location
   ['] describe-location-01 self~ be-description-xt
   ['] after-describing-location-01 self~ be-after-describing-location-xt
   s" aldea sajona" self~ fs-name!
-  0 location-02~ 0 0 0 0 0 0 self~ init-location  ;
+  0 location-02~ 0 0 0 0 0 0 self~ set-exits  ;
 
   \ XXX TODO -- crear colina en los tres primeros escenarios
 
@@ -617,10 +618,11 @@ location-01~ :init  ( -- )
   soldiers~ be-here going-home  ;
 
 location-02~ :init  ( -- )
+  self~ be-location
   ['] describe-location-02 self~ be-description-xt
   ['] after-describing-location-02 self~ be-after-describing-location-xt
   s" cima de la colina" self~ fs-name!
-  location-01~ 0 0 location-03~ 0 0 0 0 self~ init-location  ;
+  location-01~ 0 0 location-03~ 0 0 0 0 self~ set-exits  ;
 
   \ N.B. Desde el escenario 02, uno puede bajar por el sur o por el
   \ oeste; esto se decide al azar cada vez que se entra en el
@@ -650,10 +652,11 @@ location-02~ :init  ( -- )
   endcase  ;
 
 location-03~ :init  ( -- )
+  self~ be-location
   ['] describe-location-03 self~ be-description-xt
   ['] soldiers-are-here self~ be-after-describing-location-xt
   s" camino entre colinas" self~ ms-name!
-  0 0 location-02~ location-04~ 0 0 0 0 self~ init-location  ;
+  0 0 location-02~ location-04~ 0 0 0 0 self~ set-exits  ;
 
 : describe-location-04  ( -- )
   sight case
@@ -676,10 +679,11 @@ location-03~ :init  ( -- )
   endcase  ;
 
 location-04~ :init  ( -- )
+  self~ be-location
   ['] describe-location-04 self~ be-description-xt
   ['] soldiers-are-here self~ be-after-describing-location-xt
   s" cruce de caminos" self~ ms-name!
-  location-05~ 0 location-03~ location-09~ 0 0 0 0 self~ init-location  ;
+  location-05~ 0 location-03~ location-09~ 0 0 0 0 self~ set-exits  ;
 
 : describe-location-05  ( -- )
   sight case
@@ -705,10 +709,11 @@ location-04~ :init  ( -- )
   endcase  ;
 
 location-05~ :init  ( -- )
+  self~ be-location
   ['] describe-location-05 self~ be-description-xt
   ['] soldiers-are-here self~ be-after-describing-location-xt
   s" linde del bosque" self~ fs-name!
-  0 location-04~ 0 location-06~ 0 0 0 0 self~ init-location  ;
+  0 location-04~ 0 location-06~ 0 0 0 0 self~ set-exits  ;
 
 : describe-location-06  ( -- )
   sight case
@@ -735,10 +740,11 @@ location-05~ :init  ( -- )
   endcase  ;
 
 location-06~ :init  ( -- )
+  self~ be-location
   ['] describe-location-06 self~ be-description-xt
   ['] soldiers-are-here self~ be-after-describing-location-xt
   s" bosque" self~ ms-name!
-  0 0 location-05~ location-07~ 0 0 0 0 self~ init-location  ;
+  0 0 location-05~ location-07~ 0 0 0 0 self~ set-exits  ;
 
 : describe-location-07  ( -- )
   sight case
@@ -764,10 +770,11 @@ location-06~ :init  ( -- )
   endcase  ;
 
 location-07~ :init  ( -- )
+  self~ be-location
   ['] describe-location-07 self~ be-description-xt
   ['] soldiers-are-here self~ be-after-describing-location-xt
   s" paso del Perro" self~ ms-name!
-  0 location-08~ location-06~ 0 0 0 0 0 self~ init-location  ;
+  0 location-08~ location-06~ 0 0 0 0 0 self~ set-exits  ;
 
 : describe-location-08  ( -- )
   sight case
@@ -809,10 +816,11 @@ location-07~ :init  ( -- )
   soldiers-are-here pass-still-open? ?? ambush  ;
 
 location-08~ :init  ( -- )
+  self~ be-location
   ['] describe-location-08 self~ be-description-xt
   ['] after-describing-location-08 self~ be-after-describing-location-xt
   s" desfiladero" self~ ms-name!
-  location-07~ 0 0 0 0 0 0 0 self~ init-location  ;
+  location-07~ 0 0 0 0 0 0 0 self~ set-exits  ;
 
   \ XXX TODO -- crear pared y roca y desfiladero en escenario 08
 
@@ -838,10 +846,11 @@ location-08~ :init  ( -- )
   endcase  ;
 
 location-09~ :init  ( -- )
+  self~ be-location
   ['] describe-location-09 self~ be-description-xt
   ['] soldiers-are-here self~ be-after-describing-location-xt
   s" derrumbe" self~ ms-name!
-  0 0 location-04~ 0 0 0 0 0 self~ init-location  ;
+  0 0 location-04~ 0 0 0 0 0 self~ set-exits  ;
 
 : describe-location-10  ( -- )
   sight case
@@ -872,11 +881,12 @@ location-09~ :init  ( -- )
   then  ;
 
 location-10~ :init  ( -- )
+  self~ be-location
   ['] describe-location-10 self~ be-description-xt
   ['] after-describing-location-10 self~ be-after-describing-location-xt
   s" gruta de entrada" self~ fs-name!
   self~ be-indoor-location
-  location-08~ 0 0 location-11~ 0 0 0 0 self~ init-location  ;
+  location-08~ 0 0 location-11~ 0 0 0 0 self~ set-exits  ;
 
 : describe-location-11  ( -- )
   sight case
@@ -916,11 +926,12 @@ location-10~ :init  ( -- )
   endcase  ;
 
 location-11~ :init  ( -- )
+  self~ be-location
   ['] describe-location-11 self~ be-description-xt
   ['] lake-is-here self~ be-after-describing-location-xt
   s" gran lago" self~ ms-name!
   self~ be-indoor-location
-  0 0 location-10~ 0 0 0 0 0 self~ init-location  ;
+  0 0 location-10~ 0 0 0 0 0 self~ set-exits  ;
 
   \ XXX TODO -- crear ente. estancia y aguas en escenario 11
 
@@ -948,10 +959,11 @@ location-11~ :init  ( -- )
   endcase  ;
 
 location-12~ :init  ( -- )
+  self~ be-location
   ['] describe-location-12 self~ be-description-xt
   s" salida del paso secreto" self~ fs-name!
   self~ be-indoor-location
-  0 0 0 location-13~ 0 0 0 0 self~ init-location  ;
+  0 0 0 location-13~ 0 0 0 0 self~ set-exits  ;
 
   \ XXX TODO -- crear ente agua en escentario 12
 
@@ -976,10 +988,11 @@ location-12~ :init  ( -- )
   endcase  ;
 
 location-13~ :init  ( -- )
+  self~ be-location
   ['] describe-location-13 self~ be-description-xt
   s" puente semipodrido" self~ ms-name!
   self~ be-indoor-location
-  0 0 location-12~ location-14~ 0 0 0 0 self~ init-location  ;
+  0 0 location-12~ location-14~ 0 0 0 0 self~ set-exits  ;
 
   \ XXX TODO -- crear ente. canal, agua, lecho(~catre) en escenario 14
 
@@ -999,10 +1012,11 @@ location-13~ :init  ( -- )
   endcase  ;
 
 location-14~ :init  ( -- )
+  self~ be-location
   ['] describe-location-14 self~ be-description-xt
   s" recodo de la cueva" self~ ms-name!
   self~ be-indoor-location
-  0 location-15~ location-13~ 0 0 0 0 0 self~ init-location  ;
+  0 location-15~ location-13~ 0 0 0 0 0 self~ set-exits  ;
 
 : describe-location-15  ( -- )
   sight case
@@ -1032,10 +1046,11 @@ location-14~ :init  ( -- )
   endcase  ;
 
 location-15~ :init  ( -- )
+  self~ be-location
   ['] describe-location-15 self~ be-description-xt
   s" pasaje arenoso" self~ ms-name!
   self~ be-indoor-location
-  location-14~ location-17~ location-16~ 0 0 0 0 0 self~ init-location  ;
+  location-14~ location-17~ location-16~ 0 0 0 0 0 self~ set-exits  ;
 
 : describe-location-16  ( -- )
   sight case
@@ -1068,11 +1083,12 @@ location-15~ :init  ( -- )
   narrate  ;
 
 location-16~ :init  ( -- )
+  self~ be-location
   ['] describe-location-16 self~ be-description-xt
   ['] after-describing-location-16 self~ be-after-describing-location-xt
   s" pasaje del agua" self~ ms-name!
   self~ be-indoor-location
-  0 0 0 location-15~ 0 0 0 0 self~ init-location  ;
+  0 0 0 location-15~ 0 0 0 0 self~ set-exits  ;
 
   \ XXX TODO -- el examen del agua aquí debe dar más pistas en
   \ escenario 16
@@ -1096,10 +1112,11 @@ location-16~ :init  ( -- )
   endcase  ;
 
 location-17~ :init  ( -- )
+  self~ be-location
   ['] describe-location-17 self~ be-description-xt
   s" estalactitas" self~ fs-name!
   self~ be-indoor-location
-  location-15~ location-20~ location-18~ 0 0 0 0 0 self~ init-location  ;
+  location-15~ location-20~ location-18~ 0 0 0 0 0 self~ set-exits  ;
 
   \ XXX TODO -- crear ente. estalactitas en escenario 17
 
@@ -1130,10 +1147,11 @@ location-17~ :init  ( -- )
   endcase  ;
 
 location-18~ :init  ( -- )
+  self~ be-location
   ['] describe-location-18 self~ be-description-xt
   s" puente de piedra" self~ ms-name!
   self~ be-indoor-location
-  0 0 location-19~ location-17~ 0 0 0 0 self~ init-location  ;
+  0 0 location-19~ location-17~ 0 0 0 0 self~ set-exits  ;
 
   \ XXX TODO -- crear ente. puente, arco en escenario 18
 
@@ -1166,10 +1184,11 @@ location-18~ :init  ( -- )
   endcase  ;
 
 location-19~ :init  ( -- )
+  self~ be-location
   ['] describe-location-19 self~ be-description-xt
   s" recodo arenoso del canal" self~ ms-name!
   self~ be-indoor-location
-  0 0 0 location-18~ 0 0 0 0 self~ init-location  ;
+  0 0 0 location-18~ 0 0 0 0 self~ set-exits  ;
 
 : describe-location-20  ( -- )
   sight case
@@ -1193,11 +1212,12 @@ location-19~ :init  ( -- )
   dup 0= swap ?? dark-cave  ;
 
 location-20~ :init  ( -- )
+  self~ be-location
   ['] describe-location-20 self~ be-description-xt
   ['] can-i-enter-location-20? self~ be-can-i-enter-location-xt
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
-  location-17~ location-22~ location-25~ 0 0 0 0 0 self~ init-location  ;
+  location-17~ location-22~ location-25~ 0 0 0 0 0 self~ set-exits  ;
 
   \ XXX TODO -- aplicar el filtro de la antorcha a todos los
   \ escenarios afectados, quizá en una capa superior
@@ -1221,10 +1241,11 @@ location-20~ :init  ( -- )
   endcase  ;
 
 location-21~ :init  ( -- )
+  self~ be-location
   ['] describe-location-21 self~ be-description-xt
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
-  0 location-27~ location-23~ location-20~ 0 0 0 0 self~ init-location  ;
+  0 location-27~ location-23~ location-20~ 0 0 0 0 self~ set-exits  ;
 
 : describe-location-22  ( -- )
   sight case
@@ -1244,10 +1265,11 @@ location-21~ :init  ( -- )
   endcase  ;
 
 location-22~ :init  ( -- )
+  self~ be-location
   ['] describe-location-22 self~ be-description-xt
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
-  0 location-24~ location-27~ location-22~ 0 0 0 0 self~ init-location  ;
+  0 location-24~ location-27~ location-22~ 0 0 0 0 self~ set-exits  ;
 
 : describe-location-23  ( -- )
   sight case
@@ -1264,10 +1286,11 @@ location-22~ :init  ( -- )
   endcase  ;
 
 location-23~ :init  ( -- )
+  self~ be-location
   ['] describe-location-23 self~ be-description-xt
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
-  0 location-25~ 0 location-21~ 0 0 0 0 self~ init-location  ;
+  0 location-25~ 0 location-21~ 0 0 0 0 self~ set-exits  ;
 
 : describe-location-24  ( -- )
   sight case
@@ -1284,10 +1307,11 @@ location-23~ :init  ( -- )
   endcase  ;
 
 location-24~ :init  ( -- )
+  self~ be-location
   ['] describe-location-24 self~ be-description-xt
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
-  location-22~ 0 location-26~ 0 0 0 0 0 self~ init-location  ;
+  location-22~ 0 location-26~ 0 0 0 0 0 self~ set-exits  ;
 
 : describe-location-25  ( -- )
   sight case
@@ -1304,10 +1328,11 @@ location-24~ :init  ( -- )
   endcase  ;
 
 location-25~ :init  ( -- )
+  self~ be-location
   ['] describe-location-25 self~ be-description-xt
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
-  location-22~ location-28~ location-23~ location-21~ 0 0 0 0 self~ init-location  ;
+  location-22~ location-28~ location-23~ location-21~ 0 0 0 0 self~ set-exits  ;
 
 : describe-location-26  ( -- )
   sight case
@@ -1327,10 +1352,11 @@ location-25~ :init  ( -- )
   endcase  ;
 
 location-26~ :init  ( -- )
+  self~ be-location
   ['] describe-location-26 self~ be-description-xt
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
-  location-26~ 0 location-20~ location-27~ 0 0 0 0 self~ init-location  ;
+  location-26~ 0 location-20~ location-27~ 0 0 0 0 self~ set-exits  ;
 
   \ XXX TODO -- crear ente. pasaje/camino/senda tramo/cueva (en todos
   \ los tramos)
@@ -1353,10 +1379,11 @@ location-26~ :init  ( -- )
   endcase  ;
 
 location-27~ :init  ( -- )
+  self~ be-location
   ['] describe-location-27 self~ be-description-xt
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
-  location-27~ 0 0 location-25~ 0 0 0 0 self~ init-location  ;
+  location-27~ 0 0 location-25~ 0 0 0 0 self~ set-exits  ;
 
 : describe-location-28  ( -- )
   sight case
@@ -1403,11 +1430,12 @@ location-27~ :init  ( -- )
   the-leader-looks-at-you$ narrate  ;
 
 location-28~ :init  ( -- )
+  self~ be-location
   ['] describe-location-28 self~ be-description-xt
   ['] after-describing-location-28 self~ be-after-describing-location-xt
   s" amplia estancia" self~ fs-name!
   self~ be-indoor-location
-  location-26~ 0 0 0 0 0 0 0 self~ init-location  ;
+  location-26~ 0 0 0 0 0 0 0 self~ set-exits  ;
   \ XXX TODO -- crear ente. estancia(para todos),albergue y refugio
   \ (tras hablar con anciano) en escenario 28
 
@@ -1435,11 +1463,12 @@ location-28~ :init  ( -- )
   \ Para que sean visibles en la distancia
 
 location-29~ :init  ( -- )
+  self~ be-location
   ['] describe-location-29 self~ be-description-xt
   ['] after-describing-location-29 self~ be-after-describing-location-xt
   s" espiral" self~ fs-name!
   self~ be-indoor-location
-  0 0 0 location-28~ 0 location-30~ 0 0 self~ init-location  ;
+  0 0 0 location-28~ 0 location-30~ 0 0 self~ set-exits  ;
 
   \ XXX TODO -- crear ente. escalera/espiral, refugiados en escenario
   \ 29
@@ -1464,10 +1493,11 @@ location-29~ :init  ( -- )
   endcase  ;
 
 location-30~ :init  ( -- )
+  self~ be-location
   ['] describe-location-30 self~ be-description-xt
   s" inicio de la espiral" self~ ms-name!
   self~ be-indoor-location
-  0 0 location-31~ 0 location-29~ 0 0 0 self~ init-location  ;
+  0 0 location-31~ 0 location-29~ 0 0 0 self~ set-exits  ;
 
 : describe-location-31  ( -- )
   sight case
@@ -1498,11 +1528,12 @@ location-30~ :init  ( -- )
   then  narrate  ;
 
 location-31~ :init  ( -- )
+  self~ be-location
   ['] describe-location-31 self~ be-description-xt
   ['] after-describing-location-31 self~ be-after-describing-location-xt
   s" puerta norte" self~ fs-name!
   self~ be-indoor-location
-  0 0 0 location-30~ 0 0 0 0 self~ init-location  ;
+  0 0 0 location-30~ 0 0 0 0 self~ set-exits  ;
 
   \ XXX TODO -- crear ente. arco, columnas, hueco/s(entre rocas) en
   \ escenario 31
@@ -1526,10 +1557,11 @@ location-31~ :init  ( -- )
   endcase  ;
 
 location-32~ :init  ( -- )
+  self~ be-location
   ['] describe-location-32 self~ be-description-xt
   s" precipicio" self~ ms-name!
   self~ be-indoor-location
-  0 location-33~ 0 location-31~ 0 0 0 0 self~ init-location  ;
+  0 location-33~ 0 location-31~ 0 0 0 0 self~ set-exits  ;
 
   \ XXX TODO -- crear ente. precipicio, abismo, cornisa, camino,
   \ roca/s en escenario 32
@@ -1557,10 +1589,11 @@ location-32~ :init  ( -- )
   endcase  ;
 
 location-33~ :init  ( -- )
+  self~ be-location
   ['] describe-location-33 self~ be-description-xt
   s" pasaje de salida" self~ ms-name!
   self~ be-indoor-location
-  location-32~ 0 location-34~ 0 0 0 0 0 self~ init-location  ;
+  location-32~ 0 location-34~ 0 0 0 0 0 self~ set-exits  ;
 
   \ XXX TODO -- crear ente. camino/paso/sendero en escenario 33
 
@@ -1583,10 +1616,11 @@ location-33~ :init  ( -- )
   endcase  ;
 
 location-34~ :init  ( -- )
+  self~ be-location
   ['] describe-location-34 self~ be-description-xt
   s" pasaje de gravilla" self~ ms-name!
   self~ be-indoor-location
-  location-35~ 0 0 location-33~ 0 0 0 0 self~ init-location  ;
+  location-35~ 0 0 location-33~ 0 0 0 0 self~ set-exits  ;
 
   \ XXX TODO -- crear ente. camino/paso/sendero, guijarros, moho,
   \ roca, suelo, gravillla en escenario 34
@@ -1615,10 +1649,11 @@ location-34~ :init  ( -- )
   endcase  ;
 
 location-35~ :init  ( -- )
+  self~ be-location
   ['] describe-location-35 self~ be-description-xt
   s" puente sobre el acueducto" self~ ms-name!
   self~ be-indoor-location
-  location-40~ location-34~ 0 location-36~ 0 location-36~ 0 0 self~ init-location  ;
+  location-40~ location-34~ 0 location-36~ 0 location-36~ 0 0 self~ set-exits  ;
 
   \ XXX TODO -- crear ente. escaleras, puente, río/curso/agua en
   \ escenario 35
@@ -1646,10 +1681,11 @@ location-35~ :init  ( -- )
   endcase  ;
 
 location-36~ :init  ( -- )
+  self~ be-location
   ['] describe-location-36 self~ be-description-xt
   s" remanso" self~ ms-name!
   self~ be-indoor-location
-  0 0 location-35~ location-37~ location-35~ 0 0 0 self~ init-location  ;
+  0 0 location-35~ location-37~ location-35~ 0 0 0 self~ set-exits  ;
 
 : describe-location-37  ( -- )
   sight case
@@ -1679,10 +1715,11 @@ location-36~ :init  ( -- )
   endcase  ;
 
 location-37~ :init  ( -- )
+  self~ be-location
   ['] describe-location-37 self~ be-description-xt
   s" canal de agua" self~ ms-name!
   self~ be-indoor-location
-  0 0 location-36~ location-38~ 0 0 0 0 self~ init-location  ;
+  0 0 location-36~ location-38~ 0 0 0 0 self~ set-exits  ;
 
 : describe-location-38  ( -- )
   sight case
@@ -1709,11 +1746,12 @@ location-37~ :init  ( -- )
   endcase  ;
 
 location-38~ :init  ( -- )
+  self~ be-location
   ['] describe-location-38 self~ be-description-xt
   ['] lake-is-here self~ be-after-describing-location-xt
   s" gran cascada" self~ fs-name!
   self~ be-indoor-location
-  0 0 location-37~ location-39~ 0 0 0 0 self~ init-location  ;
+  0 0 location-37~ location-39~ 0 0 0 0 self~ set-exits  ;
 
   \ XXX TODO -- el artículo de «cascada» debe depender también de si
   \ se ha visitado el escenario 39 o este mismo 38
@@ -1737,10 +1775,11 @@ location-38~ :init  ( -- )
   endcase  ;
 
 location-39~ :init  ( -- )
+  self~ be-location
   ['] describe-location-39 self~ be-description-xt
   s" interior de la cascada" self~ ms-name!
   self~ be-indoor-location
-  0 0 location-38~ 0 0 0 0 0 self~ init-location  ;
+  0 0 location-38~ 0 0 0 0 0 self~ set-exits  ;
 
   \ XXX TODO -- crear ente. musgo, cortina, agua, hueco en escenario
   \ 39
@@ -1776,10 +1815,11 @@ location-39~ :init  ( -- )
   endcase  ;
 
 location-40~ :init  ( -- )
+  self~ be-location
   ['] describe-location-40 self~ be-description-xt
   s" explanada" self~ fs-name!
   self~ be-indoor-location
-  0 location-35~ location-41~ 0 0 0 0 0 self~ init-location  ;
+  0 location-35~ location-41~ 0 0 0 0 0 self~ set-exits  ;
 
   \ XXX TODO -- crear ente. losas y losetas, estalactitas, panorama,
   \ escalones en escenario 40
@@ -1804,10 +1844,11 @@ location-40~ :init  ( -- )
   endcase  ;
 
 location-41~ :init  ( -- )
+  self~ be-location
   ['] describe-location-41 self~ be-description-xt
   self~ be-indoor-location
   s" ídolo" self~ ms-name!
-  0 0 0 location-40~ 0 0 0 0 self~ init-location  ;
+  0 0 0 location-40~ 0 0 0 0 self~ set-exits  ;
 
   \ XXX TODO -- crear ente. roca, centinela en escenario 41
 
@@ -1834,10 +1875,11 @@ location-41~ :init  ( -- )
   endcase  ;
 
 location-42~ :init  ( -- )
+  self~ be-location
   ['] describe-location-42 self~ be-description-xt
   s" pasaje estrecho" self~ ms-name!
   self~ be-indoor-location
-  location-41~ location-43~ 0 0 0 0 0 0 self~ init-location  ;
+  location-41~ location-43~ 0 0 0 0 0 0 self~ set-exits  ;
 
 : describe-location-43  ( -- )
   sight case
@@ -1866,11 +1908,12 @@ location-42~ :init  ( -- )
   then  ;
 
 location-43~ :init  ( -- )
+  self~ be-location
   ['] describe-location-43 self~ be-description-xt
   ['] after-describing-location-43 self~ be-after-describing-location-xt
   s" pasaje de la serpiente" self~ ms-name!
   self~ be-indoor-location
-  location-42~ 0 0 0 0 0 0 0 self~ init-location  ;
+  location-42~ 0 0 0 0 0 0 0 self~ set-exits  ;
 
 : describe-location-44  ( -- )
   sight case
@@ -1893,11 +1936,12 @@ location-43~ :init  ( -- )
   endcase  ;
 
 location-44~ :init  ( -- )
+  self~ be-location
   ['] describe-location-44 self~ be-description-xt
   ['] lake-is-here self~ be-after-describing-location-xt
   s" lago interior" self~ ms-name!
   self~ be-indoor-location
-  location-43~ 0 0 location-45~ 0 0 0 0 self~ init-location  ;
+  location-43~ 0 0 location-45~ 0 0 0 0 self~ set-exits  ;
 
   \ XXX TODO -- crear ente. lago, escaleras, pasaje, lago en escenario
   \ 44
@@ -1930,10 +1974,11 @@ location-44~ :init  ( -- )
   endcase  ;
 
 location-45~ :init  ( -- )
+  self~ be-location
   ['] describe-location-45 self~ be-description-xt
   s" cruce de pasajes" self~ ms-name!
   self~ be-indoor-location
-  0 location-47~ location-44~ location-46~ 0 0 0 0 self~ init-location  ;
+  0 location-47~ location-44~ location-46~ 0 0 0 0 self~ set-exits  ;
 
   \ XXX TODO -- crear ente. pasaje/camino/paso/senda en escenario 45
 
@@ -1954,10 +1999,11 @@ location-45~ :init  ( -- )
   endcase  ;
 
 location-46~ :init  ( -- )
+  self~ be-location
   ['] describe-location-46 self~ be-description-xt
   s" hogar de Ambrosio" self~ ms-name!
   self~ be-indoor-location
-  0 0 location-45~ 0 0 0 0 0 self~ init-location  ;
+  0 0 location-45~ 0 0 0 0 0 self~ set-exits  ;
 
 : describe-location-47  ( -- )
   sight case
@@ -1991,11 +2037,12 @@ location-46~ :init  ( -- )
   endcase  ;
 
 location-47~ :init  ( -- )
+  self~ be-location
   ['] describe-location-47 self~ be-description-xt
   ['] door-is-here self~ be-after-describing-location-xt
   s" salida de la cueva" self~ fs-name!
   self~ be-indoor-location
-  location-45~ 0 0 0 0 0 0 0 self~ init-location  ;
+  location-45~ 0 0 0 0 0 0 0 self~ set-exits  ;
 
   \ XXX TODO -- descripción inacabada de escenario 47
 
@@ -2036,10 +2083,11 @@ location-47~ :init  ( -- )
   endcase  ;
 
 location-48~ :init  ( -- )
+  self~ be-location
   ['] describe-location-48 self~ be-description-xt
   ['] door-is-here self~ be-after-describing-location-xt
   s" bosque a la entrada" self~ ms-name!
-  0 0 location-47~ location-49~ 0 0 0 0 self~ init-location  ;
+  0 0 location-47~ location-49~ 0 0 0 0 self~ set-exits  ;
 
   \ XXX TODO -- crear ente. cueva en escenario 48
 
@@ -2064,9 +2112,10 @@ location-48~ :init  ( -- )
   endcase  ;
 
 location-49~ :init  ( -- )
+  self~ be-location
   ['] describe-location-49 self~ be-description-xt
   s" sendero del bosque" self~ ms-name!
-  0 0 location-48~ location-50~ 0 0 0 0 self~ init-location  ;
+  0 0 location-48~ location-50~ 0 0 0 0 self~ set-exits  ;
 
 : describe-location-50  ( -- )
   sight case
@@ -2088,9 +2137,10 @@ location-49~ :init  ( -- )
   endcase  ;
 
 location-50~ :init  ( -- )
+  self~ be-location
   ['] describe-location-50 self~ be-description-xt
   s" camino norte" self~ ms-name!
-  0 location-51~ location-49~ 0 0 0 0 0 self~ init-location  ;
+  0 location-51~ location-49~ 0 0 0 0 0 self~ set-exits  ;
 
 : describe-location-51  ( -- )
   sight case
@@ -2107,10 +2157,11 @@ location-50~ :init  ( -- )
   endcase  ;
 
 location-51~ :init  ( -- )
+  self~ be-location
   ['] describe-location-51 self~ be-description-xt
   s" Westmorland" self~ fs-name!
   self~ have-no-article
-  location-50~ 0 0 0 0 0 0 0 self~ init-location  ;
+  location-50~ 0 0 0 0 0 0 0 self~ set-exits  ;
   \ XXX TODO -- crear ente. mercado, plaza, villa, pueblo, castillo
 
 \ ----------------------------------------------

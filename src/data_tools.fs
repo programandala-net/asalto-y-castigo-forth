@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607040015
+\ Last update: 201607041136
 
 \ Note: The comments of the code are in Spanish.
 
@@ -43,6 +43,7 @@
 0 value self~
   \ Ente cuyos atributos, descripción o trama están siendo definidos
   \ (usado para aligerar la sintaxis).
+  \ XXX TODO -- quitar, usar el identificador del ente
 
 : :name-str  ( a -- )
   [debug-init] [if]  s" Inicio de `:name-str`" debug [then]
@@ -92,11 +93,14 @@
 : :init  ( a -- )
   :noname noname-roll  (:init)  postpone [:init]  ;
   \ Inicia la creación de una palabra sin nombre que definirá las
-  \ propiedades de un ente _a_. Hace tres operaciones: 1) Crea la palabra
-  \ con `:noname`;
-  \ 2) Hace las operaciones preliminares, mediante `(:init)`; 3)
-  \ Compila la palabra `[:init]` en la palabra creada, para que
-  \ se ejecute cuando sea llamada.
+  \ propiedades de un ente _a_. Hace tres operaciones: 1) Crea la
+  \ palabra con `:noname`; 2) Hace las operaciones preliminares,
+  \ mediante `(:init)`; 3) Compila la palabra `[:init]` en la palabra
+  \ creada, para que se ejecute cuando sea llamada.
+  \
+  \ XXX TODO -- move a Flibustre
+  \ XXX TODO -- reescribir de forma estándar, más sencilla, con
+  \ `create builds>`, pues `noname-roll` depende de Gforth.
 
   \ XXX TODO -- mejorar el sistema de inicialización de entes en
   \ Flibustre, para hacerlo tan potente como el de _Asalto y castigo_.
@@ -123,6 +127,7 @@
     \ i #>entity full-name space type ?.s  \ XXX INFORMER
   loop  ;
   \ Restaura las fichas de los entes a su estado original.
+  \ XXX TODO -- mover a Flibustre
 
 \ ==============================================================
 \ Herramientas para mostrar las descripciones
@@ -465,7 +470,7 @@ in~ in-exit> exits-table!
 \ Por último, definimos dos palabras para hacer
 \ todas las asignaciones de salidas en un solo paso.
 
-: exits!  ( a1 ... a8 a0 -- )
+: set-exits  ( a1 ... a8 a0 -- )
   >r r@ ~out-exit !
      r@ ~in-exit !
      r@ ~down-exit !
@@ -477,11 +482,5 @@ in~ in-exit> exits-table!
   \ Asigna todas las salidas _a1 ... a8_ de un ente escenario _a0_.
   \ Los entes de salida _a1 ... a8_ (o cero) están en el orden
   \ habitual: norte, sur, este, oeste, arriba, abajo, dentro, fuera.
-
-: init-location  ( a1 ... a8 a0 -- )  dup be-location exits!  ;
-  \ Marca un ente _a0_ como escenario y le asigna todas las salidas.
-  \ _a1 ... a8_, que sen entes escenario de salida (o cero) en el
-  \ orden habitual: norte, sur, este, oeste, arriba, abajo, dentro,
-  \ fuera.
 
 \ vim:filetype=gforth:fileencoding=utf-8
