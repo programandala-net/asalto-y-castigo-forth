@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607031856
+\ Last update: 201607041144
 
 \ Note: The comments of the code are in Spanish.
 
@@ -467,9 +467,6 @@ create 'articles
 \ nombres de ente de forma análoga a como se hace con el resto
 \ de datos de su ficha.
 
-: name!  ( ca len a -- )  name-str str-set  ;
-  \ Guarda el nombre _ca len_ de un ente _a_.
-
 : p-name!  ( ca len a -- )  dup have-plural-name name!  ;
   \ Guarda el nombre _ca len_ de un ente _a_,
   \ y lo marca como plural.
@@ -493,9 +490,6 @@ create 'articles
 : mp-name!  ( ca len a -- )  dup have-masculine-name p-name!  ;
   \ Guarda el nombre _ca len_ de un ente _a_,
   \ indicando también que es de género gramatical masculino y plural.
-
-: name  ( a -- ca len )  name-str str-get  ;
-  \ Devuelve el nombre _ca len_ de un ente _a_.
 
 : ?name  ( a -- ca len )  ?dup if  name  else  null$  then  ;
   \ Devuelve el nombre _ca len_ de un ente _a_, si es tal;

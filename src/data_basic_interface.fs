@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607040011
+\ Last update: 201607041144
 
 \ Note: The comments of the code are in Spanish.
 
@@ -50,6 +50,9 @@ last-exit> cell+ first-exit> - constant /exits
 \ ----------------------------------------------
 \ Lectores de campos
 
+: name-str  ( a1 -- a2 )  ~name-str @  ;
+: name  ( a -- ca len )  name-str str-get  ;
+
 : break-error#  ( a -- u )  ~break-error# @  ;
 : conversations  ( a -- u )  ~conversations @  ;
 : description-xt  ( a -- xt )  ~description-xt @  ;
@@ -81,7 +84,6 @@ last-exit> cell+ first-exit> - constant /exits
 : is-outdoor-location?  ( a -- f )  is-indoor-location? 0=  ;
 : is-open?  ( a -- f )  ~is-open bit@  ;
 : is-closed?  ( a -- f )  is-open? 0=  ;
-: name-str  ( a1 -- a2 )  ~name-str @  ;
 : times-open  ( a -- u )  ~times-open @  ;
 : owner  ( a1 -- a2 )  ~owner @  ;
 : is-vegetal?  ( a -- f )  ~is-vegetal bit@  ;
@@ -142,6 +144,8 @@ last-exit> cell+ first-exit> - constant /exits
 
 \ ----------------------------------------------
 \ Modificadores de campos
+
+: name!  ( ca len a -- )  name-str str-set  ;
 
 : be-before-describing-location-xt  ( xt a -- )  ~before-describing-location-xt !  ;
 : be-description-xt  ( xt a -- )  ~description-xt !  ;
