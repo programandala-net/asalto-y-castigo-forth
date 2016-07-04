@@ -3,11 +3,6 @@
 
 == Programación
 
-2016-07-04:
-
-Eliminar las constantes intermedias usadas para la asignación de los
-códigos de error.
-
 2016-06-26:
 
 Añadir un comando inmediato para que el jugador pueda dar un comando

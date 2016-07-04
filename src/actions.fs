@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607041835
+\ Last update: 201607041910
 
 \ Note: The comments of the code are in Spanish.
 
@@ -1169,8 +1169,7 @@ false [if]
   dup direction ?dup if  \ ¿El ente es una dirección?
     my-location + @ ?dup  \ ¿Tiene mi escenario salida en esa dirección?
     if  nip enter-location  else  impossible-move  then
-  else  drop nonsense
-  then
+  else  drop nonsense  then
   [debug] [if]  s" Al salir de DO-GO-IF-POSSIBLE" debug  [then]  ;  \ XXX INFORMER
   \ Comprueba si el movimiento hacio un supuesto ente de dirección _a_
   \ es posible y si es así lo efectúa.
@@ -1183,9 +1182,7 @@ false [if]
   [debug] [if]  s" Al entrar en DO-GO" debug  [then]  \ XXX INFORMER
   tool-complement{unnecessary}
   main-complement @ ?dup
-  if  do-go-if-possible
-  else  simply-do-go
-  then
+  if  do-go-if-possible  else  simply-do-go  then
   [debug] [if]  s" Al salir de DO-GO" debug  [then]  \ XXX INFORMER
   ; is do-go
   \ Acción de ir.
@@ -1241,8 +1238,15 @@ false [if]
   ; is do-go-out
   \ Acción de ir hacia fuera.
 
+: enter-the-cave-entrance  ( -- )
+  is-the-cave-entrance-accessible? 0=
+  cannot-see-what-error# and throw
+  in~ do-go-if-possible  ;
+
 :noname  ( -- )
   tool-complement{unnecessary}
+  main-complement @ cave-entrance~ =
+  if  enter-the-cave-entrance exit  then
   in~ main-complement{this-only}
   in~ do-go-if-possible
   ; is do-go-in
