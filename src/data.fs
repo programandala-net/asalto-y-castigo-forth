@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607041716
+\ Last update: 201607042157
 
 \ Note: The comments of the code are in Spanish.
 
@@ -220,9 +220,6 @@ cuirasse~ :init  ( -- )
   self~ belongs-to-protagonist
   self~ taken
   self~ be-worn  ;
-
-\ defer lock-found  ( -- )  \ XXX OLD
-  \ Encontrar el candado.
 
 : describe-door  ( -- )
   door~ times-open if  s" Es"  else  s" Parece"  then
@@ -629,18 +626,16 @@ location-01~ :init  ( -- )
   uninteresting-direction
   endcase  ;
 
+: from-the-village?  ( -- f )
+  location-01~ protagonist~ was-there?  ;
+  \ ¿Venimos de la aldea?
+
 : after-describing-location-02  ( -- )
-  \ Decidir hacia dónde conduce la dirección hacia abajo
-  [false] [if]  \ XXX OLD -- Primera versión
-    \ Decidir al azar:
-    location-02~ location-01~ location-03~ 2 choose d-->
-  [else]  \ XXX NEW -- Segunda versión mejorada
-    \ Decidir según el escenario de procedencia:
-    location-02~
-    protagonist~ previous-location location-01~ =  \ ¿Venimos de la aldea?
-    if  location-03~  else  location-01~  then  d-->
-  [then]
+  location-02~  from-the-village?
+  if  location-03~  else  location-01~  then  d-->
   soldiers~ be-here going-home  ;
+  \ Decide hacia dónde conduce la dirección "hacia abajo",
+  \ según el escenario de procedencia.
 
 location-02~ :init  ( -- )
   self~ be-location
