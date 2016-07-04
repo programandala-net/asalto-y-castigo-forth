@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607041717
+\ Last update: 201607041857
 
 \ Note: Most comments of the code are in Spanish.
 
@@ -64,7 +64,7 @@ defer default-description  ( -- )
   name ^uppercase location-name-color paragraph
   \ [debug-map] [ true or ] [if]
   [true] [if]
-    dup entity># location-01~ entity># - 1+ ."  [ location #" . ." ]"
+    dup entity># location-01~ entity># - 1+ ."  [#" 0 .r ." ]"
   [then]  ;
   \ Imprime el nombre de un ente escenario, como cabecera de su descripción.
   \ XXX TODO -- añadir el artículo correspondiente o no, dependiendo
