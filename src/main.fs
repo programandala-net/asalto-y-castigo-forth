@@ -7,7 +7,7 @@
 \
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 \
-\ Last update: 201607032349
+\ Last update: 201607041851
 \
 \ 'Asalto y castigo' is free software; you can redistribute
 \ it and/or modify it under the terms of the GNU General
@@ -114,7 +114,7 @@ s" intro.fs" including
   randomize
   init-parser/game init-entities init-plot
   get-config new-page
-  [false] [if]    about cr intro  location-01~ enter-location
+  [true]  [if]    about cr intro  location-01~ enter-location
           [else]  init-game-for-debugging
           [then]  ;
   \ Preparativos que hay que hacer antes de cada partida.
@@ -134,7 +134,7 @@ forth-wordlist set-current
 : run  ( -- )  init-once adventure farewell  ;
   \ Arranque del juego.
 
-\ run  \ XXX TMP
+run  \ XXX TMP
 cr .( Escribe RUN para jugar) cr  \ XXX TMP
 
 \ ==============================================================

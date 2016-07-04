@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607041711
+\ Last update: 201607041835
 
 \ Note: The comments of the code are in Spanish.
 
@@ -68,7 +68,8 @@ defer well-done$  ( -- ca len )
 
 : main-complement{this-only}  ( a -- )
   main-complement @ swap over different?
-  not-allowed-main-complement-error# and ~~ throw  ;
+  not-allowed-main-complement-error# and throw
+  ;
   \ Provoca un error si hay complemento principal y no es el indicado.
   \ a = Ente que será aceptado como complemento
 
@@ -237,8 +238,8 @@ defer well-done$  ( -- ca len )
 
 : {takeable}  ( a -- )
   dup what !
-  dup take-error# throw  \ Error específico del ente
-  can-be-taken? 0= nonsense-error# and throw  ;  \ Condición general de error
+  dup take-error# throw
+  can-be-taken? 0= nonsense-error# and throw  ;
   \ Provoca un error si un ente no puede ser tomado.
   \ Nota: los errores apuntados por el campo `~take-error#` no reciben
   \ parámetros salvo en `what`.
@@ -1241,10 +1242,9 @@ false [if]
   \ Acción de ir hacia fuera.
 
 :noname  ( -- )
-  ~~ tool-complement{unnecessary}
-  ~~ in~ main-complement{this-only}
-  ~~ in~ do-go-if-possible
-  ~~
+  tool-complement{unnecessary}
+  in~ main-complement{this-only}
+  in~ do-go-if-possible
   ; is do-go-in
   \ Acción de ir hacia dentro.
 

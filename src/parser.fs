@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607041407
+\ Last update: 201607041834
 
 \ Note: The comments of the code are in Spanish.
 
@@ -261,19 +261,15 @@ create 'language-error-verbosity-xt
   s{ s" el" s" ningún" }s&  ;
   \ Devuelve una variante de «no hay», comienzo de varios errores.
 
-: too-many-actions  ( -- )
+:noname  ( -- )
   s{ there-are$ s" dos verbos" s&
   there-is$ s" más de un verbo" s&
   there-are$ s" al menos dos verbos" s&
-  }s  language-error  ;
+  }s  language-error  ; is too-many-actions-error#
   \ Informa de que se ha producido un error porque hay dos verbos en
   \ el comando.
 
-' too-many-actions constant (too-many-actions-error#)
-
-' (too-many-actions-error#) is too-many-actions-error#
-
-: too-many-complements  ( -- )
+:noname  ( -- )
   s{
   there-are$
   s" dos complementos secundarios" s&
@@ -281,113 +277,74 @@ create 'language-error-verbosity-xt
   s" más de un complemento secundario" s&
   there-are$
   s" al menos dos complementos secundarios" s&
-  }s  language-error  ;
+  }s  language-error  ; is too-many-complements-error#
   \ Informa de que se ha producido un error
   \ porque hay dos complementos secundarios en el comando.
   \ XXX TMP
 
-' too-many-complements constant (too-many-complements-error#)
-
-' (too-many-complements-error#) is too-many-complements-error#
-
-: no-verb  ( -- )
-  there-is-no$ s" verbo" s& language-error  ;
+:noname  ( -- )
+  there-is-no$ s" verbo" s&
+  language-error  ; is no-verb-error#
   \ Informa de que se ha producido un error por falta de verbo en el comando.
 
-' no-verb constant (no-verb-error#)
-
-' (no-verb-error#) is no-verb-error#
-
-: no-main-complement  ( -- )
-  there-is-no$ s" complemento principal" s& language-error  ;
+:noname  ( -- )
+  there-is-no$ s" complemento principal" s&
+  language-error  ; is no-main-complement-error#
   \ Informa de que se ha producido un error por falta de complemento
   \ principal en el comando.
 
-' no-main-complement constant (no-main-complement-error#)
-
-' (no-main-complement-error#) is no-main-complement-error#
-
-: unexpected-main-complement  ( -- )
+:noname  ( -- )
   there-is$ s" un complemento principal" s&
   s" pero el verbo no puede llevarlo" s&
-  language-error  ;
+  language-error  ; is unexpected-main-complement-error#
   \ Informa de que se ha producido un error por la presencia de
   \ complemento principal en el comando.
 
-' unexpected-main-complement constant (unexpected-main-complement-error#)
-
-' (unexpected-main-complement-error#) is unexpected-main-complement-error#
-
-: unexpected-secondary-complement  ( -- )
+:noname  ( -- )
   there-is$ s" un complemento secundario" s&
   s" pero el verbo no puede llevarlo" s&
-  language-error  ;
+  language-error  ; is unexpected-secondary-complement-error#
   \ Informa de que se ha producido un error por la presencia de
   \ complemento secundario en el comando.
 
-' unexpected-secondary-complement constant (unexpected-secondary-complement-error#)
-
-' (unexpected-secondary-complement-error#) is unexpected-secondary-complement-error#
-
-: not-allowed-main-complement  ( -- )
+:noname  ( -- )
   there-is$ s" un complemento principal no permitido con esta acción" s&
-  language-error  ;
+  language-error  ; is not-allowed-main-complement-error#
   \ Informa de que se ha producido un error por la presencia de un
   \ complemento principal en el comando que no está permitido.
 
-' not-allowed-main-complement constant (not-allowed-main-complement-error#)
-
-' (not-allowed-main-complement-error#) is not-allowed-main-complement-error#
-
-: not-allowed-tool-complement  ( -- )
+:noname  ( -- )
   there-is$ s" un complemento principal no permitido con esta acción" s&
-  language-error  ;
+  language-error  ; is not-allowed-tool-complement-error#
   \ Informa de que se ha producido un error por la presencia de un
   \ complemento instrumental en el comando que no está permitido.
 
-' not-allowed-tool-complement constant (not-allowed-tool-complement-error#)
-
-' (not-allowed-tool-complement-error#) is not-allowed-tool-complement-error#
-
-: useless-tool  ( -- )
-  s" [Con eso no puedes]"  narrate  ;
+:noname  ( -- )
+  s" [Con eso no puedes]"
+  narrate  ; is useless-tool-error#
   \ Informa de que se ha producido un error
   \ porque una herramienta no especificada no es la adecuada.
   \ XXX TODO -- inconcluso
 
-' useless-tool constant (useless-tool-error#)
-
-' (useless-tool-error#) is useless-tool-error#
-
-: useless-what-tool  ( -- )
-  s" [Con" what @ full-name s& s" no puedes]" s& narrate  ;
+:noname  ( -- )
+  s" [Con" what @ full-name s& s" no puedes]" s&
+  narrate  ; is useless-what-tool-error#
   \ Informa de que se ha producido un error
   \ porque el ente `what` no es la herramienta adecuada.
   \ XXX TODO -- inconcluso
   \ XXX TODO -- distinguir si la llevamos, si está presente, si es conocida...
 
-' useless-what-tool constant (useless-what-tool-error#)
-
-' (useless-what-tool-error#) is useless-what-tool-error#
-
-: unresolved-preposition  ( -- )
+:noname  ( -- )
   there-is$ s" un complemento (seudo)preposicional sin completar" s&
-  language-error  ;
+  language-error  ; is unresolved-preposition-error#
   \ Informa de que se ha producido un error
   \ porque un complemento (seudo)preposicional quedó incompleto.
 
-' unresolved-preposition constant (unresolved-preposition-error#)
-
-' (unresolved-preposition-error#) is unresolved-preposition-error#
-
-: repeated-preposition  ( -- )
+:noname  ( -- )
   there-is$ s" una (seudo)preposición repetida" s&
-  language-error  ;
+  language-error  ; is repeated-preposition-error#
   \ Informa de que se ha producido un error por
   \ la repetición de una (seudo)preposición.
-
-' repeated-preposition constant (repeated-preposition-error#)
-' (repeated-preposition-error#) is repeated-preposition-error#
 
 ' ?execute alias ?wrong  ( xt | 0 -- )
   \ Informa, si es preciso, de un error en el comando.  _xt_ es tanto
@@ -576,8 +533,8 @@ create prepositional-complements /prepositional-complements allot
   \ acción que nada haga.
 
 : execute-previous-action  ( -- )
-  repeat-previous-action? @
-  if  (execute-previous-action)  else  no-verb-error# ?wrong  then  ;
+  repeat-previous-action? @ 0= no-verb-error# and throw
+  (execute-previous-action)  ;
   \ Ejecuta la acción previa, si así está configurado.
 
 : execute-action  ( -- )
@@ -694,16 +651,11 @@ create prepositional-complements /prepositional-complements allot
 
 : action!  ( xt -- )
   [debug-parsing] [??] ~~
-  action @ second?  \ ¿Había ya una acción?
-  [debug-parsing] [??] ~~
-  too-many-actions-error# and
-  [debug-parsing] [??] ~~
-  throw  \ Sí, error
-  [debug-parsing] [??] ~~
-  action !  \ No, guardarla
+  action @ second?  too-many-actions-error# and throw
+  action !
   [debug-parsing] [??] ~~  ;
-  \ Comprueba y almacena la acción.
-  \ xt = Identificador de ejecución de la acción
+  \ Comprueba y almacena la acción _xt_.
+  \ Provoca un error si ya había una acción.
 
 : preposition!  ( u -- )
   a-preposition-is-open?
@@ -714,31 +666,31 @@ create prepositional-complements /prepositional-complements allot
 
 : prepositional-complement!  ( a -- )
   [debug-parsing] [??] ~~
-  current-prepositional-complement @ second?  \ ¿Se había usado ya esta preposición con otro complemento?
-  repeated-preposition-error# and throw  \ Si es así, error
+  current-prepositional-complement @ second?
+  repeated-preposition-error# and throw
   dup new-last-complement
   current-prepositional-complement !
-  current-preposition @ >bit used-prepositions +!  \ Añadir la preposición a las usadas
-  current-preposition off  \ Cerrar la preposición en curso
+  current-preposition @ >bit used-prepositions +!
+  current-preposition off
   [debug-parsing] [??] ~~  ;
-  \ Almacena un complemento (seudo)preposicional.
-  \ a = Identificador de ente
+  \ Almacena un ente _a_ como complemento (seudo)preposicional.
+  \ Provoca error si la preposición ya había sido usada,
 
 : secondary-complement!  ( a -- )
-  secondary-complement @ second?  \ ¿Había ya un complemento secundario?
-  too-many-complements-error# and throw  \ Si es así, error
+  secondary-complement @ second?
+  too-many-complements-error# and throw
   secondary-complement !  ;
-  \ Almacena el complemento secundario.
-  \ a = Identificador de ente
+  \ Almacena el ente _a_ como complemento secundario.
+  \ Provoca un error si ya existía un complemento secundario.
 
 : main-complement!  ( a -- )
   [debug-parsing] [??] ~~
-  main-complement @ second?  \ ¿Había ya un complemento principal?
-  too-many-complements-error# and throw  \ Si es así, error
+  main-complement @ second?
+  too-many-complements-error# and throw
   dup new-last-complement
   main-complement !  ;
-  \ Almacena el complemento principal.
-  \ a = Identificador de ente
+  \ Almacena el ente _a_ como complemento principal.
+  \ Provoca un error si ya existía un complemento principal.
 
 : non-prepositional-complement!  ( a -- )
   main-complement @

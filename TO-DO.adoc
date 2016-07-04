@@ -1,12 +1,17 @@
 = Tareas pendientes de Asalto y castigo
-:revdate: 2016-07-03
+:revdate: 2016-07-04
 
 == Programación
 
+2016-07-04:
+
+Eliminar las constantes intermedias usadas para la asignación de los
+códigos de error.
+
 2016-06-26:
 
-- Añadir un comando inmediato para que el jugador pueda dar un comando
-  de configuración.
+Añadir un comando inmediato para que el jugador pueda dar un comando
+de configuración.
 
 2016-06-26:
 
@@ -22,31 +27,6 @@ ____
 2016-06-25:
 
 Hacer que la acción previa sea anulada tras un error.
-
-2016-02-03:
-
-----
-  > entra en gruta                                                                         
-  Tus hombres caen vendiendo cara su vida como héroes.                                     
-  Sabes que debes darte prisa...                                                           
-Pila: <1> 1989697584 
-  >  
-  El enemigo acaba con los últimos de entre tus soldados que, apurando sus postreras       
-energías, aún combaten.                                                                    
-  Sabes que no puedes perder tiempo...                                                     
-Pila: <1> 1989697584 
-  > entra                                   
-  Gruta de entrada                                                                         
-  El estrecho paso se adentra hacia el oeste, desde la boca, al norte.                     
-  Al fin crees sentirte a salvo, pero sabes que aún podrían encontrarte aquí.              
-  Los sajones, que te han visto entrar, siguen tus pasos y te atrapan. Su general te mira  
-durante un momento y, con una cruel sonrisa, exclama:                                      
-  «Hoy parece ser un día de suerte... Excelente... Por el gran Ulfius pediremos un buen    
-rescate».                                                                                  
-                                                                                           
-  ¿Te quedan fuerzas para probar una vez más?
-Pila: <2> 1989697584 1989857760 
-----
 
 2016-02-03:
 
@@ -72,52 +52,6 @@ configuración.
   > ueorcueou
   No tiene sentido hablar con uno mismo.
 ----
-
-2014-10-22:
-
-Fallo:
-
-----
-  Recodo de la cueva
-  La iridiscente cueva gira de Este a Sur.
-  >
-  > #fin
-  No es posible ir al Oeste.
-  > #fin
-  No es posible ir al Oeste.
-  > #ruteouo
-  Es imposible ir en esa dirección.
-  > cueorut
-  No es posible ir al Oeste.
-----
-
-'''
-2014-07-10:
-
-¿Fallo?:
-  
-----
-  Abruptamente, el bosque desaparece y deja paso a un estrecho camino
-entre altas rocas. El inquietante desfiladero tuerce de Este a Sur.
-  Tus hombres te siguen.
-  > ss
-  No es posible ir al Oeste.
-
-  (...) 
-
-  > ex derrumbe
-  Muchísimas, inalcanzables y grandes rocas, apiladas las unas sobre
-las otras.
-  > sal
-  Es imposible ir hacia afuera.
-  > regresa
-  Es imposible ir hacia afuera.
-  > ucoueortnuseoa
-  Es imposible ir hacia afuera.
-  > urotueou
-  No es posible ir por ahí.
-----
- 
 
 '''
 2012-10-04:
@@ -155,11 +89,14 @@ Oeste. Al fondo puede oírse un gran estruendo.
 '''
 2012-05-16:
 
+----
 > deja espada
 > s
 > mira espada
 No ves eso. [y variantes]
-===> Aquí no está tu espada.
+----
+
+Nuevo mesaje: "Aquí no está tu espada".
 
 '''
 2012-05-14:
@@ -177,13 +114,12 @@ mejor poner el verbo en plural en ese caso, con velas como
 sujeto en lugar de «se», y «se» como reflexivo.
 
 '''
-2012-02-29:
+2012-02-29, 2016-07-04:
 
-Ideas para facilitar la depuración de la futura primera versión beta:
+Ideas para facilitar la depuración:
 
-* comando GET para apropiarse de cualquier ente, esté donde esté.
-* comando GO en el fichero de configuración, para elegir escenario por su número
-* mostrar el número de escenario en pantalla
+- comando #get para apropiarse de cualquier ente, esté donde esté.
+- comando #go para elegir escenario por su número
 
 '''
 2012-02-20:
@@ -208,20 +144,6 @@ acción, en lugar de "Hecho".
 
 '''
 
-2012-02-07:
-
-Hacer x sinónimo de ex cuando no tenga complemento.
-
-Para repetir la última acción con los últimos complementos:
-+ = sigue = continúa = más = r = repite
-...pero no tiene utilidad habiendo historial de comandos!
-
-¿Implementar gerundios?:
-> sigue hablando con X
-Tampoco tiene utilidad, salvo aumentar el rango de
-expresiones comprensibles.
-
-'''
 2012-01-03:
 
 Tras el análisis, detectar:
@@ -352,13 +274,6 @@ los requisitos.
 
 2011-12:
 
-Hacer que los objetos (y ambrosio) no estén siempre en el
-mismo sitio. ¿Altar? ¿Serpiente?
-
-'''
-
-2011-12:
-
 Hacer algo así en las tramas del laberinto:
 
 (una vez de x se equivoca)
@@ -374,20 +289,6 @@ Hacer algo así en las tramas del laberinto:
 Respuesta a mirar como en «Pronto»:
 
 Miras, pero no ves eso por aquí. ¿Realmente importa?
-
-'''
-
-2011-12:
-
-Crear ente «enemigo» con el término ambiguo «sajones» (por
-los sajones muertos en la aldea.
-
-'''
-
-2011-12:
-
-Crear ente (sub)oficiales, con descripción complementaria a
-la de los soldados.
 
 '''
 
@@ -495,15 +396,6 @@ cero.
 
 2011-12:
 
-Hacer variantes de CHOOSE y DCHOOSE para elegir un elemento
-con un cálculo en lugar de al azar.
-
-¿En dónde se necesitaba?
-
-'''
-
-2011-12:
-
 Crear un mensaje de error más elaborado para las acciones
 que precisan objeto directo, con el infinitivo como
 parámetro: «¿Matar por matar?» «Normalmente hay que matar a
@@ -566,7 +458,7 @@ persona.
 
 2011-12:
 
-Añadir las salidas hacia fuera y dentro. Y atrás. Y
+Añadir las salidas hacia atrás. Y
 adelante. Y seguir.
 
 '''
@@ -601,8 +493,6 @@ los créditos y el menú.
 
 2011:
 
-- Barra de puntuación especial.
-
 - Mensajes de error genéricos, ej.: "Tus ideas parecen confusas, quizá
 debido a la oscuridad".
 
@@ -610,18 +500,10 @@ debido a la oscuridad".
 
 == Trama y puzles
 
-2012-05-12:
-
-Para entrar en la cueva descubierta en el desfiladero hay que limpiar
-la entrada de matorrales.
-
 2011..2012:
 
 Hacer que el líder de los refugiados nos deje pasar si
 dejamos el objeto (piedra o espada) allí o se lo damos.
-
-Hacer que la espada corte en más pedazos la capa si ha sido
-afilada con la piedra. Hacer que su descripción varíe.
 
 Hace que el altar solo aparezca al examinar el puente, y la
 piedra al examinar el altar.
@@ -653,23 +535,10 @@ los textos:
 De esto: «La palabra ZX , a veces, se usa como ZX2 .»
 A esto: «La palabra 'zx', a veces, se usa como 'zx2'.»
 
-Recortar las líneas para que no sobrepasen los 75 caracteres.
-
+Plegar las líneas que sobrepasen los 63 caracteres.
 
 == Notas
 
-
-=== Términos usados en los comentarios del programa
-
-----
-«ente»
-«lugar»/«escenario»
-«salida»/«dirección»
-«protagonista»
-«base de datos»
-«ficha»
-«campo»/«atributo»
-----
 
 === Esbozo de acciones y (seudo)preposiciones
 
