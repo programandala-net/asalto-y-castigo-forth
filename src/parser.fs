@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606300953
+\ Last update: 201607041358
 
 \ Note: The comments of the code are in Spanish.
 
@@ -759,8 +759,7 @@ create prepositional-complements /prepositional-complements allot
   \     o cero si se trata de un pronombre sin referente.
 
 : action|complement!  ( xt a -- )
-  action @
-  a-preposition-is-open? or
+  action @ 0<> a-preposition-is-open? or
   if  nip complement!  else  drop action!  then  ;
   \ Comprueba y almacena un complemento _a_ o una acción _xt_,
   \ ambos posibles significados de la misma palabra.

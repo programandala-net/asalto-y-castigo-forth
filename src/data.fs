@@ -2253,7 +2253,9 @@ exits~ :init  ( -- )
 defer describe-inventory  ( -- )
 
 inventory~ :init  ( -- )
-  ['] describe-inventory self~ be-description-xt  ;
+  ['] describe-inventory self~ be-description-xt
+  self~ be-global-outdoor
+  self~ be-global-indoor  ;
 
 : describe-enemy  ( -- )
   battle# @

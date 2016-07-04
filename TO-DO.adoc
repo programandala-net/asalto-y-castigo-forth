@@ -3,21 +3,6 @@
 
 == Programación
 
-2016-07-03:
-
-Hacer `setup-entity` innecesario, para que no haya que salvar y
-restaurar campos durante la inicialización de los entes. El campo que
-guarda el xt de inicialización podría salvarse muy fácilmente: basta
-con definirlo en la primera posición de la estructura, y tenerlo en
-cuenta al hacer `erase`.
-
-Solucionar error:
-
-----
-> ex inventario
-No ves ningún.
-----
-
 2016-06-26:
 
 - Añadir un comando inmediato para que el jugador pueda dar un comando

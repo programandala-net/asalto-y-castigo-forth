@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607041331
+\ Last update: 201607041354
 
 \ Note: The comments of the code are in Spanish.
 
@@ -379,6 +379,7 @@ player-wordlist dup >order set-current
 
 : i  ['] do-inventory inventory~ action|complement!  ;
 ' i aliases:  inventario  ;aliases
+
 : inventariar  ['] do-inventory action!  ;
 ' inventariar aliases:
   inventaría inventariad inventarío inventaríe
@@ -1061,9 +1062,9 @@ false [if]
 \ ----------------------------------------------
 \ Términos ambiguos
 
-: cierre  action @ if  candado  else  cerrar  then  ;
+: cierre  ( -- )  action @ if  candado  else  cerrar  then  ;
 
-: parte  action @ if  trozo  else  partir  then  ;
+: parte  ( -- )  action @ if  trozo  else  partir  then  ;
 
 \ ----------------------------------------------
 \ Comandos del sistema
