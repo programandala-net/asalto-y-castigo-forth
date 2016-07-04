@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607011232
+\ Last update: 201607041331
 
 \ Note: The comments of the code are in Spanish.
 
@@ -447,21 +447,25 @@ player-wordlist dup >order set-current
   ;aliases
 : quitárselo  quitarse éste  ;
 ' quitárselo aliases:
+  quítatelo
   quitártelo quitáoslo quíteselo
   quitármelo quítamelo quítomelo quítemelo
   ;aliases
 : quitársela  quitarse ésta  ;
 ' quitársela aliases:
+  quítatela
   quitártela quitáosla quítesela
   quitármela quítamela quítomela quítemela
   ;aliases
 : quitárselos  quitarse éstos  ;
 ' quitárselos aliases:
+  quítatelos
   quitártelos quitáoslos quíteselos
   quitármelos quítamelos quítomelos quítemelos
   ;aliases
 : quitárselas  quitarse éstas  ;
 ' quitárselas aliases:
+  quítatelas
   quitártelas quitáoslas quíteselas
   quitármelas quítamelas quítomelas quítemelas
   ;aliases
