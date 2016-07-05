@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607051244
+\ Last update: 201607052155
 
 \ Note: The comments of the code are in Spanish.
 
@@ -68,7 +68,7 @@ last-exit> cell+ first-exit> - constant /exits
 : init-xt  ( a -- xt )  ~init-xt @  ;
 : is-animal?  ( a -- f )  ~is-animal bit@  ;
 : is-character?  ( a -- f )  ~is-character bit@  ;
-: is-cloth?  ( a -- f )  ~is-cloth bit@  ;
+: is-wearable?  ( a -- f )  ~is-wearable bit@  ;
 : is-decoration?  ( a -- f )  ~is-decoration bit@  ;
 : is-global-indoor?  ( a -- f )  ~is-global-indoor bit@  ;
 : is-global-outdoor?  ( a -- f )  ~is-global-outdoor bit@  ;
@@ -168,7 +168,7 @@ last-exit> cell+ first-exit> - constant /exits
 : be-lit  ( a -- )  ~is-lit bit-on  ;
 : be-not-lit  ( a -- )  ~is-lit bit-off  ;
 
-: be-cloth  ( a -- )  ~is-cloth bit-on  ;
+: be-wearable  ( a -- )  ~is-wearable bit-on  ;
 
 : be-not-listed  ( a -- f )  ~is-not-listed bit-on  ;
 : be-decoration  ( a -- )  ~is-decoration bit-on  ;

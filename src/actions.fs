@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607052107
+\ Last update: 201607052154
 
 \ Note: The comments of the code are in Spanish.
 
@@ -263,7 +263,7 @@ false [if]
 :noname  ( -- )
   tool-complement{unnecessary}
   main-complement{required}
-  main-complement{cloth}
+  main-complement{wearable}
   main-complement{not-worn}
   main-complement @ is-not-hold? ?? do-take
   main-complement{hold}

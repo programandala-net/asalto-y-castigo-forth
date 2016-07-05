@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607042157
+\ Last update: 201607052154
 
 \ Note: The comments of the code are in Spanish.
 
@@ -208,7 +208,7 @@ cave-entrance~ :init  ( -- )
 cloak~ :init  ( -- )
   ['] describe-cloak self~ be-description-xt
   s" capa" self~ fs-name!
-  self~ be-cloth
+  self~ be-wearable
   self~ belongs-to-protagonist
   self~ be-worn
   self~ taken  ;
@@ -216,7 +216,7 @@ cloak~ :init  ( -- )
 cuirasse~ :init  ( -- )
   \ ['] describe-cuirasse self~ be-description-xt
   s" coraza" self~ fs-name!
-  self~ be-cloth
+  self~ be-wearable
   self~ belongs-to-protagonist
   self~ taken
   self~ be-worn  ;

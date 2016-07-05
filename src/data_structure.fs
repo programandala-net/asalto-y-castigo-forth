@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607051116
+\ Last update: 201607052155
 
 \ Note: The comments of the code are in Spanish.
 
@@ -74,7 +74,7 @@ field: ~visits
 \ ----------------------------------------------
 \ Campos de error
 
-\ Guardan un _xt_ que ejecuta un errores específico (o cero si no hay
+\ Guardan un _xt_ que ejecuta un error específico (o cero si no hay
 \ error); se usan para casos especiales (los errores apuntados por
 \ estos campos no reciben parámetros salvo en `what`).
 
@@ -148,7 +148,7 @@ begin-bitfields ~bitfields
     \ ¿Es animal?
   bitfield: ~is-character
     \ ¿Es un personaje?
-  bitfield: ~is-cloth
+  bitfield: ~is-wearable
     \ ¿Es una prenda que puede ser puesta y quitada?
   bitfield: ~is-decoration
     \ ¿Forma parte de la decoración de su localización?
