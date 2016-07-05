@@ -7,7 +7,7 @@
 \
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 \
-\ Last update: 201607041851
+\ Last update: 201607051735
 \
 \ 'Asalto y castigo' is free software; you can redistribute
 \ it and/or modify it under the terms of the GNU General
@@ -34,17 +34,7 @@
 
 include requirements.fs
 
-wordlist constant game-wordlist
-  \ Palabras del programa (no del vocabulario del jugador).
-
-: restore-wordlists  ( -- )
-  only forth game-wordlist dup >order set-current  ;
-  \ Restaura las listas de palabras a su estado habitual.
-
-restore-wordlists
-
-wordlist constant player-wordlist
-  \ Palabras del vocabulario del jugador.
+include flibustre/wordlists.fs
 
 include version.fs
 include debug_tools.fs
