@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607052038
+\ Last update: 201607052054
 
 \ Note: The comments of the code are in Spanish.
 
@@ -297,24 +297,14 @@ false [if]
   ; is do-put-on
   \ Acción de ponerse una prenda.
 
-: do-take-off-done-v1$  ( -- ca len )
-  main-complement @ direct-pronoun s" quitas" s&  ;
-  \ Devuelve una variante del mensaje que informa de que el
-  \ protagonista se ha quitado el complemento principal, una
-  \ prenda.
-  \ XXX TODO -- esta variante no queda natural
-  \ XXX OLD
+: >you-take-off-it$  ( a -- ca len )
+  s" Te quitas" rot full-name s&  ;
 
-: do-take-off-done-v2$  ( -- ca len )
-  s" quitas" main-complement @ full-name s&  ;
-  \ Devuelve una variante del mensaje que informa de que el
-  \ protagonista se ha quitado el complemento principal, una
-  \ prenda.
+: you-take-off-main-complement$  ( -- ca len )
+  main-complement @ >you-take-off-it$  ;
 
 : do-take-off-done$  ( -- ca len )
-  \ s" Te" s{ do-take-off-done-v1$ do-take-off-done-v2$ }s& period+  ;
-  \ XXX OLD
-  s" Te" do-take-off-done-v2$ s& period+  ;
+  you-take-off-main-complement$ period+  ;
   \ Devuelve el mensaje que informa de que el protagonista se ha
   \ quitado el complemento principal, una prenda.
 
@@ -383,43 +373,18 @@ false [if]
   ; is do-take
   \ Toma un ente, si es posible.
 
-: >do-drop-done-v1$  ( a -- ca1 len1 ) { object }
-  s" Te desprendes de" s{
-    object full-name
-    object personal-pronoun
-  }s& period+  ;
-  \ XXX OLD
-
-: >do-drop-done-v2$  ( a -- ca1 len1 )
-  ^direct-pronoun s" dejas." s&  ;
-  \ XXX OLD
-
 : >do-drop-done$  ( a -- ca1 len1 ) { object }
-  \ s{ object >do-drop-done-v1$  object >do-drop-done-v2$ }s  ; \ XXX OLD
   s{ s" Te desprendes de" s" Dejas" }s
   object full-name s& period+  ;
 
 : (do-drop)  ( a -- ) { object }
   object is-worn? if
-
-    [false] [if]  \ XXX TODO -- mensaje combinado:
-    object be-not-worn
-    s" te" s{
-      direct-pronoun s& s" quita" object plural-ending+
-      s" quita" object plural-ending+ object full-name s&
-    }s& s" y" s&
-
-  else  null$
-
-    [then]
-
-    \ XXX NOTE: método más sencillo:
-
-    do-take-off
-
-  then
-  object be-here
-  object >do-drop-done$ well-done-this  ;
+    show-well-done off  do-take-off  show-well-done on
+    you-take-off-main-complement$ s" y" s&
+    s{ s" te desprendes de" object personal-pronoun s&
+       object direct-pronoun s" dejas" s& }s& period+
+  else   object >do-drop-done$
+  then   ( ca len )  object be-here  well-done-this  ;
   \ Deja un ente.
 
 :noname  ( -- )
