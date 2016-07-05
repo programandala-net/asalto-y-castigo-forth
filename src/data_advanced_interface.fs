@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607051223
+\ Last update: 201607052108
 
 \ Note: The comments of the code are in Spanish.
 
@@ -841,5 +841,27 @@ in~ in-exit> exits-table!
 : open-the-cave-entrance  ( -- )
   location-08~ dup location-10~ s<-->  location-10~ i<-->  ;
   \ Comunica el escenario 8 con el 10 (de dos formas y en ambos sentidos).
+
+\ ==============================================================
+\ Cálculos para averiguar complemento omitido
+
+: whom  ( -- a | 0 )
+  ambrosio~ dup is-here? and ?dup ?exit
+  leader~   dup is-here? and ?dup ?exit
+  false  ;
+  \ Devuelve un ente personaje _a_ al que probablemente se refiera un
+  \ comando.  Se usa para averiguar el objeto de algunas acciones
+  \ cuando el jugador no lo especifica.
+  \
+  \ XXX TODO -- ampliar para contemplar los soldados y oficiales,
+  \ según la trama, el escenario y la fase de la batalla
+
+: unknown-whom  ( -- a | 0 )
+  ambrosio~ dup is-here-and-unknown? and ?dup ?exit
+  leader~   dup is-here-and-unknown? and ?dup ?exit
+  false  ;
+  \ Devuelve un ente personaje desconocido al que probablemente se
+  \ refiera un comando.  Se usa para averiguar el objeto de algunas
+  \ acciones cuando el jugador no lo especifica
 
 \ vim:filetype=gforth:fileencoding=utf-8

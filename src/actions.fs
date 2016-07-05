@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607052054
+\ Last update: 201607052107
 
 \ Note: The comments of the code are in Spanish.
 
@@ -18,43 +18,17 @@ require flibustre/well-done.fs
 
 :noname  ( -- ca len )
   s{ s" Hecho." s" Bien." }s  ; is well-done$
-  \ Mensaje genérico, de que una acción se ha realizado.
+  \ Mensaje genérico de que una acción se ha realizado.
 
 : ?well-done  ( ca len -- )
-  2 random if  well-done-this  else  2drop well-done  then  ;
+  3 random 0= if  2drop well-done  else  well-done-this  then  ;
   \ Informa de que una acción se ha realizado, bien con el mensaje _ca
-  \ len_ o, al azar (50% de probabilidades), con un mensaje genérico.
+  \ len_ o, al azar (33% de probabilidades), con un mensaje genérico.
 
 \ ==============================================================
 \ Comprobación de los requisitos de las acciones
 
 require flibustre/action_conditions.fs
-
-\ ==============================================================
-\ Herramientas para averiguar complemento omitido
-
-: whom  ( -- a | 0 )
-  true case
-    ambrosio~ is-here? of  ambrosio~  endof
-    leader~ is-here? of  leader~  endof
-    false swap
-  endcase  ;
-  \ Devuelve un ente personaje al que probablemente se refiera un
-  \ comando.  Se usa para averiguar el objeto de algunas acciones
-  \ cuando el jugador no lo especifica.
-  \
-  \ XXX TODO -- ampliar para contemplar los soldados y oficiales,
-  \ según la trama, el escenario y la fase de la batalla
-
-: unknown-whom  ( -- a | 0 )
-  true case
-    ambrosio~ is-here-and-unknown? of  ambrosio~  endof
-    leader~ is-here-and-unknown? of  leader~  endof
-    false swap
-  endcase  ;
-  \ Devuelve un ente personaje desconocido al que probablemente se
-  \ refiera un comando.  Se usa para averiguar el objeto de algunas
-  \ acciones cuando el jugador no lo especifica
 
 \ ==============================================================
 \ Acciones
