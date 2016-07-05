@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607051159
+\ Last update: 201607051238
 
 \ Note: The comments of the code are in Spanish.
 
@@ -33,6 +33,11 @@ defer well-done$  ( -- ca len )
 : well-done  ( -- )  well-done$ well-done-this  ;
   \ Informa, con un mensaje genérico, de que una acción se ha realizado,
   \ si es preciso.
+
+: ?well-done  ( ca len -- )
+  2 random if  well-done-this  else  2drop well-done  then  ;
+  \ Informa de que una acción se ha realizado, bien con el mensaje _ca
+  \ len_ o, al azar (50% de probabilidades), con un mensaje genérico.
 
 \ ==============================================================
 \ Comprobación de los requisitos de las acciones
@@ -422,8 +427,6 @@ defer do-take-off  ( -- )
   do-look
   ; is do-examine
   \ Acción de examinar.
-  \ XXX TMP
-  \ XXX TODO -- implementar `x salida`
 
 :noname  ( -- )
   do-look
@@ -579,9 +582,8 @@ false [if]
   tool-complement{unnecessary}
   main-complement{required}
   main-complement{cloth}
-  \ XXX TODO -- terminar, hacer que tome la prenda si no la tiene:
   main-complement{not-worn}
-  main-complement @ is-not-hold? if  do-take  then
+  main-complement @ is-not-hold? ?? do-take
   main-complement{hold}
   main-complement @ (do-put-on)
   ; is do-put-on
@@ -593,6 +595,7 @@ false [if]
   \ protagonista se ha quitado el complemento principal, una
   \ prenda.
   \ XXX TODO -- esta variante no queda natural
+  \ XXX OLD
 
 : do-take-off-done-v2$  ( -- ca len )
   s" quitas" main-complement @ full-name s&  ;
@@ -601,7 +604,9 @@ false [if]
   \ prenda.
 
 : do-take-off-done$  ( -- ca len )
-  s" Te" s{ do-take-off-done-v1$ do-take-off-done-v2$ }s& period+  ;
+  \ s" Te" s{ do-take-off-done-v1$ do-take-off-done-v2$ }s& period+  ;
+  \ XXX OLD
+  s" Te" do-take-off-done-v2$ s& period+  ;
   \ Devuelve el mensaje que informa de que el protagonista se ha
   \ quitado el complemento principal, una prenda.
 
@@ -675,12 +680,16 @@ false [if]
     object full-name
     object personal-pronoun
   }s& period+  ;
+  \ XXX OLD
 
 : >do-drop-done-v2$  ( a -- ca1 len1 )
   ^direct-pronoun s" dejas." s&  ;
+  \ XXX OLD
 
 : >do-drop-done$  ( a -- ca1 len1 ) { object }
-  s{ object >do-drop-done-v1$  object >do-drop-done-v2$ }s  ;
+  \ s{ object >do-drop-done-v1$  object >do-drop-done-v2$ }s  ; \ XXX OLD
+  s{ s" Te desprendes de" s" Dejas" }s
+  object full-name s& period+  ;
 
 : (do-drop)  ( a -- ) { object }
   object is-worn? if
