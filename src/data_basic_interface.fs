@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607041712
+\ Last update: 201607051244
 
 \ Note: The comments of the code are in Spanish.
 
@@ -117,7 +117,8 @@ last-exit> cell+ first-exit> - constant /exits
 : has-east-exit?  ( a -- f )  east-exit exit?  ;
 : has-west-exit?  ( a -- f )  west-exit exit?  ;
 
-: is-owner?  ( a1 a2 -- f )  owner =  ;
+: is-owner?  ( a1 a2 -- f )  swap owner =  ;
+  \ ¿Es el ente _a1_ propiedad del ente _a2_?
 
 : is-there?  ( a1 a2 -- f )  location =  ;
   \ ¿Está el ente _a1_ localizado en el ente _a2_?
