@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607051313
+\ Last update: 201607052038
 
 \ Note: The comments of the code are in Spanish.
 
@@ -28,283 +28,7 @@ require flibustre/well-done.fs
 \ ==============================================================
 \ Comprobación de los requisitos de las acciones
 
-\ XXX TODO -- mover a Flibustre
-
-\ En las siguientes palabras usamos las llaves en sus nombres
-\ como una notación, para hacer más legible y más fácil de
-\ modificar el código.  El texto entre las llaves indica la
-\ condición que se ha de cumplir.
-\
-\ Si la condición no se cumple, se provocará un error con
-\ `throw` que devolverá el flujo al último `catch`.
-\
-\ Este sistema de filtros y errores permite simplificar el
-\ código de las acciones porque ahorra muchas estructuras
-\ condicionales anidadas.
-
-: main-complement{forbidden}  ( -- )
-  main-complement @
-  0<> unexpected-main-complement-error# and throw  ;
-  \ Provoca un error si hay complemento principal.
-
-: secondary-complement{forbidden}  ( -- )
-  secondary-complement @
-  0<> unexpected-secondary-complement-error# and throw  ;
-  \ Provoca un error si hay complemento secundario.
-
-: main-complement{required}  ( -- )
-  main-complement @
-  0= no-main-complement-error# and throw  ;
-  \ Provoca un error si no hay complemento principal.
-
-: main-complement{this-only}  ( a -- )
-  main-complement @ swap over different?
-  not-allowed-main-complement-error# and throw  ;
-  \ Provoca un error si hay complemento principal y no es el indicado.
-  \ a = Ente que será aceptado como complemento
-
-: different-tool?  ( a -- f )
-  tool-complement @ swap over different?  ;
-  \ ¿Es el ente _a_ diferente a la herramienta usada, si la hay?
-
-: different-actual-tool?  ( a -- f )
-  actual-tool-complement @ swap over different?  ;
-  \ ¿Es el ente _a_ diferente a la herramienta estricta usada, si la hay?
-
-: tool-complement{this-only}  ( a -- )
-  different-tool? not-allowed-tool-complement-error# and throw  ;
-  \ Provoca un error (lingüístico)
-  \ si hay complemento instrumental y no es el ente _a_.
-
-: actual-tool-complement{this-only}  ( a -- )
-  different-actual-tool? not-allowed-tool-complement-error# and throw  ;
-  \ Provoca un error (lingüístico)
-  \ si hay complemento instrumental estricto y no es el ente _a_.
-
-: tool{not-this}  ( a -- )
-  dup what !
-  different-tool? 0= useless-what-tool-error# and throw  ;
-  \ Provoca un error (narrativo) si se usa cierta herramienta.
-  \ a = Ente que no será aceptado como herramienta
-  \ XXX TODO -- no usado
-
-: actual-tool{not-this}  ( a -- )
-  dup what !
-  different-actual-tool? 0= useless-what-tool-error# and throw  ;
-  \ Provoca un error (narrativo) si se usa cierta herramienta estricta.
-  \ a = Ente que no será aceptado como herramienta estricta
-  \ XXX TODO -- no usado
-
-: tool{this-only}  ( a -- )
-  tool-complement @ what !
-  different-tool? useless-what-tool-error# and throw  ;
-  \ Provoca un error (narrativo) si no se usa cierta herramienta.
-  \ a = Ente que será aceptado como herramienta
-
-: actual-tool{this-only}  ( a -- )
-  actual-tool-complement @ what !
-  different-actual-tool? useless-what-tool-error# and throw  ;
-  \ Provoca un error (narrativo) si no se usa cierta herramienta estricta.
-  \ a = Ente que será aceptado como herramienta estricta
-
-: tool-complement{unnecessary}  ( -- )
-  tool-complement @ ?dup ?? unnecessary-tool  ;
-  \ Provoca un error si hay un complemento instrumental.
-
-: actual-tool-complement{unnecessary}  ( -- )
-  actual-tool-complement @ ?dup ?? unnecessary-tool  ;
-  \ Provoca un error si hay un complemento instrumental estricto.
-
-: tool-complement{unnecessary-for-that}  ( ca len -- )
-  tool-complement @ ?dup
-  if  unnecessary-tool-for-that  else  2drop  then  ;
-  \ Provoca un error si hay un complemento instrumental.
-  \ ca len = Acción para la que sobra el complemento
-  \       (una frase con verbo en infinitivo)
-
-: actual-tool-complement{unnecessary-for-that}  ( ca len -- )
-  actual-tool-complement @ ?dup
-  if  unnecessary-tool-for-that  else  2drop  then  ;
-  \ Provoca un error si hay un complemento instrumental estricto.
-  \ ca len = Acción para la que sobra el complemento
-  \       (una frase con verbo en infinitivo)
-
-: {hold}  ( a -- )
-  dup what !
-  is-hold? 0= you-do-not-have-what-error# and throw  ;
-  \ Provoca un error si un ente no está en inventario.
-
-: ?{hold}  ( a | 0 -- )  ?dup ?? {hold}  ;
-  \ Provoca un error si un supuesto ente lo es y no está en inventario.
-
-: main-complement{hold}  ( -- )  main-complement @ ?{hold}  ;
-  \ Provoca un error si el complemento principal existe y no está en inventario.
-
-: tool-complement{hold}  ( -- )  tool-complement @ ?{hold}  ;
-  \ Provoca un error si el complemento instrumental existe y no está en inventario.
-
-: {not-hold}  ( a -- )
-  dup what !
-  is-hold? you-already-have-what-error# and throw  ;
-  \ Provoca un error si un ente está en inventario.
-
-: ?{not-hold}  ( a | 0 -- )  ?dup ?? {not-hold}  ;
-  \ Provoca un error si un supuesto ente lo es y está en inventario.
-
-: main-complement{not-hold}  ( -- )
-  main-complement @ ?{not-hold}  ;
-  \ Provoca un error si el complemento principal existe y está en inventario.
-
-: {worn}  ( a -- )
-  dup what !
-  is-worn-by-me? 0= you-do-not-wear-what-error# and throw  ;
-  \ Provoca un error si un ente no lo llevamos puesto.
-
-: ?{worn}  ( a | 0 -- )  ?dup ?? {worn}  ;
-  \ Provoca un error si un supuesto ente lo es y no lo llevamos puesto.
-
-: main-complement{worn}  ( -- )
-  main-complement @ ?{worn}  ;
-  \ Provoca un error si el complemento principal existe y no lo llevamos puesto.
-
-: {open}  ( a -- )
-  \ Provoca un error si un ente no está abierto.
-  dup what !
-  is-closed? what-is-already-closed-error# and throw  ;
-
-: {closed}  ( a -- )
-  dup what !
-  is-open? what-is-already-open-error# and throw  ;
-  \ Provoca un error si un ente no está cerrado.
-
-: {not-worn}  ( a -- )
-  dup what !
-  is-worn-by-me? you-already-wear-what-error# and throw  ;
-  \ Provoca un error si un ente lo llevamos puesto.
-
-: ?{not-worn}  ( a | 0 -- )  ?dup ?? {not-worn}  ;
-  \ Provoca un error si un supuesto ente lo es y lo llevamos puesto.
-
-: main-complement{not-worn}  ( -- )
-  main-complement @ ?{not-worn}  ;
-  \ Provoca un error si el complemento principal existe y lo llevamos
-  \ puesto.
-
-: {cloth}  ( a -- )
-  is-cloth? 0= nonsense-error# and throw  ;
-  \ Provoca un error si un ente no se puede llevar puesto.
-
-: ?{cloth}  ( a | 0 -- )  ?dup ?? {cloth}  ;
-  \ Provoca un error si un supuesto ente lo es y no se puede llevar
-  \ puesto.
-
-: main-complement{cloth}  ( -- )  main-complement @ ?{cloth}  ;
-  \ Provoca un error si el complemento principal existe y no se puede
-  \ llevar puesto.
-
-: {here}  ( a -- )
-  dup what !
-  is-here? 0= is-not-here-what-error# and throw  ;
-  \ Provoca un error si un ente no está presente.
-
-: ?{here}  ( a | 0 -- )
-  ?dup ?? {here}  ;
-  \ Provoca un error si un supuesto ente lo es y no está presente.
-
-: main-complement{here}  ( -- )  main-complement @ ?{here}  ;
-  \ Provoca un error si el complemento principal existe y no está
-  \ presente.
-
-: {accessible}  ( a -- )
-  dup what !  is-not-accessible?  cannot-see-what-error# and throw  ;
-  \ Provoca un error si un ente no está accessible.
-
-: ?{accessible}  ( a | 0 -- )  ?dup ?? {accessible}  ;
-  \ Provoca un error si un supuesto ente lo es y no está accessible.
-
-: main-complement{accessible}  ( -- )
-  main-complement @ ?{accessible}  ;
-  \ Provoca un error si el complemento principal existe y no está accessible.
-
-: {takeable}  ( a -- )
-  dup what !
-  dup take-error# throw
-  can-be-taken? 0= nonsense-error# and throw  ;
-  \ Provoca un error si un ente no puede ser tomado.
-  \ Nota: los errores apuntados por el campo `~take-error#` no reciben
-  \ parámetros salvo en `what`.
-
-: ?{takeable}  ( a | 0 -- )  ?dup ?? {takeable}  ;
-  \ Provoca un error si un supuesto ente lo es y no puede ser tomado.
-
-: main-complement{takeable}  ( -- )
-  main-complement @ ?{takeable}  ;
-  \ Provoca un error si el complemento principal existe y no puede ser
-  \ tomado.
-
-: {breakable}  ( a -- )  dup what ! ~break-error# @ throw  ;
-  \ Provoca un error si un ente no puede ser roto.
-  \ Nota: los errores apuntados por el campo `~break-error#` no
-  \ reciben parámetros salvo en `what`.
-
-: ?{breakable}  ( a | 0 -- )  ?dup ?? {breakable}  ;
-  \ Provoca un error si un supuesto ente lo es y no puede ser roto.
-
-: main-complement{breakable}  ( -- )
-  main-complement @ ?{breakable}  ;
-  \ Provoca un error si el complemento principal existe y no puede ser roto.
-
-: {lookable}  ( a -- )
-  dup what !
-  can-be-looked-at? 0= cannot-see-what-error# and throw  ;
-  \ Provoca un error si un ente no puede ser mirado.  Nota: los
-  \ errores apuntados por el campo `~take-error#` no deben necesitar
-  \ parámetros, o esperarlo en `what`.
-
-: ?{lookable}  ( a | 0 -- )  ?dup ?? {lookable}  ;
-  \ Provoca un error si un supuesto ente lo es y no puede ser mirado.
-
-: main-complement{lookable}  ( -- )
-  main-complement @ ?{lookable}  ;
-  \ Provoca un error si el complemento principal existe y no puede ser
-  \ mirado.
-
-: {living}  ( a -- )
-  is-living-being? 0= nonsense-error# and throw  ;
-  \ Provoca un error si un ente no es un ser vivo.
-
-: ?{living}  ( a | 0 -- )  ?dup ?? {living}  ;
-  \ Provoca un error si un supuesto ente lo es y no es un ser vivo.
-
-: main-complement{living}  ( -- )
-  main-complement @ ?{living}  ;
-  \ Provoca un error si el complemento principal existe y no es un ser vivo.
-
-: {needed}  ( a -- )
-  dup what !
-  is-hold? 0= you-need-what-error# and throw  ;
-  \ Provoca un error si un ente no está en inventario, pues es necesario.
-
-: ?{needed}  ( a | 0 -- )
-  ?dup ?? {needed}  ;
-  \ Provoca un error si un supuesto ente lo es y no está en inventario, pues es necesario.
-
-: main-complement{needed}  ( -- )
-  main-complement @ ?{needed}  ;
-  \ Provoca un error si el complemento principal existe y no está en inventario, pues lo necesitamos.
-
-: {direction}  ( a -- )
-  dup what !
-  is-direction? 0= nonsense-error# and throw  ;
-  \ Provoca un error si un ente no es una dirección.
-
-: ?{direction}  ( a | 0 -- )
-  ?dup ?? {direction}  ;
-  \ Provoca un error si un supuesto ente lo es y no es una dirección.
-
-: main-complement{direction}  ( -- )
-  main-complement @ ?{direction}  ;
-  \ Provoca un error si el complemento principal existe y no es una dirección.
+require flibustre/action_conditions.fs
 
 \ ==============================================================
 \ Herramientas para averiguar complemento omitido
@@ -1157,12 +881,12 @@ false [if]
 1 ' (impossible-move) action-error: impossible-move drop
 
 : do-go-if-possible  ( a -- )
-  [debug] [if]  s" Al entrar en DO-GO-IF-POSSIBLE" debug  [then]  \ XXX INFORMER
+  [debug] [if]  s" Al entrar en `do-go-if-possible`" debug  [then]  \ XXX INFORMER
   dup direction ?dup if  \ ¿El ente es una dirección?
     my-location + @ ?dup  \ ¿Tiene mi escenario salida en esa dirección?
     if  nip enter-location  else  impossible-move  then
   else  drop nonsense  then
-  [debug] [if]  s" Al salir de DO-GO-IF-POSSIBLE" debug  [then]  ;  \ XXX INFORMER
+  [debug] [if]  s" Al salir de `do-go-if-possible`" debug  [then]  ;  \ XXX INFORMER
   \ Comprueba si el movimiento hacio un supuesto ente de dirección _a_
   \ es posible y si es así lo efectúa.
 
@@ -1171,11 +895,11 @@ false [if]
   \ XXX TODO -- inconcluso
 
 :noname  ( -- )
-  [debug] [if]  s" Al entrar en DO-GO" debug  [then]  \ XXX INFORMER
+  [debug] [if]  s" Al entrar en `do-go`" debug  [then]  \ XXX INFORMER
   tool-complement{unnecessary}
   main-complement @ ?dup
   if  do-go-if-possible  else  simply-do-go  then
-  [debug] [if]  s" Al salir de DO-GO" debug  [then]  \ XXX INFORMER
+  [debug] [if]  s" Al salir de `do-go`" debug  [then]  \ XXX INFORMER
   ; is do-go
   \ Acción de ir.
 
@@ -1187,11 +911,11 @@ false [if]
   \ Acción de ir al norte.
 
 :noname  ( -- )
-  [debug-catch] [if]  s" Al entrar en DO-GO-SOUTH" debug  [then]  \ XXX INFORMER
+  [debug-catch] [if]  s" Al entrar en `do-go-south`" debug  [then]  \ XXX INFORMER
   tool-complement{unnecessary}
   south~ main-complement{this-only}
   south~ do-go-if-possible
-  [debug-catch] [if]  s" Al salir de DO-GO-SOUTH" debug  [then]  \ XXX INFORMER
+  [debug-catch] [if]  s" Al salir de `do-go-south`" debug  [then]  \ XXX INFORMER
   ; is do-go-south
   \ Acción de ir al sur.
 
@@ -2122,6 +1846,7 @@ create conversations-with-ambrosio
 : (talk-to-ambrosio)  ( -- )
   ambrosio~ conversations cells conversations-with-ambrosio + perform  ;
   \ Hablar con Ambrosio.
+  \ XXX FIXME comprobar el máximo de conversaciones
 
 [then]
 
@@ -2155,7 +1880,7 @@ create conversations-with-ambrosio
 \ Acciones
 
 : do-speak-if-possible  ( a -- )
-  [debug] [if]  s" En DO-SPEAK-IF-POSSIBLE" debug  [then]  \ XXX INFORMER
+  [debug] [if]  s" En `do-speak-if-possible`" debug  [then]  \ XXX INFORMER
   case
     leader~ of  talk-to-the-leader  endof
     ambrosio~ of  talk-to-ambrosio  endof
