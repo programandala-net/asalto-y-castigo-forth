@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606281902
+\ Last update: 201607051936
 
 \ Note: The comments of the code are in Spanish.
 
@@ -123,14 +123,14 @@ restore-wordlists
   #answer @ 0= two-options-only-error# and ?wrong  \ Ejecutar error si la respuesta fue irreconocible
   #answer @ dup 0<> and and  \ Calcular el resultado final
   restore-wordlists  ;
-  \ Evalúa una respuesta a una pregunta del tipo «sí o no».
-  \ ca len = Respuesta a evaluar
-  \ n = Resultado (un número negativo para «no» y positivo para «sí»; cero si no se ha respondido ni «sí» ni «no», o si se produjo un error)
+  \ Evalúa una respuesta _ca len_ a una pregunta del tipo «sí o no»,
+  \ devolviendo el resultado _n_ (un número negativo para «no» y
+  \ positivo para «sí»; cero si no se ha respondido ni «sí» ni «no», o
+  \ si se produjo un error).
 
 : .question  ( xt -- )
   question-color execute paragraph  ;
-  \ Imprime la pregunta.
-  \ xt = Dirección de ejecución que devuelve una cadena con la pregunta
+  \ Imprime la pregunta cuyo texto devuelve la ejecución de _xt_.
 
 : accept-answer  ( -- ca len )  answer-wordlist accept-input  ;
   \ Espera una respuesta sí/no del jugador y la devuelve sin espacios
@@ -139,11 +139,9 @@ restore-wordlists
 : answer  ( xt -- n )
   begin  dup .question accept-answer  yes|no ?dup
   until  nip  ;
-  \ Devuelve la respuesta a una pregunta del tipo «sí o no».
-  \ xt = Dirección de ejecución que devuelve una cadena con la pregunta
-  \ n = Respuesta: un número negativo para «no» y positivo para «sí»
-  \ XXX FIXME -- usar una variante de `listen` que permita indicar
-  \ la lista de palabras a usar.
+  \ Devuelve la respuesta a una pregunta del tipo «sí o no» (cuyo
+  \ texto devuelve la ejecución de _xt_), devolviendo la respuesta
+  \ _n_: un número negativo para «no» y positivo para «sí»
 
 : yes?  ( xt -- f )  answer 0>  ;
   \ ¿Es afirmativa la respuesta a una pregunta binaria cuyo texto
