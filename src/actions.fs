@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607051141
+\ Last update: 201607051159
 
 \ Note: The comments of the code are in Spanish.
 
@@ -68,8 +68,7 @@ defer well-done$  ( -- ca len )
 
 : main-complement{this-only}  ( a -- )
   main-complement @ swap over different?
-  not-allowed-main-complement-error# and throw
-  ;
+  not-allowed-main-complement-error# and throw  ;
   \ Provoca un error si hay complemento principal y no es el indicado.
   \ a = Ente que será aceptado como complemento
 
@@ -201,8 +200,8 @@ defer well-done$  ( -- ca len )
   \ puesto.
 
 : {cloth}  ( a -- )
-  \ Provoca un error si un ente no se puede llevar puesto.
   is-cloth? 0= nonsense-error# and throw  ;
+  \ Provoca un error si un ente no se puede llevar puesto.
 
 : ?{cloth}  ( a | 0 -- )  ?dup ?? {cloth}  ;
   \ Provoca un error si un supuesto ente lo es y no se puede llevar
@@ -213,13 +212,13 @@ defer well-done$  ( -- ca len )
   \ llevar puesto.
 
 : {here}  ( a -- )
-  \ Provoca un error si un ente no está presente.
   dup what !
   is-here? 0= is-not-here-what-error# and throw  ;
+  \ Provoca un error si un ente no está presente.
 
 : ?{here}  ( a | 0 -- )
-  \ Provoca un error si un supuesto ente lo es y no está presente.
   ?dup ?? {here}  ;
+  \ Provoca un error si un supuesto ente lo es y no está presente.
 
 : main-complement{here}  ( -- )  main-complement @ ?{here}  ;
   \ Provoca un error si el complemento principal existe y no está
@@ -412,12 +411,12 @@ defer do-take-off  ( -- )
 
 :noname  ( -- )
   tool-complement{unnecessary}
-  main-complement{required}
-  main-complement{direction}
-  main-complement @ (do-look)
+  main-complement @
+  if    main-complement{direction}
+        main-complement @ (do-look)
+  else  do-exits  then
   ; is do-look-to-direction
   \  Acción de otear.
-  \ XXX TODO -- traducir «otear» en el nombre de la palabra
 
 :noname  ( -- )
   do-look
