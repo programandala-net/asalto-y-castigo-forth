@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607041717
+\ Last update: 201607051116
 
 \ Note: The comments of the code are in Spanish.
 
@@ -90,7 +90,7 @@ field: ~location
   \ Identificador del ente en que está localizado (sea escenario,
   \ contenedor, personaje o «limbo»).
 field: ~previous-location
-  \ Ídem para el ente que fue la localización antes del actual.
+  \ Ídem para el ente que fue la localización antes de la actual.
 field: ~owner
   \ Identificador del ente al que pertenece «legalmente» o «de hecho»,
   \ independientemente de su localización.
@@ -132,9 +132,7 @@ field: ~in-exit
 \ ----------------------------------------------
 \ Indicadores
 
-:noname  ( -- ca len )  s" ~bitfields"  ; is bitfields-name
-
-begin-bitfields
+begin-bitfields ~bitfields
 
   bitfield: ~has-definite-article
     \ ¿El artículo de su nombre debe ser siempre el artículo definido?
@@ -179,7 +177,7 @@ begin-bitfields
   bitfield: ~is-worn
     \ ¿Siendo una prenda, está puesta?
 
-end-bitfields
+end-bitfields constant /bitfields
 
 [false] [if]  \ XXX OLD -- campos que aún no se usan.:
 
@@ -204,8 +202,5 @@ bitfield: ~is-container
 
 to /entity
   \ Tamaño de cada ficha.
-
-' drop is init-entity  ( a -- )
-  \ XXX TMP
 
 \ vim:filetype=gforth:fileencoding=utf-8

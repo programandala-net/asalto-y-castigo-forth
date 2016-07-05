@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607041910
+\ Last update: 201607051116
 
 \ Note: The comments of the code are in Spanish.
 
@@ -2318,7 +2318,7 @@ immediate
   #>entity r@ ~previous-location !
   #>entity r@ ~location !
   r@ ~owner !
-  r@ ~bitfields !
+  r@ ~bitfields /bitfields 1- 0 do  tuck i + c!  -1 +loop drop
   r@ ~times-open !
   r@ ~conversations !
   \ 2dup cr type .s  \ XXX INFORMER
@@ -2326,6 +2326,8 @@ immediate
   \ Restaura los datos de un ente cuyo número ordinal es _u_.  _x0 ...
   \ xn_ son los datos del ente, en orden inverso a como los crea la
   \ palabra `save-entity`.
+  \ XXX TODO -- reescribir, recuperando en bruto todas las celdas del
+  \ registro, sin distinguir campos
 
 : load-plot  ( x0 ... xn -- )
   recent-talks-to-the-leader !
@@ -2385,7 +2387,7 @@ restore-wordlists
   r@ name string>file
   r@ conversations n>file
   r@ times-open n>file
-  r@ ~bitfields @ n>file
+  r@ ~bitfields /bitfields bounds do  i c@ n>file  loop
   r@ owner n>file
   r@ location entity>file
   r@ previous-location entity>file
@@ -2404,6 +2406,8 @@ restore-wordlists
   s" load-entity" >file/  ;  \ Palabra que hará la restauración del ente
   \ Escribe los datos de un ente (cuyo número ordinal es _u_) en el
   \ fichero de la partida.
+  \ XXX TODO -- reescribir, grabando en bruto todas las celdas del
+  \ registro, sin distinguir campos
 
 : rule>file  ( -- )
   s" \ ----------------------------------------------------" >file/  ;
