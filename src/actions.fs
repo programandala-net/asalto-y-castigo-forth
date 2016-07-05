@@ -5,34 +5,20 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607051238
+\ Last update: 201607051313
 
 \ Note: The comments of the code are in Spanish.
 
 \ ==============================================================
 \ Mensaje de acción completada
 
-\ XXX TODO -- mover a Flibustre
+require flibustre/well-done.fs
 
-variable silent-well-done
-  \ XXX TODO -- no usado
-
-: well-done-this  ( ca len -- )
-  silent-well-done @ 0= if  narrate  else  2drop  then
-  silent-well-done off  ;
-  \ Informa, con un mensaje específico, de que una acción se ha realizado,
-  \ si es preciso.
-
-defer well-done$  ( -- ca len )
-  \ Mensaje genérico, de que una acción se ha realizado.
+' narrate is type-well-done
 
 :noname  ( -- ca len )
   s{ s" Hecho." s" Bien." }s  ; is well-done$
   \ Mensaje genérico, de que una acción se ha realizado.
-
-: well-done  ( -- )  well-done$ well-done-this  ;
-  \ Informa, con un mensaje genérico, de que una acción se ha realizado,
-  \ si es preciso.
 
 : ?well-done  ( ca len -- )
   2 random if  well-done-this  else  2drop well-done  then  ;
@@ -537,7 +523,7 @@ false [if]
   \ Ente del que queremos calcular las salidas libres (para
   \ simplificar el manejo de la pila en el bucle).
 
-: free-exits  ( a0 -- a1 ... au u )
+: free-exits  ( a -- a1 ... au u )
   [debug-do-exits] [if]  cr ." free-exits" cr .stack  [then]  \ XXX INFORMER
   to this-location  depth >r
   last-exit> 1+ first-exit> do
@@ -545,10 +531,8 @@ false [if]
   cell  +loop
   depth r> -
   [debug-do-exits] [if]  cr .stack  [then]  ;  \ XXX INFORMER
-  \ Devuelve el número de salidas posibles de un ente.
-  \ a0 = Ente
-  \ a1 ... au = Entes de salida del ente a0
-  \ u = número de entes de salida del ente a0
+  \ Devuelve el número de salidas _u_ posibles de un ente _a_.
+  \ _a1 ... au_ son los entes de salida del ente _a_.
 
 : (list-exits)  ( -- )
   «»-clear
