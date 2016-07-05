@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607041652
+\ Last update: 201607051223
 
 \ Note: The comments of the code are in Spanish.
 
@@ -151,9 +151,8 @@
 
 : do-you-hold-something-forbidden?  ( -- f )
   sword~ is-accessible?  stone~ is-accessible?  or  ;
-  \ ¿Llevas algo prohibido?
-  \ Cálculo usado en varios lugares del programa,
-  \ en relación a los refugiados.
+  \ ¿Llevas algo prohibido?  Este cálculo se usa en varios lugares del
+  \ programa, en relación a los refugiados.
 
 : no-torch?  ( -- f )
   torch~ is-not-accessible?  torch~ is-not-lit?  or  ;
@@ -255,13 +254,15 @@ create 'articles
   \ según el género gramatical y el número del ente.
 
 : definite-article>  ( a -- u )
-  dup has-definite-article?  \ Si el ente necesita siempre artículo definido
-  swap is-known? or  \ O bien si el ente es ya conocido por el protagonista
-  abs  \ Un grupo (pues los definidos son el segundo)
-  /article-type-set *  ;
-  \ Devuelve el desplazamiento en la tabla de artículos
-  \ para apuntar a los artículos definidos
-  \ si el ente indicado necesita uno.
+  dup has-definite-article?  swap is-known? or
+  abs /article-type-set *  ;
+  \ Devuelve el desplazamiento en la tabla de artículos para apuntar a
+  \ los artículos definidos si el ente indicado necesita uno.  Las
+  \ condiciones son: 1) El ente necesita siempre artículo definido; 2)
+  \ El ente es ya conocido por el protagonista.  En cualquiera de
+  \ ambos casos _u_ es la longitud de un grupo de artículos (pues los
+  \ definidos son el segundo). Si no se cumple alguna de las dos
+  \ condiciones, _u_ es cero.
 
 : possesive-article>  ( a -- u )
   belongs-to-protagonist? 2 and  \ Dos grupos (pues los posesivos son el tercero)
@@ -275,95 +276,95 @@ create 'articles
   \ Devuelve el desplazamiento en la tabla de artículos
   \ para apuntar a los «artículos negativos».
 
-: undefined-articles>  ( -- u )
-  0  ; \ Desplazamiento cero, pues los indefinidos son el primer grupo.
-  \ Devuelve el desplazamiento en la tabla de artículos
-  \ para apuntar a los artículos indefinidos.
+: undefined-articles>  ( -- u )  0  ;
+  \ Devuelve el desplazamiento en la tabla de artículos para apuntar a
+  \ los artículos indefinidos.  El desplazamiento es cero porque los
+  \ artículos indefinidos son el primer grupo.
 
-: definite-articles>  ( -- u )
-  /article-type-set  ;  \ Un grupo, pues los definidos son el segundo
-  \ Devuelve el desplazamiento en la tabla de artículos
-  \ para apuntar a los artículos definidos.
+: definite-articles>  ( -- u )  /article-type-set  ;
+  \ Devuelve el desplazamiento en la tabla de artículos para apuntar a
+  \ los artículos definidos.  Devuelve la longitud de un grupo, pues
+  \ los definidos son el segundo grupo.
 
-: distant-articles>  ( -- u )
-  4 /article-type-set *  ;  \ Cuatro grupos, pues los «distantes» son el quinto
-  \ Devuelve el desplazamiento en la tabla de artículos
-  \ para apuntar a los «artículos distantes».
+: distant-articles>  ( -- u )  4 /article-type-set *  ;
+  \ Devuelve el desplazamiento en la tabla de artículos para apuntar a
+  \ los «artículos distantes».  Devuelve la longitud de cuatro grupos,
+  \ pues los «distantes» son el quinto grupo.
 
-: not-distant-articles>  ( -- u )
-  5 /article-type-set *  ;  \ Cinco grupos, pues los «cercanos» son el sexto
-  \ Devuelve el desplazamiento en la tabla de artículos
-  \ para apuntar a los «artículos cercanos».
+: not-distant-articles>  ( -- u )  5 /article-type-set *  ;
+  \ Devuelve el desplazamiento en la tabla de artículos para apuntar a
+  \ los «artículos cercanos».  Devuelve la longitud de cinco grupos,
+  \ pues los «cercanos» son el sexto grupo.
 
-: personal-pronouns>  ( -- u )
-  6 /article-type-set *  ;
-  \ Devuelve el desplazamiento en la tabla de artículos
-  \ para apuntar a los pronombres personales.
+: personal-pronouns>  ( -- u )  6 /article-type-set *  ;
+  \ Devuelve el desplazamiento en la tabla de artículos para apuntar a
+  \ los pronombres personales.  Devuelve la longitud de seis grupos,
+  \ pues los artículos personales son el séptimo grupo.
 
 : article-type  ( a -- u )
   dup definite-article>  swap possesive-article>  max  ;
-  \ Devuelve un desplazamiento en la tabla de artículos
-  \ según el ente requiera un artículo definido, indefinido o posesivo.
+  \ Devuelve un desplazamiento en la tabla de artículos según el ente
+  \ requiera un artículo definido, indefinido o posesivo.
 
-: >article  ( u -- ca1 len1 )  'articles + @ count  ;
-  \ Devuelve un artículo de la tabla de artículos
-  \ a partir de su índice.
+: >article  ( u -- ca len )  'articles + @ count  ;
+  \ Devuelve un artículo de la tabla de artículos a partir de su
+  \ índice.
 
-: (article)  ( a -- ca1 len1 )
-  dup article-gender>  \ Desplazamiento según el género
-  over article-number> +  \ Sumado al desplazamiento según el número
-  swap article-type +  \ Sumado al desplazamiento según el tipo
-  >article  ;
-  \ Devuelve el artículo apropiado para un ente.
+: (article)  ( a -- ca len )
+  dup article-gender>
+  over article-number> +
+  swap article-type +  >article  ;
+  \ Devuelve el artículo apropiado para un ente _a_,
+  \ según el género, el número y el tipo.
 
-: article  ( a -- ca1 len1 | a 0 )
+: article  ( a -- ca len | a 0 )
   dup has-no-article? if  0  else  (article)  then  ;
-  \ Devuelve el artículo apropiado para un ente, si lo necesita;
+  \ Devuelve el artículo apropiado para un ente _a_, si lo necesita;
   \ en caso contrario devuelve una cadena vacía.
 
-: undefined-article  ( a -- ca1 len1 )
+: undefined-article  ( a -- ca len )
   article-gender+number> undefined-articles> +
   >article  ;
-  \ Devuelve el artículo indefinido
-  \ correspondiente al género y número de un ente.
+  \ Devuelve el artículo indefinido correspondiente al género y número
+  \ de un ente _a_.
 
-: definite-article  ( a -- ca1 len1 )
+: definite-article  ( a -- ca len )
   article-gender+number> definite-articles> +
   >article  ;
   \ Devuelve el artículo definido
   \ correspondiente al género y número de un ente.
 
-: pronoun  ( a -- ca1 len1 )
+: pronoun  ( a -- ca len )
   definite-article  s" lo" s" el" replaced  ;
   \ Devuelve el pronombre
   \ correspondiente al género y número de un ente.
 
-: ^pronoun  ( a -- ca1 len1 )  pronoun ^uppercase  ;
+: ^pronoun  ( a -- ca len )  pronoun ^uppercase  ;
   \ Devuelve el pronombre
   \ correspondiente al género y número de un ente,
   \ con la primera letra mayúscula.
 
-: negative-article  ( a -- ca1 len1 )
+: negative-article  ( a -- ca len )
   article-gender+number> negative-articles> +  >article  ;
   \ Devuelve el «artículo negativo»
   \ correspondiente al género y número de un ente.
 
-: distant-article  ( a -- ca1 len1 )
+: distant-article  ( a -- ca len )
   article-gender+number> distant-articles> +  >article  ;
   \ Devuelve el «artículo distante»
   \ correspondiente al género y número de un ente.
 
-: not-distant-article  ( a -- ca1 len1 )
+: not-distant-article  ( a -- ca len )
   article-gender+number> not-distant-articles> +  >article  ;
   \ Devuelve el «artículo cercano»
   \ correspondiente al género y número de un ente.
 
-: personal-pronoun  ( a -- ca1 len1 )
+: personal-pronoun  ( a -- ca len )
   article-gender+number> personal-pronouns> +  >article  ;
   \ Devuelve el pronombre personal
   \ correspondiente al género y número de un ente.
 
-: plural-ending  ( a -- ca1 len1 )
+: plural-ending  ( a -- ca len )
   [false] [if]
     \ XXX OLD -- Método 1, «estilo BASIC»:
     has-plural-name? if  s" s"  else  null$  then
@@ -378,7 +379,7 @@ create 'articles
   \ Añade a una cadena la terminación adecuada del plural
   \ para el nombre de un ente.
 
-: gender-ending  ( a -- ca1 len1 )
+: gender-ending  ( a -- ca len )
   [false] [if]
     \ Método 1, «estilo BASIC»
     has-feminine-name? if  s" a"  else  s" o"  then
@@ -397,7 +398,7 @@ create 'articles
 : gender-ending+  ( ca1 len1 a -- ca2 len2 )  gender-ending s+  ;
   \ Añade a una cadena la terminación adecuada para el género gramatical de un ente.
 
-: noun-ending  ( a -- ca1 len1 )
+: noun-ending  ( a -- ca len )
   dup gender-ending rot plural-ending s+  ;
   \ Devuelve la terminación adecuada para el nombre de un ente.
 
@@ -407,20 +408,20 @@ create 'articles
   \ Añade a una cadena la terminación adecuada para el nombre de un ente.
 
 ' noun-ending+ alias adjective-ending+
-: direct-pronoun  ( a -- ca1 len1 )
+: direct-pronoun  ( a -- ca len )
   s" l" rot noun-ending s+  ;
   \ Devuelve el pronombre de objeto directo para un ente («la/s» o «lo/s»).
 
-: ^direct-pronoun  ( a -- ca1 len1 )
+: ^direct-pronoun  ( a -- ca len )
   direct-pronoun ^uppercase  ;
   \ Devuelve el pronombre de objeto directo para un ente («La/s»
   \ o «Lo/s»), con la primera letra mayúscula.
 
-: indirect-pronoun  ( a -- ca1 len1 )
+: indirect-pronoun  ( a -- ca len )
   s" le" rot plural-ending s+  ;
   \ Devuelve el pronombre de objeto indirecto para un ente («le/s»).
 
-: verb-number-ending  ( a -- ca1 len1 )
+: verb-number-ending  ( a -- ca len )
   s" n" rot has-plural-name? and  ;
   \ Devuelve la terminación verbal adecuada
   \ (singular o plural: una cadena vacía o «n» respectivamente)
@@ -501,7 +502,7 @@ create 'articles
   \ imprime una cadena vacía si _a_ es cero.
   \ XXX TMP -- solo se usa para depuración
 
-: ^name  ( a -- ca1 len1 )  name ^uppercase  ;
+: ^name  ( a -- ca len )  name ^uppercase  ;
   \ Devuelve el nombre de un ente, con la primera letra mayúscula.
 
 : name&  ( a ca1 len1 -- ca2 len2 )  rot name s&  ;
