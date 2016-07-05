@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606301026
+\ Last update: 201607051142
 
 \ Note: Some comments of the code are in Spanish.
 
@@ -51,6 +51,7 @@ require galope/colon-alias.fs                 \ `:alias`
 require galope/colors.fs
 require galope/column.fs                      \ `column`
 require galope/drops.fs                       \ `drops`
+require galope/ends-question.fs               \ `ends?`
 require galope/enum.fs                        \ `enum`
 require galope/home.fs                        \ `home`
 require galope/immediate-aliases-colon.fs     \ `immediate-aliases:`
@@ -72,7 +73,7 @@ require galope/seconds.fs                     \ `seconds`
 require galope/sourcepath.fs
 require galope/svariable.fs                   \ string variables
 require galope/system_colors.fs
-\ require galope/tilde-tilde.fs                 \ improved `~~`
+require galope/tilde-tilde.fs                 \ improved `~~`
 require galope/to-yyyymmddhhmmss.fs           \ `>yyyymmddhhss`
 require galope/two-choose.fs                  \ `2schoose`
 ' 2choose alias schoose

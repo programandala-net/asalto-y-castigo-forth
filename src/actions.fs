@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607051116
+\ Last update: 201607051141
 
 \ Note: The comments of the code are in Spanish.
 
@@ -2451,11 +2451,16 @@ restore-wordlists
   file-header save-entities save-config save-plot  ;
   \ Escribe el contenido del fichero de la partida.
 
-: fs+  ( ca1 len2 -- ca2 len2 )  s" .fs" s+  ;
+: fs+  ( ca1 len1 -- ca2 len2 )  s" .fs" s+  ;
   \ Añade la extensión «.fs» a un nombre de fichero _ca1 len1_.
 
+: ?fs+  ( ca1 len1 -- ca1 len1 | ca2 len2 )
+  s" .fs" ends? ?exit  fs+  ;
+  \ Añade la extensión «.fs» a un nombre de fichero _ca1 len1_,
+  \ si no la tiene ya.
+
 : (save-the-game)  ( ca len -- )
-  fs+ create-game-file write-game-file close-game-file  ;
+  ?fs+ create-game-file write-game-file close-game-file  ;
   \ Salva la partida.
 
 : save-the-game  ( ca len -- )
@@ -2477,7 +2482,7 @@ restore-wordlists
   \ cr type  \ XXX NOTE: sin error
   2>r save-input 2r>
   [debug-filing] [??] ~~
-  fs+
+  ?fs+
   [debug-filing] [??] ~~
 [false] [if]  \ XXX INFORMER
   read-game-file
