@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607061424
+\ Last update: 201607061801
 
 \ Note: The comments of the code are in Spanish.
 
@@ -1840,7 +1840,7 @@ create conversations-with-ambrosio
 :noname  ( -- )
   [debug] [??] debug  \ XXX INFORMER
   main-complement{forbidden}
-  actual-tool-complement{unnecessary}
+  explicit-tool-complement{unnecessary}
   company-complement ?dup 0=  \ Si no hay complemento...
   ?? whom dup you-speak-to  \ ...buscar y mostrar el más probable.
   (do-speak)

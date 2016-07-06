@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607061418
+\ Last update: 201607061802
 
 \ Note: The comments of the code are in Spanish.
 
@@ -28,15 +28,11 @@
 defer tool-complement  ( -- a )
   \ Ente _a_ complemento instrumental (indicada con «con» o «usando»).
 
-defer actual-tool-complement  ( -- a )
+defer explicit-tool-complement  ( -- a )
   \ Ente _a_ complemento instrumental estricto (indicado con «usando»).
 
 defer company-complement  ( -- a )
   \ Ente _a_ complemento de compañía (indicado con «con»).
-
-defer actual-company-complement  ( -- a )
-  \ Ente _a_ complemento estricto de compañía (indicada con «con» en
-  \ presencia de «usando»).
 
 false [if]
   \ XXX OLD
@@ -55,6 +51,7 @@ variable current-preposition
 
 variable used-prepositions
   \ Máscara de bitios de las (seudo)preposiciones usadas en la frase.
+  \ XXX REMARK -- solo se usa para depuración
 
 \ ==============================================================
 \ Pronombres
@@ -388,41 +385,40 @@ create 'language-error-verbosity-xt
 \ ha habido una palabra previa que realice la misma función y en su caso
 \ deteniendo el proceso con un error.
 
-variable 'prepositions#
-  \ Número de (seudo)preposiciones.
-
-: prepositions#  ( -- n )  'prepositions# @  ;
+variable prepositions  prepositions off
   \ Número de (seudo)preposiciones.
 
 : >bit  ( u1 -- u2 )  1 swap lshift  ;
-  \ u2 = número cuyo único bitio activo es aquel cuyo orden
-  \ indica u1 (ej. 1->1, 2->2, 3->4, 4->8...)
+  \ Devuelve un número _u2_ cuyo único bitio activo es aquel cuyo
+  \ orden indica _u1_ (ej. 0->0, 1->1, 2->2, 3->4, 4->8...).
 
 : preposition:  ( "name1" "name2" -- )
-  prepositions# >bit constant
-  'prepositions# ++ prepositions# constant  ;
+  prepositions @ >bit constant
+  prepositions ++ prepositions @ constant  ;
   \ Crea los identificadores de una (seudo)preposición (_name1_:
   \ nombre del identificador para usar como máscara de bitios;
   \ _name2_: nombre del identificador para usar como índice de tabla)
-  \ y actualiza el contador:
+  \ y actualiza el contador.
+  \ XXX REMARK -- _name1_ solo se usa para depuración
 
 \ Constantes para los identificadores de (seudo)preposiciones:
 
 preposition: «con»-preposition-bit «con»-preposition#
 preposition: «usando»-preposition-bit «usando»-preposition#
+
 false [if]  \ XXX TODO -- inconcluso
-preposition: «a»-preposition-bit «a»-preposition#
-preposition: «contra»-preposition-bit «contra»-preposition#
-preposition: «de»-preposition-bit «de»-preposition#
-preposition: «en»-preposition-bit «en»-preposition#
-preposition: «hacia»-preposition-bit «hacia»-preposition#
-preposition: «para»-preposition-bit «para»-preposition#
-preposition: «por»-preposition-bit «por»-preposition#
-preposition: «sin»-preposition-bit «sin»-preposition#
+  preposition: «a»-preposition-bit «a»-preposition#
+  preposition: «contra»-preposition-bit «contra»-preposition#
+  preposition: «de»-preposition-bit «de»-preposition#
+  preposition: «en»-preposition-bit «en»-preposition#
+  preposition: «hacia»-preposition-bit «hacia»-preposition#
+  preposition: «para»-preposition-bit «para»-preposition#
+  preposition: «por»-preposition-bit «por»-preposition#
+  preposition: «sin»-preposition-bit «sin»-preposition#
   \ XXX REMARK: «sin» servirá para dejar cosas antes de la acción.
 [then]
 
-prepositions# cells constant /prepositional-complements
+prepositions @ cells constant /prepositional-complements
   \ Octetos necesarios para guardar las (seudo)preposiciones en la
   \ tabla.
 
@@ -479,42 +475,35 @@ create prepositional-complements /prepositional-complements allot
 is company-complement
   \ Ente _a_ complemento de compañía (indicado con «con»).
 
-:noname  ( -- a | 0 )
-  «usando»-preposition# prepositional-complement @ dup 0<>
-  if  drop company-complement  then  ;
-is actual-company-complement
-  \ Ente _a_ complemento de compañía estricto (indicado con «con» en
-  \ presencia de «usando»).
-
-: (actual-tool-complement)  ( -- a )
+: (explicit-tool-complement)  ( -- a )
   «usando»-preposition# prepositional-complement  ;
   \ Devuelve la dirección _a_ del elemento de la tabla de complementos
   \ (seudo)preposicionales correspondiente al complemento instrumental
   \ estricto (complemento que puede ser cero si no existe).
 
-:noname  ( -- a | 0 )  (actual-tool-complement) @  ;
-is actual-tool-complement
+:noname  ( -- a | 0 )  (explicit-tool-complement) @  ;
+is explicit-tool-complement
   \ Ente _a_ complemento instrumental estricto (indicado con
   \ «usando»).
 
 :noname  ( -- a | 0 )
-  actual-tool-complement ?dup ?exit  company-complement  ;
+  explicit-tool-complement ?dup ?exit  company-complement  ;
 is tool-complement
   \ Ente _a_ complemento instrumental (indicado con «con» o «usando»).
 
-: prepositions-off  ( -- )
+: init-prepositions  ( -- )
   erase-prepositional-complements
   current-preposition off
   used-prepositions off  ;
   \ Inicializa las preposiciones.
 
-: complements-off  ( -- )
+: init-complements  ( -- )
   0 to main-complement
   0 to secondary-complement
-  prepositions-off  ;
+  init-prepositions  ;
   \ Inicializa los complementos.
 
-: init-parsing  ( -- )  0 to action  complements-off  ;
+: init-parser  ( -- )  0 to action  init-complements  ;
   \ Preparativos previos a cada análisis.
 
 : (execute-action)  ( xt -- )
@@ -550,11 +539,13 @@ is tool-complement
   while   find-name ?dup if  name>int execute  then
   repeat  drop  ;
   \ Analiza la fuente actual, ejecutando las palabras reconocidas que contenga.
+  \ XXX TODO -- mover a Flibustre
 
 : evaluate-command  ( ca len -- )
   \ ." comando:" 2dup cr type  \ XXX INFORMER
   ['] (evaluate-command) execute-parsing  ;
   \ Analiza el comando, ejecutando las palabras reconocidas que contenga.
+  \ XXX TODO -- mover a Flibustre
 
 : a-preposition-is-open?  ( -- f )
   current-preposition @ 0<>  ;
@@ -597,9 +588,8 @@ is tool-complement
     s" Main           : " main-complement .complement?
     s" Secondary      : " secondary-complement .complement?
     s" Tool           : " tool-complement .complement?
-    s" Actual tool    : " actual-tool-complement .complement?
+    s" Explicit tool  : " explicit-tool-complement .complement?
     s" Company        : " company-complement .complement?
-    \ s" Actual company : " actual-company-complement .complement? \ XXX TMP -- experimental
    [then]  ;
   \ Evalúa un comando _ca len_ con el vocabulario del juego y devuelve
   \ un indicador _f_: ¿El comando se analizó sin error?
@@ -629,7 +619,7 @@ is tool-complement
   \ XXX TODO -- falta guardar los complementos
 
 : (obey)  ( ca len -- )
-  init-parsing valid-parsing? ?? execute-action  ;
+  init-parser valid-parsing? ?? execute-action  ;
   \ Evalúa un comando con el vocabulario del juego.
 
 : obey  ( ca len -- )
@@ -663,14 +653,12 @@ is tool-complement
   \ u = Identificador de la preposición
 
 : set-prepositional-complement  ( a -- )
-  [debug-parsing] [??] ~~
   current-prepositional-complement @ second?
   repeated-preposition-error# and throw
   dup new-last-complement
   current-prepositional-complement !
   current-preposition @ >bit used-prepositions +!
-  current-preposition off
-  [debug-parsing] [??] ~~  ;
+  current-preposition off  ;
   \ Almacena un ente _a_ como complemento (seudo)preposicional.
   \ Provoca error si la preposición ya había sido usada,
 
