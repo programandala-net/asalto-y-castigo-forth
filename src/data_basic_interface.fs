@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607052155
+\ Last update: 201607062031
 
 \ Note: The comments of the code are in Spanish.
 
@@ -130,8 +130,12 @@ last-exit> cell+ first-exit> - constant /exits
   dup is-global-outdoor? swap is-global-indoor? or  ;
   \ ¿Es el ente un ente global?
 
+: is-beast?  ( a -- f )
+  dup is-animal?  swap is-human? or  ;
+  \ ¿El ente es un animal (incluyendo humano)?
+
 : is-living-being?  ( a -- f )
-  dup is-vegetal?  over is-animal? or  swap is-human? or  ;
+  dup is-vegetal?  swap is-beast? or  ;
   \ ¿El ente es un ser vivo (aunque esté muerto)?
 
 : can-be-taken?  ( a -- f )
