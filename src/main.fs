@@ -7,24 +7,16 @@
 \
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 \
-\ Last update: 201607051735
-\
-\ 'Asalto y castigo' is free software; you can redistribute
-\ it and/or modify it under the terms of the GNU General
-\ Public License as published by the Free Software
-\ Foundation; either version 2 of the License, or (at your
-\ option) any later version. See:
-\
-\ http://gnu.org/licenses/
-\ http://gnu.org/licenses/gpl-2.0.html
+\ Last update: 201607062101
 
 \ ==============================================================
-\ Reconocimiento
+\ Credits
 
-\ «Asalto y castigo» está basado en el programa homónimo escrito por
-\ Baltasar el Arquero en Sinclair BASIC para ZX Spectrum.
+\ «Asalto y castigo» is an improved remake of the original version,
+\ written by Baltasar 'el Arquero' in BASIC for ZX Spectrum and other
+\ 8-bit computers.
 
-\ Idea, argumento, textos y programa originales:
+\ Original idea, plot, and texts:
 \
 \ Copyright (C) 2009 Baltasar el Arquero
 \ http://caad.es/baltasarq/
@@ -75,31 +67,29 @@ s" intro.fs" including
 \ Principal
 
 : init-once  ( -- )  restore-wordlists  init-screen  ;
-  \ Preparativos que hay que hacer solo una vez, antes de la primera partida.
+  \ Initialization required only once, before the first game.
 
 : init-parser/game  ( -- )  erase-last-command-elements  ;
-  \ Preparativos que hay que hacer en el intérprete
-  \ de comandos antes de cada partida.
-  \ XXX TODO -- trasladar a su zona
+  \ Initialize the parser before every game.
+  \ XXX TODO -- move to other file
 
 : init-game-for-debugging  ( -- )
   \ location-01~ enter-location
-  \ location-08~ enter-location  \ Emboscada
-  location-43~ enter-location  \ Serpiente
-  \ location-11~ enter-location  \ Lago
-  \ location-17~ enter-location  \ Antes de la cueva oscura
-  \ location-19~ enter-location  \ Encuentro con Ambrosio
-  \ location-28~ enter-location  \ Refugiados
-  \ location-47~ enter-location  \ casa de Ambrosio
+  \ location-08~ enter-location  \ ambush
+  location-43~ enter-location    \ snake
+  \ location-11~ enter-location  \ lake
+  \ location-17~ enter-location  \ before the dark cave
+  \ location-19~ enter-location  \ Ambrosio
+  \ location-28~ enter-location  \ refugees
+  \ location-47~ enter-location  \ Ambrosio's home
   \ snake~ be-here
   \ ambrosio~ be-here
   \ key~ be-hold
   flint~ be-hold
   torch~ be-hold
   ;
-  \ Condiciones especiales de inicio, para forzar situaciones
-  \ concretas de la trama en el arranque y así probar el código.
-  \ XXX TMP -- para depuración
+  \ Special situations.
+  \ XXX TMP -- for debugging.
 
 : init-game  ( -- )
   randomize
@@ -108,35 +98,32 @@ s" intro.fs" including
   [false] [if]    about cr intro  location-01~ enter-location
           [else]  init-game-for-debugging
           [then]  ;
-  \ Preparativos que hay que hacer antes de cada partida.
+  \ Initialization needed before every game.
 
 : game  ( -- )  begin  plot accept-command obey  game-over?  until  ;
-  \ Bucle de la partida.
+  \ Game loop.
 
 : (adventure)  ( -- )  begin  init-game game the-end  enough?  until  ;
 ' (adventure) is adventure
-  \ Bucle del juego.
 
 \ ==============================================================
-\ Arranque
+\ Boot
 
 forth-wordlist set-current
 
 : run  ( -- )  init-once adventure farewell  ;
-  \ Arranque del juego.
 
 run  \ XXX TMP
 cr .( Escribe RUN para jugar) cr  \ XXX TMP
 
 \ ==============================================================
-\ Depuración
+\ Debug
 
 : i0  ( -- )
-  init-once init-game
-  s" Datos preparados." paragraph  ;
-  \ XXX TMP -- hace toda la inicialización; para depuración
+  init-once init-game  s" Data are ready." paragraph  ;
+  \ XXX TMP -- for debugging
 
-\ i0 cr  \ XXX TMP -- para depuración
+\ i0 cr  \ XXX TMP -- for debugging
 
 \ s" debug_tests.fs" including
 
