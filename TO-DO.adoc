@@ -5,9 +5,25 @@
 
 2016-07-06:
 
-Reorganizar los complementos preposicionales estrictos de herramienta
-y compañía. Sería más lógico que la interfaz solo tuviera un
-complemento, que dependiera de la presencia de otras preposiciones.
+Error tras matar la serpiente:
+
+----
+  Pasaje de la serpiente [#43]
+  El paso sigue de norte a sur.
+  > ex serpiente
+  No ves ninguna espada.
+  > coge serpiente
+  Por aquí no hay ninguna serpiente.
+  > i
+  Tienes tu capa (puesta), tu coraza (puesta), un pedernal, tu espada y una antorcha.
+  > ex serpiente
+  No puedes ver tal cosa.
+  > ex serpiente
+  No ves esa cosa.
+  > ex serpiente
+  No se ve ninguna serpiente.
+  >
+----
 
 2016-07-06:
 

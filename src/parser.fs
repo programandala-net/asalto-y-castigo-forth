@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607061802
+\ Last update: 201607062027
 
 \ Note: The comments of the code are in Spanish.
 
@@ -629,28 +629,24 @@ is tool-complement
   \ Evalúa un comando, si no está vacío, con el vocabulario del juego.
 
 : second?  ( x1 x2 -- x1 f )
-  [debug-parsing] [??] ~~
-  2dup different?  \ ¿Hay ya otro anterior y es diferente?
-  [debug-parsing] [??] ~~  ;
-  \ ¿La acción o el complemento son los segundos que se encuentran?
-  \ Los dos valores representan una acción (xt) o un ente (a).
-  \ x1 = Acción o complemento recién encontrado
-  \ x2 = Acción o complemento anterior, o cero
+  2dup different?  ;
+  \ ¿Hay ya otra acción o complemento anterior y es diferente?  Los
+  \ parámetros representan una acción (_xt_) o un ente (_a_): _x1_ es
+  \ la acción o complemento recién encontrado; _x2_ es la acción o
+  \ complemento anterior, o cero.
 
 : set-action  ( xt -- )
-  [debug-parsing] [??] ~~
-  action second?  too-many-actions-error# and throw
-  to action
-  [debug-parsing] [??] ~~  ;
+  action second?
+  too-many-actions-error# and throw
+  to action  ;
   \ Comprueba y almacena la acción _xt_.
   \ Provoca un error si ya había una acción.
 
-: set-preposition  ( u -- )
+: set-preposition  ( n -- )
   a-preposition-is-open?
   unresolved-preposition-error# and throw
   current-preposition !  ;
-  \ Almacena una (seudo)preposición recién hallada en la frase.
-  \ u = Identificador de la preposición
+  \ Almacena una (seudo)preposición _n_ recién hallada en la frase.
 
 : set-prepositional-complement  ( a -- )
   current-prepositional-complement @ second?

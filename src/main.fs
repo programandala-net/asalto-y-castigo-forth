@@ -84,7 +84,8 @@ s" intro.fs" including
 
 : init-game-for-debugging  ( -- )
   \ location-01~ enter-location
-  location-08~ enter-location  \ Emboscada
+  \ location-08~ enter-location  \ Emboscada
+  location-43~ enter-location  \ Serpiente
   \ location-11~ enter-location  \ Lago
   \ location-17~ enter-location  \ Antes de la cueva oscura
   \ location-19~ enter-location  \ Encuentro con Ambrosio
@@ -104,7 +105,7 @@ s" intro.fs" including
   randomize
   init-parser/game init-entities init-plot
   get-config new-page
-  [true]  [if]    about cr intro  location-01~ enter-location
+  [false] [if]    about cr intro  location-01~ enter-location
           [else]  init-game-for-debugging
           [then]  ;
   \ Preparativos que hay que hacer antes de cada partida.

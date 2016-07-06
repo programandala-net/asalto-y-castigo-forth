@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607061928
+\ Last update: 201607062012
 
 \ Note: The comments of the code are in Spanish.
 
@@ -391,9 +391,9 @@ false [if]
   \ y hay que cerrarla antes de poder cerrar el candado.
 
 : .the-key-fits  ( -- )
-  \ XXX TODO -- nuevo texto, quitar «fácilmente»
   s" La llave gira fácilmente dentro del candado."
   narrate  ;
+  \ XXX TODO -- nuevo texto, quitar «fácilmente»
 
 : close-the-lock  ( -- )
   key~ ?this-tool
@@ -575,37 +575,30 @@ false [if]
 \ ----------------------------------------------
 \ Agredir
 
-: the-snake-runs-away  ( -- )
-  s{ s" Sorprendida por" s" Ante" }s
-  s" los amenazadores tajos," s&
+: the-snake-runs-away$  ( -- ca len )
   s" la serpiente" s&
-  s{
-  s" huye" s" se aleja" s" se esconde"
-  s" se da a la fuga" s" se quita de enmedio"
-  s" se aparta" s" escapa"
-  }s&
-  s{ null$ s" asustada" s" atemorizada" }s&
-  narrate  ;
-  \ La serpiente huye.
+  s{ s" huye" s" se aleja" s" se esconde"
+     s" se da a la fuga" s" se quita de enmedio"
+     s" se aparta" s" escapa" }s&
+  s{ null$ s" asustada" s" atemorizada" }s& period+  ;
+  \ Texto de que la serpiente huye.
+
+: the-snake-runs-away  ( ca len -- )
+  the-snake-runs-away$ s& narrate snake~ vanish  ;
 
 : attack-the-snake  ( -- )
   sword~ ?needed
-  the-snake-runs-away
-  snake~ vanish  ;
+  s{ s" Sorprendida por" s" Ante" }s
+  s" los amenazadores tajos," the-snake-runs-away  ;
   \ Atacar la serpiente.
-  \ XXX TODO -- inconcluso
-
-: attack-ambrosio  ( -- )  no-reason  ;
-  \ Atacar a Ambrosio.
-
-: attack-leader  ( -- )  no-reason  ;
-  \ Atacar al jefe.
+  \ XXX TODO -- gestionar la herramienta
 
 : (do-attack)  ( a -- )
   case
-    snake~ of  attack-the-snake  endof
-    ambrosio~ of  attack-ambrosio  endof
-    leader~ of  attack-leader  endof
+    snake~    of  attack-the-snake  endof
+    ambrosio~ of  no-reason         endof
+    leader~   of  no-reason         endof
+    soldiers~ of  no-reason         endof
     do-not-worry
   endcase  ;
   \ Atacar un ser vivo.
@@ -613,55 +606,57 @@ false [if]
 :noname  ( -- )
   ?main-complement
   main-complement ?accessible
-  main-complement ?living \ XXX TODO -- también es posible atacar otras cosas, como la ciudad u otros lugares, o el enemigo
-  tool-complement ?hold
+  main-complement ?living
   main-complement (do-attack)
   ; is do-attack
   \ Acción de atacar.
+
+: (do-frighten)  ( a -- )
+  case
+    snake~    of  attack-the-snake  endof
+    ambrosio~ of  no-reason         endof
+    leader~   of  no-reason         endof
+    soldiers~ of  no-reason         endof
+    do-not-worry
+  endcase  ;
+  \ Asustar un ser vivo.
+  \ XXX TODO diferenciar de atacar
 
 :noname  ( -- )
   ?main-complement
   main-complement ?accessible
   main-complement ?living
-  tool-complement ?hold
-  main-complement (do-attack)
+  main-complement (do-frighten)
   ; is do-frighten
   \ Acción de asustar.
-  \ XXX TODO -- distinguir de las demás en grado o requisitos
 
 : kill-the-snake  ( -- )
   sword~ ?needed
-  the-snake-runs-away
-  snake~ vanish  ;
+  s{ s" Sorprendida por" s" Ante" }s
+  s" los amenazadores tajos," the-snake-runs-away  ;
   \ Matar la serpiente.
-
-: kill-ambrosio  ( -- )  no-reason  ;
-  \ Matar a Ambrosio.
-
-: kill-leader  ( -- )  no-reason  ;
-  \ Matar al jefe.
-
-: kill-your-soldiers  ( -- )  no-reason  ;
-  \ Matar a tus hombres.
+  \ XXX TODO -- gestionar herramienta
+  \ XXX TODO -- diferenciar de atacar
 
 : (do-kill)  ( a -- )
   case
-    snake~ of  kill-the-snake  endof
-    ambrosio~ of  kill-ambrosio  endof
-    leader~ of  kill-leader  endof
-    soldiers~ of  kill-your-soldiers  endof
+    snake~    of  kill-the-snake  endof
+    ambrosio~ of  no-reason       endof
+    leader~   of  no-reason       endof
+    soldiers~ of  no-reason       endof
     do-not-worry
   endcase  ;
   \ Matar un ser vivo.
+  \ XXX TODO diferenciar de atacar
 
 :noname  ( -- )
   ?main-complement
   main-complement ?accessible
-  main-complement ?living  \ XXX TODO -- también es posible matar otras cosas, como el enemigo
-  tool-complement ?hold
+  main-complement ?living
   main-complement (do-kill)
   ; is do-kill
   \ Acción de matar.
+  \ XXX TODO diferenciar de atacar
 
 : cloak-piece  ( a -- )
   2 random if  be-here  else  taken  then  ;
@@ -682,10 +677,11 @@ false [if]
   s" rasgas" s& cloak~ full-name s& period+ narrate
   cloak-pieces  cloak~ vanish  ;
   \ Romper la capa.
+  \ XXX TODO -- gestionar la herramienta
 
 : (do-break)  ( a -- )
   case
-    snake~ of  kill-the-snake  endof  \ XXX TMP
+    snake~ of  kill-the-snake     endof  \ XXX TMP
     cloak~ of  shatter-the-cloak  endof
     do-not-worry
   endcase  ;
@@ -695,7 +691,6 @@ false [if]
   ?main-complement
   main-complement ?accessible
   main-complement ?breakable
-  tool-complement ?hold
   main-complement (do-break)
   ; is do-break
   \ Acción de romper.
