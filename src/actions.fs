@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607061912
+\ Last update: 201607061926
 
 \ Note: The comments of the code are in Spanish.
 
@@ -29,6 +29,10 @@ require flibustre/well-done.fs
 \ Comprobación de los requisitos de las acciones
 
 require flibustre/action_conditions.fs
+
+: by-default  ( x1 x2 -- x1 | x2 )
+  over if  drop  else  nip  then  ;
+  \ Return _x2_ if _x1_ is zero.
 
 \ ==============================================================
 \ Acciones
@@ -81,7 +85,7 @@ defer do-take-off  ( -- )
   \ Mira un ente.
 
 : do-look-by-default  ( -- a )
-  main-complement ?dup 0= ?? my-location  ;
+  main-complement my-location by-default  ;
   \ Devuelve qué mirar.  Si falta el complemento principal, usar el
   \ escenario.
 
@@ -93,7 +97,7 @@ defer do-take-off  ( -- )
 
 :noname  ( -- )
   ?no-tool-complement
-  main-complement ?dup 0= ?? protagonist~
+  main-complement protagonist~ by-default
   (do-look)
   ; is do-look-yourself
   \  Acción de mirarse.
@@ -441,14 +445,14 @@ false [if]
   main-complement ?accessible
   main-complement close-it
   ; is do-close
+  \ Acción de cerrar.
 
 : the-door-is-locked  ( -- )
-  \ Informa de que la puerta está cerrada por el candado.
-  \ XXX TODO -- añadir variantes
   lock~ ^full-name s" bloquea la puerta." s&
   narrate
   lock-found  ;
-  \ Acción de cerrar.
+  \ Informa de que la puerta está cerrada por el candado.
+  \ XXX TODO -- añadir variantes
 
 : unlock-the-door  ( -- )
   the-door-is-locked
@@ -464,6 +468,8 @@ false [if]
   key~ ?needed
   lock~ be-open  well-done  ;
   \ Abrir el candado, si es posible.
+  \ XXX TODO -- abrirlo aunque no se indique herramienta, si tenemos
+  \ la llave.
 
 : the-plants$  ( -- ca len )
   s" las hiedras" s" las hierbas" both  ;
@@ -1843,16 +1849,13 @@ create conversations-with-ambrosio
   [debug] [??] debug  \ XXX INFORMER
   ?no-main-complement
   ?no-explicit-tool-complement
-  company-complement ?dup 0=  \ Si no hay complemento...
-  ?? whom dup you-speak-to  \ ...buscar y mostrar el más probable.
-  (do-speak)
+  company-complement whom by-default
+  dup you-speak-to (do-speak)
   ; is do-speak
   \ Acción de hablar.
 
 :noname  ( -- )
-  main-complement ?dup 0=  \ Si no hay complemento...
-  ?? unknown-whom  \ ...buscar el (desconocido) más probable.
-  (do-speak)
+  main-complement unknown-whom by-default (do-speak)
   ; is do-introduce-yourself
   \ Acción de presentarse a alguien.
 
