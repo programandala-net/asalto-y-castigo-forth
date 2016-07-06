@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607061300
+\ Last update: 201607061418
 
 \ Note: The comments of the code are in Spanish.
 
@@ -26,10 +26,10 @@
   \ origen).
 
 defer tool-complement  ( -- a )
-  \ Ente _a_ complemento de herramienta (indicada con «con» o «usando»).
+  \ Ente _a_ complemento instrumental (indicada con «con» o «usando»).
 
 defer actual-tool-complement  ( -- a )
-  \ Ente _a_ complemento estricto de herramienta (indicada con «usando»).
+  \ Ente _a_ complemento instrumental estricto (indicado con «usando»).
 
 defer company-complement  ( -- a )
   \ Ente _a_ complemento de compañía (indicado con «con»).
@@ -475,37 +475,32 @@ create prepositional-complements /prepositional-complements allot
   \ (seudo)preposicionales correspondiente al complemento de compañía
   \ (complemento que puede ser cero si no existe).
 
-' (company-complement) is company-complement
+:noname  ( -- a | 0 )  (company-complement) @  ;
+is company-complement
+  \ Ente _a_ complemento de compañía (indicado con «con»).
 
-: (actual-company-complement)  ( -- a|0 )
+:noname  ( -- a | 0 )
   «usando»-preposition# prepositional-complement @ dup 0<>
   if  drop company-complement  then  ;
-  \ Devuelve la dirección _a_ del elemento de la tabla
-  \ de complementos (seudo)preposicionales
-  \ correspondiente al complemento de compañía estricto
-  \ (complemento que puede ser cero si no existe).
-  \ XXX TODO -- experimental, ojo: puede devolver cero
-
-' (actual-company-complement) is actual-company-complement
+is actual-company-complement
+  \ Ente _a_ complemento de compañía estricto (indicado con «con» en
+  \ presencia de «usando»).
 
 : (actual-tool-complement)  ( -- a )
   «usando»-preposition# prepositional-complement  ;
-  \ Devuelve la dirección _a_ del elemento de la tabla
-  \ de complementos (seudo)preposicionales
-  \ correspondiente al complemento instrumental estricto
-  \ (complemento que puede ser cero si no existe).
+  \ Devuelve la dirección _a_ del elemento de la tabla de complementos
+  \ (seudo)preposicionales correspondiente al complemento instrumental
+  \ estricto (complemento que puede ser cero si no existe).
 
-' (actual-tool-complement) is actual-tool-complement
+:noname  ( -- a | 0 )  (actual-tool-complement) @  ;
+is actual-tool-complement
+  \ Ente _a_ complemento instrumental estricto (indicado con
+  \ «usando»).
 
-: (tool-complement)  ( -- a )
-  actual-tool-complement dup @ 0=
-  if  drop company-complement  then  ;
-  \ Devuelve la dirección _a_ del elemento de la tabla
-  \ de complementos (seudo)preposicionales
-  \ correspondiente al complemento instrumental
-  \ (complemento que puede ser cero si no existe).
-
-' (tool-complement) is tool-complement
+:noname  ( -- a | 0 )
+  actual-tool-complement ?dup ?exit  company-complement  ;
+is tool-complement
+  \ Ente _a_ complemento instrumental (indicado con «con» o «usando»).
 
 : prepositions-off  ( -- )
   erase-prepositional-complements
@@ -575,9 +570,11 @@ create prepositional-complements /prepositional-complements allot
   \ error pendiente).
 
 [debug-parsing-result] [if]
-  : .complement?  ( ca1 len1 a2 -- )  \ XXX INFORMER
-    @ ?dup if  name s& paragraph  else  2drop  then  ;
-    \ Imprime un nombre de complemento, con un texto previo, si existe.
+  : .complement?  ( ca len a -- )
+    ?dup if  name s& paragraph  else  2drop  then  ;
+    \ Imprime un nombre de ente complemento _a_,
+    \ con un texto previo _ca len_, si existe el complemento.
+    \ XXX INFORMER
 [then]
 
 : valid-parsing?  ( ca len -- f )

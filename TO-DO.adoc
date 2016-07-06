@@ -1,7 +1,18 @@
 = Tareas pendientes de Asalto y castigo
-:revdate: 2016-07-04
+:revdate: 2016-07-06
 
 == Programación
+
+2016-07-06:
+
+Reorganizar los complementos preposicionales estrictos de herramienta
+y compañía. Sería más lógico que la interfaz solo tuviera un
+complemento, que dependiera de la presencia de otras preposiciones.
+
+2016-07-06:
+
+Mejores mensajes para las acciones combinadas, como cuando se deja una
+prenda puesta.
 
 2016-06-26:
 

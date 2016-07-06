@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607061300
+\ Last update: 201607061424
 
 \ Note: The comments of the code are in Spanish.
 
@@ -421,7 +421,7 @@ false [if]
 
 : close-the-door  ( -- )
   key~ tool{this-only}
-  tool-complement @ ?dup
+  tool-complement ?dup
   if    close-and-lock-the-door
   else  just-close-the-door  then  ;
   \ Cerrar la puerta, si es posible.
@@ -931,7 +931,7 @@ false [if]
   if  ( a )
     is-direction? if  do-go  else  do-break  then
   else
-    tool-complement @ if do-break  else  simply-do-go  then
+    tool-complement if do-break  else  simply-do-go  then
   then
   ; is do-go|do-break
   \ Acción de partir (desambiguar: romper o marchar).
@@ -1841,7 +1841,7 @@ create conversations-with-ambrosio
   [debug] [??] debug  \ XXX INFORMER
   main-complement{forbidden}
   actual-tool-complement{unnecessary}
-  company-complement @ ?dup 0=  \ Si no hay complemento...
+  company-complement ?dup 0=  \ Si no hay complemento...
   ?? whom dup you-speak-to  \ ...buscar y mostrar el más probable.
   (do-speak)
   ; is do-speak
