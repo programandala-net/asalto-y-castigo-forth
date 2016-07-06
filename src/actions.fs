@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607061849
+\ Last update: 201607061859
 
 \ Note: The comments of the code are in Spanish.
 
@@ -86,22 +86,24 @@ defer do-take-off  ( -- )
   \ escenario.
 
 :noname  ( -- )
-  tool-complement{unnecessary}
-  do-look-by-default dup {lookable} (do-look)
+  ?no-tool-complement
+  do-look-by-default dup ?lookable (do-look)
   ; is do-look
   \  Acción de mirar.
 
 :noname  ( -- )
-  tool-complement{unnecessary}
+  ?no-tool-complement
   main-complement ?dup 0= ?? protagonist~
   (do-look)
   ; is do-look-yourself
   \  Acción de mirarse.
+  \  XXX TODO -- factorizar la operación de elegir un ente
+  \  predeterminado `by-default`.
 
 :noname  ( -- )
-  tool-complement{unnecessary}
+  ?no-tool-complement
   main-complement
-  if    main-complement ?{direction}
+  if    main-complement ??direction
         main-complement (do-look)
   else  do-exits  then
   ; is do-look-to-direction
@@ -243,8 +245,8 @@ false [if]
 ' (list-exits) is describe-exits
 
 :noname  ( -- )
-  tool-complement{unnecessary}
-  secondary-complement{forbidden}
+  ?no-tool-complement
+  ?no-secondary-complement
   main-complement ?dup if
     dup my-location <> swap direction 0= and
     nonsense-error# and throw
@@ -261,12 +263,12 @@ false [if]
   \ Ponerse una prenda.
 
 :noname  ( -- )
-  tool-complement{unnecessary}
-  main-complement{required}
-  main-complement ?{wearable}
-  main-complement ?{not-worn}
+  ?no-tool-complement
+  ?main-complement
+  main-complement ??wearable
+  main-complement ??not-worn
   main-complement is-not-hold? ?? do-take
-  main-complement ?{hold}
+  main-complement ??hold
   main-complement (do-put-on)
   ; is do-put-on
   \ Acción de ponerse una prenda.
@@ -287,9 +289,9 @@ false [if]
   \ Quitarse una prenda.
 
 :noname  ( -- )
-  tool-complement{unnecessary}
-  main-complement{required}
-  main-complement ?{worn}
+  ?no-tool-complement
+  ?main-complement
+  main-complement ??worn
   main-complement (do-take-off)
   ; is do-take-off
   \ Acción de quitarse una prenda.
@@ -339,10 +341,10 @@ false [if]
   \ Toma un ente.
 
 :noname  ( -- )
-  main-complement{required}
-  main-complement ?{not-hold}
-  main-complement ?{here}
-  main-complement ?{takeable}
+  ?main-complement
+  main-complement ??not-hold
+  main-complement ??here
+  main-complement ??takeable
   main-complement (do-take)
   ; is do-take
   \ Toma un ente, si es posible.
@@ -363,8 +365,8 @@ false [if]
 
 :noname  ( -- )
   \ Acción de dejar.
-  main-complement{required}
-  main-complement ?{hold}
+  ?main-complement
+  main-complement ??hold
   main-complement (do-drop)
   ; is do-drop
 
@@ -390,9 +392,9 @@ false [if]
   narrate  ;
 
 : close-the-lock  ( -- )
-  key~ tool{this-only}
-  lock~ {open}
-  key~ {hold}
+  key~ ?this-tool
+  lock~ ?open
+  key~ ?hold
   door~ is-open? ?? first-close-the-door
   lock~ be-closed  .the-key-fits  ;
   \ Cerrar el candado, si es posible.
@@ -411,16 +413,16 @@ false [if]
   \ Cerrar la puerta.
 
 : close-and-lock-the-door  ( -- )
-  door~ {open}  key~ {hold}
+  door~ ?open  key~ ?hold
   (close-the-door) close-the-lock  ;
   \ Cerrar la puerta, si está abierta, y el candado.
 
 : just-close-the-door  ( -- )
-  door~ {open} (close-the-door)  ;
+  door~ ?open (close-the-door)  ;
   \ Cerrar la puerta, sin candarla, si está abierta.
 
 : close-the-door  ( -- )
-  key~ tool{this-only}
+  key~ ?this-tool
   tool-complement ?dup
   if    close-and-lock-the-door
   else  just-close-the-door  then  ;
@@ -435,8 +437,8 @@ false [if]
   \ Cerrar un ente, si es posible.
 
 :noname  ( -- )
-  main-complement{required}
-  main-complement ?{accessible}
+  ?main-complement
+  main-complement ??accessible
   main-complement close-it
   ; is do-close
 
@@ -450,16 +452,16 @@ false [if]
 
 : unlock-the-door  ( -- )
   the-door-is-locked
-  key~ {needed}
+  key~ ?needed
   lock~ dup be-open
   ^pronoun s" abres con" s& key~ full-name s& period+ narrate  ;
   \ Abrir la puerta candada, si es posible.
   \ XXX TODO -- falta mensaje adecuado sobre la llave que gira
 
 : open-the-lock  ( -- )
-  key~ tool{this-only}
-  lock~ {closed}
-  key~ {needed}
+  key~ ?this-tool
+  lock~ ?closed
+  key~ ?needed
   lock~ be-open  well-done  ;
   \ Abrir el candado, si es posible.
 
@@ -532,7 +534,7 @@ false [if]
   \ Muestra el mensaje de apertura de la puerta.
 
 : (open-the-door)  ( -- )
-  key~ tool{this-only}  \ XXX TODO ¿por qué aquí?
+  key~ ?this-tool  \ XXX TODO ¿por qué aquí?
   lock~ is-closed? ?? unlock-the-door
   location-47~ location-48~ w<-->
   location-47~ location-48~ o<-->
@@ -543,7 +545,7 @@ false [if]
 
 : open-the-door  ( -- )
   door~ is-open?
-  if    door~ it-is-already-open tool-complement{unnecessary}
+  if    door~ it-is-already-open ?no-tool-complement
   else  (open-the-door)  then  ;
   \ Abrir la puerta, si es posible.
 
@@ -558,8 +560,8 @@ false [if]
 
 :noname  ( -- )
   s" do-open" halto  \ XXX INFORMER
-  main-complement{required}
-  main-complement ?{accessible}
+  ?main-complement
+  main-complement ??accessible
   main-complement open-it
   ; is do-open
   \ Acción de abrir.
@@ -581,7 +583,7 @@ false [if]
   \ La serpiente huye.
 
 : attack-the-snake  ( -- )
-  sword~ {needed}
+  sword~ ?needed
   the-snake-runs-away
   snake~ vanish  ;
   \ Atacar la serpiente.
@@ -603,26 +605,26 @@ false [if]
   \ Atacar un ser vivo.
 
 :noname  ( -- )
-  main-complement{required}
-  main-complement ?{accessible}
-  main-complement ?{living} \ XXX TODO -- también es posible atacar otras cosas, como la ciudad u otros lugares, o el enemigo
-  tool-complement ?{hold}
+  ?main-complement
+  main-complement ??accessible
+  main-complement ??living \ XXX TODO -- también es posible atacar otras cosas, como la ciudad u otros lugares, o el enemigo
+  tool-complement ??hold
   main-complement (do-attack)
   ; is do-attack
   \ Acción de atacar.
 
 :noname  ( -- )
-  main-complement{required}
-  main-complement ?{accessible}
-  main-complement ?{living}
-  tool-complement ?{hold}
+  ?main-complement
+  main-complement ??accessible
+  main-complement ??living
+  tool-complement ??hold
   main-complement (do-attack)
   ; is do-frighten
   \ Acción de asustar.
   \ XXX TODO -- distinguir de las demás en grado o requisitos
 
 : kill-the-snake  ( -- )
-  sword~ {needed}
+  sword~ ?needed
   the-snake-runs-away
   snake~ vanish  ;
   \ Matar la serpiente.
@@ -647,10 +649,10 @@ false [if]
   \ Matar un ser vivo.
 
 :noname  ( -- )
-  main-complement{required}
-  main-complement ?{accessible}
-  main-complement ?{living}  \ XXX TODO -- también es posible matar otras cosas, como el enemigo
-  tool-complement ?{hold}
+  ?main-complement
+  main-complement ??accessible
+  main-complement ??living  \ XXX TODO -- también es posible matar otras cosas, como el enemigo
+  tool-complement ??hold
   main-complement (do-kill)
   ; is do-kill
   \ Acción de matar.
@@ -668,7 +670,7 @@ false [if]
   \ en el escenario o en el inventario.
 
 : shatter-the-cloak  ( -- )
-  sword~ {accessible}
+  sword~ ?accessible
   sword~ taken
   using$ sword~ full-name s& comma+
   s" rasgas" s& cloak~ full-name s& period+ narrate
@@ -684,10 +686,10 @@ false [if]
   \ Romper un ente.
 
 :noname  ( -- )
-  main-complement{required}
-  main-complement ?{accessible}
-  main-complement ?{breakable}
-  tool-complement ?{hold}
+  ?main-complement
+  main-complement ??accessible
+  main-complement ??breakable
+  tool-complement ??hold
   main-complement (do-break)
   ; is do-break
   \ Acción de romper.
@@ -698,7 +700,7 @@ false [if]
   torch~ be-lit  ;
 
 : hit-the-flint  ( -- )
-  flint~ {accessible}
+  flint~ ?accessible
   sword~ taken
   using$ sword~ full-name s& comma+
   s" golpeas" s& flint~ full-name s& period+ narrate
@@ -714,8 +716,8 @@ false [if]
   \ Golpear un ente.
 
 :noname  ( -- )
-  main-complement{required}
-  main-complement ?{accessible}
+  ?main-complement
+  main-complement ??accessible
   main-complement (do-hit)
   \ s" golpear"  main-complement+is-nonsense \ XXX TMP
   ; is do-hit
@@ -787,8 +789,8 @@ false [if]
 
 :noname  ( -- )
   \ Acción de afilar.
-  main-complement{required}
-  main-complement ?{accessible}
+  ?main-complement
+  main-complement ??accessible
   main-complement can-be-sharpened?
   if    main-complement (do-sharpen)
   else  nonsense
@@ -835,7 +837,7 @@ false [if]
 
 :noname  ( -- )
   [debug] [if]  s" Al entrar en `do-go`" debug  [then]  \ XXX INFORMER
-  tool-complement{unnecessary}
+  ?no-tool-complement
   main-complement ?dup
   if  do-go-if-possible  else  simply-do-go  then
   [debug] [if]  s" Al salir de `do-go`" debug  [then]  \ XXX INFORMER
@@ -843,52 +845,52 @@ false [if]
   \ Acción de ir.
 
 :noname  ( -- )
-  tool-complement{unnecessary}
-  north~ main-complement{this-only}
+  ?no-tool-complement
+  north~ ?this-main-complement
   north~ do-go-if-possible
   ; is do-go-north
   \ Acción de ir al norte.
 
 :noname  ( -- )
   [debug-catch] [if]  s" Al entrar en `do-go-south`" debug  [then]  \ XXX INFORMER
-  tool-complement{unnecessary}
-  south~ main-complement{this-only}
+  ?no-tool-complement
+  south~ ?this-main-complement
   south~ do-go-if-possible
   [debug-catch] [if]  s" Al salir de `do-go-south`" debug  [then]  \ XXX INFORMER
   ; is do-go-south
   \ Acción de ir al sur.
 
 :noname  ( -- )
-  tool-complement{unnecessary}
-  east~ main-complement{this-only}
+  ?no-tool-complement
+  east~ ?this-main-complement
   east~ do-go-if-possible
   ; is do-go-east
   \ Acción de ir al este.
 
 :noname  ( -- )
-  tool-complement{unnecessary}
-  west~ main-complement{this-only}
+  ?no-tool-complement
+  west~ ?this-main-complement
   west~ do-go-if-possible
   ; is do-go-west
   \ Acción de ir al oeste.
 
 :noname  ( -- )
-  tool-complement{unnecessary}
-  up~ main-complement{this-only}
+  ?no-tool-complement
+  up~ ?this-main-complement
   up~ do-go-if-possible
   ; is do-go-up
   \ Acción de ir hacia arriba.
 
 :noname  ( -- )
-  tool-complement{unnecessary}
-  down~ main-complement{this-only}
+  ?no-tool-complement
+  down~ ?this-main-complement
   down~ do-go-if-possible
   ; is do-go-down
   \ Acción de ir hacia abajo.
 
 :noname  ( -- )
-  tool-complement{unnecessary}
-  out~ main-complement{this-only}
+  ?no-tool-complement
+  out~ ?this-main-complement
   out~ do-go-if-possible
   ; is do-go-out
   \ Acción de ir hacia fuera.
@@ -899,25 +901,25 @@ false [if]
   in~ do-go-if-possible  ;
 
 :noname  ( -- )
-  tool-complement{unnecessary}
+  ?no-tool-complement
   main-complement cave-entrance~ =
   if  enter-the-cave-entrance exit  then
-  in~ main-complement{this-only}
+  in~ ?this-main-complement
   in~ do-go-if-possible
   ; is do-go-in
   \ Acción de ir hacia dentro.
 
 :noname  ( -- )
-  tool-complement{unnecessary}
-  main-complement{forbidden}
+  ?no-tool-complement
+  ?no-main-complement
   s" [voy hacia atrás, pero es broma]" narrate \ XXX TMP
   ; is do-go-back
   \ Acción de ir hacia atrás.
   \ XXX TODO
 
 :noname  ( -- )
-  tool-complement{unnecessary}
-  main-complement{forbidden}
+  ?no-tool-complement
+  ?no-main-complement
   s" [voy hacia delante, pero es broma]" narrate \ XXX TMP
   ; is do-go-ahead
   \ Acción de ir hacia delante.
@@ -1839,8 +1841,8 @@ create conversations-with-ambrosio
 
 :noname  ( -- )
   [debug] [??] debug  \ XXX INFORMER
-  main-complement{forbidden}
-  explicit-tool-complement{unnecessary}
+  ?no-main-complement
+  ?no-explicit-tool-complement
   company-complement ?dup 0=  \ Si no hay complemento...
   ?? whom dup you-speak-to  \ ...buscar y mostrar el más probable.
   (do-speak)
@@ -1895,7 +1897,7 @@ svariable filename
   \ parámetros sacados de textos del programa!
 
 : save-the-game
-  main-complement{forbidden}
+  ?no-main-complement
   action ? key drop  \ XXX INFORMER
   (save-the-game)  ;
   \ Acción de salvar el juego.
@@ -2120,7 +2122,7 @@ restore-wordlists
   \ Salva la partida.
 
 : save-the-game  ( ca len -- )
-  \ main-complement{forbidden} \ XXX TODO
+  \ ?no-main-complement \ XXX TODO
   (save-the-game)  ;
   \ Acción de salvar la partida.
 
@@ -2130,7 +2132,7 @@ restore-wordlists
   \ Continúa el juego en el punto que se acaba de restaurar.
 
 : load-the-game  ( ca len -- )
-  \ main-complement{forbidden}  \ XXX TODO
+  \ ?no-main-complement  \ XXX TODO
   restore-wordlist 1 set-order
   [debug-filing] [??] ~~
   \ included  \ XXX FIXME -- el sistema estalla
