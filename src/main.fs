@@ -62,7 +62,7 @@ s" lists.fs" including
 s" config.fs" including
 s" parser.fs" including
 s" plot.fs" including
-s" data.fs" including
+s" entities.fs" including
 s" action_errors.fs" including
 s" actions.fs" including
 s" player_vocabulary.fs" including
