@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607061926
+\ Last update: 201607061928
 
 \ Note: The comments of the code are in Spanish.
 
@@ -426,9 +426,9 @@ false [if]
   \ Cerrar la puerta, sin candarla, si está abierta.
 
 : close-the-door  ( -- )
-  key~ ?this-tool
   tool-complement ?dup
-  if    close-and-lock-the-door
+  if    key~ ?this-tool
+        close-and-lock-the-door
   else  just-close-the-door  then  ;
   \ Cerrar la puerta, si es posible.
 
