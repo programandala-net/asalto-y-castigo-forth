@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607052154
+\ Last update: 201607061300
 
 \ Note: The comments of the code are in Spanish.
 
@@ -81,7 +81,7 @@ defer do-take-off  ( -- )
   \ Mira un ente.
 
 : do-look-by-default  ( -- a )
-  main-complement @ ?dup 0= ?? my-location  ;
+  main-complement ?dup 0= ?? my-location  ;
   \ Devuelve qué mirar.  Si falta el complemento principal, usar el
   \ escenario.
 
@@ -93,16 +93,16 @@ defer do-take-off  ( -- )
 
 :noname  ( -- )
   tool-complement{unnecessary}
-  main-complement @ ?dup 0= ?? protagonist~
+  main-complement ?dup 0= ?? protagonist~
   (do-look)
   ; is do-look-yourself
   \  Acción de mirarse.
 
 :noname  ( -- )
   tool-complement{unnecessary}
-  main-complement @
+  main-complement
   if    main-complement{direction}
-        main-complement @ (do-look)
+        main-complement (do-look)
   else  do-exits  then
   ; is do-look-to-direction
   \  Acción de otear.
@@ -245,7 +245,7 @@ false [if]
 :noname  ( -- )
   tool-complement{unnecessary}
   secondary-complement{forbidden}
-  main-complement @ ?dup if
+  main-complement ?dup if
     dup my-location <> swap direction 0= and
     nonsense-error# and throw
   then  describe-exits
@@ -265,9 +265,9 @@ false [if]
   main-complement{required}
   main-complement{wearable}
   main-complement{not-worn}
-  main-complement @ is-not-hold? ?? do-take
+  main-complement is-not-hold? ?? do-take
   main-complement{hold}
-  main-complement @ (do-put-on)
+  main-complement (do-put-on)
   ; is do-put-on
   \ Acción de ponerse una prenda.
 
@@ -275,7 +275,7 @@ false [if]
   s" Te quitas" rot full-name s&  ;
 
 : you-take-off-main-complement$  ( -- ca len )
-  main-complement @ >you-take-off-it$  ;
+  main-complement >you-take-off-it$  ;
 
 : do-take-off-done$  ( -- ca len )
   you-take-off-main-complement$ period+  ;
@@ -290,7 +290,7 @@ false [if]
   tool-complement{unnecessary}
   main-complement{required}
   main-complement{worn}
-  main-complement @ (do-take-off)
+  main-complement (do-take-off)
   ; is do-take-off
   \ Acción de quitarse una prenda.
 
@@ -343,7 +343,7 @@ false [if]
   main-complement{not-hold}
   main-complement{here}
   main-complement{takeable}
-  main-complement @ (do-take)
+  main-complement (do-take)
   ; is do-take
   \ Toma un ente, si es posible.
 
@@ -365,7 +365,7 @@ false [if]
   \ Acción de dejar.
   main-complement{required}
   main-complement{hold}
-  main-complement @ (do-drop)
+  main-complement (do-drop)
   ; is do-drop
 
 :noname  ( -- )
@@ -437,7 +437,7 @@ false [if]
 :noname  ( -- )
   main-complement{required}
   main-complement{accessible}
-  main-complement @ close-it
+  main-complement close-it
   ; is do-close
 
 : the-door-is-locked  ( -- )
@@ -560,7 +560,7 @@ false [if]
   s" do-open" halto  \ XXX INFORMER
   main-complement{required}
   main-complement{accessible}
-  main-complement @ open-it
+  main-complement open-it
   ; is do-open
   \ Acción de abrir.
 
@@ -607,7 +607,7 @@ false [if]
   main-complement{accessible}
   main-complement{living} \ XXX TODO -- también es posible atacar otras cosas, como la ciudad u otros lugares, o el enemigo
   tool-complement{hold}
-  main-complement @ (do-attack)
+  main-complement (do-attack)
   ; is do-attack
   \ Acción de atacar.
 
@@ -616,7 +616,7 @@ false [if]
   main-complement{accessible}
   main-complement{living}
   tool-complement{hold}
-  main-complement @ (do-attack)
+  main-complement (do-attack)
   ; is do-frighten
   \ Acción de asustar.
   \ XXX TODO -- distinguir de las demás en grado o requisitos
@@ -651,7 +651,7 @@ false [if]
   main-complement{accessible}
   main-complement{living}  \ XXX TODO -- también es posible matar otras cosas, como el enemigo
   tool-complement{hold}
-  main-complement @ (do-kill)
+  main-complement (do-kill)
   ; is do-kill
   \ Acción de matar.
 
@@ -688,7 +688,7 @@ false [if]
   main-complement{accessible}
   main-complement{breakable}
   tool-complement{hold}
-  main-complement @ (do-break)
+  main-complement (do-break)
   ; is do-break
   \ Acción de romper.
 
@@ -716,7 +716,7 @@ false [if]
 :noname  ( -- )
   main-complement{required}
   main-complement{accessible}
-  main-complement @ (do-hit)
+  main-complement (do-hit)
   \ s" golpear"  main-complement+is-nonsense \ XXX TMP
   ; is do-hit
   \ Acción de golpear.
@@ -789,8 +789,8 @@ false [if]
   \ Acción de afilar.
   main-complement{required}
   main-complement{accessible}
-  main-complement @ can-be-sharpened?
-  if    main-complement @ (do-sharpen)
+  main-complement can-be-sharpened?
+  if    main-complement (do-sharpen)
   else  nonsense
   then
   ; is do-sharpen
@@ -836,7 +836,7 @@ false [if]
 :noname  ( -- )
   [debug] [if]  s" Al entrar en `do-go`" debug  [then]  \ XXX INFORMER
   tool-complement{unnecessary}
-  main-complement @ ?dup
+  main-complement ?dup
   if  do-go-if-possible  else  simply-do-go  then
   [debug] [if]  s" Al salir de `do-go`" debug  [then]  \ XXX INFORMER
   ; is do-go
@@ -900,7 +900,7 @@ false [if]
 
 :noname  ( -- )
   tool-complement{unnecessary}
-  main-complement @ cave-entrance~ =
+  main-complement cave-entrance~ =
   if  enter-the-cave-entrance exit  then
   in~ main-complement{this-only}
   in~ do-go-if-possible
@@ -927,7 +927,7 @@ false [if]
 \ Partir (desambiguación)
 
 :noname  ( -- )
-  main-complement @ ?dup
+  main-complement ?dup
   if  ( a )
     is-direction? if  do-go  else  do-break  then
   else
@@ -1128,7 +1128,7 @@ false [if]
   \ XXX TODO -- inconcluso
 
 :noname  ( -- )
-  main-complement @ ?dup
+  main-complement ?dup
   if  do-climb-if-possible  else  do-climb-something  then
   ; is do-climb
   \ Acción de escalar.
@@ -1175,12 +1175,12 @@ false [if]
 \ Hacer
 
 :noname  ( -- )
-  main-complement @ if  nonsense  else  do-not-worry  then
+  main-complement if  nonsense  else  do-not-worry  then
   ; is do-make
   \ Acción de hacer (fabricar).
 
 :noname  ( -- )
-  main-complement @ inventory~ =
+  main-complement inventory~ =
   if  do-inventory  else  do-make  then
   ; is do-do
   \ Acción de hacer (genérica).
@@ -1848,7 +1848,7 @@ create conversations-with-ambrosio
   \ Acción de hablar.
 
 :noname  ( -- )
-  main-complement @ ?dup 0=  \ Si no hay complemento...
+  main-complement ?dup 0=  \ Si no hay complemento...
   ?? unknown-whom  \ ...buscar el (desconocido) más probable.
   (do-speak)
   ; is do-introduce-yourself

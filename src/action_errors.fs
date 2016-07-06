@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606292033
+\ Last update: 201607061300
 
 \ Note: The comments of the code are in Spanish.
 
@@ -257,20 +257,18 @@ to dangerous-error#
 3 ' (+is-nonsense) action-error: +is-nonsense drop
 
 : (main-complement+is-nonsense)  ( ca len -- )
-  main-complement @ (+is-nonsense)  ;
-  \ Informa de que una acción dada (en infinitivo),
-  \ que hay que completar con el nombre del complemento principal,
-  \ no tiene sentido.
-  \ ca len = Acción que no tiene sentido, en infinitivo
+  main-complement (+is-nonsense)  ;
+  \ Informa de que una acción dada (en infinitivo) _ca len_, que hay
+  \ que completar con el nombre del complemento principal, no tiene
+  \ sentido.
 
 2 ' (main-complement+is-nonsense) action-error: main-complement+is-nonsense drop
 
 : (secondary-complement+is-nonsense)  ( ca len -- )
-  secondary-complement @ (+is-nonsense)  ;
-  \ Informa de que una acción dada (en infinitivo),
-  \ que hay que completar con el nombre del complemento secundario,
-  \ no tiene sentido.
-  \ ca len = Acción que no tiene sentido, en infinitivo
+  secondary-complement (+is-nonsense)  ;
+  \ Informa de que una acción dada (en infinitivo) _ca len_, que hay
+  \ que completar con el nombre del complemento secundario, no tiene
+  \ sentido.
 
 2 ' (secondary-complement+is-nonsense) action-error: secondary-complement+is-nonsense drop
 
@@ -289,11 +287,10 @@ to dangerous-error#
   \ Devuelve una variante de «no hay motivo para».
   \ XXX TODO -- quitar las variantes que no sean adecuadas a todos los casos
 
-: (no-reason-for-that)  ( ca len -- )
+: (no-reason-for-that)  ( ca len | ca 0 -- )
   no-reason-for$ 2swap s& period+ action-error  ;
-  \ Informa de que no hay motivo para una acción (en infinitivo).
-  \ ca len = Acción para la que no hay razón, en infinitivo, o una cadena vacía
-  \ XXX TODO
+  \ Informa de que no hay motivo para una acción (en infinitivo) _ca
+  \ len_.
 
 2 ' (no-reason-for-that) action-error: no-reason-for-that drop
 

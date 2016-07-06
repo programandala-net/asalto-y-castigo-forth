@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607061241
+\ Last update: 201607061300
 
 \ Note: The comments of the code are in Spanish.
 
@@ -18,11 +18,11 @@
 0 value previous-action  ( -- xt | 0 )
   \ Código de la acción del comando anterior.
 
-variable main-complement
-  \ Ente complemento principal (complemento directo o destino).
+0 value main-complement  ( -- a )
+  \ Ente _a_ complemento principal (complemento directo o destino).
 
-variable secondary-complement
-  \ Ente complemento secundario (complemento indirecto, destino u
+0 value secondary-complement  ( -- a )
+  \ Ente _a_ complemento secundario (complemento indirecto, destino u
   \ origen).
 
 defer tool-complement  ( -- a )
@@ -41,9 +41,9 @@ defer actual-company-complement  ( -- a )
 false [if]
   \ XXX OLD
   \ XXX TODO -- descartado, pendiente
-  variable to-complement  \ Destino \ XXX OLD -- no utilizado
-  variable from-complement  \ Origen \ XXX OLD -- no utilizado
-  variable into-complement  \ Destino dentro \ XXX OLD -- no utilizado
+  0 value to-complement  \ Destino \ XXX OLD -- no utilizado
+  0 value from-complement  \ Origen \ XXX OLD -- no utilizado
+  0 value into-complement  \ Destino dentro \ XXX OLD -- no utilizado
 [then]
 
 variable what
@@ -458,9 +458,9 @@ create prepositional-complements /prepositional-complements allot
   prepositional-complements /prepositional-complements erase  ;
   \ Borra la tabla de complementos (seudo)preposicionales.
 
-: prepositional-complement  ( u -- a )
+: prepositional-complement  ( n -- a )
   1- cells prepositional-complements +  ;
-  \ Devuelve la dirección _a_ de un elemento ordinal _u_ de la tabla
+  \ Devuelve la dirección _a_ de un elemento ordinal _n_ de la tabla
   \ de complementos (seudo)preposicionales.
 
 : current-prepositional-complement  ( -- a )
@@ -514,12 +514,12 @@ create prepositional-complements /prepositional-complements allot
   \ Inicializa las preposiciones.
 
 : complements-off  ( -- )
-  main-complement off
-  secondary-complement off
+  0 to main-complement
+  0 to secondary-complement
   prepositions-off  ;
   \ Inicializa los complementos.
 
-: init-parsing  ( -- )  false to action  complements-off  ;
+: init-parsing  ( -- )  0 to action  complements-off  ;
   \ Preparativos previos a cada análisis.
 
 : (execute-action)  ( xt -- )
@@ -678,24 +678,24 @@ create prepositional-complements /prepositional-complements allot
   \ Provoca error si la preposición ya había sido usada,
 
 : set-secondary-complement  ( a -- )
-  secondary-complement @ second?
+  secondary-complement second?
   too-many-complements-error# and throw
-  secondary-complement !  ;
+  to secondary-complement  ;
   \ Almacena el ente _a_ como complemento secundario.
   \ Provoca un error si ya existía un complemento secundario.
 
 : set-main-complement  ( a -- )
   [debug-parsing] [??] ~~
-  main-complement @ second?
+  main-complement second?
   too-many-complements-error# and throw
   dup new-last-complement
-  main-complement !  ;
+  to main-complement  ;
   \ Almacena el ente _a_ como complemento principal.
   \ Provoca un error si ya existía un complemento principal.
 
 : set-non-prepositional-complement  ( a -- )
-  main-complement @ if    set-secondary-complement
-                    else  set-main-complement  then  ;
+  main-complement if    set-secondary-complement
+                  else  set-main-complement  then  ;
   \ Almacena un complemento principal o secundario.
   \ a = Identificador de ente
   \ XXX TODO -- esta palabra sobrará cuando las (seudo)preposiciones
