@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607061801
+\ Last update: 201607061849
 
 \ Note: The comments of the code are in Spanish.
 
@@ -101,7 +101,7 @@ defer do-take-off  ( -- )
 :noname  ( -- )
   tool-complement{unnecessary}
   main-complement
-  if    main-complement{direction}
+  if    main-complement ?{direction}
         main-complement (do-look)
   else  do-exits  then
   ; is do-look-to-direction
@@ -263,10 +263,10 @@ false [if]
 :noname  ( -- )
   tool-complement{unnecessary}
   main-complement{required}
-  main-complement{wearable}
-  main-complement{not-worn}
+  main-complement ?{wearable}
+  main-complement ?{not-worn}
   main-complement is-not-hold? ?? do-take
-  main-complement{hold}
+  main-complement ?{hold}
   main-complement (do-put-on)
   ; is do-put-on
   \ Acción de ponerse una prenda.
@@ -289,7 +289,7 @@ false [if]
 :noname  ( -- )
   tool-complement{unnecessary}
   main-complement{required}
-  main-complement{worn}
+  main-complement ?{worn}
   main-complement (do-take-off)
   ; is do-take-off
   \ Acción de quitarse una prenda.
@@ -340,9 +340,9 @@ false [if]
 
 :noname  ( -- )
   main-complement{required}
-  main-complement{not-hold}
-  main-complement{here}
-  main-complement{takeable}
+  main-complement ?{not-hold}
+  main-complement ?{here}
+  main-complement ?{takeable}
   main-complement (do-take)
   ; is do-take
   \ Toma un ente, si es posible.
@@ -364,7 +364,7 @@ false [if]
 :noname  ( -- )
   \ Acción de dejar.
   main-complement{required}
-  main-complement{hold}
+  main-complement ?{hold}
   main-complement (do-drop)
   ; is do-drop
 
@@ -436,7 +436,7 @@ false [if]
 
 :noname  ( -- )
   main-complement{required}
-  main-complement{accessible}
+  main-complement ?{accessible}
   main-complement close-it
   ; is do-close
 
@@ -559,7 +559,7 @@ false [if]
 :noname  ( -- )
   s" do-open" halto  \ XXX INFORMER
   main-complement{required}
-  main-complement{accessible}
+  main-complement ?{accessible}
   main-complement open-it
   ; is do-open
   \ Acción de abrir.
@@ -604,18 +604,18 @@ false [if]
 
 :noname  ( -- )
   main-complement{required}
-  main-complement{accessible}
-  main-complement{living} \ XXX TODO -- también es posible atacar otras cosas, como la ciudad u otros lugares, o el enemigo
-  tool-complement{hold}
+  main-complement ?{accessible}
+  main-complement ?{living} \ XXX TODO -- también es posible atacar otras cosas, como la ciudad u otros lugares, o el enemigo
+  tool-complement ?{hold}
   main-complement (do-attack)
   ; is do-attack
   \ Acción de atacar.
 
 :noname  ( -- )
   main-complement{required}
-  main-complement{accessible}
-  main-complement{living}
-  tool-complement{hold}
+  main-complement ?{accessible}
+  main-complement ?{living}
+  tool-complement ?{hold}
   main-complement (do-attack)
   ; is do-frighten
   \ Acción de asustar.
@@ -648,9 +648,9 @@ false [if]
 
 :noname  ( -- )
   main-complement{required}
-  main-complement{accessible}
-  main-complement{living}  \ XXX TODO -- también es posible matar otras cosas, como el enemigo
-  tool-complement{hold}
+  main-complement ?{accessible}
+  main-complement ?{living}  \ XXX TODO -- también es posible matar otras cosas, como el enemigo
+  tool-complement ?{hold}
   main-complement (do-kill)
   ; is do-kill
   \ Acción de matar.
@@ -685,9 +685,9 @@ false [if]
 
 :noname  ( -- )
   main-complement{required}
-  main-complement{accessible}
-  main-complement{breakable}
-  tool-complement{hold}
+  main-complement ?{accessible}
+  main-complement ?{breakable}
+  tool-complement ?{hold}
   main-complement (do-break)
   ; is do-break
   \ Acción de romper.
@@ -715,7 +715,7 @@ false [if]
 
 :noname  ( -- )
   main-complement{required}
-  main-complement{accessible}
+  main-complement ?{accessible}
   main-complement (do-hit)
   \ s" golpear"  main-complement+is-nonsense \ XXX TMP
   ; is do-hit
@@ -788,7 +788,7 @@ false [if]
 :noname  ( -- )
   \ Acción de afilar.
   main-complement{required}
-  main-complement{accessible}
+  main-complement ?{accessible}
   main-complement can-be-sharpened?
   if    main-complement (do-sharpen)
   else  nonsense
