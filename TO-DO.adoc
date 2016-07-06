@@ -5,6 +5,13 @@
 
 2016-07-06:
 
+Generalizar la actualización de `what` en todos los errores (en Flibustre).
+
+Hacer que los errores asociados a los filtros de acción sean
+configurables porla aplicación (en Flibustre).
+
+2016-07-06:
+
 Error tras matar la serpiente:
 
 ----

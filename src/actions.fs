@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607062039
+\ Last update: 201607062046
 
 \ Note: The comments of the code are in Spanish.
 
@@ -396,12 +396,14 @@ false [if]
   \ XXX TODO -- nuevo texto, quitar «fácilmente»
 
 : close-the-lock  ( -- )
+  lock~ ?accessible
   key~ ?this-tool
   lock~ ?open
   key~ ?hold
   door~ is-open? ?? first-close-the-door
   lock~ be-closed  .the-key-fits  ;
   \ Cerrar el candado, si es posible.
+  \ XXX TODO gestionar la herramienta
 
 : .the-door-closes  ( -- )
   s" La puerta"
@@ -426,6 +428,7 @@ false [if]
   \ Cerrar la puerta, sin candarla, si está abierta.
 
 : close-the-door  ( -- )
+  door~ ?accessible
   tool-complement ?dup
   if    key~ ?this-tool
         close-and-lock-the-door
@@ -442,7 +445,6 @@ false [if]
 
 :noname  ( -- )
   ?main-complement
-  main-complement ?accessible
   main-complement close-it
   ; is do-close
   \ Acción de cerrar.
@@ -463,6 +465,7 @@ false [if]
   \ XXX TODO -- falta mensaje adecuado sobre la llave que gira
 
 : open-the-lock  ( -- )
+  lock~ ?accessible
   key~ ?this-tool
   lock~ ?closed
   key~ ?needed
@@ -550,6 +553,7 @@ false [if]
   \ Abrir la puerta, que está cerrada.
 
 : open-the-door  ( -- )
+  door~ ?accessible
   door~ is-open?
   if    door~ it-is-already-open ?no-tool-complement
   else  (open-the-door)  then  ;
@@ -567,7 +571,6 @@ false [if]
 :noname  ( -- )
   s" do-open" halto  \ XXX INFORMER
   ?main-complement
-  main-complement ?accessible
   main-complement open-it
   ; is do-open
   \ Acción de abrir.
@@ -605,8 +608,8 @@ false [if]
 
 :noname  ( -- )
   ?main-complement
-  main-complement ?accessible
   main-complement ?living
+  main-complement ?accessible
   main-complement (do-attack)
   ; is do-attack
   \ Acción de atacar.
@@ -624,8 +627,8 @@ false [if]
 
 :noname  ( -- )
   ?main-complement
-  main-complement ?accessible
   main-complement ?beast
+  main-complement ?accessible
   main-complement (do-frighten)
   ; is do-frighten
   \ Acción de asustar.
@@ -651,8 +654,8 @@ false [if]
 
 :noname  ( -- )
   ?main-complement
-  main-complement ?accessible
   main-complement ?living
+  main-complement ?accessible
   main-complement (do-kill)
   ; is do-kill
   \ Acción de matar.
