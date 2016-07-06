@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607062012
+\ Last update: 201607062039
 
 \ Note: The comments of the code are in Spanish.
 
@@ -625,7 +625,7 @@ false [if]
 :noname  ( -- )
   ?main-complement
   main-complement ?accessible
-  main-complement ?living
+  main-complement ?beast
   main-complement (do-frighten)
   ; is do-frighten
   \ Acción de asustar.
