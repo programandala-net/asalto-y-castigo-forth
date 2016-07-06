@@ -5,17 +5,17 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607042040
+\ Last update: 201607061241
 
 \ Note: The comments of the code are in Spanish.
 
 \ ==============================================================
 \ Variables del intérprete de comandos
 
-variable action
+0 value action  ( -- xt | 0 )
   \ Código de la acción del comando.
 
-variable previous-action
+0 value previous-action  ( -- xt | 0 )
   \ Código de la acción del comando anterior.
 
 variable main-complement
@@ -25,17 +25,17 @@ variable secondary-complement
   \ Ente complemento secundario (complemento indirecto, destino u
   \ origen).
 
-defer tool-complement
-  \ Ente complemento de herramienta (indicada con «con» o «usando»).
+defer tool-complement  ( -- a )
+  \ Ente _a_ complemento de herramienta (indicada con «con» o «usando»).
 
-defer actual-tool-complement
-  \ Ente complemento estricto de herramienta (indicada con «usando»).
+defer actual-tool-complement  ( -- a )
+  \ Ente _a_ complemento estricto de herramienta (indicada con «usando»).
 
-defer company-complement
-  \ Ente complemento de compañía (indicado con «con»).
+defer company-complement  ( -- a )
+  \ Ente _a_ complemento de compañía (indicado con «con»).
 
-defer actual-company-complement
-  \ Ente complemento estricto de compañía (indicada con «con» en
+defer actual-company-complement  ( -- a )
+  \ Ente _a_ complemento estricto de compañía (indicada con «con» en
   \ presencia de «usando»).
 
 false [if]
@@ -59,8 +59,9 @@ variable used-prepositions
 \ ==============================================================
 \ Pronombres
 
-variable last-action
+0 value last-action
   \ Última acción utilizada por el jugador.
+  \ XXX TODO -- no usado
 
 \ La tabla `last-complement` que crearemos a continuación sirve para
 \ guardar los identificadores de entes correspondientes a los últimos
@@ -140,7 +141,7 @@ create last-complement /last-complements allot
   \ en la sección «penúltimos» de la tabla `last-complement`.
 
 : erase-last-command-elements  ( -- )
-  last-action off
+  false to last-action
   last-complement /last-complements erase  ;
   \ Borra todos los últimos elementos guardados de los comandos.
 
@@ -518,15 +519,15 @@ create prepositional-complements /prepositional-complements allot
   prepositions-off  ;
   \ Inicializa los complementos.
 
-: init-parsing  ( -- )  action off  complements-off  ;
+: init-parsing  ( -- )  false to action  complements-off  ;
   \ Preparativos previos a cada análisis.
 
 : (execute-action)  ( xt -- )
-  dup previous-action ! catch ?wrong  ;
+  dup to previous-action catch ?wrong  ;
   \ Ejecuta la acción del comando.
 
 : (execute-previous-action)  ( -- )
-  previous-action @ ?dup if  (execute-action)  then  ;
+  previous-action ?dup if  (execute-action)  then  ;
   \ Ejecuta la acción previa, si es posible
   \ (no es posible la primera vez, cuando su valor aún es cero).
   \ XXX NOTE: otra solución posible: inicializar la variable con una
@@ -539,7 +540,7 @@ create prepositional-complements /prepositional-complements allot
 
 : execute-action  ( -- )
   [debug-catch] [debug-parsing] [or] [??] ~~
-  action @ ?dup
+  action ?dup
   [debug-catch] [debug-parsing] [or] [??] ~~
   if    (execute-action)
   else  execute-previous-action
@@ -626,7 +627,7 @@ create prepositional-complements /prepositional-complements allot
   \ absoluto; 3) Guardarlo como último de su género y número.
 
 : save-command-elements  ( -- )
-  action @ last-action !  ;
+  action to last-action  ;
   \ XXX TODO -- no usado
   \ XXX TODO -- falta guardar los complementos
 
@@ -649,22 +650,22 @@ create prepositional-complements /prepositional-complements allot
   \ x1 = Acción o complemento recién encontrado
   \ x2 = Acción o complemento anterior, o cero
 
-: action!  ( xt -- )
+: set-action  ( xt -- )
   [debug-parsing] [??] ~~
-  action @ second?  too-many-actions-error# and throw
-  action !
+  action second?  too-many-actions-error# and throw
+  to action
   [debug-parsing] [??] ~~  ;
   \ Comprueba y almacena la acción _xt_.
   \ Provoca un error si ya había una acción.
 
-: preposition!  ( u -- )
+: set-preposition  ( u -- )
   a-preposition-is-open?
   unresolved-preposition-error# and throw
   current-preposition !  ;
   \ Almacena una (seudo)preposición recién hallada en la frase.
   \ u = Identificador de la preposición
 
-: prepositional-complement!  ( a -- )
+: set-prepositional-complement  ( a -- )
   [debug-parsing] [??] ~~
   current-prepositional-complement @ second?
   repeated-preposition-error# and throw
@@ -676,14 +677,14 @@ create prepositional-complements /prepositional-complements allot
   \ Almacena un ente _a_ como complemento (seudo)preposicional.
   \ Provoca error si la preposición ya había sido usada,
 
-: secondary-complement!  ( a -- )
+: set-secondary-complement  ( a -- )
   secondary-complement @ second?
   too-many-complements-error# and throw
   secondary-complement !  ;
   \ Almacena el ente _a_ como complemento secundario.
   \ Provoca un error si ya existía un complemento secundario.
 
-: main-complement!  ( a -- )
+: set-main-complement  ( a -- )
   [debug-parsing] [??] ~~
   main-complement @ second?
   too-many-complements-error# and throw
@@ -692,29 +693,29 @@ create prepositional-complements /prepositional-complements allot
   \ Almacena el ente _a_ como complemento principal.
   \ Provoca un error si ya existía un complemento principal.
 
-: non-prepositional-complement!  ( a -- )
-  main-complement @
-  if  secondary-complement!  else  main-complement!  then  ;
+: set-non-prepositional-complement  ( a -- )
+  main-complement @ if    set-secondary-complement
+                    else  set-main-complement  then  ;
   \ Almacena un complemento principal o secundario.
   \ a = Identificador de ente
   \ XXX TODO -- esta palabra sobrará cuando las (seudo)preposiciones
   \ estén implementadas completamente
 
-: (complement!)  ( a -- )
+: (set-complement)  ( a -- )
   a-preposition-is-open?
-  if    prepositional-complement!
-  else  non-prepositional-complement!  then  ;
+  if    set-prepositional-complement
+  else  set-non-prepositional-complement  then  ;
   \ Almacena el ente _a_ como complemento.
 
-: complement!  ( a | 0 -- )
-  ?dup ?? (complement!)  ;
+: set-complement  ( a | 0 -- )
+  ?dup ?? (set-complement)  ;
   \ Comprueba y almacena un complemento.
   \ a = Identificador de ente,
   \     o cero si se trata de un pronombre sin referente.
 
-: action|complement!  ( xt a -- )
-  action @ 0<> a-preposition-is-open? or
-  if  nip complement!  else  drop action!  then  ;
+: set-action-or-complement  ( xt a -- )
+  action 0<> a-preposition-is-open? or
+  if  nip set-complement  else  drop set-action  then  ;
   \ Comprueba y almacena un complemento _a_ o una acción _xt_,
   \ ambos posibles significados de la misma palabra.
 

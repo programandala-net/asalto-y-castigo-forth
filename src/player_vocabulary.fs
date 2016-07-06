@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607041652
+\ Last update: 201607061241
 
 \ Note: The comments of the code are in Spanish.
 
@@ -163,33 +163,33 @@ player-wordlist dup >order set-current
 \ de las formas masculinas o bien referirse al último y penúltimo
 \ complemento usado, de cualquier género, pero para ello la estructura
 \ de la tabla `last-complement` debería ser modificada.
-\ : esto  last-complement @ complement!  ;
-\ : aquello  last-but-one-complement @ complement!  ;
+\ : esto  last-complement @ set-complement  ;
+\ : aquello  last-but-one-complement @ set-complement  ;
 
-: éste  last-complement >masculine >singular @ complement!  ;
+: éste  last-complement >masculine >singular @ set-complement  ;
 ' éste aliases: ése  ;aliases
 
-: ésta  last-complement >feminine >singular @ complement!  ;
+: ésta  last-complement >feminine >singular @ set-complement  ;
 ' ésta aliases: ésa  ;aliases
 
-: éstos  last-complement >masculine >plural @ complement!  ;
+: éstos  last-complement >masculine >plural @ set-complement  ;
 ' éstos aliases: ésos  ;aliases
 
-: éstas  last-complement >feminine >plural @ complement!  ;
+: éstas  last-complement >feminine >plural @ set-complement  ;
 ' éstas aliases: ésas  ;aliases
 
-: aquél  last-but-one-complement >masculine >singular @ complement!  ;
+: aquél  last-but-one-complement >masculine >singular @ set-complement  ;
 
-: aquélla  last-but-one-complement >feminine >singular @ complement!  ;
+: aquélla  last-but-one-complement >feminine >singular @ set-complement  ;
 
-: aquéllos  last-but-one-complement >masculine >plural @ complement!  ;
+: aquéllos  last-but-one-complement >masculine >plural @ set-complement  ;
 
-: aquéllas  last-but-one-complement >feminine >plural @ complement!  ;
+: aquéllas  last-but-one-complement >feminine >plural @ set-complement  ;
 
 \ ----------------------------------------------
 \ Verbos
 
-: ir ['] do-go action!  ;
+: ir ['] do-go set-action  ;
 ' ir aliases:
   dirigirme diríjame diríjome
   dirigirse dirigíos  diríjase
@@ -204,7 +204,7 @@ player-wordlist dup >order set-current
   marchar marcha marchad marcho marche
   ;aliases
 
-: abrir  ['] do-open action!  ;
+: abrir  ['] do-open set-action  ;
 ' abrir aliases:  abre abrid abro abra  ;aliases
 : abrirlo  abrir éste  ;
 ' abrirlo aliases: ábrelo abridlo ábrolo ábralo  ;aliases
@@ -215,7 +215,7 @@ player-wordlist dup >order set-current
 : abrirlas  abrir éstas  ;
 ' abrirlas aliases: ábrelas abridlas ábrolas ábralas  ;aliases
 
-: cerrar  ['] do-close action!  ;
+: cerrar  ['] do-close set-action  ;
 ' cerrar aliases:  cierra cerrad cierro  ;aliases
 : cerrarlo  cerrar éste  ;
 ' cerrarlo aliases:  ciérralo cerradlo ciérrolo ciérrelo  ;aliases
@@ -226,7 +226,7 @@ player-wordlist dup >order set-current
 : cerrarlas  cerrar éstas  ;
 ' cerrarlas aliases:  ciérralas cerradlas ciérrolas ciérrelas  ;aliases
 
-: coger  ['] do-take action!  ;
+: coger  ['] do-take set-action  ;
 ' coger aliases:
   coge coged cojo coja
   agarrar agarra agarrad agarro agarre
@@ -257,7 +257,7 @@ player-wordlist dup >order set-current
   recogerlas recógelas recogedlas recójolas recójalas
   ;aliases
 
-: tomar  ['] do-take|do-eat action!  ;
+: tomar  ['] do-take|do-eat set-action  ;
   \ XXX TODO -- inconcluso
 ' tomar  aliases:
   toma tomad tomo tome
@@ -265,7 +265,7 @@ player-wordlist dup >order set-current
 : tomarlo  tomar éste  ;
 ' tomarlo aliases: tómalo tomadlo tómolo tómelo  ;aliases
 
-: dejar  ['] do-drop action!  ;
+: dejar  ['] do-drop set-action  ;
 ' dejar aliases:
   deja dejad dejo deje
   soltar suelta soltad suelto suelte
@@ -296,7 +296,7 @@ player-wordlist dup >order set-current
   tirarlas tíralas tiradlas tírolas tírelas
   ;aliases
 
-: mirar  ['] do-look action!  ;
+: mirar  ['] do-look set-action  ;
 ' mirar aliases:
   m mira mirad miro mire
   contemplar contempla contemplad contemplo contemple
@@ -327,7 +327,7 @@ player-wordlist dup >order set-current
   observarlas obsérvalas observadlas obsérvolas obsérvelas
   ;aliases
 
-: mirarse  ['] do-look-yourself action!  ;
+: mirarse  ['] do-look-yourself set-action  ;
 ' mirarse aliases:
   mírese miraos
   mirarte mírate mírote mírete
@@ -340,14 +340,14 @@ player-wordlist dup >order set-current
   observarme obsérvame observadme obsérvome obsérveme
   ;aliases
 
-: otear  ['] do-look-to-direction action!  ;
+: otear  ['] do-look-to-direction set-action  ;
 ' otear aliases: oteo otea otead otee  ;aliases
 
-: x  ['] do-exits action!  ;
-: salida  ['] do-exits (exits) action|complement!  ;
+: x  ['] do-exits set-action  ;
+: salida  ['] do-exits (exits) set-action-or-complement  ;
 ' salida aliases:  salidas  ;aliases
 
-: examinar  ['] do-examine action!  ;
+: examinar  ['] do-examine set-action  ;
 ' examinar aliases: ex examina examinad examino examine  ;aliases
 : examinarlo  examinar éste  ;
 ' examinarlo aliases: examínalo examinadlo examínolo examínelo  ;aliases
@@ -358,14 +358,14 @@ player-wordlist dup >order set-current
 : examinarlas  examinar éstas  ;
 ' examinarlas aliases: examínalas examinadlas examínolas examínelas  ;aliases
 
-: examinarse  ['] do-examine action! protagonist~ complement!  ;
+: examinarse  ['] do-examine set-action protagonist~ set-complement  ;
 ' examinarse aliases:
   examínese examinaos
   examinarte examínate examínete
   examinarme examíname examinadme examínome examíneme
   ;aliases
 
-: registrar  ['] do-search action!  ;
+: registrar  ['] do-search set-action  ;
 ' registrar aliases:  registra registrad registro registre  ;aliases
 : registrarlo  registrar éste  ;
 ' registrarlo aliases: regístralo registradlo regístrolo regístrelo  ;aliases
@@ -376,10 +376,10 @@ player-wordlist dup >order set-current
 : registrarlas  registrar éstas  ;
 ' registrarlas aliases: regístralas registradlas regístrolas regístrelas  ;aliases
 
-: i  ['] do-inventory inventory~ action|complement!  ;
+: i  ['] do-inventory inventory~ set-action-or-complement  ;
 ' i aliases:  inventario  ;aliases
 
-: inventariar  ['] do-inventory action!  ;
+: inventariar  ['] do-inventory set-action  ;
 ' inventariar aliases:
   inventaría inventariad inventarío inventaríe
   registrarse regístrase regístrese
@@ -387,7 +387,7 @@ player-wordlist dup >order set-current
   registrarte regístrate regístrote regístrete
   ;aliases
 
-: hacer  ['] do-do action!  ;
+: hacer  ['] do-do set-action  ;
 ' hacer aliases:  haz haced hago haga  ;aliases
 : hacerlo  hacer éste  ;
 ' hacerlo aliases:  hazlo hacedlo hágolo hágalo  ;aliases
@@ -398,7 +398,7 @@ player-wordlist dup >order set-current
 : hacerlas  hacer éstas  ;
 ' hacerlas aliases:  hazlas hacedlas hágolas hágalas  ;aliases
 
-: fabricar  ['] do-make action!  ;
+: fabricar  ['] do-make set-action  ;
 ' fabricar aliases:
   fabrica fabricad fabrico fabrique
   construir construid construye construyo construya
@@ -424,7 +424,7 @@ player-wordlist dup >order set-current
   construirlas constrúyelas construidlas constrúyolas constrúyalas
   ;aliases
 
-: nadar  ['] do-swim action!  ;
+: nadar  ['] do-swim set-action  ;
 ' nadar aliases:
   nada nado nade
   bucear bucea bucead buceo bucee
@@ -439,7 +439,7 @@ player-wordlist dup >order set-current
   bañarte báñate bañaos báñote báñete
   ;aliases
 
-: quitarse  ['] do-take-off action!  ;
+: quitarse  ['] do-take-off set-action  ;
 ' quitarse aliases:
   quítase quitaos quítese
   quitarte quítate quítote quítete
@@ -470,7 +470,7 @@ player-wordlist dup >order set-current
   quitármelas quítamelas quítomelas quítemelas
   ;aliases
 
-: ponerse  ['] do-put-on action!  ;
+: ponerse  ['] do-put-on set-action  ;
 ' ponerse aliases:
   póngase poneos
   ponerme ponme póngome póngame
@@ -519,7 +519,7 @@ player-wordlist dup >order set-current
   colocármelas colócamelas colócomelas colóquemelas
   ;aliases
 
-: matar  ['] do-kill action!  ;
+: matar  ['] do-kill set-action  ;
 ' matar aliases:
   mata matad mato mate
   asesinar asesina asesinad asesino asesine
@@ -550,7 +550,7 @@ player-wordlist dup >order set-current
   aniquilarlas aniquínalas aniquinadlas aniquínolas aniquínelas
   ;aliases
 
-: golpear  ['] do-hit action!  ;
+: golpear  ['] do-hit set-action  ;
 ' golpear aliases:
   golpea golpead golpeo golpee
   sacudir sacude sacudid sacudo sacuda
@@ -571,7 +571,7 @@ player-wordlist dup >order set-current
   sacudirlas sacúdelas sacudidlas sacúdolas sacúdalas
   ;aliases
 
-: atacar  ['] do-attack action!  ;
+: atacar  ['] do-attack set-action  ;
 ' atacar aliases:
   ataca atacad ataco ataque
   agredir agrede agredid agredo agreda
@@ -597,7 +597,7 @@ player-wordlist dup >order set-current
   agredirlas agrédelas agredidlas agrédolas agrédalas
   ;aliases
 
-: romper  ['] do-break action!  ;
+: romper  ['] do-break set-action  ;
 ' romper aliases:
   rompe romped rompo rompa
   despedazar despedaza despedazad despedazo despedace
@@ -641,7 +641,7 @@ player-wordlist dup >order set-current
 \ quebrar \ XXX TODO
 \ desgarrar \ XXX TODO
 
-: asustar  ['] do-frighten action!  ;
+: asustar  ['] do-frighten set-action  ;
 ' asustar aliases:
   asusto asusta asustad asuste
   amedrentar amedrento amedrenta amedrentad amedrente
@@ -677,7 +677,7 @@ player-wordlist dup >order set-current
   atemorizarlas atemorízalas atemorizadlas atemorízolas atemorícelas
   ;aliases
 
-: afilar  ['] do-sharpen action!  ;
+: afilar  ['] do-sharpen set-action  ;
 ' afilar aliases:  afila afilad afilo afile  ;aliases
 : afilarlo  afilar éste  ;
 ' afilarlo aliases:  afílalo afiladlo afílolo afílelo  ;aliases
@@ -688,7 +688,7 @@ player-wordlist dup >order set-current
 : afilarlas  afilar éstas  ;
 ' afilarlas aliases:  afílalas afiladlas afílolas afílelas  ;aliases
 
-: partir  ['] do-go|do-break action!  ;
+: partir  ['] do-go|do-break set-action  ;
 ' partir aliases:  parto partid parta  ;aliases
 \ «parte» está en la sección final de ambigüedades
 : partirlo  partir éste  ;
@@ -728,11 +728,11 @@ player-wordlist dup >order set-current
   aguardarlas aguárdalas aguardadlas aguárdolas aguárdelas
   ;aliases
 
-: escalar  ['] do-climb action!  ;
+: escalar  ['] do-climb set-action  ;
 ' escalar aliases:  escala escalo escale  ;aliases
 ' escalar aliases:  trepar trepa trepo trepe  ;aliases
 
-: hablar  ['] do-speak action!  ;
+: hablar  ['] do-speak set-action  ;
   \ XXX TODO -- Crear nuevas palabras según la preposición que necesiten.
   \ XXX TODO -- Separar matices.
 
@@ -749,7 +749,7 @@ player-wordlist dup >order set-current
   \ contar cuenta cuento cuente  \ XXX
   \ contarle cuéntale cuéntole cuéntele  \ XXX
 
-: presentarse  ['] do-introduce-yourself action!  ;
+: presentarse  ['] do-introduce-yourself set-action  ;
 ' presentarse aliases:
   preséntase preséntese
   presentarte preséntate presentaos preséntete
@@ -761,24 +761,24 @@ player-wordlist dup >order set-current
 \ ----------------------------------------------
 \ Nombres de objetos o personas
 
-: ulfius  ulfius~ complement!  ;
+: ulfius  ulfius~ set-complement  ;
 
-: ambrosio  (ambrosio) complement!  ;
+: ambrosio  (ambrosio) set-complement  ;
 
-: hombre  (man) complement!  ;
+: hombre  (man) set-complement  ;
 ' hombre aliases:  señor tipo individuo persona  ;aliases
 
-: hombres  (men) complement!  ;
+: hombres  (men) set-complement  ;
 ' hombres aliases: gente personas  ;aliases
 \ XXX Ambigüedad.:
 \ «jefe» podría ser también el jefe de los enemigos durante la batalla:
 
-: jefe  leader~ complement!  ;
+: jefe  leader~ set-complement  ;
 ' jefe aliases:
   líder viejo anciano abuelo
   ;aliases
 
-: soldados  soldiers~ complement!  ;
+: soldados  soldiers~ set-complement  ;
 ' soldados aliases:
   guerreros luchadores combatientes camaradas
   compañeros oficiales suboficiales militares
@@ -786,7 +786,7 @@ player-wordlist dup >order set-current
   compañero oficial suboficial militar
   ;aliases
 
-: multitud  refugees~ complement!  ;
+: multitud  refugees~ set-complement  ;
 ' multitud aliases:
   niño niños niña niñas
   muchacho muchachos muchacha muchachas
@@ -808,29 +808,29 @@ player-wordlist dup >order set-current
 : refugiado leader~ conversations? ?? viejo ;
 
 
-: altar  altar~ complement!  ;
+: altar  altar~ set-complement  ;
 
-: arco  arch~ complement!  ;
+: arco  arch~ set-complement  ;
 
-: capa  cloak~ complement!  ;
+: capa  cloak~ set-complement  ;
   \ XXX TODO -- hijuelo?
 ' capa aliases:  lana  ;aliases
 
 \ ' capa aliases:  abrigo  ;aliases
   \ XXX TODO -- diferente género
 
-: coraza  cuirasse~ complement!  ;
+: coraza  cuirasse~ set-complement  ;
 ' coraza aliases:  armadura  ;aliases
 
-: puerta  door~ complement!  ;
+: puerta  door~ set-complement  ;
 
-: esmeralda  emerald~ complement!  ;
+: esmeralda  emerald~ set-complement  ;
 ' esmeralda aliases:  joya  ;aliases
   \ XXX TODO -- piedra-preciosa brillante
 
-: derrumbe fallen-away~ complement!  ;
+: derrumbe fallen-away~ set-complement  ;
 
-: banderas  flags~ complement!  ;
+: banderas  flags~ set-complement  ;
 ' banderas aliases:
     bandera pendones enseñas pendón enseña
     mástil mástiles
@@ -841,115 +841,115 @@ player-wordlist dup >order set-current
 : dragones  flags~ is-known? ?? banderas ;
 ' dragones aliases: dragón  ;aliases
 
-: pedernal  flint~ complement!  ;
+: pedernal  flint~ set-complement  ;
 
-: ídolo  idol~ complement!  ;
+: ídolo  idol~ set-complement  ;
 ' ídolo aliases:  ojo orificio agujero  ;aliases
   \ XXX TODO -- separar los sinónimos de ídolo
 
-: llave  key~ complement!  ;
+: llave  key~ set-complement  ;
 ' llave aliases:  hierro herrumbe óxido  ;aliases
 
-: lago  lake~ complement!  ;
+: lago  lake~ set-complement  ;
 ' lago aliases:  laguna agua estanque  ;aliases
   \ XXX TODO -- diferente género
 
-: candado  lock~ complement!  ;
+: candado  lock~ set-complement  ;
 ' candado aliases:  cerrojo  ;aliases
 
-: tronco  log~ complement!  ;
+: tronco  log~ set-complement  ;
 ' tronco aliases:  leño madero  ;aliases
   \ XXX TODO -- madera
 
-: trozo  piece~ complement!  ;
+: trozo  piece~ set-complement  ;
 ' trozo aliases:  pedazo retal tela  ;aliases
 
-: harapo  rags~ complement!  ;
+: harapo  rags~ set-complement  ;
 
 : rocas  ( -- )
   location-09~ am-i-there?
-  if  fallen-away~  else  rocks~  then  complement!  ;
+  if  fallen-away~  else  rocks~  then  set-complement  ;
 ' rocas aliases:  piedras pedruscos  ;aliases
 
-: piedra  (stone) complement!  ;
+: piedra  (stone) set-complement  ;
 ' piedra aliases:  roca pedrusco  ;aliases
 
-: serpiente  snake~ complement!  ;
+: serpiente  snake~ set-complement  ;
 ' serpiente aliases:  reptil ofidio culebra animal bicho  ;aliases
 
-: espada  sword~ complement!  ;
+: espada  sword~ set-complement  ;
 ' espada aliases:  tizona arma  ;aliases
 \ XXX Nota.: "arma" es femenina pero usa artículo "él", contemplar en los cálculos de artículo.
 
-: hilo  thread~ complement!  ;
+: hilo  thread~ set-complement  ;
 ' hilo aliases:  hebra  ;aliases
 
-: antorcha  torch~ complement!  ;
+: antorcha  torch~ set-complement  ;
 
-: cascada  waterfall~ complement!  ;
+: cascada  waterfall~ set-complement  ;
 ' cascada aliases:  catarata  ;aliases
 
-: catre  s" catre" bed~ ms-name! bed~ complement!  ;
+: catre  s" catre" bed~ ms-name! bed~ set-complement  ;
 ' catre aliases:  camastro  ;aliases
 
-: cama s" cama" bed~ fs-name! bed~ complement!  ;
+: cama s" cama" bed~ fs-name! bed~ set-complement  ;
 
-: velas  candles~ complement!  ;
+: velas  candles~ set-complement  ;
 ' velas aliases:  vela  ;aliases
 
-: mesa  table~ complement!  ;
+: mesa  table~ set-complement  ;
 ' mesa aliases:  mesita pupitre  ;aliases
 
-: puente  (bridge) complement!  ;
+: puente  (bridge) set-complement  ;
 
-: alguien  (somebody) complement!  ;
+: alguien  (somebody) set-complement  ;
 
-: hierba  s" hierba" grass~ fs-name! grass~ complement!  ;
+: hierba  s" hierba" grass~ fs-name! grass~ set-complement  ;
 
-: hierbas  s" hierbas" grass~ fp-name! grass~ complement!  ;
+: hierbas  s" hierbas" grass~ fp-name! grass~ set-complement  ;
 
-: hierbajo  s" hierbajo" grass~ ms-name! grass~ complement!  ;
+: hierbajo  s" hierbajo" grass~ ms-name! grass~ set-complement  ;
 
-: hierbajos  s" hierbajos" grass~ mp-name! grass~ complement!  ;
+: hierbajos  s" hierbajos" grass~ mp-name! grass~ set-complement  ;
 
-: hiedra  s" hiedra" grass~ fs-name! grass~ complement!  ;
+: hiedra  s" hiedra" grass~ fs-name! grass~ set-complement  ;
 
-: hiedras  s" hiedras" grass~ fp-name! grass~ complement!  ;
+: hiedras  s" hiedras" grass~ fp-name! grass~ set-complement  ;
 
 \ ----------------------------------------------
 \ Direcciones y sus acciones asociadas
 
-: n  ['] do-go-north north~ action|complement!  ;
+: n  ['] do-go-north north~ set-action-or-complement  ;
 ' n aliases:  norte septentrión  ;aliases
 
-: s  ['] do-go-south south~ action|complement!  ;
+: s  ['] do-go-south south~ set-action-or-complement  ;
 ' s aliases:  sur meridión  ;aliases
 
-: e  ['] do-go-east east~ action|complement!  ;
+: e  ['] do-go-east east~ set-action-or-complement  ;
 ' e aliases:  este oriente levante  ;aliases
 
-: o  ['] do-go-west west~ action|complement!  ;
+: o  ['] do-go-west west~ set-action-or-complement  ;
 ' o aliases:  oeste occidente poniente  ;aliases
 
-: ar  ['] do-go-up up~ action|complement!  ;
+: ar  ['] do-go-up up~ set-action-or-complement  ;
 ' ar aliases:  arriba  ;aliases
 
-: subir  ['] do-go-up action!  ;
+: subir  ['] do-go-up set-action  ;
 ' subir aliases:  sube subid subo suba  ;aliases
 ' subir aliases:  ascender asciende ascended asciendo ascienda  ;aliases
 ' subir aliases:  subirse subíos súbese súbase  ;aliases
 ' subir aliases:  subirte súbete súbote súbate  ;aliases
 
-: ab  ['] do-go-down down~ action|complement!  ;
+: ab  ['] do-go-down down~ set-action-or-complement  ;
 ' ab aliases:  abajo  ;aliases
 
-: bajar  ['] do-go-down action!  ;
+: bajar  ['] do-go-down set-action  ;
 ' bajar aliases:  baja bajad bajo baje  ;aliases
 ' bajar aliases:  bajarse bajaos bájase bájese  ;aliases
 ' bajar aliases:  bajarte bájate bájote bájete  ;aliases
 ' bajar aliases:  descender desciende descended desciendo descienda  ;aliases
 
-: salir  ['] do-go-out action!  ;
+: salir  ['] do-go-out set-action  ;
 ' salir aliases:  sal salid salgo salga  ;aliases
   \ XXX TODO -- ambigüedad. sal
 ' salir aliases:  salirse  ;aliases
@@ -957,57 +957,57 @@ player-wordlist dup >order set-current
 ' salir aliases:  salirte  ;aliases
   \ XXX TODO -- ambigüedad. salte
 
-: fuera  ['] do-go-out out~ action|complement!  ;
+: fuera  ['] do-go-out out~ set-action-or-complement  ;
 ' fuera aliases:  afuera  ;aliases
 
-: exterior  out~ complement!  ;
+: exterior  out~ set-complement  ;
 
-: entrar ['] do-go-in action!  ;
+: entrar ['] do-go-in set-action  ;
 ' entrar aliases:  entra entrad entro entre  ;aliases
 ' entrar aliases:  entrarse entraos éntrese éntrase  ;aliases
 ' entrar aliases:  entrarte éntrete éntrate  ;aliases
 
-: dentro  ['] do-go-in in~ action|complement!  ;
+: dentro  ['] do-go-in in~ set-action-or-complement  ;
 ' dentro aliases:  adentro  ;aliases
 
-: interior  in~ complement!  ;
+: interior  in~ set-complement  ;
 
 \ ----------------------------------------------
 \ Términos asociados a entes globales o virtuales
 
-: nubes  clouds~ complement!  ;
+: nubes  clouds~ set-complement  ;
   \ XXX TODO ¿cúmulo-nimbos?, ¿nimbos?
 ' nubes aliases:  nube estratocúmulo estratocúmulos cirro cirros  ;aliases
 
-: suelo  floor~ complement!  ;
+: suelo  floor~ set-complement  ;
 ' suelo aliases:  suelos tierra firme  ;aliases
   \ XXX TODO -- Añadir «piso», que es ambiguo
 
-: cielo  sky~ complement!  ;
+: cielo  sky~ set-complement  ;
 ' cielo aliases:  cielos firmamento  ;aliases
 
-: techo  ceiling~ complement!  ;
+: techo  ceiling~ set-complement  ;
 
-: cueva  (cave) complement!  ;
+: cueva  (cave) set-complement  ;
 ' cueva aliases:  caverna gruta  ;aliases
 
-: entrada  (entrance) complement!  ;
+: entrada  (entrance) set-complement  ;
 ' entrada aliases:  acceso  ;aliases
   \ XXX TODO ¿Implementar cambio de nombre y/o género gramatical?
 \ (entrada, acceso).
 
-: enemigo  enemy~ complement!  ;
+: enemigo  enemy~ set-complement  ;
 ' enemigo aliases: enemigos sajón sajones  ;aliases
 
 : todo ;
   \ XXX TODO
 
-: pared  (wall) complement!  ;
+: pared  (wall) set-complement  ;
 ' pared  aliases: muro  ;aliases
   \ XXX TODO ¿Implementar cambio de nombre y/o género gramatical?
   \ (pared/es, muro/s).
 
-: paredes  wall~ complement!  ;
+: paredes  wall~ set-complement  ;
 ' paredes  aliases: muros  ;aliases
 
 \ ----------------------------------------------
@@ -1034,10 +1034,10 @@ player-wordlist dup >order set-current
 \ ----------------------------------------------
 \ (Seudo)preposiciones
 
-: con  ( -- )  «con»-preposition# preposition!  ;
+: con  ( -- )  «con»-preposition# set-preposition  ;
   \ Uso: Herramienta o compañía
 
-: usando  ( -- )  «usando»-preposition# preposition!  ;
+: usando  ( -- )  «usando»-preposition# set-preposition  ;
   \ Uso: Herramienta
 
 ' usando aliases: utilizando empleando mediante  ;aliases
@@ -1047,24 +1047,24 @@ false [if]
   \ XXX OLD
   \ XXX TODO -- descartado, pendiente
 
-: a  ( -- )  «a»-preposition# preposition!  ;
+: a  ( -- )  «a»-preposition# set-preposition  ;
   \ Uso: Destino de movimiento, objeto indirecto
 
 ' a aliases: al  ;aliases
 
-: de  ( -- )  «de»-preposition# preposition!  ;
+: de  ( -- )  «de»-preposition# set-preposition  ;
   \ Uso: Origen de movimiento, propiedad
 
-: hacia  ( -- )  «hacia»-preposition# preposition!  ;
+: hacia  ( -- )  «hacia»-preposition# set-preposition  ;
   \ Uso: Destino de movimiento, destino de lanzamiento
 
-: contra  ( -- )  «contra»-preposition# preposition!  ;
+: contra  ( -- )  «contra»-preposition# set-preposition  ;
   \ Uso: Destino de lanzamiento
 
-: para  ( -- )  «para»-preposition# preposition!  ;
+: para  ( -- )  «para»-preposition# set-preposition  ;
   \ Uso: Destino de movimiento, destino de lanzamiento
 
-: por  ( -- )  «por»-preposition# preposition!  ;
+: por  ( -- )  «por»-preposition# set-preposition  ;
   \ Uso: Destino de movimiento
 
 [then]
@@ -1072,25 +1072,25 @@ false [if]
 \ ----------------------------------------------
 \ Términos ambiguos
 
-: cierre  ( -- )  action @ if  candado  else  cerrar  then  ;
+: cierre  ( -- )  action if  candado  else  cerrar  then  ;
 
-: parte  ( -- )  action @ if  trozo  else  partir  then  ;
+: parte  ( -- )  action if  trozo  else  partir  then  ;
 
 \ ----------------------------------------------
 \ Comandos del sistema
 
-: #recolorea  ( -- )  ['] recolor action!  ;
+: #recolorea  ( -- )  ['] recolor set-action  ;
   \ Restaura los colores predeterminados.
 
 : #configura  ( "name" | -- )
   parse-name temporary-config-file place
-  ['] read-config action!  ; immediate
+  ['] read-config set-action  ; immediate
   \ Carga el fichero de configuración _name_.  Si no se indica _name_,
   \ se cargará el fichero de configuración predeterminado.
 
 : #reconfigura  ( "name" | -- )
   parse-name temporary-config-file place
-  ['] get-config action!  ; immediate
+  ['] get-config set-action  ; immediate
   \ Restaura la configuración predeterminada y después carga el
   \ fichero de configuración _name_.  Si no se indica _name_, se
   \ cargará el fichero de configuración predeterminado.
@@ -1099,7 +1099,7 @@ false [if]
   [debug-parsing] [??] ~~
   parse-name >sb
   [debug-parsing] [??] ~~
-  ['] save-the-game action!
+  ['] save-the-game set-action
   [debug-parsing] [??] ~~
   ;  immediate
   \ Graba el estado de la partida en un fichero.
@@ -1110,16 +1110,16 @@ false [if]
   [debug-parsing] [??] ~~
   >sb
   [debug-parsing] [??] ~~
-  ['] load-the-game action!
+  ['] load-the-game set-action
   [debug-parsing] [??] ~~
   ;  immediate
   \ Carga el estado de la partida de un fichero.
 
-: #fin  ( -- )  ['] finish action!  ;
+: #fin  ( -- )  ['] finish set-action  ;
   \ Abandonar la partida
 
 \ : #ayuda  ( -- )
-\   \ ['] do-help action!
+\   \ ['] do-help set-action
 \   ;
   \ XXX TODO
 
