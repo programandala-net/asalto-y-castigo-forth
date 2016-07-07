@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607062046
+\ Last update: 201607071646
 
 \ Note: The comments of the code are in Spanish.
 
@@ -558,6 +558,9 @@ false [if]
   if    door~ it-is-already-open ?no-tool-complement
   else  (open-the-door)  then  ;
   \ Abrir la puerta, si es posible.
+  \
+  \ XXX TODO nueva condición `?is-closed`,
+  \ en lugar de usar `is-open?` y `it-is-already-open`
 
 : open-it  ( a -- )
   dup familiar++
@@ -804,27 +807,6 @@ false [if]
 \ ----------------------------------------------
 \ Movimiento
 
-\ XXX TODO -- mover a la sección de errores
-
-: toward-that-direction  ( a -- ca len )
-  dup >r  has-no-article?
-  if    s" hacia" r> full-name
-  else  toward-the(m)$ r> name
-  then  s&  ;
-  \ Devuelve «al/hacia la dirección indicada», correspondiente al ente
-  \ dirección _a_.
-
-: (impossible-move)  ( a -- )
-  ^is-impossible$ s" ir" s&  rot
-  3 random if    toward-that-direction
-           else  drop that-way$
-           then  s& period+ action-error  ;
-  \ El movimiento es imposible hacia el ente dirección _a_.
-  \ XXX TODO -- añadir una tercera variante «ir en esa dirección»; y
-  \ otras específicas como «no es posible subir»
-
-1 ' (impossible-move) action-error: impossible-move drop
-
 : do-go-if-possible  ( a -- )
   [debug] [if]  s" Al entrar en `do-go-if-possible`" debug  [then]  \ XXX INFORMER
   dup direction ?dup if  \ ¿El ente es una dirección?
@@ -903,6 +885,7 @@ false [if]
   is-the-cave-entrance-accessible? 0=
   cannot-see-what-error# and throw
   in~ do-go-if-possible  ;
+  \ XXX FIXME -- dónde se actualiza `what` aquí?
 
 :noname  ( -- )
   ?no-tool-complement

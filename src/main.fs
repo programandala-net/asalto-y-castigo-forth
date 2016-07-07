@@ -7,7 +7,7 @@
 \
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 \
-\ Last update: 201607062101
+\ Last update: 201607071622
 
 \ ==============================================================
 \ Credits
@@ -95,9 +95,8 @@ s" intro.fs" including
   randomize
   init-parser/game init-entities init-plot
   get-config new-page
-  [false] [if]    about cr intro  location-01~ enter-location
-          [else]  init-game-for-debugging
-          [then]  ;
+  \ init-game-for-debugging exit  \ XXX TMP -- for debugging
+  about cr intro  location-01~ enter-location  ;
   \ Initialization needed before every game.
 
 : game  ( -- )  begin  plot accept-command obey  game-over?  until  ;

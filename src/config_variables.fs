@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607071407
+\ Last update: 201607071417
 
 \ Note: The comments of the code are in Spanish.
 
@@ -40,7 +40,7 @@ svariable 'generic-language-error$
 variable action-errors-verbosity
   \ Nivel de detalle de los mensajes de error operativo.
 
-svariable 'action-error-general-message$
+svariable 'generic-action-error$
   \ Mensaje de error operativo para el nivel 1.
 
 0 constant min-errors-verbosity

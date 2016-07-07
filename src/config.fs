@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607071351
+\ Last update: 201607071425
 
 \ Note: The comments of the code are in Spanish.
 
@@ -188,7 +188,7 @@ wordlist dup constant config-wordlist
   \ Configura el nivel de detalle de los mensajes de error operativo.
 
 : mensaje_genérico_de_error_operativo  ( ca len -- )
-  'action-error-general-message$ place  ;
+  'generic-action-error$ place  ;
   \ Configura el mensaje genérico para los mensajes de error operativo.
 
 : repetir_la_última_acción  ( f -- )
@@ -224,7 +224,7 @@ restore-wordlists
   max-errors-verbosity language-errors-verbosity !
   max-errors-verbosity action-errors-verbosity !
   s" Orden incorrecta." 'generic-language-error$ place
-  s" No es posible hacer eso." 'action-error-general-message$ place
+  s" No es posible hacer eso." 'generic-action-error$ place
   repeat-previous-action? on
   init-prompts  init-colors  ;
   \ Inicializa las variables de configuración con sus valores
@@ -236,7 +236,7 @@ false [if]
   s" Se ha producido un error #"
   rot n>str s+
   s"  leyendo el fichero de configuración." s+
-  system-error  ;
+  system-error.  ;
   \ XXX TODO -- El error no es significativo porque siempre es #-37,
   \ no el que ha causado el fallo de interpretación del fichero.
   \ Por eso de momento esta versión está desactivada.
@@ -245,7 +245,7 @@ false [if]
 
 : read-config-error  ( -- )
   s" Se ha producido un error leyendo el fichero de configuración."
-  system-error  ;
+  system-error.  ;
 
 [then]
 

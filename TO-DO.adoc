@@ -1,7 +1,27 @@
 = Tareas pendientes de Asalto y castigo
-:revdate: 2016-07-06
+:revdate: 2016-07-07
 
 == Programación
+
+2016-07-07:
+
+Error, no hay respuesta en las repeticiones de «ahuyéntala»:
+
+----
+El pasaje sigue de norte a sur.
+Una serpiente está bloqueando el paso al sur.
+Puedes ver una serpiente.
+> mira serpiente
+Una serpiente grande, muy atenta a tu más mínimo movimiento.
+> ahuyéntala
+Sorprendida por los amenazadores tajos, la serpiente se esconde.
+> ahuyéntalo
+Sé más claro, por favor, no se reconoce ningún complemento principal en el comando.
+> ahuyéntala
+> ahuyéntala
+> ahuyéntala
+> ahuyéntala
+----
 
 2016-07-06:
 

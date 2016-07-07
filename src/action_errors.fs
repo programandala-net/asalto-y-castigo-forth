@@ -5,43 +5,27 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607061300
+\ Last update: 201607071430
 
 \ Note: The comments of the code are in Spanish.
 
 \ ==============================================================
 
-: action-error-general-message$  ( -- ca len )
-  'action-error-general-message$ count  ;
+: generic-action-error$  ( -- ca len )
+  'generic-action-error$ count  ;
   \ Devuelve el mensaje de error operativo para el nivel 1.
 
-: action-error-general-message  ( -- )
-  action-error-general-message$ action-error  ;
+:noname ( -- )
+  generic-action-error$ action-error.  ;
+is generic-action-error
   \ Muestra el mensaje de error operativo para el nivel 1.
 
-: unerror  ( i*j pfa -- )  cell+ @ drops  ;
-  \ Borra de la pila los parámetros de un error operativo.
-
-: action-error:  ( n xt1 "name" -- xt2 )
-  create , , latestxt
-  does>  ( pfa )
-    action-errors-verbosity @ case
-      0 of  unerror  endof
-      1 of  unerror action-error-general-message  endof
-      2 of  perform  endof
-    endcase  ;
-  \ Crea un error operativo con nombre _name_.
-  \ n = número de parámetros del error operativo efectivo
-  \ xt1 = dirección de ejecución del error operativo efectivo
-  \ "name1" = nombre de la palabra de error a crear
-  \ xt2 = dirección de ejecución de la palabra de error creada
-
-: known-entity-is-not-here$  ( a -- ca len )
+: known-entity>is-not-here$  ( a -- ca len )
   full-name s" no está" s&
   s{ s" aquí" s" por aquí" }s&  ;
   \  Devuelve mensaje de que un ente conocido no está presente.
 
-: unknown-entity-is-not-here$  ( a -- ca len )
+: unknown-entity>is-not-here$  ( a -- ca len )
   s{ s" Aquí" s" Por aquí" }s
   s" no hay" s&
   rot subjective-negative-name s&  ;
@@ -49,34 +33,34 @@
 
 : (is-not-here)  ( a -- )
   dup is-familiar?
-  if    known-entity-is-not-here$
-  else  unknown-entity-is-not-here$
-  then  period+ action-error  ;
+  if    known-entity>is-not-here$
+  else  unknown-entity>is-not-here$
+  then  period+ action-error.  ;
   \  Informa de que un ente no está presente.
 
-1 ' (is-not-here) action-error: be-not-here
+1 ' (is-not-here) action-error be-not-here
 to is-not-here-error#
 
 : (is-not-here-what)  ( -- )  what @ (is-not-here)  ;
   \  Informa de que el ente `what` no está presente.
 
-0 ' (is-not-here-what) action-error: be-not-here-what
+0 ' (is-not-here-what) action-error be-not-here-what
 to is-not-here-what-error#
 
 : (cannot-see)  ( a -- )
   ^cannot-see$
   rot subjective-negative-name-as-direct-object s&
-  period+ action-error  ;
+  period+ action-error.  ;
   \ Informa de que un ente no puede ser mirado.
 
-1 ' (cannot-see) action-error: cannot-see
+1 ' (cannot-see) action-error cannot-see
 to cannot-see-error#
 
 : (cannot-see-what)  ( -- )
   what @ (cannot-see)  ;
   \ Informa de que el ente `what` no puede ser mirado.
 
-0 ' (cannot-see-what) action-error: cannot-see-what
+0 ' (cannot-see-what) action-error cannot-see-what
 to cannot-see-what-error#
 
 : like-that$  ( -- ca len )
@@ -124,17 +108,17 @@ to cannot-see-what-error#
 : (is-impossible)  ( ca len -- )
   ['] x-is-impossible$
   ['] it-is-impossible-x$
-  2 choose execute  period+ action-error  ;
+  2 choose execute  period+ action-error.  ;
   \ Informa de que una acción indicada (en infinitivo) es imposible.
   \ ca len = Acción imposible, en infinitivo, o una cadena vacía
 
-2 ' (is-impossible) action-error: be-impossible drop
+2 ' (is-impossible) action-error be-impossible drop
 
 : (impossible)  ( -- )
   something-like-that$ (is-impossible)  ;
   \ Informa de que una acción no especificada es imposible.
 
-0 ' (impossible) action-error: impossible
+0 ' (impossible) action-error impossible
 to impossible-error#
 
 : try$  ( -- ca len )  s{ null$ null$ s" intentar" }s  ;
@@ -174,18 +158,18 @@ to impossible-error#
 : (is-nonsense)  ( ca len -- )
   ['] x-is-nonsense$
   ['] it-is-nonsense-x$
-  2 choose execute  period+ action-error  ;
+  2 choose execute  period+ action-error.  ;
   \ Informa de que una acción dada no tiene sentido.
   \ ca len = Acción que no tiene sentido;
   \       es un verbo en infinitivo, un sustantivo o una cadena vacía
 
-2 ' (is-nonsense) action-error: be-nonsense drop
+2 ' (is-nonsense) action-error be-nonsense drop
 
 : (nonsense)  ( -- )  s" eso" (is-nonsense)  ;
   \ Informa de que alguna acción no especificada no tiene sentido.
   \ XXX TMP
 
-0 ' (nonsense) action-error: nonsense
+0 ' (nonsense) action-error nonsense
 to nonsense-error#
 
 : dangerous$  ( -- ca len )
@@ -227,18 +211,18 @@ to nonsense-error#
 : (is-dangerous)  ( ca len -- )
   ['] x-is-dangerous$
   ['] it-is-dangerous-x$
-  2 choose execute  period+ action-error  ;
+  2 choose execute  period+ action-error.  ;
   \ Informa de que una acción dada (en infinitivo)
   \ no tiene sentido.
   \ ca len = Acción que no tiene sentido, en infinitivo, o una cadena vacía
 
-2 ' (is-dangerous) action-error: be-dangerous drop
+2 ' (is-dangerous) action-error be-dangerous drop
 
 : (dangerous)  ( -- )
   something-like-that$ (is-dangerous)  ;
   \ Informa de que alguna acción no especificada no tiene sentido.
 
-0 ' (dangerous) action-error: dangerous
+0 ' (dangerous) action-error dangerous
 to dangerous-error#
 
 : ?full-name&  ( ca len a | ca len 0 -- )
@@ -254,7 +238,7 @@ to dangerous-error#
   \ ca len = Acción en infinitivo
   \ a1 = Ente al que se refiere la acción y cuyo objeto directo es (o cero)
 
-3 ' (+is-nonsense) action-error: +is-nonsense drop
+3 ' (+is-nonsense) action-error +is-nonsense drop
 
 : (main-complement+is-nonsense)  ( ca len -- )
   main-complement (+is-nonsense)  ;
@@ -262,7 +246,7 @@ to dangerous-error#
   \ que completar con el nombre del complemento principal, no tiene
   \ sentido.
 
-2 ' (main-complement+is-nonsense) action-error: main-complement+is-nonsense drop
+2 ' (main-complement+is-nonsense) action-error main-complement+is-nonsense drop
 
 : (secondary-complement+is-nonsense)  ( ca len -- )
   secondary-complement (+is-nonsense)  ;
@@ -270,7 +254,7 @@ to dangerous-error#
   \ que completar con el nombre del complemento secundario, no tiene
   \ sentido.
 
-2 ' (secondary-complement+is-nonsense) action-error: secondary-complement+is-nonsense drop
+2 ' (secondary-complement+is-nonsense) action-error secondary-complement+is-nonsense drop
 
 : no-reason-for$  ( -- ca len )
   s" No hay" s{
@@ -288,25 +272,25 @@ to dangerous-error#
   \ XXX TODO -- quitar las variantes que no sean adecuadas a todos los casos
 
 : (no-reason-for-that)  ( ca len | ca 0 -- )
-  no-reason-for$ 2swap s& period+ action-error  ;
+  no-reason-for$ 2swap s& period+ action-error.  ;
   \ Informa de que no hay motivo para una acción (en infinitivo) _ca
   \ len_.
 
-2 ' (no-reason-for-that) action-error: no-reason-for-that drop
+2 ' (no-reason-for-that) action-error no-reason-for-that drop
 
 : (no-reason)  ( -- )
   something-like-that$ (no-reason-for-that)  ;
   \ Informa de que no hay motivo para una acción no especificada.
   \ XXX TODO
 
-0 ' (no-reason) action-error: no-reason drop
+0 ' (no-reason) action-error no-reason drop
 
 : (nonsense|no-reason)  ( -- )
   ['] nonsense ['] no-reason 2 choose execute  ;
   \ Informa de que una acción no especificada no tiene sentido o no tiene motivo.
   \ XXX TODO -- aún no usado
 
-0 ' (nonsense|no-reason) action-error: nonsense|no-reason drop
+0 ' (nonsense|no-reason) action-error nonsense|no-reason drop
 
 : (do-not-worry-0)$  ( -- a u)
   s{
@@ -342,18 +326,18 @@ to dangerous-error#
 : do-not-worry  ( -- )
   ['] (do-not-worry-0)$
   ['] (do-not-worry-1)$ 2 choose execute
-  now-or-null$ s&  period+ action-error  ;
+  now-or-null$ s&  period+ action-error.  ;
   \ Informa de que una acción no tiene importancia.
   \ XXX TMP, no se usa
 
 : (unnecessary-tool-for-that)  ( ca len a -- )
   full-name s" No necesitas" 2swap s& s" para" s& 2swap s&
-  period+ action-error  ;
+  period+ action-error.  ;
   \ Informa de que un ente _a_ es innecesario como herramienta
   \ para ejecutar una acción _ca len_ (frase con verbo en infinitivo).
   \ XXX TODO -- inconcluso
 
-3 ' (unnecessary-tool-for-that) action-error: unnecessary-tool-for-that
+3 ' (unnecessary-tool-for-that) action-error unnecessary-tool-for-that
 to unnecessary-tool-for-that-error#
 
 : (unnecessary-tool)  ( a -- )
@@ -363,7 +347,7 @@ to unnecessary-tool-for-that-error#
   s" precisas" s" se precisa"
   s" hay necesidad de" s{ s" usar" s" emplear" s" utilizar" }s?&
   }s&  2swap s&
-  s{ s" para nada" s" para eso" }s?&  period+ action-error  ;
+  s{ s" para nada" s" para eso" }s?&  period+ action-error.  ;
   \ Informa de que un ente es innecesario como herramienta
   \ para ejecutar una acción sin especificar.
   \ a = Ente innecesario
@@ -371,7 +355,7 @@ to unnecessary-tool-for-that-error#
   \ XXX TODO -- ojo con entes especiales: personas, animales, virtuales..
   \ XXX TODO -- añadir coletilla "aunque la/lo/s tuvieras"?
 
-1 ' (unnecessary-tool) action-error: unnecessary-tool
+1 ' (unnecessary-tool) action-error unnecessary-tool
 to unnecessary-tool-error#
 
 0 [if]
@@ -386,10 +370,10 @@ to unnecessary-tool-error#
 : (is-normal)  ( a -- )
   ['] x-is-normal$
   ['] it-is-normal-x$
-  2 choose execute  period+ action-error  ;
+  2 choose execute  period+ action-error.  ;
   \ Informa de que un ente _a_ no tiene nada especial.
 
-1 ' (is-normal) action-error: be-normal
+1 ' (is-normal) action-error be-normal
 to is-normal-error#
 
 [then]
@@ -420,17 +404,17 @@ to is-normal-error#
     ['] you-do-not-have-it-(1)$
     2 choose execute
   else  you-do-not-have-it-(0)$
-  then  period+ action-error  ;
+  then  period+ action-error.  ;
   \ Informa de que el protagonista no tiene un ente.
 
-1 ' (you-do-not-have-it) action-error: you-do-not-have-it
+1 ' (you-do-not-have-it) action-error you-do-not-have-it
 to you-do-not-have-it-error#
 
 : (you-do-not-have-what)  ( -- )
   what @ (you-do-not-have-it)  ;
   \ Informa de que el protagonista no tiene el ente `what`.
 
-0 ' (you-do-not-have-what) action-error: you-do-not-have-what
+0 ' (you-do-not-have-what) action-error you-do-not-have-what
 to you-do-not-have-what-error#
 
 : it-seems$  ( -- ca len )
@@ -505,22 +489,22 @@ to you-do-not-have-what-error#
   ['] not-by-hand-0$ ['] not-by-hand-1$ 2 choose execute ^uppercase  ;
   \ Devuelve mensaje de `not-by-hand`.
 
-: (not-by-hand)  ( -- )  not-by-hand$ action-error  ;
+: (not-by-hand)  ( -- )  not-by-hand$ action-error.  ;
   \ Informa de que la acción no puede hacerse sin una herramienta.
 
-0 ' (not-by-hand) action-error: not-by-hand drop
+0 ' (not-by-hand) action-error not-by-hand drop
 
 : (you-need)  ( a -- )
-  2 random if  you-do-not-have-it-(2)$ period+ action-error
+  2 random if  you-do-not-have-it-(2)$ period+ action-error.
            else  drop (not-by-hand)  then  ;
   \ Informa de que el protagonista no tiene un ente necesario.
 
-1 ' (you-need) action-error: you-need drop
+1 ' (you-need) action-error you-need drop
 
 : (you-need-what)  ( -- )  what @ (you-need)  ;
   \ Informa de que el protagonista no tiene el ente `what` necesario.
 
-0 ' (you-need-what) action-error:  you-need-what
+0 ' (you-need-what) action-error  you-need-what
 to you-need-what-error#
 
 : you-already-have-it-(0)$  ( a -- )
@@ -537,21 +521,21 @@ to you-need-what-error#
     ['] you-already-have-it-(1)$
     2 choose execute
   else  you-already-have-it-(0)$
-  then  period+ action-error  ;
+  then  period+ action-error.  ;
   \ Informa de que el protagonista ya tiene un ente.
 
-1 ' (you-already-have-it) action-error: you-already-have-it
+1 ' (you-already-have-it) action-error you-already-have-it
 to you-already-have-it-error#
 
 : (you-already-have-what)  ( a -- )  what @ (you-already-have-it)  ;
   \ Informa de que el protagonista ya tiene el ente `what`.
 
-1 ' (you-already-have-what) action-error: you-already-have-what
+1 ' (you-already-have-what) action-error you-already-have-what
 to you-already-have-what-error#
 
 : ((you-do-not-wear-it))  ( a -- )
   >r s" No llevas puest" r@ noun-ending+
-  r> full-name s& period+ action-error  ;
+  r> full-name s& period+ action-error.  ;
   \ Informa de que el protagonista no lleva puesto un ente prenda.
 
 : (you-do-not-wear-it)  ( a -- )
@@ -560,62 +544,81 @@ to you-already-have-what-error#
   \ Informa de que el protagonista no lleva puesto un ente prenda,
   \ según lo lleve o no consigo.
 
-1 ' (you-do-not-wear-it) action-error: you-do-not-wear-it drop
+1 ' (you-do-not-wear-it) action-error you-do-not-wear-it drop
 
 : (you-do-not-wear-what)  ( -- )  what @ (you-do-not-wear-it)  ;
   \ Informa de que el protagonista no lleva puesto el ente `what`,
   \ según lo lleve o no consigo.
 
-0 ' (you-do-not-wear-what) action-error: you-do-not-wear-what
+0 ' (you-do-not-wear-what) action-error you-do-not-wear-what
 to you-do-not-wear-what-error#
 
 : (you-already-wear-it)  ( a -- )
   >r s" Ya llevas puest" r@ noun-ending+
-  r> full-name s& period+ action-error  ;
+  r> full-name s& period+ action-error.  ;
   \ Informa de que el protagonista lleva puesto un ente prenda.
 
-1 ' (you-already-wear-it) action-error: you-already-wear-it drop
+1 ' (you-already-wear-it) action-error you-already-wear-it drop
 
 : (you-already-wear-what)  ( -- )
   what @ (you-already-wear-it)  ;
   \ Informa de que el protagonista lleva puesto el ente `what`.
 
-0 ' (you-already-wear-what) action-error: you-already-wear-what
+0 ' (you-already-wear-what) action-error you-already-wear-what
 to you-already-wear-what-error#
 
 : not-with-that$  ( -- ca len )
   s" Con eso no..." s" No con eso..." 2 schoose  ;
   \ Devuelve mensaje de `not-with-that`.
 
-: (not-with-that)  ( -- )  not-with-that$ action-error  ;
+: (not-with-that)  ( -- )  not-with-that$ action-error.  ;
   \ Informa de que la acción no puede hacerse con la herramienta elegida.
 
-0 ' (not-with-that) action-error: not-with-that drop
+0 ' (not-with-that) action-error not-with-that drop
 
 : (it-is-already-open)  ( a -- )
-  s" Ya está abiert" rot noun-ending+ period+ action-error  ;
+  s" Ya está abiert" rot noun-ending+ period+ action-error.  ;
   \ Informa de que un ente ya está abierto.
 
-1 ' (it-is-already-open) action-error: it-is-already-open drop
+1 ' (it-is-already-open) action-error it-is-already-open drop
 
 : (what-is-already-open)  ( -- )
   what @ (it-is-already-open)  ;
   \ Informa de que el ente `what` ya está abierto.
 
-0 ' (what-is-already-open) action-error: what-is-already-open
+0 ' (what-is-already-open) action-error what-is-already-open
 to what-is-already-open-error#
 
 : (it-is-already-closed)  ( a -- )
-  s" Ya está cerrad" r@ noun-ending+ period+ action-error  ;
+  s" Ya está cerrad" r@ noun-ending+ period+ action-error.  ;
   \ Informa de que un ente ya está cerrado.
 
-1 ' (it-is-already-closed) action-error: it-is-already-closed drop
+1 ' (it-is-already-closed) action-error it-is-already-closed drop
 
 : (what-is-already-closed)  ( -- )  what @ (it-is-already-closed)  ;
   \ Informa de que el ente `what` ya está cerrado.
 
-0 ' (what-is-already-closed) action-error: what-is-already-closed
+0 ' (what-is-already-closed) action-error what-is-already-closed
 to what-is-already-closed-error#
+
+: toward-that-direction  ( a -- ca len )
+  dup >r  has-no-article?
+  if    s" hacia" r> full-name
+  else  toward-the(m)$ r> name
+  then  s&  ;
+  \ Devuelve «al/hacia la dirección indicada», correspondiente al ente
+  \ dirección _a_.
+
+: (impossible-move)  ( a -- )
+  ^is-impossible$ s" ir" s&  rot
+  3 random if    toward-that-direction
+           else  drop that-way$
+           then  s& period+ action-error.  ;
+  \ El movimiento es imposible hacia el ente dirección _a_.
+  \ XXX TODO -- añadir una tercera variante «ir en esa dirección»; y
+  \ otras específicas como «no es posible subir»
+
+1 ' (impossible-move) action-error impossible-move drop
 
 \ vim:filetype=gforth:fileencoding=utf-8
 
