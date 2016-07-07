@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607061241
+\ Last update: 201607071316
 
 \ Note: The comments of the code are in Spanish.
 
@@ -647,6 +647,9 @@ player-wordlist dup >order set-current
   amedrentar amedrento amedrenta amedrentad amedrente
   acojonar acojono acojona acojonad acojone
   atemorizar atemoriza atemorizad atemorizo atemorice
+  espanto espanta espantad espante
+  aterrorizo aterroriza aterrorizad aterrorice
+  ahuyento ahuyenta ahuyentad ahuyente
   ;aliases
 : asustarlo  asustar éste  ;
 ' asustarlo aliases:
@@ -654,6 +657,9 @@ player-wordlist dup >order set-current
   amedrentarlo amedréntolo amedréntalo amedrentadlo amedréntelo
   acojonarlo acojónolo acojónalo acojonadlo acojónelo
   atemorizarlo atemorízalo atemorizadlo atemorízolo atemorícelo
+  espántolo espántalo espantadlo espántelo
+  aterrorízolo aterrorízalo aterrorizadlo aterrorícelo
+  ahuyéntolo ahuyéntalo ahuyentadlo ahuyéntelo
   ;aliases
 : asustarla  asustar ésta  ;
 ' asustarla aliases:
@@ -661,6 +667,9 @@ player-wordlist dup >order set-current
   amedrentarla amedréntola amedréntala amedrentadla amedréntela
   acojonarla acojónola acojónala acojonadla acojónela
   atemorizarla atemorízala atemorizadla atemorízola atemorícela
+  espántola espántala espantadla espántela
+  aterrorízola aterrorízala aterrorizadla aterrorícela
+  ahuyéntola ahuyéntala ahuyentadla ahuyéntela
   ;aliases
 : asustarlos  asustar éstos  ;
 ' asustarlos aliases:
@@ -668,6 +677,9 @@ player-wordlist dup >order set-current
   amedrentarlos amedréntolos amedréntalos amedrentadlos amedréntelos
   acojonarlos acojónolos acojónalos acojonadlos acojónelos
   atemorizarlos atemorízalos atemorizadlos atemorízolos atemorícelos
+  espántolos espántalos espantadlos espántelos
+  aterrorízolos aterrorízalos aterrorizadlos aterrorícelos
+  ahuyéntolos ahuyéntalos ahuyentadlos ahuyéntelos
   ;aliases
 : asustarlas  asustar éstas  ;
 ' asustarlas aliases:
@@ -675,6 +687,9 @@ player-wordlist dup >order set-current
   amedrentarlas amedréntolas amedréntalas amedrentadlas amedréntelas
   acojonarlas acojónolas acojónalas acojonadlas acojónelas
   atemorizarlas atemorízalas atemorizadlas atemorízolas atemorícelas
+  espántolas espántalas espantadlas espántelas
+  aterrorízolas aterrorízalas aterrorizadlas aterrorícelas
+  ahuyéntolas ahuyéntalas ahuyentadlas ahuyéntelas
   ;aliases
 
 : afilar  ['] do-sharpen set-action  ;
