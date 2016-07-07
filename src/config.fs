@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606301008
+\ Last update: 201607071351
 
 \ Note: The comments of the code are in Spanish.
 
@@ -180,7 +180,7 @@ wordlist dup constant config-wordlist
   \ Configura el nivel de detalle de los mensajes de error lingüístico.
 
 : mensaje_genérico_de_error_lingüístico  ( ca len -- )
-  'language-error-general-message$ place  ;
+  'generic-language-error$ place  ;
   \ Configura el mensaje genérico para los mensajes de error lingüístico.
 
 : detalle_de_los_mensajes_de_error_operativo  ( n -- )
@@ -223,7 +223,7 @@ restore-wordlists
   scene-page? on
   max-errors-verbosity language-errors-verbosity !
   max-errors-verbosity action-errors-verbosity !
-  s" Orden incorrecta." 'language-error-general-message$ place
+  s" Orden incorrecta." 'generic-language-error$ place
   s" No es posible hacer eso." 'action-error-general-message$ place
   repeat-previous-action? on
   init-prompts  init-colors  ;

@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606300958
+\ Last update: 201607071356
 
 \ Note: The comments of the code are in Spanish.
 
@@ -172,18 +172,19 @@ variable indent-first-line-too?
 : paragraph  ( ca len -- )  cr+ print  ;
   \ Imprime un texto _ca len_ justificado como inicio de un párrafo.
 
-: (language-error)  ( ca len -- )
+: language-error.  ( ca len -- )
   language-error-color paragraph system-colors  ;
   \ Imprime una cadena como un informe de error lingüístico.
-  \ XXX TODO -- renombrar
 
 : action-error  ( ca len -- )
   action-error-color paragraph system-colors  ;
   \ Imprime una cadena como un informe de error de un comando.
+  \ XXX TODO -- renombrar
 
 : system-error  ( ca len -- )
   system-error-color paragraph system-colors  ;
   \ Imprime una cadena como un informe de error del sistema.
+  \ XXX TODO -- renombrar
 
 : narrate  ( ca len -- )
   narration-color paragraph system-colors  ;

@@ -145,6 +145,8 @@ create last-complement /last-complements allot
 \ ==============================================================
 \ Errores del intérprete de comandos
 
+require flibustre/error_definers.fs
+
 : please$  ( -- ca len )
   \ Devuelve «por favor» o vacía.
   s" por favor" s?  ;
@@ -213,36 +215,24 @@ create last-complement /last-complements allot
 : ^error-comment$  ( -- ca len )  error-comment$ ^uppercase  ;
   \ Devuelve mensaje de acompañamiento para los errores lingüísticos, con la primera letra mayúscula.
 
-: language-error-specific-message  ( ca len -- )
+:noname  ( ca len -- )
   in-the-sentence$ s&  3 random
   if    ^uppercase period+ ^error-comment$
   else  ^error-comment$ comma+ 2swap
-  then  period+ s&  (language-error)  ;
+  then  period+ s&  language-error.  ;
+  is specific-language-error
   \ Muestra un mensaje detallado _ca len_ sobre un error lingüístico,
   \ combinándolo con una frase común.
   \ XXX TODO -- hacer que use coma o punto y coma, al azar
 
-: language-error-general-message$  ( -- ca len )
-  'language-error-general-message$ count  ;
+: generic-language-error$  ( -- ca len )
+  'generic-language-error$ count  ;
   \ Devuelve el mensaje de error lingüístico para el nivel 1.
 
-: language-error-general-message  ( ca len -- )
-  2drop language-error-general-message$ (language-error)  ;
+:noname  ( ca len -- )
+  2drop generic-language-error$ language-error.  ;
+  is generic-language-error
   \ Muestra el mensaje de error lingüístico _ca len_ para el nivel 1.
-
-create 'language-error-verbosity-xt
-  ' 2drop ,
-  ' language-error-general-message ,
-  ' language-error-specific-message ,
-  \ Tabla de los tres niveles de detalle de los errores lingüísticos:
-  \ ningún mensaje, mensaje genérico y mensaje específico.
-
-: language-error  ( ca len -- )
-  'language-error-verbosity-xt
-  language-errors-verbosity @ cells + perform  ;
-  \ Muestra un mensaje sobre un error lingüístico, detallado o breve
-  \ según la configuración.  _ca len_ es el mensaje de error
-  \ detallado.
 
 : there-are$  ( -- ca len )
   s{ s" parece haber" s" se identifican" s" se reconocen" }s  ;

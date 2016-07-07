@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606301007
+\ Last update: 201607071351
 
 \ Note: The comments of the code are in Spanish.
 
@@ -37,7 +37,7 @@ variable scene-page?
 variable language-errors-verbosity
   \ Nivel de detalle de los mensajes de error lingüístico.
 
-svariable 'language-error-general-message$
+svariable 'generic-language-error$
   \ Mensaje de error lingüístico para el nivel 1.
 
 variable action-errors-verbosity
