@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607071351
+\ Last update: 201607071407
 
 \ Note: The comments of the code are in Spanish.
 
@@ -33,9 +33,6 @@ variable ignore-unknown-words?
 
 variable scene-page?
   \ ¿Borrar la pantalla después de la pausa de los cambios de escena?
-
-variable language-errors-verbosity
-  \ Nivel de detalle de los mensajes de error lingüístico.
 
 svariable 'generic-language-error$
   \ Mensaje de error lingüístico para el nivel 1.

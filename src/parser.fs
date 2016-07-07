@@ -145,8 +145,6 @@ create last-complement /last-complements allot
 \ ==============================================================
 \ Errores del intérprete de comandos
 
-require flibustre/error_definers.fs
-
 : please$  ( -- ca len )
   \ Devuelve «por favor» o vacía.
   s" por favor" s?  ;
