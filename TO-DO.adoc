@@ -1,5 +1,5 @@
 = Tareas pendientes de Asalto y castigo
-:revdate: 2016-07-07
+:revdate: 2016-07-08
 
 == Programación
 
@@ -25,10 +25,8 @@ Sé más claro, por favor, no se reconoce ningún complemento principal en el co
 
 2016-07-06:
 
-Generalizar la actualización de `what` en todos los errores (en Flibustre).
-
 Hacer que los errores asociados a los filtros de acción sean
-configurables porla aplicación (en Flibustre).
+configurables por la aplicación (en Flibustre).
 
 2016-07-06:
 

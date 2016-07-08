@@ -5,12 +5,24 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607081203
+\ Last update: 201607081914
 
 \ Note: The comments of the code are in Spanish.
 
 \ ==============================================================
-\ Errores lingüísticos
+\ Error genérico
+
+: generic-language-error$  ( -- ca len )
+  'generic-language-error$ count  ;
+  \ Devuelve el mensaje de error lingüístico para el nivel 1.
+
+:noname  ( ca len -- )
+  2drop generic-language-error$ language-error.  ;
+  is generic-language-error
+  \ Muestra el mensaje de error lingüístico _ca len_ para el nivel 1.
+
+\ ==============================================================
+\ Gestión de los errores específicos
 
 : please$  ( -- ca len )
   s" por favor" s?  ;
@@ -90,14 +102,8 @@
   \ combinándolo con una frase común.
   \ XXX TODO -- hacer que use coma o punto y coma, al azar
 
-: generic-language-error$  ( -- ca len )
-  'generic-language-error$ count  ;
-  \ Devuelve el mensaje de error lingüístico para el nivel 1.
-
-:noname  ( ca len -- )
-  2drop generic-language-error$ language-error.  ;
-  is generic-language-error
-  \ Muestra el mensaje de error lingüístico _ca len_ para el nivel 1.
+\ ==============================================================
+\ Errores específicos
 
 : there-are$  ( -- ca len )
   s{ s" parece haber" s" se identifican" s" se reconocen" }s  ;
@@ -180,7 +186,7 @@
   \ XXX TODO -- inconcluso
 
 :noname  ( -- )
-  s" [Con" what @ full-name s& s" no puedes]" s&
+  s" [Con" wrong-entity @ full-name s& s" no puedes]" s&
   narrate  ; to useless-what-tool-error#
   \ Informa de que se ha producido un error
   \ porque el ente `what` no es la herramienta adecuada.

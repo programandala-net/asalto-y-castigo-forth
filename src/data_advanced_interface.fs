@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607080931
+\ Last update: 201607081913
 
 \ Note: The comments of the code are in Spanish.
 
@@ -570,10 +570,6 @@ create 'articles
   location-08~ has-south-exit?  ;
   \ ¿La entrada a la cueva ya fue descubierta?
 
-: is-the-cave-entrance-accessible?  ( -- f )
-  location-08~ am-i-there? was-the-cave-entrance-discovered? and  ;
-  \ ¿La entrada a la cueva está accesible (presente y descubierta)?
-
 \ ==============================================================
 \ Herramientas para crear conexiones entre escenarios
 
@@ -812,6 +808,13 @@ in~ in-exit> exits-table!
   \ Asigna todas las salidas _a1 ... a8_ de un ente escenario _a0_.
   \ Los entes de salida _a1 ... a8_ (o cero) están en el orden
   \ habitual: norte, sur, este, oeste, arriba, abajo, dentro, fuera.
+
+: exit-from-here  ( a1 -- a2 | 0 )
+  direction my-location + @  ;
+  \ Devuelve el ente _a2_ al que conduce el ente dirección _a1_ desde
+  \ el escenario del protagonista, o bien devuelve cero si no hay
+  \ salida en esa dirección.
+
 
 \ ==============================================================
 \ Operaciones con conexiones entre escenarios

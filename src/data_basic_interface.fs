@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607080928
+\ Last update: 201607082203
 
 \ Note: The comments of the code are in Spanish.
 
@@ -45,7 +45,8 @@ last-exit> cell+ first-exit> - constant /exits
 
 : exit?  ( a -- f )  no-exit <>  ;
   \ ¿Está abierta una dirección de salida de un ente escenario?
-  \ a = Contenido de un campo de salida de un ente (que será el ente de destino, o cero)
+  \ a = Contenido de un campo de salida de un ente (que será el ente
+  \ de destino, o cero)
 
 \ ----------------------------------------------
 \ Lectores de campos

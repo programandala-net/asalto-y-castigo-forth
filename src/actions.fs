@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607071646
+\ Last update: 201607082202
 
 \ Note: The comments of the code are in Spanish.
 
@@ -252,8 +252,7 @@ false [if]
   ?no-tool-complement
   ?no-secondary-complement
   main-complement ?dup if
-    dup my-location <> swap direction 0= and
-    nonsense-error# and throw
+    dup my-location <> swap direction 0= and ?? nonsense
   then  describe-exits
   ; is do-exits
   \ Lista las salidas posibles de la localización del protagonista.
@@ -808,13 +807,9 @@ false [if]
 \ Movimiento
 
 : do-go-if-possible  ( a -- )
-  [debug] [if]  s" Al entrar en `do-go-if-possible`" debug  [then]  \ XXX INFORMER
-  dup direction ?dup if  \ ¿El ente es una dirección?
-    my-location + @ ?dup  \ ¿Tiene mi escenario salida en esa dirección?
-    if  nip enter-location  else  impossible-move  then
-  else  drop nonsense  then
-  [debug] [if]  s" Al salir de `do-go-if-possible`" debug  [then]  ;  \ XXX INFORMER
-  \ Comprueba si el movimiento hacio un supuesto ente de dirección _a_
+  dup ?direction  dup exit-from-here ?dup
+  if  nip enter-location  else  impossible-move-to-it  then  ;
+  \ Comprueba si el movimiento hacia un supuesto ente de dirección _a_
   \ es posible y si es así lo efectúa.
 
 : simply-do-go  ( -- )  s" Ir sin rumbo...?" narrate  ;
@@ -838,11 +833,9 @@ false [if]
   \ Acción de ir al norte.
 
 :noname  ( -- )
-  [debug-catch] [if]  s" Al entrar en `do-go-south`" debug  [then]  \ XXX INFORMER
   ?no-tool-complement
   south~ ?this-main-complement
   south~ do-go-if-possible
-  [debug-catch] [if]  s" Al salir de `do-go-south`" debug  [then]  \ XXX INFORMER
   ; is do-go-south
   \ Acción de ir al sur.
 
@@ -882,9 +875,10 @@ false [if]
   \ Acción de ir hacia fuera.
 
 : enter-the-cave-entrance  ( -- )
-  is-the-cave-entrance-accessible? 0=
-  cannot-see-what-error# and throw
-  in~ do-go-if-possible  ;
+  cave-entrance~ ?accessible
+  if    in~ do-go-if-possible
+  else  cave-entrance~ cannot-see-what
+  then  ;
   \ XXX FIXME -- dónde se actualiza `what` aquí?
 
 :noname  ( -- )
@@ -895,6 +889,7 @@ false [if]
   in~ do-go-if-possible
   ; is do-go-in
   \ Acción de ir hacia dentro.
+  \ XXX TODO añadir lago, agua y otros
 
 :noname  ( -- )
   ?no-tool-complement
@@ -1007,13 +1002,13 @@ false [if]
   \  Devuelve mensaje sobre nadar.
 
 :noname  ( -- )
-  location-11~ am-i-there? if
-    clear-screen-for-location
-    you-swim$ narrate narration-break
-    you-emerge$ narrate narration-break
-    location-12~ enter-location  the-battle-ends
-  else  s" nadar" now-or-here-or-null$ s& be-nonsense  then
-  ; is do-swim
+  location-11~ am-i-there?
+  if    clear-screen-for-location
+        you-swim$ narrate narration-break
+        you-emerge$ narrate narration-break
+        location-12~ enter-location  the-battle-ends
+  else  s" nadar" now-or-here-or-null$ s& that-is-nonsense
+  then  ; is do-swim
   \ Acción de nadar.
   \ XXX FIXME -- añadir el lago
 
@@ -1070,21 +1065,21 @@ false [if]
   \ Imprime el mensaje
   \ previo al primer intento de escalar el derrumbe.
 
-: climbing-the-fallen-away-is-impossible  ( -- )
+: climbing-the-fallen-away$  ( -- ca len )
   s{ s" pasar" s" escalar" s" subir por" }s
   s{
     s" el derrumbe"
     s{ s" el muro" s" la pared" s" el montón" }s s" de" s& rocks$ s&
     s" las" rocks$ s&
-  }s& be-impossible  ;
-  \ Imprime el mensaje de error de que
-  \ es imposible escalar el derrumbe.
+  }s&  ;
+  \ Devuelve el mensaje de error de que es imposible escalar el
+  \ derrumbe.
 
 : do-climb-the-fallen-away  ( -- )
   \ Escalar el derrumbe.
   climbed-the-fallen-away? @ 0= ?? do-climb-the-fallen-away-first
-  climbing-the-fallen-away-is-impossible
-  climbed-the-fallen-away? on  ;
+  climbed-the-fallen-away? on
+  climbing-the-fallen-away$ that-is-impossible  ;
 
 : do-climb-this-here-if-possible  ( a -- )  ;
   \ Escalar el ente indicado, que está presente, si es posible.
@@ -1164,7 +1159,8 @@ false [if]
 \ Hacer
 
 :noname  ( -- )
-  main-complement if  nonsense  else  do-not-worry  then
+  main-complement
+  if  nonsense  else  do-not-worry  then
   ; is do-make
   \ Acción de hacer (fabricar).
 
@@ -1791,7 +1787,8 @@ create conversations-with-ambrosio
 : talk-to-something  ( a -- )
   2 random
   if    drop nonsense
-  else  full-name s" hablar con" 2swap s& be-nonsense  then  ;
+  else  full-name s" hablar con" 2swap s& that-is-nonsense
+  then  ;
   \ Hablar con un ente que no es un personaje.
   \ XXX TODO
 
@@ -1801,7 +1798,8 @@ create conversations-with-ambrosio
   }s  ;
   \ Devuelve una variante de «hablar solo».
 
-: talk-to-yourself  ( -- )  talk-to-yourself$ be-nonsense  ;
+: talk-to-yourself  ( -- )
+  talk-to-yourself$  that-is-nonsense  ;
   \ Hablar solo.
 
 \ ----------------------------------------------

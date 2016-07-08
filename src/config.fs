@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607071425
+\ Last update: 201607082042
 
 \ Note: The comments of the code are in Spanish.
 
@@ -44,11 +44,6 @@ svariable temporary-config-file  temporary-config-file off
 : config-file$  ( -- ca len )
   path$ config-dir$ s+ current-config-file$ s+  ;
   \ Fichero de configuración con su ruta completa.
-
-: verbosity-range  ( n -- n' )
-  min-errors-verbosity max max-errors-verbosity min  ;
-  \ Asegura que un nivel de detalle de error está entre los
-  \ límites.
 
 wordlist dup constant config-wordlist
          dup >order set-current
@@ -176,16 +171,18 @@ wordlist dup constant config-wordlist
 : nueva_línea_tras_presto_de_comando  ( f -- )  cr-after-command-prompt? !  ;
 
 : detalle_de_los_mensajes_de_error_lingüístico  ( n -- )
-  verbosity-range language-errors-verbosity !  ;
+  language-errors-verbosity !  ;
   \ Configura el nivel de detalle de los mensajes de error lingüístico.
+  \ El rango límite es ajustado cuando se usa.
 
 : mensaje_genérico_de_error_lingüístico  ( ca len -- )
   'generic-language-error$ place  ;
   \ Configura el mensaje genérico para los mensajes de error lingüístico.
 
 : detalle_de_los_mensajes_de_error_operativo  ( n -- )
-  verbosity-range action-errors-verbosity !  ;
+  action-errors-verbosity !  ;
   \ Configura el nivel de detalle de los mensajes de error operativo.
+  \ El rango límite es ajustado cuando se usa.
 
 : mensaje_genérico_de_error_operativo  ( ca len -- )
   'generic-action-error$ place  ;

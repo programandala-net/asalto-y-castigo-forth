@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607071417
+\ Last update: 201607082041
 
 \ Note: The comments of the code are in Spanish.
 
@@ -37,17 +37,8 @@ variable scene-page?
 svariable 'generic-language-error$
   \ Mensaje de error lingüístico para el nivel 1.
 
-variable action-errors-verbosity
-  \ Nivel de detalle de los mensajes de error operativo.
-
 svariable 'generic-action-error$
   \ Mensaje de error operativo para el nivel 1.
-
-0 constant min-errors-verbosity
-  \ Nivel mínimo para el detalle de errores.
-
-2 constant max-errors-verbosity
-  \ Nivel máximo para el detalle de errores.
 
 variable repeat-previous-action?
   \ ¿Repetir la acción anterior cuando no se especifica otra en el

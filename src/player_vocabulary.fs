@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607071316
+\ Last update: 201607082008
 
 \ Note: The comments of the code are in Spanish.
 
@@ -78,17 +78,15 @@
   \ el protagonista ha hablado con Ambrosio.
 
 : (cave) ( -- a | false )
-  true case
-    my-location location-10~ location-47~ between of  cave~  endof
-    is-the-cave-entrance-accessible? of  cave-entrance~  endof
-    false swap
-  endcase  ;
+  cave~ my-location location-10~ location-47~ between and ?dup ?exit
+  cave-entrance~ dup is-accessible? and ?dup ?exit
+  false  ;
   \ Devuelve el ente adecuado a la palabra «cueva»
   \ (o _false_ si la ambigüedad no puede ser resuelta).
 
 : (entrance) ( -- a | false )
   true case
-    is-the-cave-entrance-accessible? of  cave-entrance~  endof
+    cave-entrance~ is-accessible? of  cave-entrance~  endof
 
     \ XXX TODO -- quizá no se implemente esto porque precisaría
     \ asociar a cave-entrance~ el vocablo «salida/s», lo que crearía
@@ -100,9 +98,10 @@
   endcase  ;
   \ Devuelve el ente adecuado a la palabra «entrada»
   \ (o _false_ si la ambigüedad no puede ser resuelta).
+  \ XXX TODO -- simplificar, sin `case`
 
 : (exits)  ( -- a )
-  is-the-cave-entrance-accessible?
+  cave-entrance~ is-accessible?
   if  cave-entrance~  else  exits~  then  ;
   \ Devuelve el ente adecuado a la palabra «salida/s».
 
@@ -116,6 +115,7 @@
   \ Devuelve el ente adecuado a la palabra «piedra».  Puede referise,
   \ en orden preferente, a la piedra, a la esmeralda, a la pared de
   \ roca del desfiladero o a las rocas.
+  \ XXX TODO simplificar, sin `case`.
 
 : (wall) ( -- a )
   location-08~ am-i-there?

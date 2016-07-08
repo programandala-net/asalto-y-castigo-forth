@@ -7,7 +7,7 @@
 \
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 \
-\ Last update: 201607081109
+\ Last update: 201607082204
 
 \ ==============================================================
 \ Credits
@@ -113,11 +113,16 @@ forth-wordlist set-current
 
 : run  ( -- )  init-once adventure farewell  ;
 
-run  \ XXX TMP
-cr .( Escribe RUN para jugar) cr  \ XXX TMP
+\ run  \ XXX TMP
+\ cr .( Escribe RUN para jugar) cr  \ XXX TMP
 
 \ ==============================================================
 \ Debug
+
+\ cr
+\ : zx idol~ cannot-see-what ;
+\ ' zx (execute-action)
+\ cr .( test done) cr cr
 
 : i0  ( -- )
   init-once init-game  s" Data are ready." paragraph  ;

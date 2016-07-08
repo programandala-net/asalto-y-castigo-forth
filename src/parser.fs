@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607081108
+\ Last update: 201607081357
 
 \ Note: The comments of the code are in Spanish.
 
@@ -298,7 +298,7 @@ is tool-complement
 
 : (execute-action)  ( xt -- )
   dup to previous-action catch ?execute  ;
-  \ Ejecuta la acción del comando.
+  \ Ejecuta la acción _xt_.
 
 : (execute-previous-action)  ( -- )
   previous-action ?dup if  (execute-action)  then  ;
