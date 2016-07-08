@@ -5,16 +5,9 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607082202
+\ Last update: 201607082333
 
 \ Note: The comments of the code are in Spanish.
-
-\ XXX TODO -- finish the conversion to the new system: many errors
-\ received their parameters on the stack, what is impossible with the
-\ new system, because of `throw`. Other errors used the intermediate
-\ variable `wrong-entity` because of that (see examples in Flibustre's
-\ <action_conditions.fs>. This solution is being improved with
-\ the double variable `error-message`.
 
 \ ==============================================================
 \ Error genérico
@@ -54,7 +47,7 @@ is generic-action-error
   then  period+ action-error  ;
   \  Informa de que un ente no está presente.
 
-to is-not-here-what-error#
+to is-not-here-error#
 
 :noname  ( -- )
   ^cannot-see$
@@ -62,7 +55,7 @@ to is-not-here-what-error#
   period+ action-error  ;
   \ Informa de que el ente `wrong-entity` no puede ser visto.
 
-to cannot-see-what-error#
+to cannot-be-seen-error#
 
 : like-that$  ( -- ca len )
   s{ s" así" s" como eso" }s  ;
@@ -344,7 +337,7 @@ to unnecessary-tool-error#
   \ (variante 2, solo para entes no citados en el comando).
 
 :noname  ( a -- )
-  dup is-known?
+  wrong-entity @ dup is-known?
   if    ['] you-do-not-have-it-(0)$
         ['] you-do-not-have-it-(1)$
         2 choose execute
@@ -352,13 +345,7 @@ to unnecessary-tool-error#
   then  period+ action-error  ;
   \ Informa de que el protagonista no tiene un ente.
 
-to you-do-not-have-it-error#
-
-:noname  ( -- )
-  wrong-entity @ you-do-not-have-it-error# execute  ;
-  \ Informa de que el protagonista no tiene el ente `wrong-entity`.
-
-to you-do-not-have-what-error#
+to is-not-hold-error#
 
 : it-seems$  ( -- ca len )
   s{ null$ s" parece que" s" por lo que parece," }s  ;
@@ -438,16 +425,12 @@ to you-do-not-have-what-error#
 to not-by-hand-error#
 
 :noname  ( a -- )
+  wrong-entity @
   2 random if  you-do-not-have-it-(2)$ period+ action-error
            else  drop not-by-hand-error# execute  then  ;
   \ Informa de que el protagonista no tiene un ente necesario.
 
-to you-need-it-error#
-
-:noname ( -- )  wrong-entity @ you-need-it-error# execute  ;
-  \ Informa de que el protagonista no tiene el ente `wrong-entity` necesario.
-
-to you-need-what-error#
+to is-needed-error#
 
 : >you-already-have-it-(0)$  ( a -- ca len )
   s" Ya" you-carry$ s& rot >that$ s& with-you$ s&  ;
@@ -457,7 +440,8 @@ to you-need-what-error#
   s" Ya" rot direct-pronoun s& you-carry$ s& with-you$ s&  ;
   \ Devuelve mensaje de que el protagonista ya tiene un ente (variante 1, solo para entes conocidos).
 
-:noname  ( a -- )
+:noname  ( -- )
+  wrong-entity @
   dup familiar over belongs-to-protagonist? or   if
     ['] >you-already-have-it-(0)$
     ['] >you-already-have-it-(1)$
@@ -466,44 +450,29 @@ to you-need-what-error#
   then  period+ action-error  ;
   \ Informa de que el protagonista ya tiene un ente.
 
-to you-already-have-it-error#
-
-:noname  ( a -- )  wrong-entity @ you-already-have-it-error# execute  ;
-  \ Informa de que el protagonista ya tiene el ente `wrong-entity`.
-
-to you-already-have-what-error#
+to is-hold-error#
 
 : >you-do-not-wear-it$  ( a -- ca len )
   >r s" No llevas puest" r@ noun-ending+
   r> full-name s& period+  ;
   \ Informa de que el protagonista no lleva puesto un ente prenda.
 
-:noname  ( a -- )
-  dup is-hold?
-  if    you-do-not-have-it-error# execute
+:noname  ( -- )
+  wrong-entity @ dup is-hold?
+  if    is-not-hold-error# execute
   else  >you-do-not-wear-it$ action-error  then  ;
   \ Informa de que el protagonista no lleva puesto un ente prenda,
   \ según lo lleve o no consigo.
 
-to you-do-not-wear-it-error#
-
-:noname  ( -- )  wrong-entity @ you-do-not-wear-it-error# execute  ;
-  \ Informa de que el protagonista no lleva puesto el ente `wrong-entity`,
-  \ según lo lleve o no consigo.
-
-to you-do-not-wear-what-error#
+to is-not-worn-error#
 
 :noname  ( a -- )
+  wrong-entity @
   >r s" Ya llevas puest" r@ noun-ending+
   r> full-name s& period+ action-error  ;
   \ Informa de que el protagonista lleva puesto un ente prenda.
 
-to you-already-wear-it-error#
-
-:noname  ( -- )  wrong-entity @ you-already-wear-it-error# execute  ;
-  \ Informa de que el protagonista lleva puesto el ente `wrong-entity`.
-
-to you-already-wear-what-error#
+to is-worn-error#
 
 : >not-with-that$  ( a -- ca len )
   full-name 2>r
@@ -512,7 +481,8 @@ to you-already-wear-what-error#
      s" Con" 2r@ s& s" no..." s&
      s" No con" 2r> s& s" ..." s&
   }s  ;
-  \ Devuelve mensaje de `not-with-that`.
+  \ Devuelve una variante del mensaje de «Con eso no», para el ente
+  \ _a_.
 
 :noname  ( -- )
   wrong-entity @ >not-with-that$ action-error  ;
@@ -520,27 +490,27 @@ to you-already-wear-what-error#
 
 to wrong-tool-error#
 
-:noname  ( a -- )
-  s" Ya está abiert" rot noun-ending+ period+ action-error  ;
+:noname  ( -- )
+  s" Lo intentas con" wrong-entity @ full-name s&
+  s" , pero no sirve de nada." s+ action-error  ;
+  \ Informa de que la herramienta elegida no es adecuada.
+  \ XXX TODO -- variar el mensaje
+
+to useless-tool-error#
+
+:noname  ( -- )
+  s" Ya está abiert" wrong-entity @ noun-ending+ period+
+  action-error  ;
   \ Informa de que un ente ya está abierto.
 
-to it-is-already-open-error#
-
-:noname  ( -- )  wrong-entity @ it-is-already-open-error# execute  ;
-  \ Informa de que el ente `wrong-entity` ya está abierto.
-
-to what-is-already-open-error#
+to is-open-error#
 
 :noname  ( a -- )
-  s" Ya está cerrad" r@ noun-ending+ period+ action-error.  ;
+  s" Ya está cerrad" wrong-entity @ noun-ending+ period+
+  action-error  ;
   \ Informa de que un ente ya está cerrado.
 
-to it-is-already-closed-error#
-
-:noname  ( -- )  wrong-entity @ it-is-already-closed-error# execute  ;
-  \ Informa de que el ente `wrong-entity` ya está cerrado.
-
-to what-is-already-closed-error#
+to is-closed-error#
 
 : >toward-that-direction$  ( a -- ca len )
   dup >r  has-no-article?
@@ -565,50 +535,69 @@ to impossible-move-to-it-error#
 \ ==============================================================
 \ Atajos para errores frecuentes
 
-: nonsense  ( -- )
+: nonsense.error  ( -- )
   nonsense-error# throw  ;
 
-: that-is-nonsense  ( ca len -- )
+: that-is-nonsense.error  ( ca len -- )
   error-message 2! that-is-nonsense-error# throw  ;
 
-: cannot-see-what  ( a -- )
-  wrong-entity ! cannot-see-what-error# throw  ;
+: cannot-be-seen.error  ( a -- )
+  wrong-entity ! cannot-be-seen-error# throw  ;
 
-: do-not-worry  ( -- )
+: do-not-worry.error  ( -- )
   do-not-worry-error# throw  ;
 
-: impossible-move-to-it  ( a -- )
+: impossible-move-to-it.error  ( a -- )
   wrong-entity ! impossible-move-to-it-error# throw  ;
 
-: unnecessary-tool  ( a -- )
+: unnecessary-tool.error  ( a -- )
   wrong-entity ! unnecessary-tool-error# throw  ;
 
-: unnecessary-tool-for-that  ( ca len a -- )
+: unnecessary-tool-for-that.error  ( ca len a -- )
   wrong-entity ! error-message 2!
   unnecessary-tool-for-that-error# throw  ;
 
-: it-is-already-open  ( a -- )
-  wrong-entity ! it-is-already-open-error# throw  ;
-
-: no-reason  ( -- )
+: no-reason.error  ( -- )
   no-reason-error# throw  ;
 
-: no-reason-for-that  ( ca len -- )
+: no-reason-for-that.error  ( ca len -- )
   error-message 2! no-reason-for-that-error# throw  ;
 
-: that-is-impossible  ( ca len -- )
+: that-is-impossible.error  ( ca len -- )
   error-message 2! that-is-impossible-error# throw  ;
 
-: that-is-dangerous  ( ca len -- )
+: that-is-dangerous.error  ( ca len -- )
   error-message 2! that-is-dangerous-error# throw  ;
 
-: wrong-tool  ( a -- )
+: wrong-tool.error  ( a -- )
   wrong-entity ! wrong-tool-error# throw  ;
 
-: nonsense-or-no-reason  ( -- )
+: useless-tool.error  ( a -- )
+  wrong-entity ! useless-tool-error# throw  ;
+
+: is-not-here.error  ( a -- )
+  wrong-entity ! is-not-here-error# throw  ;
+
+: is-hold.error  ( a -- )
+  wrong-entity ! is-hold-error# throw  ;
+
+: is-not-hold.error  ( a -- )
+  wrong-entity ! is-not-hold-error# throw  ;
+
+: is-not-worn.error  ( a -- )
+  wrong-entity ! is-worn-error# throw  ;
+
+: is-not-worn.error  ( a -- )
+  wrong-entity ! is-not-worn-error# throw  ;
+
+: is-open.error  ( a -- )
+  wrong-entity ! is-open-error# throw  ;
+
+: is-closed.error  ( a -- )
+  wrong-entity ! is-closed-error# throw  ;
+
+: nonsense-or-no-reason.error  ( -- )
   nonsense-error# no-reason-error# 2 choose throw  ;
-  \ Informa de que una acción no especificada no tiene sentido o no tiene motivo.
-  \ XXX TODO -- aún no usado
 
 \ XXX TODO mover a Flibustre
 

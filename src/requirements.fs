@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607080929
+\ Last update: 201607082336
 
 \ Note: Some comments of the code are in Spanish.
 
@@ -74,7 +74,7 @@ require galope/svariable.fs                   \ string variables
 require galope/system_colors.fs
 require galope/tilde-tilde.fs                 \ improved `~~`
 require galope/to-yyyymmddhhmmss.fs           \ `>yyyymmddhhss`
-require galope/two-choose.fs                  \ `2schoose`
+require galope/two-choose.fs                  \ `2choose`
 ' 2choose alias schoose
 require galope/x-c-store.fs                   \ `xc!`
 require galope/xcase_es.fs                    \ Spanish UTF-8 case table

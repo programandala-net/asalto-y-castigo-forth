@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607082202
+\ Last update: 201607082335
 
 \ Note: The comments of the code are in Spanish.
 
@@ -252,7 +252,7 @@ false [if]
   ?no-tool-complement
   ?no-secondary-complement
   main-complement ?dup if
-    dup my-location <> swap direction 0= and ?? nonsense
+    dup my-location <> swap direction 0= and ?? nonsense.error
   then  describe-exits
   ; is do-exits
   \ Lista las salidas posibles de la localización del protagonista.
@@ -309,7 +309,7 @@ false [if]
 \   ;
 \ : cannot-take-the-flags  \ No se puede tomar las banderas
 \   s" [las banderas no se tocan]" narrate  \ XXX TMP
-\   nonsense
+\   nonsense.error
 \   ;
 \ : cannot-take-the-idol  \ No se puede tomar el ídolo
 \   s" [el ídolo no se toca]" narrate  \ XXX TMP
@@ -321,7 +321,7 @@ false [if]
 \   ;
 \ : cannot-take-the-fallen-away  \ No se puede tomar el derrumbe
 \   s" [el derrumbe no se toca]" narrate  \ XXX TMP
-\   nonsense
+\   nonsense.error
 \   ;
 \ : cannot-take-the-snake  \ No se puede tomar la serpiente
 \   s" [la serpiente no se toca]" narrate  \ XXX TMP
@@ -329,7 +329,7 @@ false [if]
 \   ;
 \ : cannot-take-the-lake  \ No se puede tomar el lago
 \   s" [el lago no se toca]" narrate  \ XXX TMP
-\   nonsense
+\   nonsense.error
 \   ;
 \ : cannot-take-the-lock  \ No se puede tomar el candado
 \   s" [el candado no se toca]" narrate  \ XXX TMP
@@ -337,7 +337,7 @@ false [if]
 \   ;
 \ : cannot-take-the-water-fall  \ No se puede tomar la cascada
 \   s" [la cascada no se toca]" narrate  \ XXX TMP
-\   nonsense
+\   nonsense.error
 \   ;
 
 : (do-take)  ( a -- )  dup be-hold familiar++ well-done  ;
@@ -438,7 +438,7 @@ false [if]
   case
     door~ of  close-the-door  endof
     lock~ of  close-the-lock  endof
-    nonsense
+    nonsense.error
   endcase  ;
   \ Cerrar un ente, si es posible.
 
@@ -553,20 +553,17 @@ false [if]
 
 : open-the-door  ( -- )
   door~ ?accessible
-  door~ is-open?
-  if    door~ it-is-already-open ?no-tool-complement
-  else  (open-the-door)  then  ;
+  door~ ?open
+  ?no-tool-complement
+  (open-the-door)  ;
   \ Abrir la puerta, si es posible.
-  \
-  \ XXX TODO nueva condición `?is-closed`,
-  \ en lugar de usar `is-open?` y `it-is-already-open`
 
 : open-it  ( a -- )
   dup familiar++
   case
     door~ of  open-the-door  endof
     lock~ of  open-the-lock  endof
-    nonsense
+    nonsense.error
   endcase  ;
   \ Abrir un ente, si es posible.
 
@@ -601,10 +598,10 @@ false [if]
 : (do-attack)  ( a -- )
   case
     snake~    of  attack-the-snake  endof
-    ambrosio~ of  no-reason         endof
-    leader~   of  no-reason         endof
-    soldiers~ of  no-reason         endof
-    do-not-worry
+    ambrosio~ of  no-reason.error   endof
+    leader~   of  no-reason.error   endof
+    soldiers~ of  no-reason.error   endof
+    do-not-worry.error
   endcase  ;
   \ Atacar un ser vivo.
 
@@ -619,10 +616,10 @@ false [if]
 : (do-frighten)  ( a -- )
   case
     snake~    of  attack-the-snake  endof
-    ambrosio~ of  no-reason         endof
-    leader~   of  no-reason         endof
-    soldiers~ of  no-reason         endof
-    do-not-worry
+    ambrosio~ of  no-reason.error   endof
+    leader~   of  no-reason.error   endof
+    soldiers~ of  no-reason.error   endof
+    do-not-worry.error
   endcase  ;
   \ Asustar un ser vivo.
   \ XXX TODO diferenciar de atacar
@@ -645,11 +642,11 @@ false [if]
 
 : (do-kill)  ( a -- )
   case
-    snake~    of  kill-the-snake  endof
-    ambrosio~ of  no-reason       endof
-    leader~   of  no-reason       endof
-    soldiers~ of  no-reason       endof
-    do-not-worry
+    snake~    of  kill-the-snake   endof
+    ambrosio~ of  no-reason.error  endof
+    leader~   of  no-reason.error  endof
+    soldiers~ of  no-reason.error  endof
+    do-not-worry.error
   endcase  ;
   \ Matar un ser vivo.
   \ XXX TODO diferenciar de atacar
@@ -688,7 +685,7 @@ false [if]
   case
     snake~ of  kill-the-snake     endof  \ XXX TMP
     cloak~ of  shatter-the-cloak  endof
-    do-not-worry
+    do-not-worry.error
   endcase  ;
   \ Romper un ente.
 
@@ -717,7 +714,7 @@ false [if]
     snake~ of  kill-the-snake     endof
     cloak~ of  shatter-the-cloak  endof
     flint~ of  hit-the-flint      endof
-    do-not-worry
+    do-not-worry.error
   endcase  ;
   \ Golpear un ente.
 
@@ -799,16 +796,17 @@ false [if]
   main-complement ?accessible
   main-complement can-be-sharpened?
   if    main-complement (do-sharpen)
-  else  nonsense
-  then
-  ; is do-sharpen
+  else  nonsense.error
+  then  ; is do-sharpen
 
 \ ----------------------------------------------
 \ Movimiento
 
 : do-go-if-possible  ( a -- )
   dup ?direction  dup exit-from-here ?dup
-  if  nip enter-location  else  impossible-move-to-it  then  ;
+  if    nip enter-location
+  else  impossible-move-to-it.error
+  then  ;
   \ Comprueba si el movimiento hacia un supuesto ente de dirección _a_
   \ es posible y si es así lo efectúa.
 
@@ -877,7 +875,7 @@ false [if]
 : enter-the-cave-entrance  ( -- )
   cave-entrance~ ?accessible
   if    in~ do-go-if-possible
-  else  cave-entrance~ cannot-see-what
+  else  cave-entrance~ cannot-be-seen.error
   then  ;
   \ XXX FIXME -- dónde se actualiza `what` aquí?
 
@@ -1007,7 +1005,8 @@ false [if]
         you-swim$ narrate narration-break
         you-emerge$ narrate narration-break
         location-12~ enter-location  the-battle-ends
-  else  s" nadar" now-or-here-or-null$ s& that-is-nonsense
+  else  s" nadar" now-or-here-or-null$ s&
+        that-is-nonsense.error
   then  ; is do-swim
   \ Acción de nadar.
   \ XXX FIXME -- añadir el lago
@@ -1079,7 +1078,7 @@ false [if]
   \ Escalar el derrumbe.
   climbed-the-fallen-away? @ 0= ?? do-climb-the-fallen-away-first
   climbed-the-fallen-away? on
-  climbing-the-fallen-away$ that-is-impossible  ;
+  climbing-the-fallen-away$ that-is-impossible.error  ;
 
 : do-climb-this-here-if-possible  ( a -- )  ;
   \ Escalar el ente indicado, que está presente, si es posible.
@@ -1160,7 +1159,7 @@ false [if]
 
 :noname  ( -- )
   main-complement
-  if  nonsense  else  do-not-worry  then
+  if  nonsense.error  else  do-not-worry.error  then
   ; is do-make
   \ Acción de hacer (fabricar).
 
@@ -1786,8 +1785,9 @@ create conversations-with-ambrosio
 
 : talk-to-something  ( a -- )
   2 random
-  if    drop nonsense
-  else  full-name s" hablar con" 2swap s& that-is-nonsense
+  if    drop nonsense.error
+  else  full-name s" hablar con" 2swap s&
+        that-is-nonsense.error
   then  ;
   \ Hablar con un ente que no es un personaje.
   \ XXX TODO
@@ -1799,7 +1799,7 @@ create conversations-with-ambrosio
   \ Devuelve una variante de «hablar solo».
 
 : talk-to-yourself  ( -- )
-  talk-to-yourself$  that-is-nonsense  ;
+  talk-to-yourself$  that-is-nonsense.error  ;
   \ Hablar solo.
 
 \ ----------------------------------------------

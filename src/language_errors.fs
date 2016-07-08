@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607081914
+\ Last update: 201607082336
 
 \ Note: The comments of the code are in Spanish.
 
@@ -177,21 +177,6 @@
   language-error  ; to not-allowed-tool-complement-error#
   \ Informa de que se ha producido un error por la presencia de un
   \ complemento instrumental en el comando que no está permitido.
-
-:noname  ( -- )
-  s" [Con eso no puedes]"
-  narrate  ; to useless-tool-error#
-  \ Informa de que se ha producido un error
-  \ porque una herramienta no especificada no es la adecuada.
-  \ XXX TODO -- inconcluso
-
-:noname  ( -- )
-  s" [Con" wrong-entity @ full-name s& s" no puedes]" s&
-  narrate  ; to useless-what-tool-error#
-  \ Informa de que se ha producido un error
-  \ porque el ente `what` no es la herramienta adecuada.
-  \ XXX TODO -- inconcluso
-  \ XXX TODO -- distinguir si la llevamos, si está presente, si es conocida...
 
 :noname  ( -- )
   there-is$ s" un complemento (seudo)preposicional sin completar" s&
