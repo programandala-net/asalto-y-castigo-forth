@@ -5,16 +5,12 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607081105
+\ Last update: 201607081203
 
 \ Note: The comments of the code are in Spanish.
 
 \ ==============================================================
 \ Errores lingüísticos
-
-variable what
-  \ Ente que ha provocado un error y puede ser citado en el mensaje de
-  \ error correspondiente.
 
 : please$  ( -- ca len )
   s" por favor" s?  ;
