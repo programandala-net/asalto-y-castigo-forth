@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607051936
+\ Last update: 201607081110
 
 \ Note: The comments of the code are in Spanish.
 
@@ -119,8 +119,8 @@ restore-wordlists
   answer-wordlist 1 set-order
   ['] evaluate-command catch
   dup if  nip nip  then  \ Reajustar la pila si ha habido error
-  dup ?wrong 0=  \ Ejecutar el posible error y preparar su indicador para usarlo en el resultado
-  #answer @ 0= two-options-only-error# and ?wrong  \ Ejecutar error si la respuesta fue irreconocible
+  dup ?execute 0=  \ Ejecutar el posible error y preparar su indicador para usarlo en el resultado
+  #answer @ 0= two-options-only-error# and ?execute  \ Ejecutar error si la respuesta fue irreconocible
   #answer @ dup 0<> and and  \ Calcular el resultado final
   restore-wordlists  ;
   \ Evalúa una respuesta _ca len_ a una pregunta del tipo «sí o no»,

@@ -1015,6 +1015,7 @@ false [if]
   else  s" nadar" now-or-here-or-null$ s& be-nonsense  then
   ; is do-swim
   \ Acción de nadar.
+  \ XXX FIXME -- añadir el lago
 
 \ ----------------------------------------------
 \ Escalar
@@ -1081,8 +1082,7 @@ false [if]
 
 : do-climb-the-fallen-away  ( -- )
   \ Escalar el derrumbe.
-  climbed-the-fallen-away? @ 0=
-  ?? do-climb-the-fallen-away-first
+  climbed-the-fallen-away? @ 0= ?? do-climb-the-fallen-away-first
   climbing-the-fallen-away-is-impossible
   climbed-the-fallen-away? on  ;
 
@@ -1779,8 +1779,8 @@ create conversations-with-ambrosio
 [then]
 
 : talk-to-ambrosio  ( -- )
-  ambrosio~ is-here?
-  if  (talk-to-ambrosio)  else  ambrosio~ be-not-here  then  ;
+  ambrosio~ ?here
+  (talk-to-ambrosio)  ;
   \ Hablar con Ambrosio, si se puede.
   \ XXX TODO -- esto debería comprobarse en `do-speak` o
   \ `do-speak-if-possible`.

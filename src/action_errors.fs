@@ -109,8 +109,8 @@ to cannot-see-what-error#
   ['] x-is-impossible$
   ['] it-is-impossible-x$
   2 choose execute  period+ action-error.  ;
-  \ Informa de que una acción indicada (en infinitivo) es imposible.
-  \ ca len = Acción imposible, en infinitivo, o una cadena vacía
+  \ Informa de que una acción indicada (en infinitivo) _ca len_ es
+  \ imposible.
 
 2 ' (is-impossible) action-error be-impossible drop
 
@@ -159,9 +159,8 @@ to impossible-error#
   ['] x-is-nonsense$
   ['] it-is-nonsense-x$
   2 choose execute  period+ action-error.  ;
-  \ Informa de que una acción dada no tiene sentido.
-  \ ca len = Acción que no tiene sentido;
-  \       es un verbo en infinitivo, un sustantivo o una cadena vacía
+  \ Informa de que una acción _ca len_ (verbo en infinitivo,
+  \ sustantivo o cadena vacía) no tiene sentido.
 
 2 ' (is-nonsense) action-error be-nonsense drop
 

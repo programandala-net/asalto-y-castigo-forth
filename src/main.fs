@@ -7,7 +7,7 @@
 \
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 \
-\ Last update: 201607071622
+\ Last update: 201607081109
 
 \ ==============================================================
 \ Credits
@@ -52,6 +52,7 @@ s" data_tools.fs" including
 s" calculated_texts.fs" including
 s" lists.fs" including
 s" config.fs" including
+s" language_errors.fs" including
 s" parser.fs" including
 s" plot.fs" including
 s" entities.fs" including
