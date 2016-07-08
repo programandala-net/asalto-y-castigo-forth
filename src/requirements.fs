@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607071409
+\ Last update: 201607080929
 
 \ Note: Some comments of the code are in Spanish.
 
@@ -22,7 +22,6 @@ require random.fs
 \ Forth Foundation Library
 \ http://irdvo.github.io/ffl/
 
-require ffl/str.fs  \ Cadenas de texto dinámicas
 require ffl/trm.fs  \ Manejo de terminal ANSI
 require ffl/chr.fs  \ Herramientas para caracteres
 require ffl/dtm.fs  \ Tipo de datos para fecha y hora

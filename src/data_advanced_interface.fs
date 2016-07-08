@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607052108
+\ Last update: 201607080931
 
 \ Note: The comments of the code are in Spanish.
 
@@ -456,18 +456,6 @@ create 'articles
 \ ----------------------------------------------
 \ Interfaz para los nombres de los entes
 
-\ Como ya se explicó, el nombre de cada ente se guarda en una
-\ cadena dinámica [que se crea en la memoria con `allocate`, no
-\ en el espacio del diccionario del sistema].  El manejo de
-\ estas cadenas dinámicas se hace con el módulo
-\ correspondiente de Forth Foundation Library.
-\
-\ En la ficha del ente se guarda solo la dirección de la
-\ cadena dinámica, en el campo `~name-str`.  Por ello hacen
-\ falta palabras que hagan de interfaz para gestionar los
-\ nombres de ente de forma análoga a como se hace con el resto
-\ de datos de su ficha.
-
 : p-name!  ( ca len a -- )  dup have-plural-name name!  ;
   \ Guarda el nombre _ca len_ de un ente _a_,
   \ y lo marca como plural.
@@ -491,16 +479,6 @@ create 'articles
 : mp-name!  ( ca len a -- )  dup have-masculine-name p-name!  ;
   \ Guarda el nombre _ca len_ de un ente _a_,
   \ indicando también que es de género gramatical masculino y plural.
-
-: ?name  ( a -- ca len )  ?dup if  name  else  null$  then  ;
-  \ Devuelve el nombre _ca len_ de un ente _a_, si es tal;
-  \ devuelve una cadena vacía si _a_ es cero.
-  \ XXX TMP -- solo se usa para depuración
-
-: ?.name  ( a|0 -- )  ?name type  ;
-  \ Imprime el nombre de un ente _a_, si es tal;
-  \ imprime una cadena vacía si _a_ es cero.
-  \ XXX TMP -- solo se usa para depuración
 
 : ^name  ( a -- ca len )  name ^uppercase  ;
   \ Devuelve el nombre de un ente, con la primera letra mayúscula.

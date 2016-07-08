@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607062031
+\ Last update: 201607080928
 
 \ Note: The comments of the code are in Spanish.
 
@@ -50,8 +50,7 @@ last-exit> cell+ first-exit> - constant /exits
 \ ----------------------------------------------
 \ Lectores de campos
 
-: name-str  ( a1 -- a2 )  ~name-str @  ;
-: name  ( a -- ca len )  name-str str-get  ;
+: name  ( a -- ca len )  ~name 2@  ;
 
 : break-error#  ( a -- u )  ~break-error# @  ;
 : conversations  ( a -- u )  ~conversations @  ;
@@ -149,7 +148,7 @@ last-exit> cell+ first-exit> - constant /exits
 \ ----------------------------------------------
 \ Modificadores de campos
 
-: name!  ( ca len a -- )  name-str str-set  ;
+: name!  ( ca len a -- )  ~name 2! ;
 
 : be-before-describing-location-xt  ( xt a -- )  ~before-describing-location-xt !  ;
 : be-description-xt  ( xt a -- )  ~description-xt !  ;

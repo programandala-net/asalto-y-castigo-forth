@@ -5,26 +5,12 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607041857
+\ Last update: 201607080929
 
 \ Note: Most comments of the code are in Spanish.
 
 \ ==============================================================
 \ Herramientas para crear las fichas de la base de datos
-
-: ?free-name-str  ( a -- )  name-str ?dup ?? str-free  ;
-  \ Libera el espacio ocupado por la cadena dinámica del nombre
-  \ de la entidad _a_, si no es cero, es decir, si ha sido creada
-  \ anteriormente.
-
-: new-name-str  ( a -- )
-  dup ?free-name-str str-new swap ~name-str !  ;
-  \ Crea una cadena dinámica nueva para guardar el nombre del ente
-  \ _a_.
-
-' new-name-str is init-entity  ( a -- )
-  \ Configure the deferred word defined in the `entity` module of
-  \ Flibustre.
 
 ' ~init-xt is init-xt-entity-field  ( a1 -- a2 )
   \ Configure the deferred word defined in the `entity` module of

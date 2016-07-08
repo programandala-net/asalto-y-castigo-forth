@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607052155
+\ Last update: 201607080929
 
 \ Note: The comments of the code are in Spanish.
 
@@ -45,11 +45,11 @@
 field: ~init-xt
   \ Dirección de ejecución de la palabra que inicializa las
   \ propiedades de un ente.
-field: ~name-str
-  \ Dirección de una cadena dinámica que contendrá el nombre del ente.
 
 preserve-to-here
 
+2field: ~name
+  \ Dirección de una cadena dinámica que contendrá el nombre del ente.
 field: ~description-xt
   \ Dirección de ejecución de la palabra que describe el ente.
 field: ~direction
