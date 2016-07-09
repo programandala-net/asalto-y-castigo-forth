@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607091339
+\ Last update: 201607100008
 
 \ Note: The comments of the code are in Spanish.
 
@@ -138,9 +138,7 @@ last-exit> cell+ first-exit> - constant /exits
   \ ¿El ente es un ser vivo (aunque esté muerto)?
 
 : is-takeable?  ( a -- f )
-  dup is-decoration?
-  over is-global-outdoor? or
-  swap is-global-indoor? or 0=  ;
+  dup is-decoration? swap is-global? or 0=  ;
   \ ¿El ente puede ser tomado?
 
 \ ----------------------------------------------

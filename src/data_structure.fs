@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607080929
+\ Last update: 201607092336
 
 \ Note: The comments of the code are in Spanish.
 
@@ -70,18 +70,6 @@ field: ~conversations
 field: ~visits
   \ Contador para escenarios: visitas del protagonista (se incrementa
   \ al abandonar el escenario).
-
-\ ----------------------------------------------
-\ Campos de error
-
-\ Guardan un _xt_ que ejecuta un error específico (o cero si no hay
-\ error); se usan para casos especiales (los errores apuntados por
-\ estos campos no reciben parámetros salvo en `what`).
-
-field: ~break.error
-  \ Error al intentar romper el ente
-field: ~take.error
-  \ Error al intentar tomar el ente
 
 \ ----------------------------------------------
 \ Entes relacionados

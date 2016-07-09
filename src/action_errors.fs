@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607091405
+\ Last update: 201607100032
 
 \ Note: The comments of the code are in Spanish.
 
@@ -228,6 +228,8 @@ is dangerous.error
   }s&  ;
   \ Devuelve una variante de «no hay motivo para».
   \ XXX TODO -- quitar las variantes que no sean adecuadas a todos los casos
+  \ XXX TODO -- añadir «no es menester/necesario»
+  \ XXX TODO -- añadir «no hay lugar»
 
 :noname  ( ca len -- )
   no-reason-for$ 2swap s& period+ action-error  ;

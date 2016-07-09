@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607091337
+\ Last update: 201607100033
 
 \ Note: The comments of the code are in Spanish.
 
@@ -143,7 +143,6 @@ altar~ :init  ( -- )
   ['] describe-altar self~ be-description-xt
   s" altar" self~ ms-name!
   self~ be-decoration
-  ['] impossible.error self~ ~take.error !
   location-18~ self~ be-there  ;
 
 : describe-arch  ( -- )
@@ -236,7 +235,6 @@ door~ :init  ( -- )
   ['] describe-door self~ be-description-xt
   s" puerta" self~ fs-name!
   self~ be-closed
-  ['] impossible.error self~ ~take.error !
   location-47~ self~ be-there
   self~ ambrosio~ be-owner  ;
 
@@ -276,27 +274,18 @@ fallen-away~ :init  ( -- )
   ['] describe-fallen-away self~ be-description-xt
   s" derrumbe" self~ ms-name!
   self~ be-decoration
-  ['] nonsense.error self~ ~take.error !
   location-09~ self~ be-there  ;
 
-: don't-take-the-flags  ( -- )
-  s" No hay" s{ s" motivo" s" razón" s" lugar" }s&
-  s" para ofender a"
-  talked-to-the-leader?
-  if    s" los refugiados."
-  else  s" nadie."
-  then  s& narrate  ;
-
 : describe-flags  ( -- )
-  s" Son las banderas britana y sajona."
-  s" Dos dragones rampantes, rojo y blanco respectivamente, enfrentados." s&
+  s" Son las banderas britana y sajona:"
+  s" Dos dragones rampantes," s&
+  s" rojo y blanco respectivamente, enfrentados." s&
   paragraph  ;
 
 flags~ :init  ( -- )
   ['] describe-flags self~ be-description-xt
   s" banderas" self~ fp-name!
   self~ be-decoration
-  ['] don't-take-the-flags self~ ~take.error !
   location-28~ self~ be-there  ;
 
 : describe-flint  ( -- )
@@ -338,7 +327,6 @@ idol~ :init  ( -- )
   ['] describe-idol self~ be-description-xt
   s" ídolo" self~ ms-name!
   self~ be-decoration
-  ['] impossible.error self~ ~take.error !
   location-41~ self~ be-there  ;
 
 : describe-key  ( -- )
@@ -361,7 +349,6 @@ lake~ :init  ( -- )
   ['] describe-lake self~ be-description-xt
   s" lago" self~ ms-name!
   self~ be-decoration
-  ['] nonsense.error self~ ~take.error !
   location-44~ self~ be-there  ;
 
 : describe-lock  ( -- )
@@ -376,7 +363,6 @@ lock~ :init  ( -- )
   s" candado" self~ ms-name!
   self~ be-decoration
   self~ be-closed
-  ['] impossible.error self~ ~take.error !
   self~ ambrosio~ be-owner  ;
 
 : describe-log  ( -- )
@@ -464,7 +450,6 @@ snake~ :init  ( -- )
   ['] describe-snake self~ be-description-xt
   s" serpiente" self~ fs-name!
   self~ be-animal
-  ['] dangerous.error self~ ~take.error !
   location-43~ self~ be-there  ;
   \ XXX TODO -- distinguir si está muerta; en el programa original no
   \ hace falta
@@ -528,7 +513,6 @@ waterfall~ :init  ( -- )
   ['] describe-waterfall self~ be-description-xt
   s" cascada" self~ fs-name!
   self~ be-decoration
-  ['] nonsense.error self~ ~take.error !
   location-38~ self~ be-there  ;
 
 \ ----------------------------------------------

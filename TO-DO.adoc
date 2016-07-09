@@ -3,6 +3,10 @@
 
 == Programación
 
+2016-07-10:
+
+Configurar opción para español americano.
+
 2016-07-09:
 
 Error:

@@ -7,7 +7,7 @@
 \
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 \
-\ Last update: 201607091446
+\ Last update: 201607100034
 
 \ ==============================================================
 \ Credits
@@ -81,11 +81,11 @@ s" intro.fs" including
 : init-game-for-debugging  ( -- )
   \ location-01~ enter-location
   \ location-08~ enter-location  \ ambush
-  location-43~ enter-location    \ snake
+  \ location-43~ enter-location    \ snake
   \ location-11~ enter-location  \ lake
   \ location-17~ enter-location  \ before the dark cave
   \ location-19~ enter-location  \ Ambrosio
-  \ location-28~ enter-location  \ refugees
+  location-28~ enter-location  \ refugees
   \ location-47~ enter-location  \ Ambrosio's home
   \ snake~ be-here
   \ ambrosio~ be-here

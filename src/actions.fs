@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607091405
+\ Last update: 201607100032
 
 \ Note: The comments of the code are in Spanish.
 
@@ -262,6 +262,7 @@ false [if]
 
 : (do-put-on)  ( a -- )  be-worn  well-done  ;
   \ Ponerse una prenda.
+  \ XXX TODO -- mejorar el mensaje
 
 :noname  ( -- )
   ?no-tool-complement
@@ -338,15 +339,48 @@ false [if]
 \   nonsense.error
 \   ;
 
-: (do-take)  ( a -- )  dup be-hold familiar++ well-done  ;
-  \ Toma un ente.
+: cannot-take-the-flags.error  ( -- )
+  no-reason-for$ s" ofender a" s&
+  talked-to-the-leader?
+  if    s" los refugiados."
+  else  s{ s" esta gente." s" estas personas." s" nadie." }s
+  then  s& action-error  ;
+
+: >you-take-it$  ( a -- ca len )
+  s{ s" Recoges" s" Tomas" s" Coges" }s
+  rot full-name s& period+  ;
+  \ XXX TODO -- configurar español americano
+
+: (do-take)  ( a -- )
+  dup be-hold dup familiar++ >you-take-it$ well-done-this  ;
+  \ Toma un ente _a_.
+
+: ?do-take  ( a -- )
+  case
+    altar~       of  impossible.error             endof
+    door~        of  do-not-worry.error           endof
+    fallen-away~ of  nonsense.error               endof
+    flags~       of  cannot-take-the-flags.error  endof
+    idol~        of  impossible.error             endof
+    lake~        of  nonsense.error               endof
+    lock~        of  impossible.error             endof
+    snake~       of  dangerous.error              endof
+    waterfall~   of  nonsense.error               endof
+  endcase  ;
+
+: cannot-take-a-human  ( -- )
+  no-reason-for$
+  s{ s" molestar" s" incomodar" s" ofender" }s&
+  main-complement direct-pronoun s+ period+ narrate ;
 
 :noname  ( -- )
   ?main-complement
   main-complement ?not-hold
   main-complement ?here
-  main-complement ?takeable
-  \ XXX FIXME -- humanos y personajes pasan el último filtro
+  main-complement is-global? ?? nonsense.error
+  main-complement ?do-take
+  main-complement is-decoration? ?? do-not-worry.error
+  main-complement is-human? if  cannot-take-a-human exit  then
   main-complement (do-take)
   ; is do-take
   \ Toma un ente, si es posible.
@@ -703,6 +737,7 @@ false [if]
   s" Poderosas chispas salen del choque entre espada y pedernal,"
   s" encendiendo la antorcha." s& narrate
   torch~ be-lit  ;
+  \ XXX TODO -- variar el texto
 
 : hit-the-flint  ( -- )
   flint~ ?accessible
