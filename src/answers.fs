@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607081110
+\ Last update: 201607091342
 
 \ Note: The comments of the code are in Spanish.
 
@@ -54,15 +54,11 @@ variable #answer
   s" después «sí»?" s& think-it-again$ s&  ;
   \ Devuelve mensaje de error: se dijo «sí» tras «no».
 
-: yes-but-no  ( -- )  yes-but-no$ narrate  ;
+: yes-but-no.error  ( -- )  yes-but-no$ language-error  ;
   \ Muestra error: se dijo «no» tras «sí».
 
-' yes-but-no constant yes-but-no-error#
-
-: no-but-yes  ( -- )  no-but-yes$ narrate  ;
+: no-but-yes.error  ( -- )  no-but-yes$ language-error  ;
   \ Muestra error: se dijo «sí» tras «no».
-
-' no-but-yes constant no-but-yes-error#
 
 : two-options-only$  ( -- ca len )
   ^only$ s{ s" hay" s" tienes" }s&
@@ -70,10 +66,8 @@ variable #answer
   s" «sí»" s" «no»" both& s" (o sus iniciales)" s& period+  ;
   \ Devuelve un mensaje que informa de las opciones disponibles.
 
-: two-options-only  ( -- )  two-options-only$ narrate  ;
+: two-options-only.error  ( -- )  two-options-only$ language-error  ;
   \ Muestra error: sólo hay dos opciones.
-
-' two-options-only constant two-options-only-error#
 
 : wrong-yes$  ( -- ca len )
   s{ s" ¿Si qué...?" s" ¿Si...?" s" ¿Cómo «si»?" s" ¿Cómo que «si»?" }s
@@ -85,20 +79,18 @@ variable #answer
   ;
   \ Devuelve el mensaje usado para advertir de que se ha escrito mal «sí».
 
-: wrong-yes  ( -- )  wrong-yes$ narrate  ;
+: wrong-yes.error  ( -- )  wrong-yes$ language-error  ;
   \ Muestra error: se ha usado la forma errónea «si».
 
-' wrong-yes constant wrong-yes-error#
-
 : error-if-previous-yes  ( -- )
-  #answer @ 0> yes-but-no-error# and throw  ;
+  #answer @ 0> ?? yes-but-no.error  ;
   \ Provoca error si antes había habido síes.
 
 : answer-no  ( -- )  error-if-previous-yes  #answer --  ;
   \ Anota una respuesta negativa.
 
 : error-if-previous-not  ( -- )
-  #answer @ 0< no-but-yes-error# and throw  ;
+  #answer @ 0< ?? no-but-yes.error  ;
   \ Provoca error si antes había habido noes.
 
 : answer-yes  ( -- )  error-if-previous-not  #answer ++  ;
@@ -110,7 +102,7 @@ wordlist  dup constant answer-wordlist  set-current
 : s   ( -- )  answer-yes  ;
 : no  ( -- )  answer-no  ;
 : n   ( -- )  answer-no  ;
-: si  ( -- )  wrong-yes-error# throw  ;
+: si  ( -- )  wrong-yes.error  ;
 
 restore-wordlists
 
@@ -120,7 +112,7 @@ restore-wordlists
   ['] evaluate-command catch
   dup if  nip nip  then  \ Reajustar la pila si ha habido error
   dup ?execute 0=  \ Ejecutar el posible error y preparar su indicador para usarlo en el resultado
-  #answer @ 0= two-options-only-error# and ?execute  \ Ejecutar error si la respuesta fue irreconocible
+  #answer @ 0= ?? two-options-only.error
   #answer @ dup 0<> and and  \ Calcular el resultado final
   restore-wordlists  ;
   \ Evalúa una respuesta _ca len_ a una pregunta del tipo «sí o no»,

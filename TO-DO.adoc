@@ -3,6 +3,21 @@
 
 == Programación
 
+2016-07-09:
+
+Error:
+
+----
+  > deja espada con ertueourt usando uceue
+  Parece haber un complemento (seudo)preposicional sin completar en el comando. Sé más
+claro.
+  > deja espada con capa usando uceue
+  Se identifica un complemento (seudo)preposicional sin completar en el texto. Exprésate
+más sencillamente, por favor.
+  > deja espada con capa usando coraza
+  Dejas tu espada.
+----
+
 2016-07-07:
 
 Error, no hay respuesta en las repeticiones de «ahuyéntala»:

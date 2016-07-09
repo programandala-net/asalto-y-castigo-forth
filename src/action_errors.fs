@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607082333
+\ Last update: 201607091405
 
 \ Note: The comments of the code are in Spanish.
 
@@ -16,8 +16,8 @@
   'generic-action-error$ count  ;
   \ Devuelve el mensaje de error operativo para el nivel 1.
 
-:noname ( -- )
-  generic-action-error$ action-error.  ;
+:noname ( ca len -- )
+  2drop generic-action-error$ action-error.  ;
 is generic-action-error
   \ Muestra el mensaje de error operativo para el nivel 1.
 
@@ -40,22 +40,22 @@ is generic-action-error
   rot subjective-negative-name s&  ;
   \  Devuelve mensaje de que un ente desconocido no está presente
 
-:noname  ( -- )
-  wrong-entity @ dup is-familiar?
+:noname  ( a -- )
+  dup is-familiar?
   if    known-entity>is-not-here$
   else  unknown-entity>is-not-here$
   then  period+ action-error  ;
-  \  Informa de que un ente no está presente.
+  \  Informa de que un ente _a_ no está presente.
 
-to is-not-here-error#
+is is-not-here.error
 
-:noname  ( -- )
+:noname  ( a -- )
   ^cannot-see$
-  wrong-entity @ subjective-negative-name-as-direct-object s&
+  rot subjective-negative-name-as-direct-object s&
   period+ action-error  ;
-  \ Informa de que el ente `wrong-entity` no puede ser visto.
+  \ Informa de que el ente _a_ no puede ser visto.
 
-to cannot-be-seen-error#
+is cannot-be-seen.error
 
 : like-that$  ( -- ca len )
   s{ s" así" s" como eso" }s  ;
@@ -100,20 +100,19 @@ to cannot-be-seen-error#
   \ Devuelve una variante de «Es imposible x».
 
 :noname  ( ca len -- )
-  error-message 2@
   ['] x-is-impossible$
   ['] it-is-impossible-x$
   2 choose execute  period+ action-error  ;
   \ Informa de que una acción indicada (en infinitivo) _ca len_ es
   \ imposible.
 
-to that-is-impossible-error#
+is that-is-impossible.error
 
 :noname  ( -- )
-  something-like-that$ that-is-impossible-error# execute  ;
+  something-like-that$ that-is-impossible.error  ;
   \ Informa de que una acción no especificada es imposible.
 
-to impossible-error#
+is impossible.error
 
 : try$  ( -- ca len )  s{ null$ null$ s" intentar" }s  ;
   \ Devuelve «intentar» o una cadena vacía.
@@ -150,20 +149,19 @@ to impossible-error#
   \ Devuelve una variante de «No tiene sentido x».
 
 :noname  ( ca len -- )
-  error-message 2@
   ['] x-is-nonsense$
   ['] it-is-nonsense-x$
   2 choose execute  period+ action-error  ;
   \ Informa de que una acción _ca len_ (verbo en infinitivo,
   \ sustantivo o cadena vacía) no tiene sentido.
 
-to that-is-nonsense-error#
+is that-is-nonsense.error
 
-:noname  ( -- )  s" eso" that-is-nonsense-error# execute  ;
+:noname  ( -- )  s" eso" that-is-nonsense.error  ;
   \ Informa de que alguna acción no especificada no tiene sentido.
   \ XXX TMP
 
-to nonsense-error#
+is nonsense.error
 
 : dangerous$  ( -- ca len )
   s{
@@ -202,20 +200,19 @@ to nonsense-error#
   \ Devuelve una variante de «Es peligroso x».
 
 :noname  ( ca len -- )
-  error-message 2@
   ['] x-is-dangerous$
   ['] it-is-dangerous-x$
   2 choose execute  period+ action-error  ;
   \ Informa de que una acción dada _ca len_ (en infinitivo, o vacía)
   \ no tiene sentido.
 
-to that-is-dangerous-error#
+is that-is-dangerous.error
 
 :noname  ( -- )
-  something-like-that$ that-is-dangerous-error# execute  ;
+  something-like-that$ that-is-dangerous.error  ;
   \ Informa de que alguna acción no especificada no tiene sentido.
 
-to dangerous-error#
+is dangerous.error
 
 : no-reason-for$  ( -- ca len )
   s" No hay" s{
@@ -232,20 +229,18 @@ to dangerous-error#
   \ Devuelve una variante de «no hay motivo para».
   \ XXX TODO -- quitar las variantes que no sean adecuadas a todos los casos
 
-:noname  ( ca len | ca 0 -- )
-  error-message 2@
+:noname  ( ca len -- )
   no-reason-for$ 2swap s& period+ action-error  ;
   \ Informa de que no hay motivo para una acción (en infinitivo) _ca
   \ len_.
 
-to no-reason-for-that-error#
+is no-reason-for-that.error
 
 :noname  ( -- )
-  something-like-that$ no-reason-for-that-error# execute  ;
+  something-like-that$ no-reason-for-that.error  ;
   \ Informa de que no hay motivo para una acción no especificada.
-  \ XXX TODO
 
-to no-reason-error#
+is no-reason.error
 
 : (do-not-worry-0)$  ( -- a u)
   s{
@@ -284,22 +279,18 @@ to no-reason-error#
   now-or-null$ s&  period+ action-error  ;
   \ Informa de que una acción no tiene importancia.
 
-is do-not-worry-error#
+is do-not-worry.error
 
-:noname  ( -- )
-  wrong-entity @ full-name s" No necesitas" 2swap s&
-  s" para" s& error-message 2@ s&
+:noname  ( ca len a -- )
+  full-name s" No necesitas" 2swap s& s" para" s& 2swap s&
   period+ action-error  ;
-  \ Informa de que el ente `wrong-entity` es innecesario como
+  \ Informa de que el ente _a_ es innecesario como
   \ herramienta para ejecutar una acción descrita en la cadena
-  \ apuntada por `error-message` (frase con verbo en infinitivo).
-  \
-  \ XXX TODO -- inconcluso
+  \ _ca len_ (frase con verbo en infinitivo).
 
-to unnecessary-tool-for-that-error#
+is unnecessary-tool-for-that.error
 
-:noname  ( -- )
-  wrong-entity @
+:noname  ( a -- )
   ['] full-name ['] negative-full-name 2 choose execute
   s" No" s{ s" te" s? s" hace falta" s&
   s" necesitas" s" se necesita"
@@ -307,14 +298,14 @@ to unnecessary-tool-for-that-error#
   s" hay necesidad de" s{ s" usar" s" emplear" s" utilizar" }s?&
   }s&  2swap s&
   s{ s" para nada" s" para eso" }s?&  period+ action-error  ;
-  \ Informa de que un ente es innecesario como herramienta
+  \ Informa de que un ente _a_ es innecesario como herramienta
   \ para ejecutar una acción sin especificar.
-  \ a = Ente innecesario
+  \
   \ XXX TODO -- añadir variante "no es/son necesaria/o/s
   \ XXX TODO -- ojo con entes especiales: personas, animales, virtuales..
   \ XXX TODO -- añadir coletilla "aunque la/lo/s tuvieras"?
 
-to unnecessary-tool-error#
+is unnecessary-tool.error
 
 : >that$  ( a -- ca len )
   2 random if  drop s" eso"  else  full-name  then  ;
@@ -323,29 +314,29 @@ to unnecessary-tool-error#
 
 : you-do-not-have-it-(0)$  ( a -- ca len )
   s" No" you-carry$ s& rot >that$ s& with-you$ s&  ;
-  \ Devuelve mensaje de que el protagonista no tiene un ente
-  \ (variante 0).
+  \ Devuelve mensaje _ca len_ de que el protagonista no tiene un ente
+  \ _a_ (variante 0).
 
 : you-do-not-have-it-(1)$  ( a -- ca len )
   s" No" rot direct-pronoun s& you-carry$ s& with-you$ s&  ;
-  \ Devuelve mensaje de que el protagonista no tiene un ente
-  \ (variante 1, solo para entes conocidos).
+  \ Devuelve mensaje _ca len_ de que el protagonista no tiene un ente
+  \ _a_ (variante 1, solo para entes conocidos).
 
 : you-do-not-have-it-(2)$  ( a -- ca len )
   s" No" you-carry$ s& rot full-name s& with-you$ s&  ;
-  \ Devuelve mensaje de que el protagonista no tiene un ente
-  \ (variante 2, solo para entes no citados en el comando).
+  \ Devuelve mensaje _ca len_ de que el protagonista no tiene un ente
+  \ _a_ (variante 2, solo para entes no citados en el comando).
 
 :noname  ( a -- )
-  wrong-entity @ dup is-known?
+  dup is-known?
   if    ['] you-do-not-have-it-(0)$
         ['] you-do-not-have-it-(1)$
         2 choose execute
   else  you-do-not-have-it-(0)$
   then  period+ action-error  ;
-  \ Informa de que el protagonista no tiene un ente.
+  \ Informa de que el protagonista no tiene un ente _a_.
 
-to is-not-hold-error#
+is is-not-hold.error
 
 : it-seems$  ( -- ca len )
   s{ null$ s" parece que" s" por lo que parece," }s  ;
@@ -394,7 +385,7 @@ to is-not-hold-error#
     can-not-be-done$
   }s&
   only-by-hand$ s& period+ ^uppercase  ;
-  \ Devuelve la primera versión del mensaje de NOT-BY-HAND.
+  \ Devuelve la primera versión del mensaje de `not-by-hand.error`.
 
 : some-tool$  ( -- ca len )
   s{
@@ -413,66 +404,66 @@ to is-not-hold-error#
       s{ s" habrá" s" habría" s" hay" }s s" que" s&
     }s{ s" usar" s" utilizar" s" emplear" }s&
   }s& some-tool$ s& period+ ^uppercase  ;
-  \ Devuelve la segunda versión del mensaje de `not-by-hand`.
+  \ Devuelve la segunda versión del mensaje de `not-by-hand.error`.
 
 : not-by-hand$  ( -- ca len )
   ['] not-by-hand-0$ ['] not-by-hand-1$ 2 choose execute ^uppercase  ;
-  \ Devuelve mensaje de `not-by-hand`.
+  \ Devuelve mensaje de `not-by-hand.error`.
 
 :noname  ( -- )  not-by-hand$ action-error  ;
   \ Informa de que la acción no puede hacerse sin una herramienta.
 
-to not-by-hand-error#
+is not-by-hand.error
 
 :noname  ( a -- )
-  wrong-entity @
   2 random if  you-do-not-have-it-(2)$ period+ action-error
-           else  drop not-by-hand-error# execute  then  ;
-  \ Informa de que el protagonista no tiene un ente necesario.
+           else  drop not-by-hand.error  then  ;
+  \ Informa de que el protagonista no tiene un ente _a_ necesario.
 
-to is-needed-error#
+is is-needed.error
 
 : >you-already-have-it-(0)$  ( a -- ca len )
   s" Ya" you-carry$ s& rot >that$ s& with-you$ s&  ;
-  \ Devuelve mensaje de que el protagonista ya tiene un ente (variante 0).
+  \ Devuelve mensaje _ca len_ de que el protagonista ya tiene un ente
+  \ _a_ (variante 0).
 
 : >you-already-have-it-(1)$  ( a -- ca len )
   s" Ya" rot direct-pronoun s& you-carry$ s& with-you$ s&  ;
-  \ Devuelve mensaje de que el protagonista ya tiene un ente (variante 1, solo para entes conocidos).
+  \ Devuelve mensaje _ca len_ de que el protagonista ya tiene un ente
+  \ _a_ (variante 1, solo para entes conocidos).
 
-:noname  ( -- )
-  wrong-entity @
+:noname  ( a -- )
   dup familiar over belongs-to-protagonist? or   if
     ['] >you-already-have-it-(0)$
     ['] >you-already-have-it-(1)$
     2 choose execute
   else  >you-already-have-it-(0)$
   then  period+ action-error  ;
-  \ Informa de que el protagonista ya tiene un ente.
+  \ Informa de que el protagonista ya tiene un ente _a_.
 
-to is-hold-error#
+is is-hold.error
 
 : >you-do-not-wear-it$  ( a -- ca len )
   >r s" No llevas puest" r@ noun-ending+
   r> full-name s& period+  ;
-  \ Informa de que el protagonista no lleva puesto un ente prenda.
-
-:noname  ( -- )
-  wrong-entity @ dup is-hold?
-  if    is-not-hold-error# execute
-  else  >you-do-not-wear-it$ action-error  then  ;
-  \ Informa de que el protagonista no lleva puesto un ente prenda,
-  \ según lo lleve o no consigo.
-
-to is-not-worn-error#
+  \ Devuelve un mensaje _ca len_ de que el protagonista no lleva
+  \ puesto un ente prenda _a_.
 
 :noname  ( a -- )
-  wrong-entity @
+  dup is-hold?
+  if    is-not-hold.error
+  else  >you-do-not-wear-it$ action-error  then  ;
+  \ Informa de que el protagonista no lleva puesto un ente prenda _a_,
+  \ según lo lleve o no consigo.
+
+is is-not-worn-by-me.error
+
+:noname  ( a -- )
   >r s" Ya llevas puest" r@ noun-ending+
   r> full-name s& period+ action-error  ;
-  \ Informa de que el protagonista lleva puesto un ente prenda.
+  \ Informa de que el protagonista lleva puesto un ente prenda _a_.
 
-to is-worn-error#
+is is-worn-by-me.error
 
 : >not-with-that$  ( a -- ca len )
   full-name 2>r
@@ -481,125 +472,61 @@ to is-worn-error#
      s" Con" 2r@ s& s" no..." s&
      s" No con" 2r> s& s" ..." s&
   }s  ;
-  \ Devuelve una variante del mensaje de «Con eso no», para el ente
-  \ _a_.
-
-:noname  ( -- )
-  wrong-entity @ >not-with-that$ action-error  ;
-  \ Informa de que la acción no puede hacerse con la herramienta elegida.
-
-to wrong-tool-error#
-
-:noname  ( -- )
-  s" Lo intentas con" wrong-entity @ full-name s&
-  s" , pero no sirve de nada." s+ action-error  ;
-  \ Informa de que la herramienta elegida no es adecuada.
-  \ XXX TODO -- variar el mensaje
-
-to useless-tool-error#
-
-:noname  ( -- )
-  s" Ya está abiert" wrong-entity @ noun-ending+ period+
-  action-error  ;
-  \ Informa de que un ente ya está abierto.
-
-to is-open-error#
+  \ Devuelve una variante _ca len_ del mensaje de «Con eso no», para
+  \ el ente _a_.
 
 :noname  ( a -- )
-  s" Ya está cerrad" wrong-entity @ noun-ending+ period+
-  action-error  ;
-  \ Informa de que un ente ya está cerrado.
+  >not-with-that$ action-error  ;
+  \ Informa de que la acción no puede hacerse con el ente herramienta
+  \ _a_.
 
-to is-closed-error#
+is wrong-tool.error
+
+:noname  ( a -- )
+  s" Lo intentas con" rot full-name s&
+  s" , pero no sirve de nada." s+ action-error  ;
+  \ Informa de que el ente herramienta _a_ no es adecuado.
+  \ XXX TODO -- variar el mensaje
+
+is useless-tool.error
+
+:noname  ( a -- )
+  s" Ya está abiert" rot noun-ending+ period+
+  action-error  ;
+  \ Informa de que un ente _a_ ya está abierto.
+
+is is-open.error
+
+:noname  ( a -- )
+  s" Ya está cerrad" rot noun-ending+ period+
+  action-error  ;
+  \ Informa de que un ente _a_ ya está cerrado.
+
+is is-closed.error
 
 : >toward-that-direction$  ( a -- ca len )
   dup >r  has-no-article?
   if    s" hacia" r> full-name
   else  toward-the(m)$ r> name
   then  s&  ;
-  \ Devuelve «al/hacia la dirección indicada», correspondiente al ente
-  \ dirección _a_.
+  \ Devuelve en _ca len_ variante de mensaje «al/hacia la dirección
+  \ indicada», correspondiente al ente dirección _a_.
 
-:noname  ( -- )
-  ^is-impossible$ s" ir" s&  wrong-entity @
+:noname  ( a -- )
+  ^is-impossible$ s" ir" s&  rot
   3 random if    >toward-that-direction$
            else  drop that-way$
            then  s& period+ action-error  ;
-  \ El movimiento es imposible hacia el ente dirección en
-  \ `wrong-entity`.
+  \ Informa de que el movimiento es imposible hacia el ente dirección
+  \ _a_.
+  \
   \ XXX TODO -- añadir una tercera variante «ir en esa dirección»; y
   \ otras específicas como «no es posible subir»
 
-to impossible-move-to-it-error#
-
-\ ==============================================================
-\ Atajos para errores frecuentes
-
-: nonsense.error  ( -- )
-  nonsense-error# throw  ;
-
-: that-is-nonsense.error  ( ca len -- )
-  error-message 2! that-is-nonsense-error# throw  ;
-
-: cannot-be-seen.error  ( a -- )
-  wrong-entity ! cannot-be-seen-error# throw  ;
-
-: do-not-worry.error  ( -- )
-  do-not-worry-error# throw  ;
-
-: impossible-move-to-it.error  ( a -- )
-  wrong-entity ! impossible-move-to-it-error# throw  ;
-
-: unnecessary-tool.error  ( a -- )
-  wrong-entity ! unnecessary-tool-error# throw  ;
-
-: unnecessary-tool-for-that.error  ( ca len a -- )
-  wrong-entity ! error-message 2!
-  unnecessary-tool-for-that-error# throw  ;
-
-: no-reason.error  ( -- )
-  no-reason-error# throw  ;
-
-: no-reason-for-that.error  ( ca len -- )
-  error-message 2! no-reason-for-that-error# throw  ;
-
-: that-is-impossible.error  ( ca len -- )
-  error-message 2! that-is-impossible-error# throw  ;
-
-: that-is-dangerous.error  ( ca len -- )
-  error-message 2! that-is-dangerous-error# throw  ;
-
-: wrong-tool.error  ( a -- )
-  wrong-entity ! wrong-tool-error# throw  ;
-
-: useless-tool.error  ( a -- )
-  wrong-entity ! useless-tool-error# throw  ;
-
-: is-not-here.error  ( a -- )
-  wrong-entity ! is-not-here-error# throw  ;
-
-: is-hold.error  ( a -- )
-  wrong-entity ! is-hold-error# throw  ;
-
-: is-not-hold.error  ( a -- )
-  wrong-entity ! is-not-hold-error# throw  ;
-
-: is-not-worn.error  ( a -- )
-  wrong-entity ! is-worn-error# throw  ;
-
-: is-not-worn.error  ( a -- )
-  wrong-entity ! is-not-worn-error# throw  ;
-
-: is-open.error  ( a -- )
-  wrong-entity ! is-open-error# throw  ;
-
-: is-closed.error  ( a -- )
-  wrong-entity ! is-closed-error# throw  ;
+is impossible-move-to-it.error
 
 : nonsense-or-no-reason.error  ( -- )
-  nonsense-error# no-reason-error# 2 choose throw  ;
-
-\ XXX TODO mover a Flibustre
+  ['] nonsense.error ['] no-reason.error 2 choose execute  ;
 
 \ vim:filetype=gforth:fileencoding=utf-8
 

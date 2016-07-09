@@ -34,8 +34,8 @@
 \ - Todos los nombres de campo empiezan con el signo de tilde, «~».
 \ - Los nombres de los campos que contienen direcciones de ejecución
 \   terminan con «-xt».
-\ - Los nombres de los campos que contienen códigos de error
-\   terminan con «-error#».
+\ - Los nombres de los campos que contienen un _xt_ de un error
+\   terminan con «.error».
 
 0 \ Valor inicial de desplazamiento para el primer campo
 
@@ -78,9 +78,9 @@ field: ~visits
 \ error); se usan para casos especiales (los errores apuntados por
 \ estos campos no reciben parámetros salvo en `what`).
 
-field: ~break-error#
+field: ~break.error
   \ Error al intentar romper el ente
-field: ~take-error#
+field: ~take.error
   \ Error al intentar tomar el ente
 
 \ ----------------------------------------------

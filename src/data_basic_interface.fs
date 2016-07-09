@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607082203
+\ Last update: 201607091339
 
 \ Note: The comments of the code are in Spanish.
 
@@ -53,7 +53,6 @@ last-exit> cell+ first-exit> - constant /exits
 
 : name  ( a -- ca len )  ~name 2@  ;
 
-: break-error#  ( a -- u )  ~break-error# @  ;
 : conversations  ( a -- u )  ~conversations @  ;
 : description-xt  ( a -- xt )  ~description-xt @  ;
 : direction  ( a -- u )  ~direction @  ;
@@ -69,6 +68,7 @@ last-exit> cell+ first-exit> - constant /exits
 : is-animal?  ( a -- f )  ~is-animal bit@  ;
 : is-character?  ( a -- f )  ~is-character bit@  ;
 : is-wearable?  ( a -- f )  ~is-wearable bit@  ;
+: is-not-wearable?  ( a -- f )  is-wearable? 0=  ;
 : is-decoration?  ( a -- f )  ~is-decoration bit@  ;
 : is-global-indoor?  ( a -- f )  ~is-global-indoor bit@  ;
 : is-global-outdoor?  ( a -- f )  ~is-global-outdoor bit@  ;
@@ -94,7 +94,6 @@ last-exit> cell+ first-exit> - constant /exits
 : after-listing-entities-xt  ( a -- xt )  ~after-listing-entities-xt @  ;
 : before-leaving-location-xt  ( a -- xt )  ~before-leaving-location-xt @  ;
 : previous-location  ( a1 -- a2 )  ~previous-location @  ;
-: take-error#  ( a -- u )  ~take-error# @  ;
 : visits  ( a -- u )  ~visits @  ;
 
 : north-exit  ( a1 -- a2 )  ~north-exit @  ;
@@ -138,13 +137,11 @@ last-exit> cell+ first-exit> - constant /exits
   dup is-vegetal?  swap is-beast? or  ;
   \ ¿El ente es un ser vivo (aunque esté muerto)?
 
-: can-be-taken?  ( a -- f )
+: is-takeable?  ( a -- f )
   dup is-decoration?
-  over is-human? or
-  swap is-character? or 0=  ;
-  \ ¿El ente puede ser tomado?  Se usa como norma general, para
-  \ aquellos entes que no tienen un error específico indicado en el
-  \ campo `~take-error#`.
+  over is-global-outdoor? or
+  swap is-global-indoor? or 0=  ;
+  \ ¿El ente puede ser tomado?
 
 \ ----------------------------------------------
 \ Modificadores de campos

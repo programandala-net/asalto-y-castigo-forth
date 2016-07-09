@@ -7,7 +7,7 @@
 \
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 \
-\ Last update: 201607082204
+\ Last update: 201607091446
 
 \ ==============================================================
 \ Credits
@@ -31,6 +31,7 @@ include flibustre/wordlists.fs
 include version.fs
 include debug_tools.fs
 
+
 : including  ( ca len -- )  2dup cr type included ?.s  ;
   \ Include file _ca len_ and check the stack.
   \ XXX TMP -- for debugging
@@ -44,6 +45,7 @@ s" random_texts.fs" including
 s" key_input.fs" including
 s" printing.fs" including
 s" command_input.fs" including
+require flibustre/entity.fs
 s" data_structure.fs" including
 s" data_basic_interface.fs" including
 s" entity_identifiers.fs" including
@@ -51,9 +53,11 @@ s" data_advanced_interface.fs" including
 s" data_tools.fs" including
 s" calculated_texts.fs" including
 s" lists.fs" including
-s" config.fs" including
-s" language_errors.fs" including
+require flibustre/errors.fs
+require flibustre/error_conditions.fs
 s" parser.fs" including
+s" language_errors.fs" including
+s" config.fs" including
 s" plot.fs" including
 s" entities.fs" including
 s" action_errors.fs" including
@@ -97,7 +101,8 @@ s" intro.fs" including
   init-parser/game init-entities init-plot
   get-config new-page
   \ init-game-for-debugging exit  \ XXX TMP -- for debugging
-  about cr intro  location-01~ enter-location  ;
+  about cr intro  \ XXX TMP -- commented out for debugging
+  location-01~ enter-location  ;
   \ Initialization needed before every game.
 
 : game  ( -- )  begin  plot accept-command obey  game-over?  until  ;

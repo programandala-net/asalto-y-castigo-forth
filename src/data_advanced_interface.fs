@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607081913
+\ Last update: 201607091332
 
 \ Note: The comments of the code are in Spanish.
 
@@ -53,6 +53,8 @@
 
 : is-worn-by-me?  ( a -- f )  dup is-hold?  swap is-worn?  and  ;
   \ ¿El protagonista lleva puesto el ente indicado?
+
+: is-not-worn-by-me?  ( a -- f )  is-worn-by-me? 0=  ;
 
 : is-known?  ( a -- f )
   dup belongs-to-protagonist?

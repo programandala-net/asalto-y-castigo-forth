@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607082336
+\ Last update: 201607091257
 
 \ Note: Some comments of the code are in Spanish.
 
@@ -80,15 +80,6 @@ require galope/x-c-store.fs                   \ `xc!`
 require galope/xcase_es.fs                    \ Spanish UTF-8 case table
 require galope/xlowercase.fs                  \ `xlowercase` for UTF-8
 require galope/xy.fs                          \ current cursor position
-
-\ ----------------------------------------------
-\ Flibustre
-\ http://programandala.net
-
-require flibustre/different-question.fs  \ `different?`
-require flibustre/error_definers.fs
-require flibustre/error_codes.fs
-require flibustre/entity.fs
 
 \ ----------------------------------------------
 \ Other

@@ -5,49 +5,13 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607081357
+\ Last update: 201607091318
 
 \ Note: The comments of the code are in Spanish.
 
 \ ==============================================================
-\ Variables del intérprete de comandos
 
-0 value action  ( -- xt | 0 )
-  \ Código de la acción del comando.
-
-0 value previous-action  ( -- xt | 0 )
-  \ Código de la acción del comando anterior.
-
-0 value main-complement  ( -- a )
-  \ Ente _a_ complemento principal (complemento directo o destino).
-
-0 value secondary-complement  ( -- a )
-  \ Ente _a_ complemento secundario (complemento indirecto, destino u
-  \ origen).
-
-defer tool-complement  ( -- a )
-  \ Ente _a_ complemento instrumental (indicada con «con» o «usando»).
-
-defer explicit-tool-complement  ( -- a )
-  \ Ente _a_ complemento instrumental estricto (indicado con «usando»).
-
-defer company-complement  ( -- a )
-  \ Ente _a_ complemento de compañía (indicado con «con»).
-
-false [if]
-  \ XXX OLD
-  \ XXX TODO -- descartado, pendiente
-  0 value to-complement  \ Destino \ XXX OLD -- no utilizado
-  0 value from-complement  \ Origen \ XXX OLD -- no utilizado
-  0 value into-complement  \ Destino dentro \ XXX OLD -- no utilizado
-[then]
-
-variable current-preposition
-  \ Código de la (seudo)preposición abierta, o cero.
-
-variable used-prepositions
-  \ Máscara de bitios de las (seudo)preposiciones usadas en la frase.
-  \ XXX REMARK -- solo se usa para depuración
+require flibustre/parser_variables.fs
 
 \ ==============================================================
 \ Pronombres
@@ -297,7 +261,7 @@ is tool-complement
   \ Preparativos previos a cada análisis.
 
 : (execute-action)  ( xt -- )
-  dup to previous-action catch ?execute  ;
+  dup to previous-action catch drop  ;
   \ Ejecuta la acción _xt_.
 
 : (execute-previous-action)  ( -- )
@@ -308,7 +272,7 @@ is tool-complement
   \ acción que nada haga.
 
 : execute-previous-action  ( -- )
-  repeat-previous-action? @ 0= no-verb-error# and throw
+  repeat-previous-action? @ 0= ?? no-verb.error
   (execute-previous-action)  ;
   \ Ejecuta la acción previa, si así está configurado.
 
@@ -319,7 +283,7 @@ is tool-complement
   if    (execute-action)
   else  execute-previous-action
   then
-  [debug-catch] [debug-parsing] [or] [??] ~~  
+  [debug-catch] [debug-parsing] [or] [??] ~~
   .system-status  \ XXX INFORMER
   ;
   \ Ejecuta la acción del comando, si es posible.
@@ -331,24 +295,18 @@ is tool-complement
   \ Analiza la fuente actual, ejecutando las palabras reconocidas que contenga.
   \ XXX TODO -- mover a Flibustre
 
-: evaluate-command  ( ca len -- )
-  \ ." comando:" 2dup cr type  \ XXX INFORMER
-  ['] (evaluate-command) execute-parsing  ;
-  \ Analiza el comando, ejecutando las palabras reconocidas que contenga.
-  \ XXX TODO -- mover a Flibustre
-
-: a-preposition-is-open?  ( -- f )
-  current-preposition @ 0<>  ;
+ : unresolved-preposition?  ( -- f )  current-preposition @ 0<>  ;
   \ ¿Hay un complemento (seudo)preposicional abierto?
 
-: no-parsing-error-left?  ( -- f )
-  a-preposition-is-open? dup
-  unresolved-preposition-error# and ?execute  0=  ;
-  \ Comprueba si quedó un complemento (seudo)preposicional incompleto,
-  \ algo que no puede detectarse en el análisis principal, y devuelve
-  \ el resultado como un indicador: ¿No quedó algún error pendiente
-  \ tras el análisis?  (cierto: ningún error pendiente; falso: algún
-  \ error pendiente).
+: ?unresolved-preposition  ( -- )
+  unresolved-preposition? ?? unresolved-preposition.error  ;
+
+: evaluate-command  ( ca len -- )
+  \ ." comando:" 2dup cr type  \ XXX INFORMER
+  ['] (evaluate-command) execute-parsing
+  ?unresolved-preposition  ;
+  \ Analiza el comando, ejecutando las palabras reconocidas que contenga.
+  \ XXX TODO -- mover a Flibustre
 
 [debug-parsing-result] [if]
   : .complement?  ( ca len a -- )
@@ -360,20 +318,12 @@ is tool-complement
 
 : valid-parsing?  ( ca len -- f )
   -punctuation
-  [debug-parsing] [??] ~~
   player-wordlist 1 set-order
   \ [debug-catch] [if]  s" En `valid-parsing?` antes de preparar `catch`" debug  [then]  \ xxx informer
-  [debug-parsing] [??] ~~
   ['] evaluate-command catch
-  [debug-parsing] [??] ~~
-  dup if  nip nip  then
+  dup if  nip nip  then  0=
     \ Arreglar la pila, pues `catch` hace que apunte a su posición previa
-  [debug-parsing] [??] ~~
-  dup ?execute 0=
-  [debug-parsing] [??] ~~
   restore-wordlists
-  no-parsing-error-left? and
-  [debug-parsing] [??] ~~
   [debug-parsing-result] [if]
     s" Main           : " main-complement .complement?
     s" Secondary      : " secondary-complement .complement?
@@ -427,20 +377,20 @@ is tool-complement
 
 : set-action  ( xt -- )
   action second?
-  too-many-actions-error# and throw
+  ?? too-many-actions.error
   to action  ;
   \ Comprueba y almacena la acción _xt_.
   \ Provoca un error si ya había una acción.
 
 : set-preposition  ( n -- )
-  a-preposition-is-open?
-  unresolved-preposition-error# and throw
+  unresolved-preposition?
+  ?? unresolved-preposition.error
   current-preposition !  ;
   \ Almacena una (seudo)preposición _n_ recién hallada en la frase.
 
 : set-prepositional-complement  ( a -- )
   current-prepositional-complement @ second?
-  repeated-preposition-error# and throw
+  ?? repeated-preposition.error
   dup new-last-complement
   current-prepositional-complement !
   current-preposition @ >bit used-prepositions +!
@@ -450,7 +400,7 @@ is tool-complement
 
 : set-secondary-complement  ( a -- )
   secondary-complement second?
-  too-many-complements-error# and throw
+  ?? too-many-complements.error
   to secondary-complement  ;
   \ Almacena el ente _a_ como complemento secundario.
   \ Provoca un error si ya existía un complemento secundario.
@@ -458,7 +408,7 @@ is tool-complement
 : set-main-complement  ( a -- )
   [debug-parsing] [??] ~~
   main-complement second?
-  too-many-complements-error# and throw
+  ?? too-many-complements.error
   dup new-last-complement
   to main-complement  ;
   \ Almacena el ente _a_ como complemento principal.
@@ -473,7 +423,7 @@ is tool-complement
   \ estén implementadas completamente
 
 : (set-complement)  ( a -- )
-  a-preposition-is-open?
+  unresolved-preposition?
   if    set-prepositional-complement
   else  set-non-prepositional-complement  then  ;
   \ Almacena el ente _a_ como complemento.
@@ -485,7 +435,7 @@ is tool-complement
   \     o cero si se trata de un pronombre sin referente.
 
 : set-action-or-complement  ( xt a -- )
-  action 0<> a-preposition-is-open? or
+  action 0<> unresolved-preposition? or
   if  nip set-complement  else  drop set-action  then  ;
   \ Comprueba y almacena un complemento _a_ o una acción _xt_,
   \ ambos posibles significados de la misma palabra.

@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607082335
+\ Last update: 201607091405
 
 \ Note: The comments of the code are in Spanish.
 
@@ -27,8 +27,6 @@ require flibustre/well-done.fs
 
 \ ==============================================================
 \ Comprobación de los requisitos de las acciones
-
-require flibustre/action_conditions.fs
 
 : by-default  ( x1 x2 -- x1 | x2 )
   over if  drop  else  nip  then  ;
@@ -269,7 +267,7 @@ false [if]
   ?no-tool-complement
   ?main-complement
   main-complement ?wearable
-  main-complement ?not-worn
+  main-complement ?not-worn-by-me
   main-complement is-not-hold? ?? do-take
   main-complement ?hold
   main-complement (do-put-on)
@@ -294,7 +292,7 @@ false [if]
 :noname  ( -- )
   ?no-tool-complement
   ?main-complement
-  main-complement ?worn
+  main-complement ?worn-by-me
   main-complement (do-take-off)
   ; is do-take-off
   \ Acción de quitarse una prenda.
@@ -348,6 +346,7 @@ false [if]
   main-complement ?not-hold
   main-complement ?here
   main-complement ?takeable
+  \ XXX FIXME -- humanos y personajes pasan el último filtro
   main-complement (do-take)
   ; is do-take
   \ Toma un ente, si es posible.
@@ -356,15 +355,18 @@ false [if]
   s{ s" Te desprendes de" s" Dejas" }s
   object full-name s& period+  ;
 
+: silently-do-take-off  ( -- )
+  show-well-done off  do-take-off  show-well-done on  ;
+
 : (do-drop)  ( a -- ) { object }
-  object is-worn? if
-    show-well-done off  do-take-off  show-well-done on
-    you-take-off-main-complement$ s" y" s&
-    s{ s" te desprendes de" object personal-pronoun s&
-       object direct-pronoun s" dejas" s& }s& period+
-  else   object >do-drop-done$
-  then   ( ca len )  object be-here  well-done-this  ;
-  \ Deja un ente.
+  object is-worn?
+  if    silently-do-take-off
+        you-take-off-main-complement$ s" y" s&
+        s{ s" te desprendes de" object personal-pronoun s&
+        object direct-pronoun s" dejas" s& }s& period+
+  else  object >do-drop-done$
+  then  ( ca len )  object be-here  well-done-this  ;
+  \ Deja un ente _a_ que está en inventario.
 
 :noname  ( -- )
   \ Acción de dejar.
@@ -692,7 +694,7 @@ false [if]
 :noname  ( -- )
   ?main-complement
   main-complement ?accessible
-  main-complement ?breakable
+  \ main-complement ?breakable  \ XXX TODO
   main-complement (do-break)
   ; is do-break
   \ Acción de romper.
