@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607082336
+\ Last update: 201607082342
 
 \ Note: The comments of the code are in Spanish.
 
@@ -173,7 +173,7 @@
   \ complemento principal en el comando que no está permitido.
 
 :noname  ( -- )
-  there-is$ s" un complemento principal no permitido con esta acción" s&
+  there-is$ s" un complemento instrumental no permitido con esta acción" s&
   language-error  ; to not-allowed-tool-complement-error#
   \ Informa de que se ha producido un error por la presencia de un
   \ complemento instrumental en el comando que no está permitido.
