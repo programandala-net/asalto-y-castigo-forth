@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607041349
+\ Last update: 201607101308
 
 \ Note: The comments of the code are in Spanish.
 
@@ -75,22 +75,22 @@
 
 : before-describing-location  ( a -- )
   before-describing-any-location
-  before-describing-location-xt ?execute  ;
+  before-description-plotter ?execute  ;
   \ Trama de entrada a un ente escenario.
 
 : after-describing-location  ( a -- )
   after-describing-any-location
-  after-describing-location-xt ?execute  ;
+  after-description-plotter ?execute  ;
   \ Trama de entrada a un ente escenario.
 
 : after-listing-entities  ( a -- )
   after-listing-entities-of-any-location
-  after-listing-entities-xt ?execute  ;
+  before-prompt-plotter ?execute  ;
   \ Trama final de entrada a un ente escenario.
 
 : before-leaving-location  ( a -- )
   before-leaving-any-location
-  before-leaving-location-xt ?execute  ;
+  before-exit-plotter ?execute  ;
   \ Ejecuta la trama de salida de un ente escenario.
 
 : leave-location  ( a -- )
@@ -114,7 +114,7 @@
   \ Entra en un escenario.
 
 : can-be-entered?  ( a -- f )
-  can-be-entered-xt ?dup if  execute  else  true  then  ;
+  enter-checker ?dup if  execute  else  true  then  ;
   \ Ejecuta la trama previa a la entrada a un ente escenario _a_, que
   \ devolverá un indicador _f_ de que puede entrarse en el escenario;
   \ si esta trama no está definida para el ente, el indicador será

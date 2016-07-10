@@ -5,21 +5,22 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607080929
+\ Last update: 201607101312
 
 \ Note: Most comments of the code are in Spanish.
 
 \ ==============================================================
 \ Herramientas para crear las fichas de la base de datos
 
-' ~init-xt is init-xt-entity-field  ( a1 -- a2 )
+' ~initializer is initializer-entity-field  ( a1 -- a2 )
   \ Configure the deferred word defined in the `entity` module of
   \ Flibustre.
+  \ XXX OLD -- remove after moving the data structure to Flibustre
 
 \ ==============================================================
 \ Herramientas para mostrar las descripciones
 
-\ En el campo `~description-xt` de cada ente se almacena la dirección
+\ En el campo `~describer` de cada ente se almacena la dirección
 \ de ejecución de una palabra que imprime su descripción.
 
 false value sight
@@ -39,8 +40,8 @@ defer default-description  ( -- )
 ' (default-description) is default-description
 
 : (describe)  ( a -- )
-  description-xt ?dup if    execute
-                      else  default-description  then  ;
+  describer ?dup if  execute
+                     else  default-description  then  ;
   \ Ejecuta la palabra de descripción de un ente _a_, si está
   \ inicializada; en caso contrario ejecuta la descripción
   \ predeterminada.

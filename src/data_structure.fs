@@ -5,44 +5,19 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607092336
+\ Last update: 201607101308
 
 \ Note: The comments of the code are in Spanish.
 
 \ ==============================================================
 \ Estructura de datos de los entes
 
-\ Denominamos «ente» a cualquier componente del mundo virtual del
-\ juego que es manipulable por el programa.  «Entes» por tanto son los
-\ objetos, manipulables o no por el jugador; los personajes,
-\ interactivos o no; los lugares; y el propio personaje protagonista.
-\
-\ Cada ente tiene una ficha en la base de datos del juego.  La base de
-\ datos es una zona de memoria dividida en partes iguales, una para
-\ cada ficha. El identificador de cada ficha es una palabra que al
-\ ejecutarse deja en la pila la dirección de memoria donde se
-\ encuentra la ficha.
-\
-\ Los campos de la base de datos, como es habitual en Forth en este
-\ tipo de estructuras, son palabras que suman el desplazamiento
-\ adecuado a la dirección base de la ficha, que reciben en la pila,
-\ apuntando así a la dirección de memoria que contiene el campo
-\ correspondiente.
-\
-\ Se usa la siguiente convención para los nombres de campo:
-\
-\ - Todos los nombres de campo empiezan con el signo de tilde, «~».
-\ - Los nombres de los campos que contienen direcciones de ejecución
-\   terminan con «-xt».
-\ - Los nombres de los campos que contienen un _xt_ de un error
-\   terminan con «.error».
-
 0 \ Valor inicial de desplazamiento para el primer campo
 
 \ ----------------------------------------------
 \ Campos de identificación
 
-field: ~init-xt
+field: ~initializer
   \ Dirección de ejecución de la palabra que inicializa las
   \ propiedades de un ente.
 
@@ -50,7 +25,7 @@ preserve-to-here
 
 2field: ~name
   \ Dirección de una cadena dinámica que contendrá el nombre del ente.
-field: ~description-xt
+field: ~describer
   \ Dirección de ejecución de la palabra que describe el ente.
 field: ~direction
   \ Desplazamiento del campo de dirección al que corresponde el ente
@@ -86,15 +61,15 @@ field: ~owner
 \ ----------------------------------------------
 \ Tramas de escenario
 
-field: ~can-be-entered-xt
+field: ~enter-checker
   \ Trama previa a la entrada al escenario.
-field: ~before-describing-location-xt
+field: ~before-description-plotter
   \ Trama de entrada antes de describir el escenario.
-field: ~after-describing-location-xt
+field: ~after-description-plotter
   \ Trama de entrada tras describir el escenario.
-field: ~after-listing-entities-xt
+field: ~before-prompt-plotter
   \ Trama de entrada tras listar los entes presentes.
-field: ~before-leaving-location-xt
+field: ~before-exit-plotter
   \ Trama antes de abandonar el escenario.
 
 \ ----------------------------------------------

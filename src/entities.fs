@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607100033
+\ Last update: 201607101308
 
 \ Note: The comments of the code are in Spanish.
 
@@ -21,7 +21,7 @@
   period+ paragraph  ;
 
 ulfius~ :init  ( -- )
-  ['] describe-ulfius self~ be-description-xt
+  ['] describe-ulfius self~ be-describer
   s" Ulfius" self~ ms-name!
   self~ be-human
   self~ have-personal-name
@@ -39,7 +39,7 @@ ulfius~ :init  ( -- )
   then  paragraph  ;
 
 ambrosio~ :init  ( -- )
-  ['] describe-ambrosio self~ be-description-xt
+  ['] describe-ambrosio self~ be-describer
   s" hombre" self~ ms-name!
   self~ be-character
   self~ be-human
@@ -54,7 +54,7 @@ ambrosio~ :init  ( -- )
   \ XXX TODO -- elaborar esto según la trama
 
 leader~ :init  ( -- )
-  ['] describe-leader self~ be-description-xt
+  ['] describe-leader self~ be-describer
   s" anciano" self~ ms-name!
   self~ be-character
   self~ be-human
@@ -74,7 +74,7 @@ leader~ :init  ( -- )
   \ Describe a tus soldados.
 
 soldiers~ :init  ( -- )
-  ['] describe-soldiers self~ be-description-xt
+  ['] describe-soldiers self~ be-describer
   s" soldados" self~ mp-name!
   self~ be-human
   self~ familiar++
@@ -94,7 +94,7 @@ soldiers~ :init  ( -- )
   \ Describe a tus soldados.
 
 officers~ :init  ( -- )
-  ['] describe-officers self~ be-description-xt
+  ['] describe-officers self~ be-describer
   s" oficiales" self~ mp-name!
   self~ be-human
   self~ familiar++
@@ -124,7 +124,7 @@ officers~ :init  ( -- )
   \ XXX TODO -- ampliar el texto
 
 refugees~ :init  ( -- )
-  ['] describe-refugees self~ be-description-xt
+  ['] describe-refugees self~ be-describer
   s" refugiados" self~ mp-name!
   self~ be-human
   self~ be-decoration  ;
@@ -140,7 +140,7 @@ refugees~ :init  ( -- )
   paragraph  ;
 
 altar~ :init  ( -- )
-  ['] describe-altar self~ be-description-xt
+  ['] describe-altar self~ be-describer
   s" altar" self~ ms-name!
   self~ be-decoration
   location-18~ self~ be-there  ;
@@ -151,7 +151,7 @@ altar~ :init  ( -- )
   \ XXX TODO -- mejorar texto
 
 arch~ :init  ( -- )
-  ['] describe-arch self~ be-description-xt
+  ['] describe-arch self~ be-describer
   s" arco" self~ ms-name!
   self~ be-decoration
   location-18~ self~ be-there  ;
@@ -163,7 +163,7 @@ arch~ :init  ( -- )
   paragraph  ;
 
 bed~ :init  ( -- )
-  ['] describe-bed self~ be-description-xt
+  ['] describe-bed self~ be-describer
   s" catre" self~ ms-name!
   location-46~ self~ be-there
   self~ ambrosio~ be-owner  ;
@@ -174,7 +174,7 @@ bed~ :init  ( -- )
   \ XXX TODO -- mejorar texto
 
 bridge~ :init  ( -- )
-  ['] describe-bridge self~ be-description-xt
+  ['] describe-bridge self~ be-describer
   s" puente" self~ ms-name!
   self~ be-decoration
   location-13~ self~ be-there  ;
@@ -184,7 +184,7 @@ bridge~ :init  ( -- )
   paragraph  ;
 
 candles~ :init  ( -- )
-  ['] describe-candles self~ be-description-xt
+  ['] describe-candles self~ be-describer
   s" velas" self~ fp-name!
   location-46~ self~ be-there
   self~ ambrosio~ be-owner  ;
@@ -196,7 +196,7 @@ candles~ :init  ( -- )
   paragraph  ;
 
 cave-entrance~ :init  ( -- )
-  ['] describe-cave-entrance self~ be-description-xt
+  ['] describe-cave-entrance self~ be-describer
   s" entrada a una cueva" self~ fs-name!  ;
 
 : describe-cloak  ( -- )
@@ -205,7 +205,7 @@ cave-entrance~ :init  ( -- )
   paragraph  ;
 
 cloak~ :init  ( -- )
-  ['] describe-cloak self~ be-description-xt
+  ['] describe-cloak self~ be-describer
   s" capa" self~ fs-name!
   self~ be-wearable
   self~ belongs-to-protagonist
@@ -213,7 +213,7 @@ cloak~ :init  ( -- )
   self~ taken  ;
 
 cuirasse~ :init  ( -- )
-  \ ['] describe-cuirasse self~ be-description-xt
+  \ ['] describe-cuirasse self~ be-describer
   s" coraza" self~ fs-name!
   self~ be-wearable
   self~ belongs-to-protagonist
@@ -232,7 +232,7 @@ cuirasse~ :init  ( -- )
   s" Está" s& door~ «open»|«closed» s& period+ paragraph  ;
 
 door~ :init  ( -- )
-  ['] describe-door self~ be-description-xt
+  ['] describe-door self~ be-describer
   s" puerta" self~ fs-name!
   self~ be-closed
   location-47~ self~ be-there
@@ -243,7 +243,7 @@ door~ :init  ( -- )
   paragraph  ;
 
 emerald~ :init  ( -- )
-  ['] describe-emerald self~ be-description-xt
+  ['] describe-emerald self~ be-describer
   s" esmeralda" self~ fs-name!
   location-39~ self~ be-there  ;
 
@@ -271,7 +271,7 @@ emerald~ :init  ( -- )
   paragraph  ;
 
 fallen-away~ :init  ( -- )
-  ['] describe-fallen-away self~ be-description-xt
+  ['] describe-fallen-away self~ be-describer
   s" derrumbe" self~ ms-name!
   self~ be-decoration
   location-09~ self~ be-there  ;
@@ -283,7 +283,7 @@ fallen-away~ :init  ( -- )
   paragraph  ;
 
 flags~ :init  ( -- )
-  ['] describe-flags self~ be-description-xt
+  ['] describe-flags self~ be-describer
   s" banderas" self~ fp-name!
   self~ be-decoration
   location-28~ self~ be-there  ;
@@ -293,7 +293,7 @@ flags~ :init  ( -- )
   paragraph  ;
 
 flint~ :init  ( -- )
-  ['] describe-flint self~ be-description-xt
+  ['] describe-flint self~ be-describer
   s" pedernal" self~ ms-name!  ;
 
 : describe-grass  ( -- )
@@ -315,7 +315,7 @@ flint~ :init  ( -- )
   then  paragraph  ;
 
 grass~ :init  ( -- )
-  ['] describe-grass self~ be-description-xt
+  ['] describe-grass self~ be-describer
   s" hierba" self~ fs-name!
   self~ be-decoration  ;
 
@@ -324,7 +324,7 @@ grass~ :init  ( -- )
   paragraph  ;
 
 idol~ :init  ( -- )
-  ['] describe-idol self~ be-description-xt
+  ['] describe-idol self~ be-describer
   s" ídolo" self~ ms-name!
   self~ be-decoration
   location-41~ self~ be-there  ;
@@ -334,7 +334,7 @@ idol~ :init  ( -- )
   paragraph  ;
 
 key~ :init  ( -- )
-  ['] describe-key self~ be-description-xt
+  ['] describe-key self~ be-describer
   s" llave" self~ fs-name!
   location-46~ self~ be-there
   self~ ambrosio~ be-owner  ;
@@ -346,7 +346,7 @@ key~ :init  ( -- )
   paragraph  ;
 
 lake~ :init  ( -- )
-  ['] describe-lake self~ be-description-xt
+  ['] describe-lake self~ be-describer
   s" lago" self~ ms-name!
   self~ be-decoration
   location-44~ self~ be-there  ;
@@ -359,7 +359,7 @@ lake~ :init  ( -- )
   paragraph  ;
 
 lock~ :init  ( -- )
-  ['] describe-lock self~ be-description-xt
+  ['] describe-lock self~ be-describer
   s" candado" self~ ms-name!
   self~ be-decoration
   self~ be-closed
@@ -372,7 +372,7 @@ lock~ :init  ( -- )
   paragraph  ;
 
 log~ :init  ( -- )
-  ['] describe-log self~ be-description-xt
+  ['] describe-log self~ be-describer
   s" tronco" self~ ms-name!
   location-15~ self~ be-there  ;
 
@@ -382,7 +382,7 @@ log~ :init  ( -- )
   paragraph  ;
 
 piece~ :init  ( -- )
-  ['] describe-piece self~ be-description-xt
+  ['] describe-piece self~ be-describer
   s" trozo de tela" self~ ms-name!  ;
   \ XXX TODO -- ojo con este «de tela»: «tela» es sinónimo de trozo;
   \ hay que contemplar estos casos en el cálculo de los genitivos.
@@ -394,7 +394,7 @@ piece~ :init  ( -- )
   paragraph  ;
 
 rags~ :init  ( -- )
-  ['] describe-rags self~ be-description-xt
+  ['] describe-rags self~ be-describer
   s" harapo" self~ ms-name!  ;
 
 : you-discover-the-cave-entrance  ( -- )
@@ -424,7 +424,7 @@ rags~ :init  ( -- )
   then  ;
 
 ravine-wall~ :init  ( -- )
-  ['] describe-ravine-wall self~ be-description-xt
+  ['] describe-ravine-wall self~ be-describer
   s" pared" rocky(f)$ s& self~ fs-name!
   location-08~ self~ be-there
   self~ be-not-listed  \ XXX OLD -- innecesario
@@ -437,7 +437,7 @@ ravine-wall~ :init  ( -- )
   then  period+ paragraph  ;
 
 rocks~ :init  ( -- )
-  ['] describe-rocks self~ be-description-xt
+  ['] describe-rocks self~ be-describer
   s" rocas" self~ fp-name!
   self~ be-decoration
   location-31~ self~ be-there  ;
@@ -447,7 +447,7 @@ rocks~ :init  ( -- )
   paragraph  ;
 
 snake~ :init  ( -- )
-  ['] describe-snake self~ be-description-xt
+  ['] describe-snake self~ be-describer
   s" serpiente" self~ fs-name!
   self~ be-animal
   location-43~ self~ be-there  ;
@@ -459,7 +459,7 @@ snake~ :init  ( -- )
   paragraph  ;
 
 stone~ :init  ( -- )
-  ['] describe-stone self~ be-description-xt
+  ['] describe-stone self~ be-describer
   s" piedra" self~ fs-name!
   location-18~ self~ be-there  ;
 
@@ -471,7 +471,7 @@ stone~ :init  ( -- )
   paragraph  ;
 
 sword~ :init  ( -- )
-  ['] describe-sword self~ be-description-xt
+  ['] describe-sword self~ be-describer
   s" espada" self~ fs-name!
   self~ belongs-to-protagonist
   self~ taken  ;
@@ -481,7 +481,7 @@ sword~ :init  ( -- )
   paragraph  ;
 
 table~ :init  ( -- )
-  ['] describe-table self~ be-description-xt
+  ['] describe-table self~ be-describer
   s" mesa" self~ fs-name!
   location-46~ self~ be-there
   self~ ambrosio~ be-owner  ;
@@ -491,7 +491,7 @@ table~ :init  ( -- )
   paragraph  ;
 
 thread~ :init  ( -- )
-  ['] describe-thread self~ be-description-xt
+  ['] describe-thread self~ be-describer
   s" hilo" self~ ms-name!  ;
 
 : describe-torch  ( -- )
@@ -499,7 +499,7 @@ thread~ :init  ( -- )
   if  s" encendida."  else  s" apagada."  then  s& paragraph  ;
 
 torch~ :init  ( -- )
-  ['] describe-torch self~ be-description-xt
+  ['] describe-torch self~ be-describer
   s" antorcha" self~ fs-name!
   self~ be-light
   self~ be-not-lit  ;
@@ -510,7 +510,7 @@ torch~ :init  ( -- )
   paragraph  ;
 
 waterfall~ :init  ( -- )
-  ['] describe-waterfall self~ be-description-xt
+  ['] describe-waterfall self~ be-describer
   s" cascada" self~ fs-name!
   self~ be-decoration
   location-38~ self~ be-there  ;
@@ -577,8 +577,8 @@ waterfall~ :init  ( -- )
 
 location-01~ :init  ( -- )
   self~ be-location
-  ['] describe-location-01 self~ be-description-xt
-  ['] after-describing-location-01 self~ be-after-describing-location-xt
+  ['] describe-location-01 self~ be-describer
+  ['] after-describing-location-01 self~ be-after-description-plotter
   s" aldea sajona" self~ fs-name!
   0 location-02~ 0 0 0 0 0 0 self~ set-exits  ;
 
@@ -623,8 +623,8 @@ location-01~ :init  ( -- )
 
 location-02~ :init  ( -- )
   self~ be-location
-  ['] describe-location-02 self~ be-description-xt
-  ['] after-describing-location-02 self~ be-after-describing-location-xt
+  ['] describe-location-02 self~ be-describer
+  ['] after-describing-location-02 self~ be-after-description-plotter
   s" cima de la colina" self~ fs-name!
   location-01~ 0 0 location-03~ 0 0 0 0 self~ set-exits  ;
 
@@ -657,8 +657,8 @@ location-02~ :init  ( -- )
 
 location-03~ :init  ( -- )
   self~ be-location
-  ['] describe-location-03 self~ be-description-xt
-  ['] soldiers-are-here self~ be-after-describing-location-xt
+  ['] describe-location-03 self~ be-describer
+  ['] soldiers-are-here self~ be-after-description-plotter
   s" camino entre colinas" self~ ms-name!
   0 0 location-02~ location-04~ 0 0 0 0 self~ set-exits  ;
 
@@ -684,8 +684,8 @@ location-03~ :init  ( -- )
 
 location-04~ :init  ( -- )
   self~ be-location
-  ['] describe-location-04 self~ be-description-xt
-  ['] soldiers-are-here self~ be-after-describing-location-xt
+  ['] describe-location-04 self~ be-describer
+  ['] soldiers-are-here self~ be-after-description-plotter
   s" cruce de caminos" self~ ms-name!
   location-05~ 0 location-03~ location-09~ 0 0 0 0 self~ set-exits  ;
 
@@ -714,8 +714,8 @@ location-04~ :init  ( -- )
 
 location-05~ :init  ( -- )
   self~ be-location
-  ['] describe-location-05 self~ be-description-xt
-  ['] soldiers-are-here self~ be-after-describing-location-xt
+  ['] describe-location-05 self~ be-describer
+  ['] soldiers-are-here self~ be-after-description-plotter
   s" linde del bosque" self~ fs-name!
   0 location-04~ 0 location-06~ 0 0 0 0 self~ set-exits  ;
 
@@ -745,8 +745,8 @@ location-05~ :init  ( -- )
 
 location-06~ :init  ( -- )
   self~ be-location
-  ['] describe-location-06 self~ be-description-xt
-  ['] soldiers-are-here self~ be-after-describing-location-xt
+  ['] describe-location-06 self~ be-describer
+  ['] soldiers-are-here self~ be-after-description-plotter
   s" bosque" self~ ms-name!
   0 0 location-05~ location-07~ 0 0 0 0 self~ set-exits  ;
 
@@ -775,8 +775,8 @@ location-06~ :init  ( -- )
 
 location-07~ :init  ( -- )
   self~ be-location
-  ['] describe-location-07 self~ be-description-xt
-  ['] soldiers-are-here self~ be-after-describing-location-xt
+  ['] describe-location-07 self~ be-describer
+  ['] soldiers-are-here self~ be-after-description-plotter
   s" paso del Perro" self~ ms-name!
   0 location-08~ location-06~ 0 0 0 0 0 self~ set-exits  ;
 
@@ -821,8 +821,8 @@ location-07~ :init  ( -- )
 
 location-08~ :init  ( -- )
   self~ be-location
-  ['] describe-location-08 self~ be-description-xt
-  ['] after-describing-location-08 self~ be-after-describing-location-xt
+  ['] describe-location-08 self~ be-describer
+  ['] after-describing-location-08 self~ be-after-description-plotter
   s" desfiladero" self~ ms-name!
   location-07~ 0 0 0 0 0 0 0 self~ set-exits  ;
 
@@ -851,8 +851,8 @@ location-08~ :init  ( -- )
 
 location-09~ :init  ( -- )
   self~ be-location
-  ['] describe-location-09 self~ be-description-xt
-  ['] soldiers-are-here self~ be-after-describing-location-xt
+  ['] describe-location-09 self~ be-describer
+  ['] soldiers-are-here self~ be-after-description-plotter
   s" derrumbe" self~ ms-name!
   0 0 location-04~ 0 0 0 0 0 self~ set-exits  ;
 
@@ -881,13 +881,13 @@ location-09~ :init  ( -- )
     you-think-you're-safe$ s&
     but-it's-an-impression$ s?+
     period+ narrate
-  \ XXX TODO -- si venimos del interior, mostrar otros textos
   then  ;
+  \ XXX TODO -- si venimos del interior, mostrar otros textos
 
 location-10~ :init  ( -- )
   self~ be-location
-  ['] describe-location-10 self~ be-description-xt
-  ['] after-describing-location-10 self~ be-after-describing-location-xt
+  ['] describe-location-10 self~ be-describer
+  ['] after-describing-location-10 self~ be-after-description-plotter
   s" gruta de entrada" self~ fs-name!
   self~ be-indoor-location
   location-08~ 0 0 location-11~ 0 0 0 0 self~ set-exits  ;
@@ -931,8 +931,8 @@ location-10~ :init  ( -- )
 
 location-11~ :init  ( -- )
   self~ be-location
-  ['] describe-location-11 self~ be-description-xt
-  ['] lake-is-here self~ be-after-describing-location-xt
+  ['] describe-location-11 self~ be-describer
+  ['] lake-is-here self~ be-after-description-plotter
   s" gran lago" self~ ms-name!
   self~ be-indoor-location
   0 0 location-10~ 0 0 0 0 0 self~ set-exits  ;
@@ -964,7 +964,7 @@ location-11~ :init  ( -- )
 
 location-12~ :init  ( -- )
   self~ be-location
-  ['] describe-location-12 self~ be-description-xt
+  ['] describe-location-12 self~ be-describer
   s" salida del paso secreto" self~ fs-name!
   self~ be-indoor-location
   0 0 0 location-13~ 0 0 0 0 self~ set-exits  ;
@@ -993,7 +993,7 @@ location-12~ :init  ( -- )
 
 location-13~ :init  ( -- )
   self~ be-location
-  ['] describe-location-13 self~ be-description-xt
+  ['] describe-location-13 self~ be-describer
   s" puente semipodrido" self~ ms-name!
   self~ be-indoor-location
   0 0 location-12~ location-14~ 0 0 0 0 self~ set-exits  ;
@@ -1017,7 +1017,7 @@ location-13~ :init  ( -- )
 
 location-14~ :init  ( -- )
   self~ be-location
-  ['] describe-location-14 self~ be-description-xt
+  ['] describe-location-14 self~ be-describer
   s" recodo de la cueva" self~ ms-name!
   self~ be-indoor-location
   0 location-15~ location-13~ 0 0 0 0 0 self~ set-exits  ;
@@ -1051,7 +1051,7 @@ location-14~ :init  ( -- )
 
 location-15~ :init  ( -- )
   self~ be-location
-  ['] describe-location-15 self~ be-description-xt
+  ['] describe-location-15 self~ be-describer
   s" pasaje arenoso" self~ ms-name!
   self~ be-indoor-location
   location-14~ location-17~ location-16~ 0 0 0 0 0 self~ set-exits  ;
@@ -1088,8 +1088,8 @@ location-15~ :init  ( -- )
 
 location-16~ :init  ( -- )
   self~ be-location
-  ['] describe-location-16 self~ be-description-xt
-  ['] after-describing-location-16 self~ be-after-describing-location-xt
+  ['] describe-location-16 self~ be-describer
+  ['] after-describing-location-16 self~ be-after-description-plotter
   s" pasaje del agua" self~ ms-name!
   self~ be-indoor-location
   0 0 0 location-15~ 0 0 0 0 self~ set-exits  ;
@@ -1117,7 +1117,7 @@ location-16~ :init  ( -- )
 
 location-17~ :init  ( -- )
   self~ be-location
-  ['] describe-location-17 self~ be-description-xt
+  ['] describe-location-17 self~ be-describer
   s" estalactitas" self~ fs-name!
   self~ be-indoor-location
   location-15~ location-20~ location-18~ 0 0 0 0 0 self~ set-exits  ;
@@ -1152,7 +1152,7 @@ location-17~ :init  ( -- )
 
 location-18~ :init  ( -- )
   self~ be-location
-  ['] describe-location-18 self~ be-description-xt
+  ['] describe-location-18 self~ be-describer
   s" puente de piedra" self~ ms-name!
   self~ be-indoor-location
   0 0 location-19~ location-17~ 0 0 0 0 self~ set-exits  ;
@@ -1189,7 +1189,7 @@ location-18~ :init  ( -- )
 
 location-19~ :init  ( -- )
   self~ be-location
-  ['] describe-location-19 self~ be-description-xt
+  ['] describe-location-19 self~ be-describer
   s" recodo arenoso del canal" self~ ms-name!
   self~ be-indoor-location
   0 0 0 location-18~ 0 0 0 0 self~ set-exits  ;
@@ -1217,8 +1217,8 @@ location-19~ :init  ( -- )
 
 location-20~ :init  ( -- )
   self~ be-location
-  ['] describe-location-20 self~ be-description-xt
-  ['] can-be-entered-location-20? self~ ~can-be-entered-xt !
+  ['] describe-location-20 self~ be-describer
+  ['] can-be-entered-location-20? self~ ~enter-checker !
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
   location-17~ location-22~ location-25~ 0 0 0 0 0 self~ set-exits  ;
@@ -1246,7 +1246,7 @@ location-20~ :init  ( -- )
 
 location-21~ :init  ( -- )
   self~ be-location
-  ['] describe-location-21 self~ be-description-xt
+  ['] describe-location-21 self~ be-describer
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
   0 location-27~ location-23~ location-20~ 0 0 0 0 self~ set-exits  ;
@@ -1270,7 +1270,7 @@ location-21~ :init  ( -- )
 
 location-22~ :init  ( -- )
   self~ be-location
-  ['] describe-location-22 self~ be-description-xt
+  ['] describe-location-22 self~ be-describer
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
   0 location-24~ location-27~ location-22~ 0 0 0 0 self~ set-exits  ;
@@ -1291,7 +1291,7 @@ location-22~ :init  ( -- )
 
 location-23~ :init  ( -- )
   self~ be-location
-  ['] describe-location-23 self~ be-description-xt
+  ['] describe-location-23 self~ be-describer
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
   0 location-25~ 0 location-21~ 0 0 0 0 self~ set-exits  ;
@@ -1312,7 +1312,7 @@ location-23~ :init  ( -- )
 
 location-24~ :init  ( -- )
   self~ be-location
-  ['] describe-location-24 self~ be-description-xt
+  ['] describe-location-24 self~ be-describer
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
   location-22~ 0 location-26~ 0 0 0 0 0 self~ set-exits  ;
@@ -1333,7 +1333,7 @@ location-24~ :init  ( -- )
 
 location-25~ :init  ( -- )
   self~ be-location
-  ['] describe-location-25 self~ be-description-xt
+  ['] describe-location-25 self~ be-describer
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
   location-22~ location-28~ location-23~ location-21~ 0 0 0 0 self~ set-exits  ;
@@ -1357,7 +1357,7 @@ location-25~ :init  ( -- )
 
 location-26~ :init  ( -- )
   self~ be-location
-  ['] describe-location-26 self~ be-description-xt
+  ['] describe-location-26 self~ be-describer
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
   location-26~ 0 location-20~ location-27~ 0 0 0 0 self~ set-exits  ;
@@ -1384,7 +1384,7 @@ location-26~ :init  ( -- )
 
 location-27~ :init  ( -- )
   self~ be-location
-  ['] describe-location-27 self~ be-description-xt
+  ['] describe-location-27 self~ be-describer
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
   location-27~ 0 0 location-25~ 0 0 0 0 self~ set-exits  ;
@@ -1435,8 +1435,8 @@ location-27~ :init  ( -- )
 
 location-28~ :init  ( -- )
   self~ be-location
-  ['] describe-location-28 self~ be-description-xt
-  ['] after-describing-location-28 self~ be-after-describing-location-xt
+  ['] describe-location-28 self~ be-describer
+  ['] after-describing-location-28 self~ be-after-description-plotter
   s" amplia estancia" self~ fs-name!
   self~ be-indoor-location
   location-26~ 0 0 0 0 0 0 0 self~ set-exits  ;
@@ -1468,8 +1468,8 @@ location-28~ :init  ( -- )
 
 location-29~ :init  ( -- )
   self~ be-location
-  ['] describe-location-29 self~ be-description-xt
-  ['] after-describing-location-29 self~ be-after-describing-location-xt
+  ['] describe-location-29 self~ be-describer
+  ['] after-describing-location-29 self~ be-after-description-plotter
   s" espiral" self~ fs-name!
   self~ be-indoor-location
   0 0 0 location-28~ 0 location-30~ 0 0 self~ set-exits  ;
@@ -1498,7 +1498,7 @@ location-29~ :init  ( -- )
 
 location-30~ :init  ( -- )
   self~ be-location
-  ['] describe-location-30 self~ be-description-xt
+  ['] describe-location-30 self~ be-describer
   s" inicio de la espiral" self~ ms-name!
   self~ be-indoor-location
   0 0 location-31~ 0 location-29~ 0 0 0 self~ set-exits  ;
@@ -1533,8 +1533,8 @@ location-30~ :init  ( -- )
 
 location-31~ :init  ( -- )
   self~ be-location
-  ['] describe-location-31 self~ be-description-xt
-  ['] after-describing-location-31 self~ be-after-describing-location-xt
+  ['] describe-location-31 self~ be-describer
+  ['] after-describing-location-31 self~ be-after-description-plotter
   s" puerta norte" self~ fs-name!
   self~ be-indoor-location
   0 0 0 location-30~ 0 0 0 0 self~ set-exits  ;
@@ -1562,7 +1562,7 @@ location-31~ :init  ( -- )
 
 location-32~ :init  ( -- )
   self~ be-location
-  ['] describe-location-32 self~ be-description-xt
+  ['] describe-location-32 self~ be-describer
   s" precipicio" self~ ms-name!
   self~ be-indoor-location
   0 location-33~ 0 location-31~ 0 0 0 0 self~ set-exits  ;
@@ -1594,7 +1594,7 @@ location-32~ :init  ( -- )
 
 location-33~ :init  ( -- )
   self~ be-location
-  ['] describe-location-33 self~ be-description-xt
+  ['] describe-location-33 self~ be-describer
   s" pasaje de salida" self~ ms-name!
   self~ be-indoor-location
   location-32~ 0 location-34~ 0 0 0 0 0 self~ set-exits  ;
@@ -1621,7 +1621,7 @@ location-33~ :init  ( -- )
 
 location-34~ :init  ( -- )
   self~ be-location
-  ['] describe-location-34 self~ be-description-xt
+  ['] describe-location-34 self~ be-describer
   s" pasaje de gravilla" self~ ms-name!
   self~ be-indoor-location
   location-35~ 0 0 location-33~ 0 0 0 0 self~ set-exits  ;
@@ -1654,7 +1654,7 @@ location-34~ :init  ( -- )
 
 location-35~ :init  ( -- )
   self~ be-location
-  ['] describe-location-35 self~ be-description-xt
+  ['] describe-location-35 self~ be-describer
   s" puente sobre el acueducto" self~ ms-name!
   self~ be-indoor-location
   location-40~ location-34~ 0 location-36~ 0 location-36~ 0 0 self~ set-exits  ;
@@ -1686,7 +1686,7 @@ location-35~ :init  ( -- )
 
 location-36~ :init  ( -- )
   self~ be-location
-  ['] describe-location-36 self~ be-description-xt
+  ['] describe-location-36 self~ be-describer
   s" remanso" self~ ms-name!
   self~ be-indoor-location
   0 0 location-35~ location-37~ location-35~ 0 0 0 self~ set-exits  ;
@@ -1720,7 +1720,7 @@ location-36~ :init  ( -- )
 
 location-37~ :init  ( -- )
   self~ be-location
-  ['] describe-location-37 self~ be-description-xt
+  ['] describe-location-37 self~ be-describer
   s" canal de agua" self~ ms-name!
   self~ be-indoor-location
   0 0 location-36~ location-38~ 0 0 0 0 self~ set-exits  ;
@@ -1751,8 +1751,8 @@ location-37~ :init  ( -- )
 
 location-38~ :init  ( -- )
   self~ be-location
-  ['] describe-location-38 self~ be-description-xt
-  ['] lake-is-here self~ be-after-describing-location-xt
+  ['] describe-location-38 self~ be-describer
+  ['] lake-is-here self~ be-after-description-plotter
   s" gran cascada" self~ fs-name!
   self~ be-indoor-location
   0 0 location-37~ location-39~ 0 0 0 0 self~ set-exits  ;
@@ -1780,7 +1780,7 @@ location-38~ :init  ( -- )
 
 location-39~ :init  ( -- )
   self~ be-location
-  ['] describe-location-39 self~ be-description-xt
+  ['] describe-location-39 self~ be-describer
   s" interior de la cascada" self~ ms-name!
   self~ be-indoor-location
   0 0 location-38~ 0 0 0 0 0 self~ set-exits  ;
@@ -1820,7 +1820,7 @@ location-39~ :init  ( -- )
 
 location-40~ :init  ( -- )
   self~ be-location
-  ['] describe-location-40 self~ be-description-xt
+  ['] describe-location-40 self~ be-describer
   s" explanada" self~ fs-name!
   self~ be-indoor-location
   0 location-35~ location-41~ 0 0 0 0 0 self~ set-exits  ;
@@ -1849,7 +1849,7 @@ location-40~ :init  ( -- )
 
 location-41~ :init  ( -- )
   self~ be-location
-  ['] describe-location-41 self~ be-description-xt
+  ['] describe-location-41 self~ be-describer
   self~ be-indoor-location
   s" ídolo" self~ ms-name!
   0 0 0 location-40~ 0 0 0 0 self~ set-exits  ;
@@ -1880,7 +1880,7 @@ location-41~ :init  ( -- )
 
 location-42~ :init  ( -- )
   self~ be-location
-  ['] describe-location-42 self~ be-description-xt
+  ['] describe-location-42 self~ be-describer
   s" pasaje estrecho" self~ ms-name!
   self~ be-indoor-location
   location-41~ location-43~ 0 0 0 0 0 0 self~ set-exits  ;
@@ -1913,8 +1913,8 @@ location-42~ :init  ( -- )
 
 location-43~ :init  ( -- )
   self~ be-location
-  ['] describe-location-43 self~ be-description-xt
-  ['] after-describing-location-43 self~ be-after-describing-location-xt
+  ['] describe-location-43 self~ be-describer
+  ['] after-describing-location-43 self~ be-after-description-plotter
   s" pasaje de la serpiente" self~ ms-name!
   self~ be-indoor-location
   location-42~ 0 0 0 0 0 0 0 self~ set-exits  ;
@@ -1941,8 +1941,8 @@ location-43~ :init  ( -- )
 
 location-44~ :init  ( -- )
   self~ be-location
-  ['] describe-location-44 self~ be-description-xt
-  ['] lake-is-here self~ be-after-describing-location-xt
+  ['] describe-location-44 self~ be-describer
+  ['] lake-is-here self~ be-after-description-plotter
   s" lago interior" self~ ms-name!
   self~ be-indoor-location
   location-43~ 0 0 location-45~ 0 0 0 0 self~ set-exits  ;
@@ -1979,7 +1979,7 @@ location-44~ :init  ( -- )
 
 location-45~ :init  ( -- )
   self~ be-location
-  ['] describe-location-45 self~ be-description-xt
+  ['] describe-location-45 self~ be-describer
   s" cruce de pasajes" self~ ms-name!
   self~ be-indoor-location
   0 location-47~ location-44~ location-46~ 0 0 0 0 self~ set-exits  ;
@@ -2004,7 +2004,7 @@ location-45~ :init  ( -- )
 
 location-46~ :init  ( -- )
   self~ be-location
-  ['] describe-location-46 self~ be-description-xt
+  ['] describe-location-46 self~ be-describer
   s" hogar de Ambrosio" self~ ms-name!
   self~ be-indoor-location
   0 0 location-45~ 0 0 0 0 0 self~ set-exits  ;
@@ -2042,8 +2042,8 @@ location-46~ :init  ( -- )
 
 location-47~ :init  ( -- )
   self~ be-location
-  ['] describe-location-47 self~ be-description-xt
-  ['] door-is-here self~ be-after-describing-location-xt
+  ['] describe-location-47 self~ be-describer
+  ['] door-is-here self~ be-after-description-plotter
   s" salida de la cueva" self~ fs-name!
   self~ be-indoor-location
   location-45~ 0 0 0 0 0 0 0 self~ set-exits  ;
@@ -2088,8 +2088,8 @@ location-47~ :init  ( -- )
 
 location-48~ :init  ( -- )
   self~ be-location
-  ['] describe-location-48 self~ be-description-xt
-  ['] door-is-here self~ be-after-describing-location-xt
+  ['] describe-location-48 self~ be-describer
+  ['] door-is-here self~ be-after-description-plotter
   s" bosque a la entrada" self~ ms-name!
   0 0 location-47~ location-49~ 0 0 0 0 self~ set-exits  ;
 
@@ -2117,7 +2117,7 @@ location-48~ :init  ( -- )
 
 location-49~ :init  ( -- )
   self~ be-location
-  ['] describe-location-49 self~ be-description-xt
+  ['] describe-location-49 self~ be-describer
   s" sendero del bosque" self~ ms-name!
   0 0 location-48~ location-50~ 0 0 0 0 self~ set-exits  ;
 
@@ -2142,7 +2142,7 @@ location-49~ :init  ( -- )
 
 location-50~ :init  ( -- )
   self~ be-location
-  ['] describe-location-50 self~ be-description-xt
+  ['] describe-location-50 self~ be-describer
   s" camino norte" self~ ms-name!
   0 location-51~ location-49~ 0 0 0 0 0 self~ set-exits  ;
 
@@ -2162,7 +2162,7 @@ location-50~ :init  ( -- )
 
 location-51~ :init  ( -- )
   self~ be-location
-  ['] describe-location-51 self~ be-description-xt
+  ['] describe-location-51 self~ be-describer
   s" Westmorland" self~ fs-name!
   self~ have-no-article
   location-50~ 0 0 0 0 0 0 0 self~ set-exits  ;
@@ -2177,7 +2177,7 @@ location-51~ :init  ( -- )
   \ XXX TODO -- mejorar
 
 cave~ :init  ( -- )
-  ['] describe-cave self~ be-description-xt
+  ['] describe-cave self~ be-describer
   s" cueva" self~ fs-name!  ;
   \ self~ be-global-indoor \ XXX OLD
 
@@ -2187,7 +2187,7 @@ cave~ :init  ( -- )
   \ XXX TODO
 
 ceiling~ :init  ( -- )
-  ['] describe-ceiling self~ be-description-xt
+  ['] describe-ceiling self~ be-describer
   s" techo" self~ ms-name!
   self~ be-global-indoor  ;
 
@@ -2199,7 +2199,7 @@ ceiling~ :init  ( -- )
     \ XXX TODO -- comprobar
 
 clouds~ :init  ( -- )
-  ['] describe-clouds self~ be-description-xt
+  ['] describe-clouds self~ be-describer
   s" nubes" self~ fp-name!
   self~ be-global-outdoor  ;
   \ XXX TODO:
@@ -2214,7 +2214,7 @@ clouds~ :init  ( -- )
   \ XXX TODO
 
 floor~ :init  ( -- )
-  ['] describe-floor self~ be-description-xt
+  ['] describe-floor self~ be-describer
   s" suelo" self~ ms-name!
   self~ be-global-indoor
   self~ be-global-outdoor  ;
@@ -2226,7 +2226,7 @@ floor~ :init  ( -- )
   \ XXX TMP
 
 sky~ :init  ( -- )
-  ['] describe-sky self~ be-description-xt
+  ['] describe-sky self~ be-describer
   s" cielo" self~ ms-name!
   self~ be-global-outdoor  ;
   \ XXX TODO
@@ -2239,7 +2239,7 @@ sky~ :init  ( -- )
   \ XXX TMP
 
 wall~ :init  ( -- )
-  ['] describe-wall self~ be-description-xt
+  ['] describe-wall self~ be-describer
   s" pared" self~ ms-name!
   self~ be-global-indoor  ;
 
@@ -2249,7 +2249,7 @@ wall~ :init  ( -- )
 defer describe-exits  ( -- )
 
 exits~ :init  ( -- )
-  ['] describe-exits self~ be-description-xt
+  ['] describe-exits self~ be-describer
   s" salida" self~ fs-name!
   self~ be-global-outdoor
   self~ be-global-indoor  ;
@@ -2257,7 +2257,7 @@ exits~ :init  ( -- )
 defer describe-inventory  ( -- )
 
 inventory~ :init  ( -- )
-  ['] describe-inventory self~ be-description-xt
+  ['] describe-inventory self~ be-describer
   self~ be-global-outdoor
   self~ be-global-indoor  ;
 
@@ -2270,7 +2270,7 @@ inventory~ :init  ( -- )
   \ XXX TODO -- inconcluso
 
 enemy~ :init  ( -- )
-  ['] describe-enemy self~ be-description-xt
+  ['] describe-enemy self~ be-describer
   s" enemigos" self~ mp-name!
   self~ be-human
   self~ be-decoration  ;
@@ -2287,25 +2287,25 @@ enemy~ :init  ( -- )
 \ y para hacer los cálculos en las acciones de movimiento.
 
 north~ :init  ( -- )
-  \ ['] describe-north self~ be-description-xt
+  \ ['] describe-north self~ be-describer
   s" norte" self~ ms-name!
   self~ have-definite-article
   north-exit> self~ ~direction !  ;
 
 south~ :init  ( -- )
-  \ ['] describe-south self~ be-description-xt
+  \ ['] describe-south self~ be-describer
   s" sur" self~ ms-name!
   self~ have-definite-article
   south-exit> self~ ~direction !  ;
 
 east~ :init  ( -- )
-  \ ['] describe-east self~ be-description-xt
+  \ ['] describe-east self~ be-describer
   s" este" self~ ms-name!
   self~ have-definite-article
   east-exit> self~ ~direction !  ;
 
 west~ :init  ( -- )
-  \ ['] describe-west self~ be-description-xt
+  \ ['] describe-west self~ be-describer
   s" oeste" self~ name!
   self~ have-definite-article
   west-exit> self~ ~direction !  ;
@@ -2317,7 +2317,7 @@ west~ :init  ( -- )
   then  ;
 
 up~ :init  ( -- )
-  ['] describe-up self~ be-description-xt
+  ['] describe-up self~ be-describer
   s" arriba" self~ name!
   self~ have-no-article
   up-exit> self~ ~direction !  ;
@@ -2331,19 +2331,19 @@ up~ :init  ( -- )
   \ XXX TODO
 
 down~ :init  ( -- )
-  ['] describe-down self~ be-description-xt
+  ['] describe-down self~ be-describer
   s" abajo" self~ name!
   self~ have-no-article
   down-exit> self~ ~direction !  ;
 
 out~ :init  ( -- )
-  \ ['] describe-out self~ be-description-xt
+  \ ['] describe-out self~ be-describer
   s" afuera" self~ name!
   self~ have-no-article
   out-exit> self~ ~direction !  ;
 
 in~ :init  ( -- )
-  \ ['] describe-in self~ be-description-xt
+  \ ['] describe-in self~ be-describer
   s" adentro" self~ name!
   self~ have-no-article
   in-exit> self~ ~direction !  ;

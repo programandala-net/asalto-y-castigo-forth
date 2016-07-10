@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607100008
+\ Last update: 201607101312
 
 \ Note: The comments of the code are in Spanish.
 
@@ -54,7 +54,7 @@ last-exit> cell+ first-exit> - constant /exits
 : name  ( a -- ca len )  ~name 2@  ;
 
 : conversations  ( a -- u )  ~conversations @  ;
-: description-xt  ( a -- xt )  ~description-xt @  ;
+: describer  ( a -- xt )  ~describer @  ;
 : direction  ( a -- u )  ~direction @  ;
 : familiar  ( a -- u )  ~familiar @  ;
 : has-definite-article?  ( a -- f )  ~has-definite-article bit@  ;
@@ -64,7 +64,7 @@ last-exit> cell+ first-exit> - constant /exits
 : has-personal-name?  ( a -- f )  ~has-personal-name bit@  ;
 : has-plural-name?  ( a -- f )  ~has-plural-name bit@  ;
 : has-singular-name?  ( a -- f )  has-plural-name? 0=  ;
-: init-xt  ( a -- xt )  ~init-xt @  ;
+: initializer  ( a -- xt )  ~initializer @  ;
 : is-animal?  ( a -- f )  ~is-animal bit@  ;
 : is-character?  ( a -- f )  ~is-character bit@  ;
 : is-wearable?  ( a -- f )  ~is-wearable bit@  ;
@@ -88,11 +88,11 @@ last-exit> cell+ first-exit> - constant /exits
 : is-vegetal?  ( a -- f )  ~is-vegetal bit@  ;
 : is-worn?  ( a -- f )  ~is-worn bit@  ;
 : location  ( a1 -- a2 )  ~location @  ;
-: can-be-entered-xt  ( a -- xt )  ~can-be-entered-xt @  ;
-: before-describing-location-xt  ( a -- xt )  ~before-describing-location-xt @  ;
-: after-describing-location-xt  ( a -- xt )  ~after-describing-location-xt @  ;
-: after-listing-entities-xt  ( a -- xt )  ~after-listing-entities-xt @  ;
-: before-leaving-location-xt  ( a -- xt )  ~before-leaving-location-xt @  ;
+: enter-checker  ( a -- xt )  ~enter-checker @  ;
+: before-description-plotter  ( a -- xt )  ~before-description-plotter @  ;
+: after-description-plotter  ( a -- xt )  ~after-description-plotter @  ;
+: before-prompt-plotter  ( a -- xt )  ~before-prompt-plotter @  ;
+: before-exit-plotter  ( a -- xt )  ~before-exit-plotter @  ;
 : previous-location  ( a1 -- a2 )  ~previous-location @  ;
 : visits  ( a -- u )  ~visits @  ;
 
@@ -146,11 +146,11 @@ last-exit> cell+ first-exit> - constant /exits
 
 : name!  ( ca len a -- )  ~name 2! ;
 
-: be-before-describing-location-xt  ( xt a -- )  ~before-describing-location-xt !  ;
-: be-description-xt  ( xt a -- )  ~description-xt !  ;
-: be-after-describing-location-xt  ( xt a -- )  ~after-describing-location-xt !  ;
-: be-after-listing-entities-xt  ( xt a -- )  ~after-listing-entities-xt !  ;
-: be-before-leaving-location-xt  ( xt a -- )  ~before-leaving-location-xt !  ;
+: be-before-description-plotter  ( xt a -- )  ~before-description-plotter !  ;
+: be-describer  ( xt a -- )  ~describer !  ;
+: be-after-description-plotter  ( xt a -- )  ~after-description-plotter !  ;
+: be-before-prompt-plotter  ( xt a -- )  ~before-prompt-plotter !  ;
+: be-before-exit-plotter  ( xt a -- )  ~before-exit-plotter !  ;
 
 : have-definite-article  ( a -- )  ~has-definite-article bit-on  ;
 : have-feminine-name  ( a -- )  ~has-feminine-name bit-on  ;
