@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607100032
+\ Last update: 201607101355
 
 \ Note: The comments of the code are in Spanish.
 
@@ -260,17 +260,32 @@ false [if]
 \ ----------------------------------------------
 \ Ponerse y quitarse prendas
 
-: (do-put-on)  ( a -- )  be-worn  well-done  ;
+: >you-take-it$  ( a -- ca len )
+  s{ s" Recoges" s" Tomas" s" Coges" }s
+  rot full-name s&  ;
+  \ XXX TODO -- configurar español americano
+
+: >you-put-on$  ( a -- ca len )
+  s" Te pones" rot full-name s& period+  ;
+
+: silently-do-take  ( -- )
+  show-well-done off  do-take  show-well-done on  ;
+
+: (do-put-on)  ( a -- )
+  dup is-hold?
+  if    dup >you-put-on$
+  else  silently-do-take
+        dup dup >you-take-it$ s" y te" s&
+        rot direct-pronoun s& s" pones." s&
+  then  ( a ca len ) rot be-worn well-done-this  ;
   \ Ponerse una prenda.
   \ XXX TODO -- mejorar el mensaje
 
 :noname  ( -- )
   ?no-tool-complement
   ?main-complement
-  main-complement ?wearable
   main-complement ?not-worn-by-me
-  main-complement is-not-hold? ?? do-take
-  main-complement ?hold
+  main-complement ?wearable
   main-complement (do-put-on)
   ; is do-put-on
   \ Acción de ponerse una prenda.
@@ -346,13 +361,9 @@ false [if]
   else  s{ s" esta gente." s" estas personas." s" nadie." }s
   then  s& action-error  ;
 
-: >you-take-it$  ( a -- ca len )
-  s{ s" Recoges" s" Tomas" s" Coges" }s
-  rot full-name s& period+  ;
-  \ XXX TODO -- configurar español americano
-
 : (do-take)  ( a -- )
-  dup be-hold dup familiar++ >you-take-it$ well-done-this  ;
+  dup be-hold dup familiar++
+  >you-take-it$ period+ well-done-this  ;
   \ Toma un ente _a_.
 
 : ?do-take  ( a -- )

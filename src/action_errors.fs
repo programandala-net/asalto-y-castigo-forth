@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607100032
+\ Last update: 201607101403
 
 \ Note: The comments of the code are in Spanish.
 
@@ -29,21 +29,20 @@ is generic-action-error
 \ ==============================================================
 \ Errores específicos
 
-: known-entity>is-not-here$  ( a -- ca len )
-  full-name s" no está" s&
-  s{ s" aquí" s" por aquí" }s&  ;
+: >known-is-not-here$  ( a -- ca len )
+  >r s{ r@ ^full-name s" no está aquí" s&
+        s" Aquí no está" r> full-name s& }s  ;
   \  Devuelve mensaje de que un ente conocido no está presente.
 
-: unknown-entity>is-not-here$  ( a -- ca len )
-  s{ s" Aquí" s" Por aquí" }s
-  s" no hay" s&
+: >unknown-is-not-here$  ( a -- ca len )
+  s{ s" Aquí" s" Por aquí" }s s" no hay" s&
   rot subjective-negative-name s&  ;
   \  Devuelve mensaje de que un ente desconocido no está presente
 
 :noname  ( a -- )
-  dup is-familiar?
-  if    known-entity>is-not-here$
-  else  unknown-entity>is-not-here$
+  dup is-known?
+  if    >known-is-not-here$
+  else  >unknown-is-not-here$
   then  period+ action-error  ;
   \  Informa de que un ente _a_ no está presente.
 
