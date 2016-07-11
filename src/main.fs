@@ -7,7 +7,7 @@
 \
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 \
-\ Last update: 201607111314
+\ Last update: 201607112014
 
 \ ==============================================================
 \ Credits
@@ -85,8 +85,8 @@ s" intro.fs" including
 \ ==============================================================
 \ Principal
 
-: init-once  ( -- )  restore-wordlists  init-screen  ;
-  \ Initialization required only once, before the first game.
+: init-session  ( -- )  restore-wordlists  init-screen  ;
+  \ Initialize the session.
 
 : init-parser/game  ( -- )  erase-last-command-elements  ;
   \ Initialize the parser before every game.
@@ -119,18 +119,18 @@ s" intro.fs" including
   location-01~ enter-location  ;
   \ Initialization needed before every game.
 
-: game  ( -- )  begin  plot accept-command obey  game-over?  until  ;
-  \ Game loop.
+: cycle  ( -- )  accept-command obey  ;
 
-: (adventure)  ( -- )  begin  init-game game the-end  enough?  until  ;
-' (adventure) is adventure
+: game  ( -- )  begin  cycle plot game-over?  until  ;
+
+: session  ( -- )  begin  init-game game the-end  enough?  until  ;
 
 \ ==============================================================
 \ Boot
 
 forth-wordlist set-current
 
-: run  ( -- )  init-once adventure farewell  ;
+: run  ( -- )  init-session session farewell  ;
 
 \ run  \ XXX TMP
 \ cr .( Escribe RUN para jugar) cr  \ XXX TMP
@@ -144,7 +144,7 @@ forth-wordlist set-current
 \ cr .( test done) cr cr
 
 : i0  ( -- )
-  init-once init-game  s" Data are ready." paragraph  ;
+  init-session init-game  s" Data are ready." paragraph  ;
   \ XXX TMP -- for debugging
 
 \ i0 cr  \ XXX TMP -- for debugging

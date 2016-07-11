@@ -3,6 +3,21 @@
 
 == Programación
 
+2016-07-11:
+
+Terminar de adaptar la nomenclatura según el artículo _Toward a Theory
+of Interactive Fiction_, de Nick Monfort:
+
+directive:: comando al programa, no al mundo del juego
+
+prologue:: descripción del mundo antes de la primera entrada
+
+reply:: respuesta relacionada con el mundo
+
+final reply:: respuesta tras la cual la narración de eventos del mundo
+no puede continuar
+
+
 2016-07-10:
 
 Estudiar si la configuración `repeat-previous-action?` es útil.

@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607111405
+\ Last update: 201607112009
 
 \ Note: The comments of the code are in Spanish.
 
@@ -433,7 +433,6 @@ set-current
 
 create 'battle-phases  here
   \ Tabla para las fases del combate.
-  \ Preservamos la dirección para calcular después el número de fases.
 
   ' battle-phase-00 ,
   ' battle-phase-01 ,
@@ -448,9 +447,9 @@ create 'battle-phases  here
 here swap - cell / constant battle-phases
   \ Fases de la batalla.
 
-: (battle-phase)  ( u -- )
+: (battle-phase)  ( n -- )
   cells 'battle-phases + perform  ;
-  \ Ejecuta una fase _u_ del combate.
+  \ Ejecuta la fase _n_ del combate.
 
 : battle-phase  ( -- )  battle# @ 1- (battle-phase)  ;
   \ Ejecuta la fase en curso del combate.
@@ -701,10 +700,6 @@ here swap - cell / constant battle-phases
 : plot  ( -- )  battle? if  battle exit  then  ;
   \ Trama global.  Nota: Las subtramas deben comprobarse en orden
   \ cronológico.
-
-  \ XXX TODO -- la trama de la batalla sería adecuada para una trama
-  \ global de escenario, invocada desde aquí. Aquí quedarían solo las
-  \ tramas generales que no dependen de ningún escenario.
 
 \ ==============================================================
 \ Descripciones especiales
