@@ -1,7 +1,7 @@
-\ config/color.original.fs
+\ config/color.zx_spectrum.fs
 
-\ Combinación de colores «original»:
-\ Imita los colores de la versión original del juego.
+\ Combinación de colores «ZX Spectrum»:
+\ Imita los colores de la versión original del juego para ZX Spectrum.
 
 \ Este fichero forma parte de
 \ «Asalto y castigo>
@@ -9,7 +9,7 @@
 
 \ Autor: Marcos Cruz (programandala.net), 2011..2016
 
-\ Última modificación: 201606261937
+\ Última modificación: 201607111047
 
 \ ==============================================================
 
@@ -19,37 +19,37 @@ negro papel_de_fondo
 
 \ Colores de los títulos de crédito y la licencia:
 
-gris tinta_de_créditos
+blanco tinta_de_créditos
 negro papel_de_créditos
 
 \ Colores de la narración:
 
-gris tinta_de_narración
+blanco tinta_de_narración
 negro papel_de_narración
 
 \ Colores del presto de comandos:
 
-cian tinta_de_presto_de_comandos
+blanco tinta_de_presto_de_comandos
 negro papel_de_presto_de_comandos
 
 \ Colores del texto de entrada:
 
-cian_claro tinta_de_entrada
+blanco tinta_de_entrada
 negro papel_de_entrada
 
 \ Colores del nombre de escenario, antes de su descripción:
 
-negro tinta_de_nombre_de_escenario
-verde papel_de_nombre_de_escenario
+cian tinta_de_nombre_de_escenario
+negro papel_de_nombre_de_escenario
 
 \ Colores de la descripción de un escenario:
 
-verde tinta_de_descripción_de_escenario
+cian tinta_de_descripción_de_escenario
 negro papel_de_descripción_de_escenario
 
 \ Colores de las restantes descripciones:
 
-gris tinta_de_descripción
+blanco tinta_de_descripción
 negro papel_de_descripción
 
 \ Colores del presto de pantalla llena:
@@ -69,7 +69,7 @@ negro papel_de_presto_de_escena
 
 \ Colores de las citas de diálogos:
 
-gris_claro tinta_de_diálogos
+amarillo tinta_de_diálogos
 negro papel_de_diálogos
 
 \ Colores de las preguntas de tipo sí o no:
@@ -79,16 +79,17 @@ negro papel_de_pregunta
 
 \ Colores de los mensajes de error del analizador:
 
-rojo_claro tinta_de_error_lingüístico
+blanco tinta_de_error_lingüístico
 negro papel_de_error_lingüístico
 
 \ Colores de los mensajes de error de los comandos:
 
-rojo tinta_de_error_operativo
+blanco tinta_de_error_operativo
 negro papel_de_error_operativo
 
 \ Colores de los mensajes de error del sistema:
 
-rojo_claro tinta_de_error_del_sistema
+blanco tinta_de_error_del_sistema
 negro papel_de_error_del_sistema
+
 

@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606291155
+\ Last update: 201607111056
 
 \ Note: The comments of the code are in Spanish.
 
@@ -72,6 +72,8 @@ variable action-error-paper
   black description-paper !
   light-red language-error-ink !
   black language-error-paper !
+  gray action-error-ink !
+  black action-error-paper !
   light-cyan input-ink !
   black input-paper !
   green location-description-ink !

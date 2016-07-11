@@ -1,7 +1,11 @@
 = Tareas pendientes de Asalto y castigo
-:revdate: 2016-07-08
+:revdate: 2016-07-11
 
 == Programación
+
+2016-07-10:
+
+Estudiar si la configuración `repeat-previous-action?` es útil.
 
 2016-07-10:
 

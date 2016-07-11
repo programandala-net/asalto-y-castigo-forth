@@ -7,7 +7,7 @@
 
 \ Autor: Marcos Cruz (programandala.net), 2011..2016
 
-\ Última modificación: 201606261937
+\ Última modificación: 201607111055
 
 \ ==============================================================
 
@@ -180,6 +180,6 @@ no borrar_pantalla_para_escenas
 \ predeterminado es el que imita los colores de la versión
 \ original del juego:
 
-incluye color.original.fs
+incluye color.predeterminado.fs
 
 \ vim: textwidth=64
