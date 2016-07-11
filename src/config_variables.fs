@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607111320
+\ Last update: 201607112351
 
 \ Note: The comments of the code are in Spanish.
 
@@ -51,10 +51,6 @@ svariable 'generic-language-error$
 
 svariable 'generic-action-error$
   \ Mensaje de error operativo para el nivel 1.
-
-variable repeat-previous-action?
-  \ ¿Repetir la acción anterior cuando no se especifica otra en el
-  \ comando?
 
 variable space-after-command-prompt?
   \ ¿Separar el presto de comandos con un espacio posterior?

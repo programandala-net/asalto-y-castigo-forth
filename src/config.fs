@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607111329
+\ Last update: 201607112348
 
 \ Note: The comments of the code are in Spanish.
 
@@ -203,11 +203,6 @@ wordlist dup constant config-wordlist
   'generic-action-error$ place  ;
   \ Configura el mensaje genérico para los mensajes de error operativo.
 
-: repetir_la_última_acción  ( f -- )
-  repeat-previous-action? !  ;
-  \ Configura si hay que usar acción anterior cuando no se
-  \ especifica otra en el comando.
-
 restore-wordlists
   \ Terminar de definir palabras permitidas en el fichero
   \ configuración.
@@ -237,7 +232,6 @@ restore-wordlists
   max-errors-verbosity action-errors-verbosity !
   s" Orden incorrecta." 'generic-language-error$ place
   s" No es posible hacer eso." 'generic-action-error$ place
-  repeat-previous-action? on
   init-prompts  init-colors  ;
   \ Inicializa las variables de configuración con sus valores
   \ predeterminados.

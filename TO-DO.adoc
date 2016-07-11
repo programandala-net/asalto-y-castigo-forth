@@ -1,7 +1,13 @@
 = Tareas pendientes de Asalto y castigo
-:revdate: 2016-07-11
+:revdate: 2016-07-12
 
 == Programación
+
+2016-07-12:
+
+Implementar la palabra «y» en el vocabulario del jugador, para forzar
+la reutilización de la acción previa, pero de forma que sea anulada si
+hay otra después.
 
 2016-07-11:
 

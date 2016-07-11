@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607111343
+\ Last update: 201607112349
 
 \ Note: The comments of the code are in Spanish.
 
@@ -282,7 +282,7 @@ is tool-complement
   \ acción que nada haga.
 
 : execute-previous-action  ( -- )
-  repeat-previous-action? @ 0= ?? no-verb.error
+  reuse-previous-action @ 0= ?? no-verb.error
   (execute-previous-action)  ;
   \ Ejecuta la acción previa, si así está configurado.
 
@@ -366,9 +366,7 @@ is tool-complement
   \ Evalúa un comando con el vocabulario del juego.
 
 : obey  ( ca len -- )
-  [debug-parsing] [??] ~~
-  dup if  (obey)  else  2drop  then
-  [debug-parsing] [??] ~~  ;
+  dup if  (obey)  else  2drop  then  ;
   \ Evalúa un comando, si no está vacío, con el vocabulario del juego.
 
 : second?  ( x1 x2 -- x1 f )
@@ -409,7 +407,6 @@ is tool-complement
   \ Provoca un error si ya existía un complemento secundario.
 
 : set-main-complement  ( a -- )
-  [debug-parsing] [??] ~~
   main-complement second?
   ?? too-many-complements.error
   dup new-last-complement
