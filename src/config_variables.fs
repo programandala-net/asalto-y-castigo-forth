@@ -5,9 +5,20 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607082041
+\ Last update: 201607111112
 
 \ Note: The comments of the code are in Spanish.
+
+\ ==============================================================
+
+get-current forth-wordlist set-current
+
+\ Galope
+\ http://programandala.net/en.program.galope.html
+
+require galope/svariable.fs                   \ string variables
+
+set-current
 
 \ ==============================================================
 \ Variables de configuración

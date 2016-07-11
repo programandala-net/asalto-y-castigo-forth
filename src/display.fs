@@ -5,17 +5,28 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607111056
+\ Last update: 201607111310
 
 \ Note: The comments of the code are in Spanish.
 
 \ ==============================================================
+
+get-current forth-wordlist set-current
+
+\ Galope
+\ http://programandala.net/en.program.galope.html
+
+require galope/ink.fs
+require galope/paper.fs
+require galope/colors.fs
+require galope/print.fs    \ justified printing
+
+set-current
+
+\ ==============================================================
 \ Colores
 
-: colors  ( u1 u2 -- )  ink paper  ;
-  \ Pone el color de papel _u1_ y tinta _u2_.
-
-: @colors  ( a1 a2 -- )  @ swap @ swap colors  ;
+: set-colors  ( a1 a2 -- )  @ ink @ paper  ;
   \ Pone el color de papel contenido en _a1_ y el de tinta contenido
   \ en _a2_.
 
@@ -97,15 +108,15 @@ variable action-error-paper
   \ Asigna los colores predeterminados.
 
 : about-color  ( -- )
-  about-paper about-ink @colors  ;
+  about-paper about-ink set-colors  ;
   \ Pone el color de texto de los créditos.
 
 : command-prompt-color  ( -- )
-  command-prompt-paper command-prompt-ink @colors  ;
+  command-prompt-paper command-prompt-ink set-colors  ;
   \ Pone el color de texto del presto de entrada de comandos.
 
 :noname  ( -- )
-  debug-paper debug-ink @colors  ; is debug-color
+  debug-paper debug-ink set-colors  ; is debug-color
   \ Pone el color de texto usado en los mensajes de depuración.
 
 : background-color  ( -- )
@@ -116,56 +127,56 @@ variable action-error-paper
   \ Pone el color de fondo.
 
 : description-color  ( -- )
-  description-paper description-ink @colors  ;
+  description-paper description-ink set-colors  ;
   \ Pone el color de texto de las descripciones de los entes que no
   \ son escenarios.
 
 : system-error-color  ( -- )
-  system-error-paper language-error-ink @colors  ;
+  system-error-paper language-error-ink set-colors  ;
   \ Pone el color de texto de los errores del sistema.
 
 : action-error-color  ( -- )
-  action-error-paper language-error-ink @colors  ;
+  action-error-paper language-error-ink set-colors  ;
   \ Pone el color de texto de los errores operativos.
 
 : language-error-color  ( -- )
-  language-error-paper language-error-ink @colors  ;
+  language-error-paper language-error-ink set-colors  ;
   \ Pone el color de texto de los errores lingüísticos.
 
 : input-color  ( -- )
-  input-paper input-ink @colors  ;
+  input-paper input-ink set-colors  ;
   \ Pone el color de texto para la entrada de comandos.
 
 : location-description-color  ( -- )
-  location-description-paper location-description-ink @colors  ;
+  location-description-paper location-description-ink set-colors  ;
   \ Pone el color de texto de las descripciones de los entes escenario.
 
 : location-name-color  ( -- )
-  location-name-paper location-name-ink @colors  ;
+  location-name-paper location-name-ink set-colors  ;
   \ Pone el color de texto del nombre de los escenarios.
 
 : narration-color  ( -- )
-  narration-paper narration-ink @colors  ;
+  narration-paper narration-ink set-colors  ;
   \ Pone el color de texto de la narración.
 
 : scroll-prompt-color  ( -- )
-  scroll-prompt-paper scroll-prompt-ink @colors  ;
+  scroll-prompt-paper scroll-prompt-ink set-colors  ;
   \ Pone el color de texto del presto de pantalla llena.
 
 : question-color  ( -- )
-  question-paper question-ink @colors  ;
+  question-paper question-ink set-colors  ;
   \ Pone el color de texto de las preguntas de tipo «sí o no».
 
 : scene-prompt-color  ( -- )
-  scene-prompt-paper scene-prompt-ink @colors  ;
+  scene-prompt-paper scene-prompt-ink set-colors  ;
   \ Pone el color de texto del presto de fin de escena.
 
 : speech-color  ( -- )
-  speech-paper speech-ink @colors  ;
+  speech-paper speech-ink set-colors  ;
   \ Pone el color de texto de los diálogos.
 
 : narration-prompt-color  ( -- )
-  narration-prompt-paper narration-prompt-ink @colors  ;
+  narration-prompt-paper narration-prompt-ink set-colors  ;
   \ Pone el color de texto del presto de pausa.
 
 \ ==============================================================

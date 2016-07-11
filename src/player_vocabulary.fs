@@ -5,9 +5,20 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607082008
+\ Last update: 201607111257
 
 \ Note: The comments of the code are in Spanish.
+
+\ ==============================================================
+
+get-current forth-wordlist set-current
+
+\ Galope
+\ http://programandala.net/en.program.galope.html
+
+require galope/aliases-colon.fs               \ `aliases:`
+
+set-current
 
 \ ==============================================================
 \ Resolución de entes ambiguos

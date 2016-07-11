@@ -5,9 +5,20 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606282045
+\ Last update: 201607111247
 
 \ Note: The comments of the code are in Spanish.
+
+\ ==============================================================
+
+get-current forth-wordlist set-current
+
+\ Galope
+\ http://programandala.net/en.program.galope.html
+
+require galope/two-choose.fs  \ `2choose`
+
+set-current
 
 \ ==============================================================
 
@@ -103,7 +114,7 @@ variable #elements
 
 : .present  ( -- )
   my-location content-list dup
-  if  s" Ves" s" Puedes ver" 2 schoose 2swap s& narrate
+  if  s" Ves" s" Puedes ver" 2 2choose 2swap s& narrate
   else  2drop  then  ;
   \ Lista los entes presentes.
 

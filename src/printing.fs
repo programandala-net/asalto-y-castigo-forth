@@ -5,9 +5,24 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607071424
+\ Last update: 201607111129
 
 \ Note: The comments of the code are in Spanish.
+
+\ ==============================================================
+
+get-current forth-wordlist set-current
+
+\ Galope
+\ http://programandala.net/en.program.galope.html
+
+require galope/row.fs            \ `row`
+require galope/system-colors.fs  \ `system-colors`
+
+\ Forth Foundation Library
+\ http://irdvo.github.io/ffl/
+
+set-current
 
 \ ==============================================================
 

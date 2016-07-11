@@ -5,9 +5,25 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607101355
+\ Last update: 201607111256
 
 \ Note: The comments of the code are in Spanish.
+
+\ ==============================================================
+
+get-current forth-wordlist set-current
+
+\ Galope
+\ http://programandala.net/en.program.galope.html
+
+require galope/shuffle.fs         \ `shuffle`
+require galope/two-choose.fs      \ `2choose`
+require galope/ends-question.fs   \ `ends?`
+
+\ Forth Foundation Library
+\ http://irdvo.github.io/ffl/
+
+set-current
 
 \ ==============================================================
 \ Mensaje de acción completada
@@ -240,7 +256,7 @@ false [if]
   «»-clear
   #listed off
   my-location free-exits
-  dup >r unsort r>  dup #free-exits !
+  dup >r shuffle r>  dup #free-exits !
   0 ?do  exit>list  loop  .exits  ;
   \ Crea la lista de salidas y la imprime
 
@@ -615,7 +631,6 @@ false [if]
   \ Abrir un ente, si es posible.
 
 :noname  ( -- )
-  s" do-open" halto  \ XXX INFORMER
   ?main-complement
   main-complement open-it
   ; is do-open
@@ -974,7 +989,7 @@ false [if]
   s{ s" desconocido" s" nuevo" s" diferente" }s&
   s" en otra parte"
   s" en otro lugar"
-  3 schoose  ;
+  3 2choose  ;
   \ Devuelve una variante de «en un lugar diferente».
 
 : you-emerge$  ( -- ca len )

@@ -10,6 +10,18 @@
 \ Note: The comments of the code are in Spanish.
 
 \ ==============================================================
+
+get-current forth-wordlist set-current
+
+\ Galope
+\ http://programandala.net/en.program.galope.html
+
+require galope/question-execute.fs  \ `?execute`
+require galope/two-choose.fs        \ `2choose`
+
+set-current
+
+\ ==============================================================
 \ Inicialización
 
 : init-plot  ( -- )
@@ -267,7 +279,7 @@
 
 : bravery$  ( f -- ca len )
   (bravery)$  rot
-  if  like-heroes$  else  like-a-heroe$  then  2 schoose  ;
+  if  like-heroes$  else  like-a-heroe$  then  2 2choose  ;
   \ Devuelve una variante _ca len_ de «con denuedo», en singular o
   \ plural, dependiendo del indicador _f_ (cierto: el resultado debe
   \ estar en plural; falso: el resultado debe estar en singular).
@@ -507,7 +519,7 @@ here swap - cell / constant battle-phases
   \ los oficiales.
 
 : they-win$  ( -- ca len )
-  they-win-0$ they-win-1$ 2 schoose period+  ;
+  they-win-0$ they-win-1$ 2 2choose period+  ;
   \ Devuelve la parte final de las palabras de los oficiales.
 
 : taking-prisioner$  ( -- ca len )

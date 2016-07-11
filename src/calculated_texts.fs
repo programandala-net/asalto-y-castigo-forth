@@ -5,9 +5,20 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607041716
+\ Last update: 201607111243
 
 \ Note: The comments of the code are in Spanish.
+
+\ ==============================================================
+
+get-current forth-wordlist set-current
+
+\ Galope
+\ http://programandala.net/en.program.galope.html
+
+require galope/shuffle.fs
+
+set-current
 
 \ ==============================================================
 \ Textos calculados
@@ -388,7 +399,7 @@ create 'cave-descriptions
 \ `exits-cave-description` para la descripción principal
 \ `cave-exit-description$` para la descripción de cada salida
 
-: unsort-cave-exits  ( a1 ... an u -- a1'..an' u )  dup >r unsort r>  ;
+: shuffle-cave-exits  ( a1 ... an u -- a1'..an' u )  dup >r shuffle r>  ;
   \ Desordena los entes dirección que son las salidas de la cueva.
   \ u = Número de elementos de la pila que hay que desordenar
 
@@ -400,7 +411,7 @@ create 'cave-descriptions
   \ u = Número de entes de dirección suministrados
 
 : exits-cave-description  ( a1 ... an u -- ca2 len2 )
-  unsort-cave-exits  (exits-cave-description) period+
+  shuffle-cave-exits  (exits-cave-description) period+
   main-cave-exits-are$ 2swap s&  ;  \ Añadir el encabezado
   \ Devuelve la descripción principal de un tramo de cueva.
   \ a1 ... an = Entes de dirección correspondientes a las salidas

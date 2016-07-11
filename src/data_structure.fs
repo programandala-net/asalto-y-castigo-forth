@@ -5,9 +5,20 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607101308
+\ Last update: 201607111135
 
 \ Note: The comments of the code are in Spanish.
+
+\ ==============================================================
+
+get-current forth-wordlist set-current
+
+\ Galope
+\ http://programandala.net/en.program.galope.html
+
+require galope/bit-field-colon.fs             \ `bitfield:`
+
+set-current
 
 \ ==============================================================
 \ Estructura de datos de los entes

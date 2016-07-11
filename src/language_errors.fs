@@ -5,9 +5,23 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607091256
+\ Last update: 201607111250
 
 \ Note: The comments of the code are in Spanish.
+
+\ ==============================================================
+
+get-current forth-wordlist set-current
+
+\ Galope
+\ http://programandala.net/en.program.galope.html
+
+require galope/two-choose.fs  \ `2choose`
+
+\ Forth Foundation Library
+\ http://irdvo.github.io/ffl/
+
+set-current
 
 \ ==============================================================
 \ Error genérico
@@ -86,7 +100,7 @@
 
 : error-comment$  ( -- ca len )
   error-comment-0$ error-comment-1$ error-comment-2$
-  3 schoose please&  ;
+  3 2choose please&  ;
   \ Devuelve mensaje de acompañamiento para los errores lingüísticos.
 
 : ^error-comment$  ( -- ca len )  error-comment$ ^uppercase  ;

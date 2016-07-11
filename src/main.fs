@@ -7,7 +7,7 @@
 \
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 \
-\ Last update: 201607100034
+\ Last update: 201607111314
 
 \ ==============================================================
 \ Credits
@@ -24,13 +24,25 @@
 
 \ ==============================================================
 
-include requirements.fs
+only forth definitions
 
-include flibustre/wordlists.fs
+\ Galope
+\ http://programandala.net/en.program.galope.html
+
+require galope/randomize.fs  \ `randomize`
+
+require galope/sb.fs  \ Circular string buffer
+' bs+ alias s+
+' bs& alias s&
+' bs" alias s" immediate
+2048 dictionary_sb
+
+\ ==============================================================
+
+require flibustre/wordlists.fs
 
 include version.fs
 include debug_tools.fs
-
 
 : including  ( ca len -- )  2dup cr type included ?.s  ;
   \ Include file _ca len_ and check the stack.

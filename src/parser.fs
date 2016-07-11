@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607091318
+\ Last update: 201607111248
 
 \ Note: The comments of the code are in Spanish.
 
@@ -277,15 +277,8 @@ is tool-complement
   \ Ejecuta la acción previa, si así está configurado.
 
 : execute-action  ( -- )
-  [debug-catch] [debug-parsing] [or] [??] ~~
   action ?dup
-  [debug-catch] [debug-parsing] [or] [??] ~~
-  if    (execute-action)
-  else  execute-previous-action
-  then
-  [debug-catch] [debug-parsing] [or] [??] ~~
-  .system-status  \ XXX INFORMER
-  ;
+  if  (execute-action)  else  execute-previous-action  then  ;
   \ Ejecuta la acción del comando, si es posible.
 
 : (evaluate-command)  ( -- )

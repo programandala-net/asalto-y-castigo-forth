@@ -5,9 +5,34 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606282010
+\ Last update: 201607111128
 
 \ Note: The comments of the code are in Spanish.
+
+\ ==============================================================
+
+get-current forth-wordlist set-current
+
+\ Gforth
+
+require random.fs
+
+\ Galope
+\ http://programandala.net/en.program.galope.html
+
+require galope/xcase_es.fs    \ Spanish UTF-8 case table
+require galope/xcase.fs       \ `xcase`
+require galope/x-c-store.fs   \ `xc!`
+require galope/replaced.fs    \ `replaced`
+require galope/random_strings.fs
+require galope/null-dollar.fs
+
+\ Forth Foundation Library
+\ http://irdvo.github.io/ffl/
+
+require ffl/str.fs
+
+set-current
 
 \ ==============================================================
 
