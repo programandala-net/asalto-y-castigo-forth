@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607111250
+\ Last update: 201607111405
 
 \ Note: The comments of the code are in Spanish.
 
@@ -16,7 +16,9 @@ get-current forth-wordlist set-current
 \ Galope
 \ http://programandala.net/en.program.galope.html
 
-require galope/two-choose.fs  \ `2choose`
+require galope/question-question.fs   \ `??`
+require galope/random_strings.fs
+require galope/two-choose.fs          \ `2choose`
 
 \ Forth Foundation Library
 \ http://irdvo.github.io/ffl/

@@ -5,9 +5,23 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607091342
+\ Last update: 201607111404
 
 \ Note: The comments of the code are in Spanish.
+
+\ ==============================================================
+
+get-current forth-wordlist set-current
+
+\ Galope
+\ http://programandala.net/en.program.galope.html
+
+require galope/plus-plus.fs           \ `++`
+require galope/question-execute.fs    \ `?execute`
+require galope/question-question.fs   \ `??`
+require galope/random_strings.fs
+
+set-current
 
 \ ==============================================================
 

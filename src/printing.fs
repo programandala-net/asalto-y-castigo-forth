@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607111129
+\ Last update: 201607111412
 
 \ Note: The comments of the code are in Spanish.
 
@@ -16,8 +16,14 @@ get-current forth-wordlist set-current
 \ Galope
 \ http://programandala.net/en.program.galope.html
 
-require galope/row.fs            \ `row`
-require galope/system-colors.fs  \ `system-colors`
+require galope/bracket-false.fs       \ `[false]`
+require galope/column.fs              \ `column`
+require galope/question-question.fs   \ `??`
+require galope/row.fs                 \ `row`
+require galope/sconstant.fs           \ `sconstant`
+require galope/seconds.fs             \ `seconds`
+require galope/svariable.fs           \ `svariable`
+require galope/system-colors.fs       \ `system-colors`
 
 \ Forth Foundation Library
 \ http://irdvo.github.io/ffl/

@@ -37,6 +37,8 @@ require galope/sb.fs  \ Circular string buffer
 ' bs" alias s" immediate
 2048 dictionary_sb
 
+require galope/tilde-tilde.fs    \ improved `~~`
+
 \ ==============================================================
 
 require flibustre/wordlists.fs

@@ -5,9 +5,21 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606281956
+\ Last update: 201607111405
 
 \ Note: The comments of the code are in Spanish.
+
+\ ==============================================================
+
+get-current forth-wordlist set-current
+
+\ Galope
+\ http://programandala.net/en.program.galope.html
+
+require galope/bracket-false.fs   \ `[false]`
+require galope/random_strings.fs
+
+set-current
 
 \ ==============================================================
 

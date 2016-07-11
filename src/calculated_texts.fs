@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607111243
+\ Last update: 201607111404
 
 \ Note: The comments of the code are in Spanish.
 
@@ -16,7 +16,9 @@ get-current forth-wordlist set-current
 \ Galope
 \ http://programandala.net/en.program.galope.html
 
-require galope/shuffle.fs
+require galope/choose.fs          \ `choose`
+require galope/random_strings.fs
+require galope/shuffle.fs         \ `shuffle`
 
 set-current
 

@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607111310
+\ Last update: 201607111413
 
 \ Note: The comments of the code are in Spanish.
 
@@ -16,10 +16,13 @@ get-current forth-wordlist set-current
 \ Galope
 \ http://programandala.net/en.program.galope.html
 
-require galope/ink.fs
-require galope/paper.fs
-require galope/colors.fs
-require galope/print.fs    \ justified printing
+require galope/bracket-false.fs       \ `[false]`
+require galope/ink.fs                 \ `ink`
+require galope/paper.fs               \ `paper`
+require galope/colors.fs              \ color constants
+require galope/print.fs               \ justified printing
+require galope/question-question.fs   \ `??`
+require galope/system-colors.fs       \ `system-colors`
 
 set-current
 

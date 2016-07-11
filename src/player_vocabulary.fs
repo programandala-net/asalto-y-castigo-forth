@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607111257
+\ Last update: 201607111413
 
 \ Note: The comments of the code are in Spanish.
 
@@ -16,7 +16,11 @@ get-current forth-wordlist set-current
 \ Galope
 \ http://programandala.net/en.program.galope.html
 
-require galope/aliases-colon.fs               \ `aliases:`
+require galope/bracket-false.fs       \ `[false]`
+require galope/aliases-colon.fs       \ `aliases:`
+require galope/between.fs             \ `between`
+require galope/question-question.fs   \ `??`
+require galope/system-colors.fs       \ `system-colors`
 
 set-current
 

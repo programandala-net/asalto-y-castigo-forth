@@ -5,9 +5,20 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607101312
+\ Last update: 201607111325
 
 \ Note: Most comments of the code are in Spanish.
+
+\ ==============================================================
+
+get-current forth-wordlist set-current
+
+\ Galope
+\ http://programandala.net/en.program.galope.html
+
+require galope/bracket-true.fs  \ `[false]`
+
+set-current
 
 \ ==============================================================
 \ Herramientas para crear las fichas de la base de datos

@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607111250
+\ Last update: 201607111329
 
 \ Note: The comments of the code are in Spanish.
 
@@ -16,6 +16,7 @@ get-current forth-wordlist set-current
 \ Galope
 \ http://programandala.net/en.program.galope.html
 
+require galope/colors.fs      \ color constants
 require galope/sourcepath.fs  \ `sourcepath`
 
 \ Forth Foundation Library
