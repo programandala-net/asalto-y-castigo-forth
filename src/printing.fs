@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607111412
+\ Last update: 201607111924
 
 \ Note: The comments of the code are in Spanish.
 
@@ -18,6 +18,7 @@ get-current forth-wordlist set-current
 
 require galope/bracket-false.fs       \ `[false]`
 require galope/column.fs              \ `column`
+require galope/print.fs               \ justified printing
 require galope/question-question.fs   \ `??`
 require galope/row.fs                 \ `row`
 require galope/sconstant.fs           \ `sconstant`
