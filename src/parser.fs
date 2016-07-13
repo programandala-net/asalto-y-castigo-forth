@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607131438
+\ Last update: 201607132127
 
 \ Note: The comments of the code are in Spanish.
 
@@ -263,7 +263,6 @@ is tool-complement
 
 : init-complements  ( -- )
   0 to main-complement
-  0 to secondary-complement
   init-prepositions  ;
   \ Inicializa los complementos.
 
@@ -329,7 +328,6 @@ is tool-complement
   restore-wordlists
   [debug-parsing-result] [if]
     s" Main           : " main-complement .complement?
-    s" Secondary      : " secondary-complement .complement?
     s" Tool           : " tool-complement .complement?
     s" Explicit tool  : " explicit-tool-complement .complement?
     s" Company        : " company-complement .complement?
@@ -359,22 +357,19 @@ is tool-complement
 : save-command-elements  ( -- )
   action to last-action  ;
   \ XXX TODO -- no usado
-  \ XXX TODO -- falta guardar los complementos
+  \ XXX TODO -- guardar los complementos
 
 : (obey)  ( ca len -- )
   init-parser valid-parsing? ?? execute-action  ;
   \ Evalúa un comando con el vocabulario del juego.
 
-: obey  ( ca len -- )
-  dup if  (obey)  else  2drop  then  ;
+: obey  ( ca len -- )  dup if  (obey)  else  2drop  then  ;
   \ Evalúa un comando, si no está vacío, con el vocabulario del juego.
 
-: second?  ( x1 x2 -- x1 f )
-  2dup different?  ;
-  \ ¿Hay ya otra acción o complemento anterior y es diferente?  Los
-  \ parámetros representan una acción (_xt_) o un ente (_a_): _x1_ es
-  \ la acción o complemento recién encontrado; _x2_ es la acción o
-  \ complemento anterior, o cero.
+: second?  ( x1 x2 -- x1 f )  2dup different?  ;
+  \ ¿Hay ya otra acción o complemento anterior _x2_ y es diferente al
+  \ más reciente _x1_?  Los parámetros representan una acción (_xt_) o
+  \ un ente (_a_).
 
 : set-action  ( xt -- )
   action second? ?? too-many-actions.error
@@ -383,8 +378,7 @@ is tool-complement
   \ Provoca un error si ya había una acción.
 
 : set-preposition  ( n -- )
-  unresolved-preposition?
-  ?? unresolved-preposition.error
+  unresolved-preposition? ?? unresolved-preposition.error
   current-preposition !  ;
   \ Almacena una (seudo)preposición _n_ recién hallada en la frase.
 
@@ -398,33 +392,17 @@ is tool-complement
   \ Almacena un ente _a_ como complemento (seudo)preposicional.
   \ Provoca error si la preposición ya había sido usada,
 
-: set-secondary-complement  ( a -- )
-  secondary-complement second?
-  ?? too-many-complements.error
-  to secondary-complement  ;
-  \ Almacena el ente _a_ como complemento secundario.
-  \ Provoca un error si ya existía un complemento secundario.
-
 : set-main-complement  ( a -- )
-  main-complement second?
-  ?? too-many-complements.error
+  main-complement second? ?? too-many-complements.error
   dup new-last-complement
   to main-complement  ;
   \ Almacena el ente _a_ como complemento principal.
   \ Provoca un error si ya existía un complemento principal.
 
-: set-non-prepositional-complement  ( a -- )
-  main-complement if    set-secondary-complement
-                  else  set-main-complement  then  ;
-  \ Almacena un complemento principal o secundario.
-  \ a = Identificador de ente
-  \ XXX TODO -- esta palabra sobrará cuando las (seudo)preposiciones
-  \ estén implementadas completamente
-
 : (set-complement)  ( a -- )
   unresolved-preposition?
   if    set-prepositional-complement
-  else  set-non-prepositional-complement  then  ;
+  else  set-main-complement  then  ;
   \ Almacena el ente _a_ como complemento.
 
 : set-complement  ( a | 0 -- )

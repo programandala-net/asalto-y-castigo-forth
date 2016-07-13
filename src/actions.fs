@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607131438
+\ Last update: 201607132127
 
 \ Note: The comments of the code are in Spanish.
 
@@ -273,7 +273,6 @@ false [if]
 
 :noname  ( -- )
   ?no-tool-complement
-  ?no-secondary-complement
   main-complement ?dup if
     dup my-location <> swap direction 0= and ?? nonsense.error
   then  describe-exits

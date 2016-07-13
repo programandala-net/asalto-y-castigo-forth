@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607131439
+\ Last update: 201607132129
 
 \ Note: The comments of the code are in Spanish.
 
@@ -147,15 +147,14 @@ set-current
 :noname  ( -- )
   s{
   there-are$
-  s" dos complementos secundarios" s&
+  s" dos complementos principales" s&
   there-is$
-  s" más de un complemento secundario" s&
+  s" más de un complemento principal" s&
   there-are$
-  s" al menos dos complementos secundarios" s&
+  s" al menos dos complementos principales" s&
   }s  language-error  ; is too-many-complements.error
   \ Informa de que se ha producido un error
-  \ porque hay dos complementos secundarios en el comando.
-  \ XXX TMP
+  \ porque hay dos complementos principales en el comando.
 
 :noname  ( -- )
   there-is-no$ s" verbo" s&
@@ -174,13 +173,6 @@ set-current
   language-error  ; is unexpected-main-complement.error
   \ Informa de que se ha producido un error por la presencia de
   \ complemento principal en el comando.
-
-:noname  ( -- )
-  there-is$ s" un complemento secundario" s&
-  s" pero el verbo no puede llevarlo" s&
-  language-error  ; is unexpected-secondary-complement.error
-  \ Informa de que se ha producido un error por la presencia de
-  \ complemento secundario en el comando.
 
 :noname  ( -- )
   there-is$ s" un complemento principal no permitido con esta acción" s&
