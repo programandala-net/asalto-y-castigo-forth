@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607111413
+\ Last update: 201607131445
 
 \ Note: The comments of the code are in Spanish.
 
@@ -54,7 +54,7 @@ set-current
 \ ejecutarse resolverán la ambigüedad y llamarán a la acción
 \ adecuada.
 
-: (man) ( -- a | false )
+: (man)  ( -- a | false )
   true case
     leader~ is-here? of  leader~  endof
     ambrosio~ is-here? of  ambrosio~  endof
@@ -85,21 +85,21 @@ set-current
   \ (o `false` si la ambigüedad no puede ser resuelta).
   \ Puede referirse a los soldados o a los refugiados.
 
-: (ambrosio) ( -- a | false )
+: (ambrosio)  ( -- a | false )
   ambrosio~ dup conversations? and  ;
   \ Devuelve el ente adecuado a la palabra «ambrosio»
   \ (o _false_ si la ambigüedad no puede ser resuelta).
   \ La palabra «Ambrosio» es válida únicamente si
   \ el protagonista ha hablado con Ambrosio.
 
-: (cave) ( -- a | false )
+: (cave)  ( -- a | false )
   cave~ my-location location-10~ location-47~ between and ?dup ?exit
   cave-entrance~ dup is-accessible? and ?dup ?exit
   false  ;
   \ Devuelve el ente adecuado a la palabra «cueva»
   \ (o _false_ si la ambigüedad no puede ser resuelta).
 
-: (entrance) ( -- a | false )
+: (entrance)  ( -- a | false )
   true case
     cave-entrance~ is-accessible? of  cave-entrance~  endof
 
@@ -120,7 +120,7 @@ set-current
   if  cave-entrance~  else  exits~  then  ;
   \ Devuelve el ente adecuado a la palabra «salida/s».
 
-: (stone) ( -- a )
+: (stone)  ( -- a )
   true case
     stone~ is-accessible? of  stone~  endof
     emerald~ is-accessible? of  emerald~  endof
@@ -132,13 +132,13 @@ set-current
   \ roca del desfiladero o a las rocas.
   \ XXX TODO simplificar, sin `case`.
 
-: (wall) ( -- a )
+: (wall)  ( -- a )
   location-08~ am-i-there?
   if  ravine-wall~  else  wall~  then  ;
   \ Devuelve el ente adecuado a la palabra «pared».
   \ XXX TODO -- probablemente habrá que añadir más casos
 
-: (somebody) ( -- a | false )
+: (somebody)  ( -- a | false )
   true case
     pass-still-open? battle? or of  soldiers~  endof
     location-28~ am-i-there? location-29~ am-i-there? or of  refugees~  endof
@@ -181,25 +181,25 @@ player-wordlist dup >order set-current
 \ : esto  last-complement @ set-complement  ;
 \ : aquello  last-but-one-complement @ set-complement  ;
 
-: éste  last-complement >masculine >singular @ set-complement  ;
+: éste  ( -- )  last-complement >masculine >singular @ set-complement  ;
 ' éste aliases: ése  ;aliases
 
-: ésta  last-complement >feminine >singular @ set-complement  ;
+: ésta  ( -- )  last-complement >feminine >singular @ set-complement  ;
 ' ésta aliases: ésa  ;aliases
 
-: éstos  last-complement >masculine >plural @ set-complement  ;
+: éstos  ( -- )  last-complement >masculine >plural @ set-complement  ;
 ' éstos aliases: ésos  ;aliases
 
-: éstas  last-complement >feminine >plural @ set-complement  ;
+: éstas  ( -- )  last-complement >feminine >plural @ set-complement  ;
 ' éstas aliases: ésas  ;aliases
 
-: aquél  last-but-one-complement >masculine >singular @ set-complement  ;
+: aquél  ( -- )  last-but-one-complement >masculine >singular @ set-complement  ;
 
-: aquélla  last-but-one-complement >feminine >singular @ set-complement  ;
+: aquélla  ( -- )  last-but-one-complement >feminine >singular @ set-complement  ;
 
-: aquéllos  last-but-one-complement >masculine >plural @ set-complement  ;
+: aquéllos  ( -- )  last-but-one-complement >masculine >plural @ set-complement  ;
 
-: aquéllas  last-but-one-complement >feminine >plural @ set-complement  ;
+: aquéllas  ( -- )  last-but-one-complement >feminine >plural @ set-complement  ;
 
 \ ----------------------------------------------
 \ Verbos
@@ -221,24 +221,32 @@ player-wordlist dup >order set-current
 
 : abrir  ['] do-open set-action  ;
 ' abrir aliases:  abre abrid abro abra  ;aliases
-: abrirlo  abrir éste  ;
+
+: abrirlo  ( -- )  abrir éste  ;
 ' abrirlo aliases: ábrelo abridlo ábrolo ábralo  ;aliases
-: abrirla  abrir ésta  ;
+
+: abrirla  ( -- )  abrir ésta  ;
 ' abrirla aliases: ábrela abridla ábrola ábrala  ;aliases
-: abrirlos  abrir éstos  ;
+
+: abrirlos  ( -- )  abrir éstos  ;
 ' abrirlos aliases: ábrelos abridlos ábrolos ábralos  ;aliases
-: abrirlas  abrir éstas  ;
+
+: abrirlas  ( -- )  abrir éstas  ;
 ' abrirlas aliases: ábrelas abridlas ábrolas ábralas  ;aliases
 
 : cerrar  ['] do-close set-action  ;
 ' cerrar aliases:  cierra cerrad cierro  ;aliases
-: cerrarlo  cerrar éste  ;
+
+: cerrarlo  ( -- )  cerrar éste  ;
 ' cerrarlo aliases:  ciérralo cerradlo ciérrolo ciérrelo  ;aliases
-: cerrarla  cerrar ésta  ;
+
+: cerrarla  ( -- )  cerrar ésta  ;
 ' cerrarla aliases:  ciérrala cerradla ciérrola ciérrela  ;aliases
-: cerrarlos  cerrar éstos  ;
+
+: cerrarlos  ( -- )  cerrar éstos  ;
 ' cerrarlos aliases:  ciérralos cerradlos ciérrolos ciérrelos  ;aliases
-: cerrarlas  cerrar éstas  ;
+
+: cerrarlas  ( -- )  cerrar éstas  ;
 ' cerrarlas aliases:  ciérralas cerradlas ciérrolas ciérrelas  ;aliases
 
 : coger  ['] do-take set-action  ;
@@ -247,25 +255,29 @@ player-wordlist dup >order set-current
   agarrar agarra agarrad agarro agarre
   recoger recoge recoged recojo recoja
   ;aliases
-: cogerlo  coger éste  ;
+
+: cogerlo  ( -- )  coger éste  ;
 ' cogerlo aliases:
   cógelo cogedlo cójolo cójalo
   agarrarlo agárralo agarradlo agárrolo agárrelo
   recogerlo recógelo recogedlo recójolo recójalo
   ;aliases
-: cogerla  coger éste  ;
+
+: cogerla  ( -- )  coger éste  ;
 ' cogerla aliases:
   cógela cogedla cójola cójala
   agarrarla agárrala agarradla agárrola agárrela
   recogerla recógela recogedla recójola recójala
   ;aliases
-: cogerlos  coger éstos  ;
+
+: cogerlos  ( -- )  coger éstos  ;
 ' cogerlos aliases:
   cógelos cogedlos cójolos cójalos
   agarrarlos agárralos agarradlos agárrolos agárrelos
   recogerlos recógelos recogedlos recójolos recójalos
   ;aliases
-: cogerlas  coger éstas  ;
+
+: cogerlas  ( -- )  coger éstas  ;
 ' cogerlas aliases:
   cógelas cogedlas cójolas cójalas
   agarrarlas agárralas agarradlas agárrolas agárrelas
@@ -277,7 +289,8 @@ player-wordlist dup >order set-current
 ' tomar  aliases:
   toma tomad tomo tome
   ;aliases
-: tomarlo  tomar éste  ;
+
+: tomarlo  ( -- )  tomar éste  ;
 ' tomarlo aliases: tómalo tomadlo tómolo tómelo  ;aliases
 
 : dejar  ['] do-drop set-action  ;
@@ -286,25 +299,29 @@ player-wordlist dup >order set-current
   soltar suelta soltad suelto suelte
   tirar tira tirad tiro tire
   ;aliases
-: dejarlo  dejar éste  ;
+
+: dejarlo  ( -- )  dejar éste  ;
 ' dejarlo aliases:
   déjalo dejadlo déjolo déjelo
   soltarlo suéltalo soltadlo suéltolo suéltelo
   tirarlo tíralo tiradlo tírolo tírelo
   ;aliases
-: dejarlos  dejar éstos  ;
+
+: dejarlos  ( -- )  dejar éstos  ;
 ' dejarlos aliases:
   déjalos dejadlos déjolos déjelos
   soltarlos suéltalos soltadlos suéltolos suéltelos
   tirarlos tíralos tiradlos tírolos tírelos
   ;aliases
-: dejarla  dejar ésta  ;
+
+: dejarla  ( -- )  dejar ésta  ;
 ' dejarla aliases:
   déjala dejadla déjola déjela
   soltarla suéltala soltadla suéltola suéltela
   tirarla tírala tiradla tírola tírela
   ;aliases
-: dejarlas  dejar éstas  ;
+
+: dejarlas  ( -- )  dejar éstas  ;
 ' dejarlas aliases:
   déjalas dejadlas déjolas déjelas
   soltarlas suéltalas soltadlas suéltolas suéltelas
@@ -317,25 +334,29 @@ player-wordlist dup >order set-current
   contemplar contempla contemplad contemplo contemple
   observar observa observad observo observe
   ;aliases
-: mirarlo  mirar éste  ;
+
+: mirarlo  ( -- )  mirar éste  ;
 ' mirarlo aliases:
   míralo miradlo mírolo mírelo
   contemplarlo contémplalo contempladlo contémplolo contémplelo
   observarlo obsérvalo observadlo obsérvolo obsérvelo
   ;aliases
-: mirarla  mirar ésta  ;
+
+: mirarla  ( -- )  mirar ésta  ;
 ' mirarla aliases:
   mírala miradla mírola mírela
   contemplarla contémplala contempladla contémplola contémplela
   observarla obsérvala observadla obsérvola obsérvela
   ;aliases
-: mirarlos  mirar éstos  ;
+
+: mirarlos  ( -- )  mirar éstos  ;
 ' mirarlos aliases:
   míralos miradlos mírolos mírelos
   contemplarlos contémplalos contempladlos contémplolos contémplelos
   observarlos obsérvalos observadlos obsérvolos obsérvelos
   ;aliases
-: mirarlas  mirar éstas  ;
+
+: mirarlas  ( -- )  mirar éstas  ;
 ' mirarlas aliases:
   míralas miradlas mírolas mírelas
   contemplarlas contémplalas contempladlas contémplolas contémplelas
@@ -359,18 +380,23 @@ player-wordlist dup >order set-current
 ' otear aliases: oteo otea otead otee  ;aliases
 
 : x  ['] do-exits set-action  ;
+
 : salida  ['] do-exits (exits) set-action-or-complement  ;
 ' salida aliases:  salidas  ;aliases
 
 : examinar  ['] do-examine set-action  ;
 ' examinar aliases: ex examina examinad examino examine  ;aliases
-: examinarlo  examinar éste  ;
+
+: examinarlo  ( -- )  examinar éste  ;
 ' examinarlo aliases: examínalo examinadlo examínolo examínelo  ;aliases
-: examinarlos  examinar éstos  ;
+
+: examinarlos  ( -- )  examinar éstos  ;
 ' examinarlos aliases: examínalos examinadlos examínolos examínelos  ;aliases
-: examinarla  examinar ésta  ;
+
+: examinarla  ( -- )  examinar ésta  ;
 ' examinarla aliases: examínala examinadla examínola examínela  ;aliases
-: examinarlas  examinar éstas  ;
+
+: examinarlas  ( -- )  examinar éstas  ;
 ' examinarlas aliases: examínalas examinadlas examínolas examínelas  ;aliases
 
 : examinarse  ['] do-examine set-action protagonist~ set-complement  ;
@@ -382,13 +408,17 @@ player-wordlist dup >order set-current
 
 : registrar  ['] do-search set-action  ;
 ' registrar aliases:  registra registrad registro registre  ;aliases
-: registrarlo  registrar éste  ;
+
+: registrarlo  ( -- )  registrar éste  ;
 ' registrarlo aliases: regístralo registradlo regístrolo regístrelo  ;aliases
-: registrarla  registrar ésta  ;
+
+: registrarla  ( -- )  registrar ésta  ;
 ' registrarla aliases: regístrala registradla regístrola regístrela  ;aliases
-: registrarlos  registrar éstos  ;
+
+: registrarlos  ( -- )  registrar éstos  ;
 ' registrarlos aliases: regístralos registradlos regístrolos regístrelos  ;aliases
-: registrarlas  registrar éstas  ;
+
+: registrarlas  ( -- )  registrar éstas  ;
 ' registrarlas aliases: regístralas registradlas regístrolas regístrelas  ;aliases
 
 : i  ['] do-inventory inventory~ set-action-or-complement  ;
@@ -404,13 +434,17 @@ player-wordlist dup >order set-current
 
 : hacer  ['] do-do set-action  ;
 ' hacer aliases:  haz haced hago haga  ;aliases
-: hacerlo  hacer éste  ;
+
+: hacerlo  ( -- )  hacer éste  ;
 ' hacerlo aliases:  hazlo hacedlo hágolo hágalo  ;aliases
-: hacerla  hacer ésta  ;
+
+: hacerla  ( -- )  hacer ésta  ;
 ' hacerla aliases:  hazla hacedla hágola hágala  ;aliases
-: hacerlos  hacer éstos  ;
+
+: hacerlos  ( -- )  hacer éstos  ;
 ' hacerlos aliases:  hazlos hacedlos hágolos hágalos  ;aliases
-: hacerlas  hacer éstas  ;
+
+: hacerlas  ( -- )  hacer éstas  ;
 ' hacerlas aliases:  hazlas hacedlas hágolas hágalas  ;aliases
 
 : fabricar  ['] do-make set-action  ;
@@ -418,22 +452,26 @@ player-wordlist dup >order set-current
   fabrica fabricad fabrico fabrique
   construir construid construye construyo construya
   ;aliases
-: fabricarlo  fabricar éste  ;
+
+: fabricarlo  ( -- )  fabricar éste  ;
 ' fabricarlo aliases:
   fabrícalo fabricadlo fabrícolo fabríquelo
   construirlo constrúyelo construidlo constrúyolo constrúyalo
   ;aliases
-: fabricarla  fabricar éste  ;
+
+: fabricarla  ( -- )  fabricar éste  ;
 ' fabricarla aliases:
   fabrícala fabricadla fabrícola fabríquela
   construirla constrúyela construidla constrúyola constrúyala
   ;aliases
-: fabricarlos  fabricar éste  ;
+
+: fabricarlos  ( -- )  fabricar éste  ;
 ' fabricarlos aliases:
   fabrícalos fabricadlos fabrícolos fabríquelos
   construirlos constrúyelos construidlos constrúyolos constrúyalos
   ;aliases
-: fabricarlas  fabricar éste  ;
+
+: fabricarlas  ( -- )  fabricar éste  ;
 ' fabricarlas aliases:
   fabrícalas fabricadlas fabrícolas fabríquelas
   construirlas constrúyelas construidlas constrúyolas constrúyalas
@@ -460,25 +498,29 @@ player-wordlist dup >order set-current
   quitarte quítate quítote quítete
   quitarme quítame quítome quíteme
   ;aliases
-: quitárselo  quitarse éste  ;
+
+: quitárselo  ( -- )  quitarse éste  ;
 ' quitárselo aliases:
   quítatelo
   quitártelo quitáoslo quíteselo
   quitármelo quítamelo quítomelo quítemelo
   ;aliases
-: quitársela  quitarse ésta  ;
+
+: quitársela  ( -- )  quitarse ésta  ;
 ' quitársela aliases:
   quítatela
   quitártela quitáosla quítesela
   quitármela quítamela quítomela quítemela
   ;aliases
-: quitárselos  quitarse éstos  ;
+
+: quitárselos  ( -- )  quitarse éstos  ;
 ' quitárselos aliases:
   quítatelos
   quitártelos quitáoslos quíteselos
   quitármelos quítamelos quítomelos quítemelos
   ;aliases
-: quitárselas  quitarse éstas  ;
+
+: quitárselas  ( -- )  quitarse éstas  ;
 ' quitárselas aliases:
   quítatelas
   quitártelas quitáoslas quíteselas
@@ -497,7 +539,7 @@ player-wordlist dup >order set-current
   \ XXX TODO -- crear acción. vestir [con], parte como sinónimo y
   \ parte independiente.
 
-: ponérselo  ponerse éste  ;
+: ponérselo  ( -- )  ponerse éste  ;
 ' ponérselo aliases:
   póngaselo ponéoslo
   ponérmelo pónmelo póngomelo póngamelo
@@ -506,7 +548,8 @@ player-wordlist dup >order set-current
   colocártelo colócatelo colóquetelo
   colocármelo colócamelo colócomelo colóquemelo
   ;aliases
-: ponérsela  ponerse ésta  ;
+
+: ponérsela  ( -- )  ponerse ésta  ;
 ' ponérsela aliases:
   póngasela ponéosla
   ponérmela pónmela póngomela póngamela
@@ -515,7 +558,8 @@ player-wordlist dup >order set-current
   colocártela colócatela colóquetela
   colocármela colócamela colócomela colóquemela
   ;aliases
-: ponérselos  ponerse éstos  ;
+
+: ponérselos  ( -- )  ponerse éstos  ;
 ' ponérselos aliases:
   póngaselos ponéoslos
   ponérmelos pónmelos póngomelos póngamelos
@@ -524,7 +568,8 @@ player-wordlist dup >order set-current
   colocártelos colócatelos colóquetelos
   colocármelos colócamelos colócomelos colóquemelos
   ;aliases
-: ponérselas  ponerse éstas  ;
+
+: ponérselas  ( -- )  ponerse éstas  ;
 ' ponérselas aliases:
   póngaselas ponéoslas
   ponérmelas pónmelas póngomelas póngamelas
@@ -540,25 +585,29 @@ player-wordlist dup >order set-current
   asesinar asesina asesinad asesino asesine
   aniquilar aniquila aniquilad aniquilo aniquile
   ;aliases
-: matarlo  matar éste  ;
+
+: matarlo  ( -- )  matar éste  ;
 ' matarlo aliases:
   mátalo matadlo mátolo mátelo
   asesinarlo asesínalo asesinadlo asesínolo asesínelo
   aniquilarlo aniquínalo aniquinadlo aniquínolo aniquínelo
   ;aliases
-: matarla  matar ésta  ;
+
+: matarla  ( -- )  matar ésta  ;
 ' matarla aliases:
   mátala matadla mátola mátela
   asesinarla asesínala asesinadla asesínola asesínela
   aniquilarla aniquínala aniquinadla aniquínola aniquínela
   ;aliases
-: matarlos  matar éstos  ;
+
+: matarlos  ( -- )  matar éstos  ;
 ' matarlos aliases:
   mátalos matadlos mátolos mátelos
   asesinarlos asesínalos asesinadlos asesínolos asesínelos
   aniquilarlos aniquínalos aniquinadlos aniquínolos aniquínelos
   ;aliases
-: matarlas  matar éstas  ;
+
+: matarlas  ( -- )  matar éstas  ;
 ' matarlas aliases:
   mátalas matadlas mátolas mátelas
   asesinarlas asesínalas asesinadlas asesínolas asesínelas
@@ -570,17 +619,20 @@ player-wordlist dup >order set-current
   golpea golpead golpeo golpee
   sacudir sacude sacudid sacudo sacuda
   ;aliases
-: golpearla  golpear ésta  ;
+
+: golpearla  ( -- )  golpear ésta  ;
 ' golpearla aliases:
   golpéala golpeadla golpéola golpéela
   sacudirla sacúdela sacudidla sacúdola sacúdala
   ;aliases
-: golpearlos  golpear éstos  ;
+
+: golpearlos  ( -- )  golpear éstos  ;
 ' golpearlos aliases:
   golpéalos golpeadlos golpéolos golpéelos
   sacudirlos sacúdelos sacudidlos sacúdolos sacúdalos
   ;aliases
-: golpearlas  golpear éstas  ;
+
+: golpearlas  ( -- )  golpear éstas  ;
 ' golpearlas aliases:
   golpéalas golpeadlas golpéolas golpéelas
   sacudirlas sacúdelas sacudidlas sacúdolas sacúdalas
@@ -591,22 +643,26 @@ player-wordlist dup >order set-current
   ataca atacad ataco ataque
   agredir agrede agredid agredo agreda
   ;aliases
-: atacarlo  atacar éste  ;
+
+: atacarlo  ( -- )  atacar éste  ;
 ' atacarlo aliases:
   atácalo atacadlo atácolo atáquelo
   agredirlo agrédelo agredidlo agrédolo agrédalo
   ;aliases
-: atacarla  atacar ésta  ;
+
+: atacarla  ( -- )  atacar ésta  ;
 ' atacarla aliases:
   atácala atacadla atácola atáquela
   agredirla agrédela agredidla agrédola agrédala
   ;aliases
-: atacarlos  atacar éstos  ;
+
+: atacarlos  ( -- )  atacar éstos  ;
 ' atacarlos aliases:
   atácalos atacadlos atácolos atáquelos
   agredirlos agrédelos agredidlos agrédolos agrédalos
   ;aliases
-: atacarlas  atacar éstas  ;
+
+: atacarlas  ( -- )  atacar éstas  ;
 ' atacarlas aliases:
   atácalas atacadlas atácolas atáquelas
   agredirlas agrédelas agredidlas agrédolas agrédalas
@@ -620,7 +676,8 @@ player-wordlist dup >order set-current
   dividir divide dividid divido divida
   cortar corta cortad corto corte
   ;aliases
-: romperlo  romper éste  ;
+
+: romperlo  ( -- )  romper éste  ;
 ' romperlo aliases:
   rómpelo rompedlo rómpolo rómpalo
   despedazarlo despedazalo despedazadlo despedázolo despedácelo
@@ -628,7 +685,8 @@ player-wordlist dup >order set-current
   dividirlo divídelo divididlo divídolo divídalo
   cortarlo cortalo cortadlo córtolo córtelo
   ;aliases
-: romperla  romper ésta  ;
+
+: romperla  ( -- )  romper ésta  ;
 ' romperla aliases:
   rómpela rompedla rómpola rómpala
   despedazarla despedazala despedazadla despedázola despedácela
@@ -636,7 +694,8 @@ player-wordlist dup >order set-current
   dividirla divídela divididla divídola divídala
   cortarla córtala cortadla córtola córtela
   ;aliases
-: romperlos  romper éstos  ;
+
+: romperlos  ( -- )  romper éstos  ;
 ' romperlos aliases:
   rómpelos rompedlos rómpolos rómpalos
   despedazarlos despedazalos despedazadlos despedázolos despedácelos
@@ -644,7 +703,8 @@ player-wordlist dup >order set-current
   dividirlos divídelos divididlos divídolos divídalos
   cortarlos córtalos cortadlos córtolos córtelos
   ;aliases
-: romperlas  romper éstas  ;
+
+: romperlas  ( -- )  romper éstas  ;
 ' romperlas aliases:
   rómpelas rompedlas rómpolas rómpalas
   despedazarlas despedazalas despedazadlas despedázolas despedácelas
@@ -666,7 +726,8 @@ player-wordlist dup >order set-current
   aterrorizo aterroriza aterrorizad aterrorice
   ahuyento ahuyenta ahuyentad ahuyente
   ;aliases
-: asustarlo  asustar éste  ;
+
+: asustarlo  ( -- )  asustar éste  ;
 ' asustarlo aliases:
   asústolo asústalo asustadlo asústelo
   amedrentarlo amedréntolo amedréntalo amedrentadlo amedréntelo
@@ -676,7 +737,8 @@ player-wordlist dup >order set-current
   aterrorízolo aterrorízalo aterrorizadlo aterrorícelo
   ahuyéntolo ahuyéntalo ahuyentadlo ahuyéntelo
   ;aliases
-: asustarla  asustar ésta  ;
+
+: asustarla  ( -- )  asustar ésta  ;
 ' asustarla aliases:
   asústola asústala asustadla asústela
   amedrentarla amedréntola amedréntala amedrentadla amedréntela
@@ -686,7 +748,8 @@ player-wordlist dup >order set-current
   aterrorízola aterrorízala aterrorizadla aterrorícela
   ahuyéntola ahuyéntala ahuyentadla ahuyéntela
   ;aliases
-: asustarlos  asustar éstos  ;
+
+: asustarlos  ( -- )  asustar éstos  ;
 ' asustarlos aliases:
   asústolos asústalos asustadlos asústelos
   amedrentarlos amedréntolos amedréntalos amedrentadlos amedréntelos
@@ -696,7 +759,8 @@ player-wordlist dup >order set-current
   aterrorízolos aterrorízalos aterrorizadlos aterrorícelos
   ahuyéntolos ahuyéntalos ahuyentadlos ahuyéntelos
   ;aliases
-: asustarlas  asustar éstas  ;
+
+: asustarlas  ( -- )  asustar éstas  ;
 ' asustarlas aliases:
   asústolas asústalas asustadlas asústelas
   amedrentarlas amedréntolas amedréntalas amedrentadlas amedréntelas
@@ -709,50 +773,62 @@ player-wordlist dup >order set-current
 
 : afilar  ['] do-sharpen set-action  ;
 ' afilar aliases:  afila afilad afilo afile  ;aliases
-: afilarlo  afilar éste  ;
+
+: afilarlo  ( -- )  afilar éste  ;
 ' afilarlo aliases:  afílalo afiladlo afílolo afílelo  ;aliases
-: afilarla  afilar ésta  ;
+
+: afilarla  ( -- )  afilar ésta  ;
 ' afilarla aliases:  afílala afiladla afílola afílela  ;aliases
-: afilarlos  afilar éstos  ;
+
+: afilarlos  ( -- )  afilar éstos  ;
 ' afilarlos aliases:  afílalos afiladlos afílolos afílelos  ;aliases
-: afilarlas  afilar éstas  ;
+
+: afilarlas  ( -- )  afilar éstas  ;
 ' afilarlas aliases:  afílalas afiladlas afílolas afílelas  ;aliases
 
 : partir  ['] do-go|do-break set-action  ;
 ' partir aliases:  parto partid parta  ;aliases
 \ «parte» está en la sección final de ambigüedades
-: partirlo  partir éste  ;
+
+: partirlo  ( -- )  partir éste  ;
 ' partirlo aliases:  pártelo pártolo partidlo pártalo  ;aliases
-: partirla  partir ésta  ;
+
+: partirla  ( -- )  partir ésta  ;
 ' partirla aliases:  pártela pártola partidla pártala  ;aliases
-: partirlos  partir éstos  ;
+
+: partirlos  ( -- )  partir éstos  ;
 ' partirlos aliases:  pártelos pártolos partidlos pártalos  ;aliases
-: partirlas  partir éstas  ;
+
+: partirlas  ( -- )  partir éstas  ;
 ' partirlas aliases:  pártelas pártolas partidlas pártalas  ;aliases
 
-: esperar  ;
+: esperar  ( -- )  ;
   \ XXX TODO
 
 ' esperar aliases:
   z espera esperad espero espere
   aguardar aguarda aguardad aguardo aguarde
   ;aliases
-: esperarlo  esperar éste  ;
+
+: esperarlo  ( -- )  esperar éste  ;
 ' esperarlo aliases:
   esperadlo espérolo espérelo
   aguardarlo aguárdalo aguardadlo aguárdolo aguárdelo
   ;aliases
-: esperarla  esperar ésta  ;
+
+: esperarla  ( -- )  esperar ésta  ;
 ' esperarla aliases:
   esperadla espérola espérela
   aguardarla aguárdala aguardadla aguárdola aguárdela
   ;aliases
-: esperarlos  esperar éstos  ;
+
+: esperarlos  ( -- )  esperar éstos  ;
 ' esperarlos aliases:
   esperadlos espérolos espérelos
   aguardarlos aguárdalos aguardadlos aguárdolos aguárdelos
   ;aliases
-: esperarlas  esperar éstas  ;
+
+: esperarlas  ( -- )  esperar éstas  ;
 ' esperarlas aliases:
   esperadlas espérolas espérelas
   aguardarlas aguárdalas aguardadlas aguárdolas aguárdelas
@@ -791,24 +867,24 @@ player-wordlist dup >order set-current
 \ ----------------------------------------------
 \ Nombres de objetos o personas
 
-: ulfius  ulfius~ set-complement  ;
+: ulfius  ( -- )  ulfius~ set-complement  ;
 
-: ambrosio  (ambrosio) set-complement  ;
+: ambrosio  ( -- )  (ambrosio) set-complement  ;
 
-: hombre  (man) set-complement  ;
+: hombre  ( -- )  (man) set-complement  ;
 ' hombre aliases:  señor tipo individuo persona  ;aliases
 
-: hombres  (men) set-complement  ;
+: hombres  ( -- )  (men) set-complement  ;
 ' hombres aliases: gente personas  ;aliases
 \ XXX Ambigüedad.:
 \ «jefe» podría ser también el jefe de los enemigos durante la batalla:
 
-: jefe  leader~ set-complement  ;
+: jefe  ( -- )  leader~ set-complement  ;
 ' jefe aliases:
   líder viejo anciano abuelo
   ;aliases
 
-: soldados  soldiers~ set-complement  ;
+: soldados  ( -- )  soldiers~ set-complement  ;
 ' soldados aliases:
   guerreros luchadores combatientes camaradas
   compañeros oficiales suboficiales militares
@@ -816,7 +892,7 @@ player-wordlist dup >order set-current
   compañero oficial suboficial militar
   ;aliases
 
-: multitud  refugees~ set-complement  ;
+: multitud  ( -- )  refugees~ set-complement  ;
 ' multitud aliases:
   niño niños niña niñas
   muchacho muchachos muchacha muchachas
@@ -832,35 +908,34 @@ player-wordlist dup >order set-current
   muchedumbre masa enjambre
   ;aliases
 
-: refugiados leader~ conversations? ?? multitud ;
+: refugiados  ( -- )  leader~ conversations? ?? multitud ;
 ' refugiados aliases: refugiada refugiadas  ;aliases
 
-: refugiado leader~ conversations? ?? viejo ;
+: refugiado  ( -- )  leader~ conversations? ?? viejo ;
 
+: altar  ( -- )  altar~ set-complement  ;
 
-: altar  altar~ set-complement  ;
+: arco  ( -- )  arch~ set-complement  ;
 
-: arco  arch~ set-complement  ;
-
-: capa  cloak~ set-complement  ;
+: capa  ( -- )  cloak~ set-complement  ;
   \ XXX TODO -- hijuelo?
 ' capa aliases:  lana  ;aliases
 
 \ ' capa aliases:  abrigo  ;aliases
   \ XXX TODO -- diferente género
 
-: coraza  cuirasse~ set-complement  ;
+: coraza  ( -- )  cuirasse~ set-complement  ;
 ' coraza aliases:  armadura  ;aliases
 
-: puerta  door~ set-complement  ;
+: puerta  ( -- )  door~ set-complement  ;
 
-: esmeralda  emerald~ set-complement  ;
+: esmeralda  ( -- )  emerald~ set-complement  ;
 ' esmeralda aliases:  joya  ;aliases
   \ XXX TODO -- piedra-preciosa brillante
 
-: derrumbe fallen-away~ set-complement  ;
+: derrumbe  ( -- )  fallen-away~ set-complement  ;
 
-: banderas  flags~ set-complement  ;
+: banderas  ( -- )  flags~ set-complement  ;
 ' banderas aliases:
     bandera pendones enseñas pendón enseña
     mástil mástiles
@@ -868,83 +943,83 @@ player-wordlist dup >order set-current
   ;aliases
   \ XXX TODO -- estandarte, enseña... otro género
 
-: dragones  flags~ is-known? ?? banderas ;
+: dragones  ( -- )  flags~ is-known? ?? banderas ;
 ' dragones aliases: dragón  ;aliases
 
-: pedernal  flint~ set-complement  ;
+: pedernal  ( -- )  flint~ set-complement  ;
 
-: ídolo  idol~ set-complement  ;
+: ídolo  ( -- )  idol~ set-complement  ;
 ' ídolo aliases:  ojo orificio agujero  ;aliases
   \ XXX TODO -- separar los sinónimos de ídolo
 
-: llave  key~ set-complement  ;
+: llave  ( -- )  key~ set-complement  ;
 ' llave aliases:  hierro herrumbe óxido  ;aliases
 
-: lago  lake~ set-complement  ;
+: lago  ( -- )  lake~ set-complement  ;
 ' lago aliases:  laguna agua estanque  ;aliases
   \ XXX TODO -- diferente género
 
-: candado  lock~ set-complement  ;
+: candado  ( -- )  lock~ set-complement  ;
 ' candado aliases:  cerrojo  ;aliases
 
-: tronco  log~ set-complement  ;
+: tronco  ( -- )  log~ set-complement  ;
 ' tronco aliases:  leño madero  ;aliases
   \ XXX TODO -- madera
 
-: trozo  piece~ set-complement  ;
+: trozo  ( -- )  piece~ set-complement  ;
 ' trozo aliases:  pedazo retal tela  ;aliases
 
-: harapo  rags~ set-complement  ;
+: harapo  ( -- )  rags~ set-complement  ;
 
 : rocas  ( -- )
   location-09~ am-i-there?
   if  fallen-away~  else  rocks~  then  set-complement  ;
 ' rocas aliases:  piedras pedruscos  ;aliases
 
-: piedra  (stone) set-complement  ;
+: piedra  ( -- )  (stone) set-complement  ;
 ' piedra aliases:  roca pedrusco  ;aliases
 
-: serpiente  snake~ set-complement  ;
+: serpiente  ( -- )  snake~ set-complement  ;
 ' serpiente aliases:  reptil ofidio culebra animal bicho  ;aliases
 
-: espada  sword~ set-complement  ;
+: espada  ( -- )  sword~ set-complement  ;
 ' espada aliases:  tizona arma  ;aliases
 \ XXX Nota.: "arma" es femenina pero usa artículo "él", contemplar en los cálculos de artículo.
 
-: hilo  thread~ set-complement  ;
+: hilo  ( -- )  thread~ set-complement  ;
 ' hilo aliases:  hebra  ;aliases
 
-: antorcha  torch~ set-complement  ;
+: antorcha  ( -- )  torch~ set-complement  ;
 
-: cascada  waterfall~ set-complement  ;
+: cascada  ( -- )  waterfall~ set-complement  ;
 ' cascada aliases:  catarata  ;aliases
 
-: catre  s" catre" bed~ ms-name! bed~ set-complement  ;
+: catre  ( -- )  s" catre" bed~ ms-name! bed~ set-complement  ;
 ' catre aliases:  camastro  ;aliases
 
-: cama s" cama" bed~ fs-name! bed~ set-complement  ;
+: cama  ( -- )  s" cama" bed~ fs-name! bed~ set-complement  ;
 
-: velas  candles~ set-complement  ;
+: velas  ( -- )  candles~ set-complement  ;
 ' velas aliases:  vela  ;aliases
 
-: mesa  table~ set-complement  ;
+: mesa  ( -- )  table~ set-complement  ;
 ' mesa aliases:  mesita pupitre  ;aliases
 
-: puente  (bridge) set-complement  ;
+: puente  ( -- )  (bridge) set-complement  ;
 
-: alguien  (somebody) set-complement  ;
+: alguien  ( -- )  (somebody) set-complement  ;
 
-: hierba  s" hierba" grass~ fs-name! grass~ set-complement  ;
+: hierba  ( -- )  s" hierba" grass~ fs-name! grass~ set-complement  ;
 
-: hierbas  s" hierbas" grass~ fp-name! grass~ set-complement  ;
+: hierbas  ( -- )  s" hierbas" grass~ fp-name! grass~ set-complement  ;
 
-: hierbajo  s" hierbajo" grass~ ms-name! grass~ set-complement  ;
+: hierbajo  ( -- )  s" hierbajo" grass~ ms-name! grass~ set-complement  ;
 
-: hierbajos  s" hierbajos" grass~ mp-name! grass~ set-complement  ;
+: hierbajos  ( -- )  s" hierbajos" grass~ mp-name! grass~ set-complement  ;
 
-: hiedra  s" hiedra" grass~ fs-name! grass~ set-complement  ;
+: hiedra  ( -- )  s" hiedra" grass~ fs-name! grass~ set-complement  ;
 
-: hiedras  s" hiedras" grass~ fp-name! grass~ set-complement  ;
+: hiedras  ( -- )  s" hiedras" grass~ fp-name! grass~ set-complement  ;
 
 \ ----------------------------------------------
 \ Direcciones y sus acciones asociadas
@@ -990,7 +1065,7 @@ player-wordlist dup >order set-current
 : fuera  ['] do-go-out out~ set-action-or-complement  ;
 ' fuera aliases:  afuera  ;aliases
 
-: exterior  out~ set-complement  ;
+: exterior  ( -- )  out~ set-complement  ;
 
 : entrar ['] do-go-in set-action  ;
 ' entrar aliases:  entra entrad entro entre  ;aliases
@@ -1000,44 +1075,44 @@ player-wordlist dup >order set-current
 : dentro  ['] do-go-in in~ set-action-or-complement  ;
 ' dentro aliases:  adentro  ;aliases
 
-: interior  in~ set-complement  ;
+: interior  ( -- )  in~ set-complement  ;
 
 \ ----------------------------------------------
 \ Términos asociados a entes globales o virtuales
 
-: nubes  clouds~ set-complement  ;
+: nubes  ( -- )  clouds~ set-complement  ;
   \ XXX TODO ¿cúmulo-nimbos?, ¿nimbos?
 ' nubes aliases:  nube estratocúmulo estratocúmulos cirro cirros  ;aliases
 
-: suelo  floor~ set-complement  ;
+: suelo  ( -- )  floor~ set-complement  ;
 ' suelo aliases:  suelos tierra firme  ;aliases
   \ XXX TODO -- Añadir «piso», que es ambiguo
 
-: cielo  sky~ set-complement  ;
+: cielo  ( -- )  sky~ set-complement  ;
 ' cielo aliases:  cielos firmamento  ;aliases
 
-: techo  ceiling~ set-complement  ;
+: techo  ( -- )  ceiling~ set-complement  ;
 
-: cueva  (cave) set-complement  ;
+: cueva  ( -- )  (cave) set-complement  ;
 ' cueva aliases:  caverna gruta  ;aliases
 
-: entrada  (entrance) set-complement  ;
+: entrada  ( -- )  (entrance) set-complement  ;
 ' entrada aliases:  acceso  ;aliases
   \ XXX TODO ¿Implementar cambio de nombre y/o género gramatical?
 \ (entrada, acceso).
 
-: enemigo  enemy~ set-complement  ;
+: enemigo  ( -- )  enemy~ set-complement  ;
 ' enemigo aliases: enemigos sajón sajones  ;aliases
 
-: todo ;
+: todo  ( -- )  ;
   \ XXX TODO
 
-: pared  (wall) set-complement  ;
+: pared  ( -- )  (wall) set-complement  ;
 ' pared  aliases: muro  ;aliases
   \ XXX TODO ¿Implementar cambio de nombre y/o género gramatical?
   \ (pared/es, muro/s).
 
-: paredes  wall~ set-complement  ;
+: paredes  ( -- )  wall~ set-complement  ;
 ' paredes  aliases: muros  ;aliases
 
 \ ----------------------------------------------
@@ -1048,7 +1123,7 @@ player-wordlist dup >order set-current
 \ comandos funcione en el modo opcional de no ignorar las
 \ palabras desconocidas.
 
-: la  ;
+: la  ( -- )  ;
 ' la aliases: las el los una un unas unos  ;aliases
 
 \ ----------------------------------------------
@@ -1058,7 +1133,7 @@ player-wordlist dup >order set-current
 \ y pronombres demostrativos sin tilde; salvo «este», que siempre
 \ será interpretado como punto cardinal.
 
-: esta  ;
+: esta  ( -- )  ;
 ' esta aliases: estas estos  ;aliases
 
 \ ----------------------------------------------
