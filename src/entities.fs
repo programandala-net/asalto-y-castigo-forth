@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607111405
+\ Last update: 201607132143
 
 \ Note: The comments of the code are in Spanish.
 
@@ -847,7 +847,7 @@ location-08~ :init  ( -- )
     ^the-path$ goes-down$ s& s" hacia la agreste sierra, al oeste," s&
     s" desde los" s& s" verdes" s" valles" rnd2swap s& s& s" al este." s&
     ^but$ s& s" un" s&{ s" gran" s" enorme" }s?& s" derrumbe" s&
-    (it)-blocks$ s& s" el paso hacia" s&{ s" el oeste" s" la sierra." }s&
+    (it)-blocks$ s& s" el paso hacia" s&{ s" el oeste." s" la sierra." }s&
     paragraph
     endof
   east~ of
