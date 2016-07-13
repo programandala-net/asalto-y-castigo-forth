@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607112349
+\ Last update: 201607131438
 
 \ Note: The comments of the code are in Spanish.
 
@@ -377,8 +377,7 @@ is tool-complement
   \ complemento anterior, o cero.
 
 : set-action  ( xt -- )
-  action second?
-  ?? too-many-actions.error
+  action second? ?? too-many-actions.error
   to action  ;
   \ Comprueba y almacena la acción _xt_.
   \ Provoca un error si ya había una acción.

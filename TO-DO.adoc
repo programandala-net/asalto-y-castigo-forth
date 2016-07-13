@@ -1,13 +1,7 @@
 = Tareas pendientes de Asalto y castigo
-:revdate: 2016-07-12
+:revdate: 2016-07-13
 
 == Programación
-
-2016-07-12:
-
-Implementar la palabra «y» en el vocabulario del jugador, para forzar
-la reutilización de la acción previa, pero de forma que sea anulada si
-hay otra después.
 
 2016-07-11:
 
@@ -22,11 +16,6 @@ reply:: respuesta relacionada con el mundo
 
 final reply:: respuesta tras la cual la narración de eventos del mundo
 no puede continuar
-
-
-2016-07-10:
-
-Estudiar si la configuración `repeat-previous-action?` es útil.
 
 2016-07-10:
 
@@ -588,6 +577,11 @@ los créditos y el menú.
 debido a la oscuridad".
 
 - Acción de quemar, prender.
+
+== Textos
+
+En las descripciones, mencionar el objeto descrito, para que los
+textos resulten más claros en las órdenes compuestas.
 
 == Trama y puzles
 

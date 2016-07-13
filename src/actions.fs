@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607111415
+\ Last update: 201607131438
 
 \ Note: The comments of the code are in Spanish.
 
@@ -97,6 +97,7 @@ defer do-swim  ( -- )
 defer do-take  ( -- )
 defer do-take|do-eat  ( -- )  \ XXX TODO -- cambiar do-eat por ingerir
 defer do-take-off  ( -- )
+defer do-and  ( -- )
 
 \ ----------------------------------------------
 \ Mirar, examinar y registrar
@@ -1243,7 +1244,7 @@ false [if]
 \ ----------------------------------------------
 \ Hablar y presentarse
 
-\ ----------------------------------------------
+\ ..............................
 \ Conversaciones con el líder de los refugiados
 
 : a-man-takes-the-stone  ( -- )
@@ -1615,7 +1616,7 @@ false [if]
   else  (talk-to-the-leader)  then  ;
   \ Hablar con el jefe, si se puede.
 
-\ ----------------------------------------------
+\ ..............................
 \ Conversaciones con Ambrosio
 
 : talked-to-ambrosio  ( -- )  ambrosio~ conversations++  ;
@@ -1851,7 +1852,7 @@ create conversations-with-ambrosio
   \ XXX TODO -- esto debería comprobarse en `do-speak` o
   \ `do-speak-if-possible`.
 
-\ ----------------------------------------------
+\ ..............................
 \ Conversaciones sin éxito
 
 : talk-to-something  ( a -- )
@@ -1873,7 +1874,7 @@ create conversations-with-ambrosio
   talk-to-yourself$  that-is-nonsense.error  ;
   \ Hablar solo.
 
-\ ----------------------------------------------
+\ ..............................
 \ Acciones
 
 : do-speak-if-possible  ( a -- )
@@ -1908,6 +1909,13 @@ create conversations-with-ambrosio
   main-complement unknown-whom by-default (do-speak)
   ; is do-introduce-yourself
   \ Acción de presentarse a alguien.
+
+\ ----------------------------------------------
+\ Acción especial «y»
+
+:noname  ( -- )
+  action if  execute-action init-parser  then
+  reuse-previous-action on  ; is do-and
 
 \ ----------------------------------------------
 \ Guardar el juego

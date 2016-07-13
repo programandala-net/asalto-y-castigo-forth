@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607131445
+\ Last update: 201607131451
 
 \ Note: The comments of the code are in Spanish.
 
@@ -863,6 +863,11 @@ player-wordlist dup >order set-current
 
   \ XXX TODO:
   \ meter introducir insertar colar encerrar
+
+\ ----------------------------------------------
+\ Acciones especiales
+
+: y  ( -- )  do-and  ;
 
 \ ----------------------------------------------
 \ Nombres de objetos o personas
