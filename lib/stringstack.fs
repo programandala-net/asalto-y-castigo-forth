@@ -2,9 +2,9 @@
 
 \ download as http://forthfreak.net/stringstack
 
-warnings dup @ swap off
+\ warnings dup @ swap off
 false constant use_library
-warnings !
+\ warnings !
 
 \ strings.f   string words  (should be) ANS conform. compiles with vanilla gforth
 \ v0.10  20050107 Speuler  added -scan$, -skip$, searchn$ and dropn$
