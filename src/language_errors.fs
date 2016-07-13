@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607111405
+\ Last update: 201607131439
 
 \ Note: The comments of the code are in Spanish.
 
@@ -83,7 +83,7 @@ set-current
   \ acompañamiento para los errores lingüísticos.
 
 : error-comment-2-end-0$  ( -- ca len )
-  s{ s" de" s" otra" }s way$ s&?
+  s" de" s{ s" una" s" otra" }s& way$ s&
   s{ null$ s" un poco" s" algo" }s& s" más" s&
   s{ s" simple" s" sencilla" s" clara" }s&  ;
   \ Devuelve el final 0 de la variante 2 del mensaje de
