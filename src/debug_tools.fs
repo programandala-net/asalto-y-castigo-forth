@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607111342
+\ Last update: 201607142135
 
 \ Note: The comments of the code are in Spanish.
 
@@ -35,8 +35,6 @@ false value [debug-init] immediate
   \ ¿Depurar la inicialización?
 false value [debug-parsing] immediate
   \ ¿Depurar el analizador?
-false value [debug-parsing-result] immediate
-  \ ¿Mostrar el resultado del analizador?
 false value [debug-filing] immediate
   \ ¿Depurar operaciones de ficheros?
 false value [debug-do-exits] immediate
