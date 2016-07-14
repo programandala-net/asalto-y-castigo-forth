@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607120001
+\ Last update: 201607141651
 
 \ Note: The comments of the code are in Spanish.
 
@@ -25,7 +25,7 @@ require galope/xlowercase.fs  \ `xlowercase` for UTF-8
 
 set-current
 
-require flibustre/parser_variables.fs
+require parser_data.fs
 
 \ ==============================================================
 \ Entrada de comandos
@@ -63,11 +63,12 @@ svariable command-prompt
   then  ;
   \ Imprime un presto para la entrada de comandos.
 
-: (accept-input)  ( -- ca len )
+: ((accept-input))  ( -- ca len )
   input-color command dup /command accept
   str+strip 2dup xlowercase  ;
   \ Espera un comando del jugador y lo devuelve sin espacios laterales
   \ y en minúsculas en la cadena _ca len_.
+  \ XXX TODO -- renombrar
 
 : split-input  ( ca len -- ca' len' )
   /csv 1- 0 ?do  push$  loop  ;
@@ -77,7 +78,7 @@ svariable command-prompt
   \ len_.
 
 : (accept-input)  ( wid -- ca len )
-  1 set-order  .command-prompt (accept-input)  restore-wordlists
+  1 set-order  .command-prompt ((accept-input))  restore-wordlists
   split-input  ;
   \ Espera una entrada del jugador (cuyas palabras aceptadas están en
   \ la lista de palabras _wid_) y lo devuelve sin espacios laterales y
