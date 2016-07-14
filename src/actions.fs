@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607132127
+\ Last update: 201607141748
 
 \ Note: The comments of the code are in Spanish.
 
@@ -1898,11 +1898,11 @@ create conversations-with-ambrosio
 :noname  ( -- )
   [debug] [??] debug  \ XXX INFORMER
   ?no-main-complement
-  ?no-explicit-tool-complement
-  company-complement whom by-default
+  secondary-complement whom by-default
   dup you-speak-to (do-speak)
   ; is do-speak
   \ Acción de hablar.
+  \ XXX TODO -- revisar
 
 :noname  ( -- )
   main-complement unknown-whom by-default (do-speak)

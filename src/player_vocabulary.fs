@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607131451
+\ Last update: 201607141752
 
 \ Note: The comments of the code are in Spanish.
 
@@ -1144,40 +1144,15 @@ player-wordlist dup >order set-current
 \ ----------------------------------------------
 \ (Seudo)preposiciones
 
-: con  ( -- )  «con»-preposition# set-preposition  ;
-  \ Uso: Herramienta o compañía
-
-: usando  ( -- )  «usando»-preposition# set-preposition  ;
-  \ Uso: Herramienta
-
-' usando aliases: utilizando empleando mediante  ;aliases
-
-false [if]
-
-  \ XXX OLD
-  \ XXX TODO -- descartado, pendiente
-
-: a  ( -- )  «a»-preposition# set-preposition  ;
-  \ Uso: Destino de movimiento, objeto indirecto
+: a  ( -- )  secondary-complement# set-preposition  ;
+  \ Uso: Complemento secundario
 
 ' a aliases: al  ;aliases
 
-: de  ( -- )  «de»-preposition# set-preposition  ;
-  \ Uso: Origen de movimiento, propiedad
+: con  ( -- )  tool-complement# set-preposition  ;
+  \ Uso: Herramienta o compañía
 
-: hacia  ( -- )  «hacia»-preposition# set-preposition  ;
-  \ Uso: Destino de movimiento, destino de lanzamiento
-
-: contra  ( -- )  «contra»-preposition# set-preposition  ;
-  \ Uso: Destino de lanzamiento
-
-: para  ( -- )  «para»-preposition# set-preposition  ;
-  \ Uso: Destino de movimiento, destino de lanzamiento
-
-: por  ( -- )  «por»-preposition# set-preposition  ;
-  \ Uso: Destino de movimiento
-
-[then]
+' con aliases: usando utilizando empleando mediante  ;aliases
 
 \ ----------------------------------------------
 \ Términos ambiguos

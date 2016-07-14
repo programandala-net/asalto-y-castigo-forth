@@ -7,7 +7,7 @@
 \
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 \
-\ Last update: 201607112014
+\ Last update: 201607141834
 
 \ ==============================================================
 \ Credits
@@ -43,6 +43,9 @@ require galope/tilde-tilde.fs    \ improved `~~`
 
 require flibustre/wordlists.fs
 
+$6C constant parser-id
+  \ Identifier of the parser that will be used from Flibustre.
+
 include version.fs
 include debug_tools.fs
 
@@ -69,7 +72,7 @@ s" calculated_texts.fs" including
 s" lists.fs" including
 require flibustre/errors.fs
 require flibustre/error_conditions.fs
-s" parser.fs" including
+require flibustre/parser.6c.fs
 s" language_errors.fs" including
 s" config.fs" including
 s" plot.fs" including
