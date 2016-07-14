@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607132129
+\ Last update: 201607142020
 
 \ Note: The comments of the code are in Spanish.
 
@@ -55,7 +55,7 @@ set-current
   \ con una coma de separación; o bien la deja sin tocar.
 
 : in-the-sentence$  ( -- ca len )
-  s{ null$ s" en la frase" s" en el comando" s" en el texto" }s  ;
+  s{ null$ s" en la frase" s" en el comando" }s  ;
   \ Devuelve una variante de «en la frase» (o una cadena vacía).
 
 : error-comment-0$  ( -- ca len )
