@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607141748
+\ Last update: 201607142133
 
 \ Note: The comments of the code are in Spanish.
 
@@ -16,6 +16,7 @@ get-current forth-wordlist set-current
 \ Galope
 \ http://programandala.net/en.program.galope.html
 
+require galope/any-question.fs        \ `any?`
 require galope/bracket-false.fs       \ `[false]`
 require galope/choose.fs              \ `choose`
 require galope/plus-plus.fs           \ `++`
@@ -742,19 +743,49 @@ false [if]
   \ Hace aparecer los restos de la capa rota de forma aleatoria:
   \ en el escenario o en el inventario.
 
-: shatter-the-cloak  ( -- )
-  sword~ ?accessible
-  sword~ taken
+: take-sword-if-needed  ( -- )
+  sword~ is-not-hold? if  sword~ (do-take)  then  ;
+
+: shatter-the-cloak-with-the-sword  ( -- )
+  take-sword-if-needed
   using$ sword~ full-name s& comma+
   s" rasgas" s& cloak~ full-name s& period+ narrate
   cloak-pieces  cloak~ vanish  ;
-  \ Romper la capa.
-  \ XXX TODO -- gestionar la herramienta
+
+: objects-that-could-cut  ( -- a#1..a#n n )
+  arch~ cuirasse~ emerald~ flint~ idol~ key~
+  lock~ rocks~ stone~ table~ torch~  11  ;
+  \ Entities that could be used to cut something, not including the
+  \ sword.
+
+: could-cut?  ( a -- f )  objects-that-could-cut any?  ;
+  \ Could entity _a_ be used to cut something (without considering the
+  \ sword)?
+
+: shatter-the-cloak-with-a-useless-tool  ( a -- )
+  dup ?accessible useless-tool.error  ;
+
+: shatter-the-cloak-with-a-tool  ( a -- )
+  dup is-living-being? ?? nonsense.error
+  dup could-cut? ?? shatter-the-cloak-with-a-useless-tool
+  sword~ ?this-tool
+  sword~ ?accessible
+  shatter-the-cloak-with-the-sword  ;
+
+: shatter-the-cloak-without-a-explicit-tool  ( -- )
+  sword~ is-not-accessible? ?? not-by-hand.error
+  shatter-the-cloak-with-the-sword  ;
+
+: try-to-shatter-the-cloak  ( -- )
+  tool-complement ?dup
+  if    shatter-the-cloak-with-a-tool
+  else  shatter-the-cloak-without-a-explicit-tool  then  ;
+  \ Intenta romper la capa.
 
 : (do-break)  ( a -- )
   case
-    snake~ of  kill-the-snake     endof  \ XXX TMP
-    cloak~ of  shatter-the-cloak  endof
+    snake~ of  kill-the-snake            endof  \ XXX TMP
+    cloak~ of  try-to-shatter-the-cloak  endof
     do-not-worry.error
   endcase  ;
   \ Romper un ente.
@@ -782,9 +813,9 @@ false [if]
 
 : (do-hit)  ( a -- )
   case
-    snake~ of  kill-the-snake     endof
-    cloak~ of  shatter-the-cloak  endof
-    flint~ of  hit-the-flint      endof
+    snake~ of  kill-the-snake            endof
+    cloak~ of  try-to-shatter-the-cloak  endof
+    flint~ of  hit-the-flint             endof
     do-not-worry.error
   endcase  ;
   \ Golpear un ente.
