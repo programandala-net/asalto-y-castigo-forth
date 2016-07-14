@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607111407
+\ Last update: 201607142032
 
 \ Note: The comments of the code are in Spanish.
 
@@ -527,17 +527,6 @@ create 'articles
   \ Devuelve el nombre completo _ca len_ de un ente _a_,
   \ con un «artículo distante».
 
-: nonhuman-subjective-negative-name  ( a -- ca len )
-  negative-full-name 2>r
-  s{  2r> 2dup 2dup  \ Tres nombres repetidos con «artículo negativo»
-      s" eso" s" esa cosa" s" tal cosa"  \ Tres alternativas
-  }s  ;
-  \ Devuelve el nombre subjetivo (negativo) _ca len_ de un ente (no
-  \ humano) _a_, desde el punto de vista del protagonista.  Nota: En
-  \ este caso hay que usar `negative-full-name` antes de `s{` y pasar
-  \ la cadena mediante la pila de retorno; de otro modo `s{` y `}s` no
-  \ pueden calcular bien el crecimiento de la pila.
-
 : human-subjective-negative-name  ( a -- ca len )
   dup is-known? if  full-name  else  drop s" nadie"  then  ;
   \ Devuelve el nombre subjetivo (negativo) _ca len_ de un ente
@@ -545,8 +534,8 @@ create 'articles
 
 : subjective-negative-name  ( a -- ca len )
   dup is-human?
-  if  human-subjective-negative-name
-  else  nonhuman-subjective-negative-name  then  ;
+  if    human-subjective-negative-name
+  else  negative-full-name  then  ;
   \ Devuelve el nombre subjetivo (negativo) _ca len_ de un ente _a_,
   \ desde el punto de vista del protagonista.
 
