@@ -590,6 +590,13 @@ debido a la oscuridad".
 
 - Acción de quemar, prender.
 
+== Vocabulario
+
+.2016-07-14:
+
+Hacer que ciertas palabras no tengan efecto si el ente que representan
+no es conocido.
+
 == Textos
 
 En las descripciones, mencionar el objeto descrito, para que los
