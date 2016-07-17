@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607111924
+\ Last update: 201607171834
 
 \ Note: The comments of the code are in Spanish.
 
@@ -72,11 +72,9 @@ str-create print-str
 : »c+  ( c -- )  print-str str-append-char  ;
   \ Añade un carácter al final de la cadena dinámica `print-str`.
 
-: «»bl+?  ( u -- f )  0<> print-str str-length@ 0<> and  ;
-  \ ¿Se debe añadir un espacio al concatenar una cadena a la cadena
-  \ dinámica `print-str`?
-  \ u = Longitud de la cadena que se pretende
-  \     unir a la cadena dinámica `print-str`
+: «»bl+?  ( len -- f )  0<> print-str str-length@ 0<> and  ;
+  \ ¿Se debe añadir un espacio al concatenar una cadena de longitud
+  \ _len_ a la cadena dinámica `print-str`?
 
 : »&  ( ca len -- )  dup «»bl+? if  bl »c+  then  »+  ;
   \ Añade una cadena al final de la cadena dinámica `print-str`,
@@ -107,30 +105,28 @@ svariable scroll-prompt  \ Guardará el presto de pausa
   trm+erase-line  trm+restore-cursor  ;
   \ Imprime el presto de pausa, espera una tecla y borra el presto.
 
-: (scroll-prompt?)  ( u -- f )
+: (scroll-prompt?)  ( n -- f )
   dup 1+ #lines @ <>
   swap /scroll-prompt mod 0=  and  ;
-  \ ¿Se necesita imprimir un presto para la línea actual?  Se tienen
-  \ que cumplir dos condiciones.  1) ¿Es distinta de la última?; 2) ¿Y
-  \ el intervalo es correcto?.  _u_ es la línea actual del párrafo que
-  \ se está imprimiendo.
+  \ ¿Se necesita imprimir un presto para la línea actual _n_ del
+  \ párrafo que se está imprimiendo?  Se tienen que cumplir dos
+  \ condiciones.  1) ¿Es distinta de la última?; 2) ¿Y el intervalo es
+  \ correcto?.
   \
   \ XXX TODO factorizar para no tener que comentar las condiciones.
 
-: scroll-prompt?  ( u -- f )
+: scroll-prompt?  ( n -- f )
   scroll @ if  drop false  else  (scroll-prompt?)  then  ;
-  \ ¿Se necesita imprimir un presto para la línea actual?
-  \ u = Línea actual del párrafo que se está imprimiendo
-  \ Si el valor de `scroll` es «verdadero», se devuelve «falso»;
-  \ si no, se comprueban las otras condiciones.
-  \ ." L#" dup . ." /" #lines @ . \ XXX INFORMER
+  \ ¿Se necesita imprimir un presto para la línea actual _n_ del
+  \ párrafo que se está imprimiendo?  Si el valor de `scroll` es
+  \ «verdadero», se devuelve «falso»; si no, se comprueban las otras
+  \ condiciones.
 
-: .scroll-prompt?  ( u -- )  scroll-prompt? ?? .scroll-prompt  ;
-  \ Imprime un presto y espera la pulsación de una tecla, si
-  \ corresponde a la línea en curso.  _u_ es la línea actual del
-  \ párrafo que se está imprimiendo.
+: .scroll-prompt?  ( n -- )  scroll-prompt? ?? .scroll-prompt  ;
+  \ Si _n_ es la línea actual del párrafo que se está imprimiendo,
+  \ imprime un presto y espera la pulsación de una tecla.
   \
-  \ \ XXX TODO -- no se usa
+  \ XXX TODO -- no se usa
 
 \ ==============================================================
 \ Impresión de párrafos justificados
