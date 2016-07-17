@@ -1,11 +1,11 @@
-\ player_vocabulary.fs
+\ vocabulary.fs
 \
 \ This file is part of _Asalto y castigo_
 \ http://programandala.net/es.programa.asalto_y_castigo.forth.html
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607141942
+\ Last update: 201607171858
 
 \ Note: Most comments of the code are in Spanish.
 

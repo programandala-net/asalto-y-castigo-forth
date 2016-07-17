@@ -7,7 +7,7 @@
 \
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 \
-\ Last update: 201607141834
+\ Last update: 201607171857
 
 \ ==============================================================
 \ Credits
@@ -79,7 +79,7 @@ s" plot.fs" including
 s" entities.fs" including
 s" action_errors.fs" including
 s" actions.fs" including
-s" player_vocabulary.fs" including
+s" vocabulary.fs" including
 s" answers.fs" including
 s" the_end.fs" including
 s" about.fs" including
