@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606282036
+\ Last update: 201607171847
 
 \ Note: The comments of the code are in Spanish.
 
@@ -111,7 +111,7 @@
   ~~
   0= abort" parsing failed"
   ~~
-  used-prepositions ?
+  used-complements ?
   ~~  ;
 
 : bla$  ( -- ca len )
