@@ -7,7 +7,7 @@
 
 \ Autor: Marcos Cruz (programandala.net), 2011..2016
 
-\ Última modificación: 201607111055
+\ Última modificación: 201607172137
 
 \ ==============================================================
 
@@ -22,17 +22,6 @@
 \ Opciones: mujer o femenino, varón o masculino.
 
 varón
-
-\ --------------------------------------------------------------
-\ Intérprete de comandos
-\ --------------------------------------------------------------
-
-\ Si no se especifica (o no se reconoce) una acción en el
-\ comando, ¿repetir la del comando anterior?
-\
-\ Opciones: sí y no.
-
-sí repetir_la_última_acción
 
 \ --------------------------------------------------------------
 \ Mensajes de error
