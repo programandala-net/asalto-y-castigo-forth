@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607142032
+\ Last update: 201607182308
 
 \ Note: The comments of the code are in Spanish.
 
@@ -113,35 +113,10 @@ set-current
   \ ¿Un ente no es accesible para el protagonista?
 
 : can-be-looked-at?  ( a -- f )
-  [false] [if]
-    \ XXX OLD -- Primera versión
-    dup am-i-there?         \ ¿Es la localización del protagonista?
-    over is-direction? or   \ ¿O es un ente dirección?
-    over exits~ = or        \ ¿O es el ente "salidas"?
-    swap is-accessible? or  \ ¿O está accesible?
-  [then]
-  [false] [if]
-    \ XXX OLD -- Segunda versión, menos elegante pero más rápida y legible
-    { entity }
-    true case
-      entity am-i-there?    of  true  endof  \ ¿Es la localización del protagonista?
-      entity is-direction?  of  true  endof  \ ¿Es un ente dirección?
-      entity is-accessible? of  true  endof  \ ¿Está accesible?
-      entity exits~ =       of  true  endof  \ ¿Es el ente "salidas"?
-      false swap
-    endcase
-  [then]
-  [true] [if]
-    \ XXX NEW -- Tercera versión, más rápida y compacta
-    dup am-i-there?    ?dup if  nip exit  then
-      \ ¿Es la localización del protagonista?
-    dup is-direction?  ?dup if  nip exit  then
-      \ ¿Es un ente dirección?
-    dup exits~ =       ?dup if  nip exit  then
-      \ ¿Es el ente "salidas"?
-    is-accessible?
-      \ ¿Está accesible?
-  [then]  ;
+  dup am-i-there?    ?dup if  nip exit  then
+  dup is-direction?  ?dup if  nip exit  then
+  dup exits~ =       ?dup if  nip exit  then
+  is-accessible?  ;
   \ ¿El ente puede ser mirado?
 
 : may-be-climbed?  ( a -- f )
@@ -381,13 +356,7 @@ create 'articles
   \ correspondiente al género y número de un ente.
 
 : plural-ending  ( a -- ca len )
-  [false] [if]
-    \ XXX OLD -- Método 1, «estilo BASIC»:
-    has-plural-name? if  s" s"  else  null$  then
-  [else]
-    \ XXX NEW -- Método 2, sin estructuras condicionales, «estilo Forth»:
-    s" s" rot has-plural-name? and
-  [then]  ;
+  s" s" rot has-plural-name? and  ;
   \ Devuelve la terminación adecuada del plural
   \ para el nombre de un ente.
 
@@ -396,18 +365,7 @@ create 'articles
   \ para el nombre de un ente.
 
 : gender-ending  ( a -- ca len )
-  [false] [if]
-    \ Método 1, «estilo BASIC»
-    has-feminine-name? if  s" a"  else  s" o"  then
-  [else]
-    [false] [if]
-      \ Método 2, sin estructuras condicionales, «estilo Forth»
-      s" oa" drop swap has-feminine-name? abs + 1
-    [else]
-      \ Método 3, similar, más directo
-      c" oa" swap has-feminine-name? abs + 1+ 1
-    [then]
-  [then]  ;
+  c" oa" swap has-feminine-name? abs 1+ chars + 1  ;
   \ Devuelve la terminación adecuada del género gramatical
   \ para el nombre de un ente.
 

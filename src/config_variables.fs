@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607112351
+\ Last update: 201607182304
 
 \ Note: The comments of the code are in Spanish.
 
@@ -62,13 +62,7 @@ variable cr-after-command-prompt?
 \ Textos calculados relacionados
 
 : player-gender-ending$  ( -- ca len )
-  [false] [if]
-    \ Método 1, «estilo BASIC»:
-    woman-player? @ if  s" a"  else  s" o"  then
-  [else]
-    \ Método 2, sin estructuras condicionales, «estilo Forth»:
-    c" oa" woman-player? @ abs + 1+ 1
-  [then]  ;
+  c" oa" woman-player? @ abs 1+ chars + 1  ;
   \ Devuelve en _ca len_ la terminación «a» u «o» según el sexo del jugador.
 
 : player-gender-ending$+  ( ca1 len1 -- ca2 len2 )
