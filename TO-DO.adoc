@@ -1,7 +1,12 @@
 = Tareas pendientes de Asalto y castigo
-:revdate: 2016-07-14
+:revdate: 2016-07-17
 
 == Programación
+
+2016-07-17:
+
+Error: Cuando se da una orden vacía separada por comas, se muestra el
+presto de narración.
 
 2016-07-14:
 

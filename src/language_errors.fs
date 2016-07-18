@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607142020
+\ Last update: 201607172110
 
 \ Note: The comments of the code are in Spanish.
 
@@ -141,7 +141,7 @@ set-current
   there-is$ s" más de un verbo" s&
   there-are$ s" al menos dos verbos" s&
   }s  language-error  ; is too-many-actions.error
-  \ Informa de que se ha producido un error porque hay dos verbos en
+  \ Error de que se ha producido un error porque hay dos verbos en
   \ el comando.
 
 :noname  ( -- )
@@ -153,49 +153,55 @@ set-current
   there-are$
   s" al menos dos complementos principales" s&
   }s  language-error  ; is too-many-complements.error
-  \ Informa de que se ha producido un error
+  \ Error de que se ha producido un error
   \ porque hay dos complementos principales en el comando.
 
 :noname  ( -- )
   there-is-no$ s" verbo" s&
   language-error  ; is no-verb.error
-  \ Informa de que se ha producido un error por falta de verbo en el comando.
+  \ Error de que se ha producido un error por falta de verbo en el comando.
 
 :noname  ( -- )
   there-is-no$ s" complemento principal" s&
   language-error  ; is no-main-complement.error
-  \ Informa de que se ha producido un error por falta de complemento
+  \ Error de que se ha producido un error por falta de complemento
   \ principal en el comando.
 
 :noname  ( -- )
   there-is$ s" un complemento principal" s&
   s" pero el verbo no puede llevarlo" s&
   language-error  ; is unexpected-main-complement.error
-  \ Informa de que se ha producido un error por la presencia de
+  \ Error de que se ha producido un error por la presencia de
   \ complemento principal en el comando.
 
 :noname  ( -- )
   there-is$ s" un complemento principal no permitido con esta acción" s&
   language-error  ; is not-allowed-main-complement.error
-  \ Informa de que se ha producido un error por la presencia de un
+  \ Error de que se ha producido un error por la presencia de un
   \ complemento principal en el comando que no está permitido.
 
 :noname  ( -- )
   there-is$ s" un complemento instrumental no permitido con esta acción" s&
   language-error  ; is not-allowed-tool-complement.error
-  \ Informa de que se ha producido un error por la presencia de un
+  \ Error de que se ha producido un error por la presencia de un
   \ complemento instrumental en el comando que no está permitido.
 
 :noname  ( -- )
   there-is$ s" un complemento (seudo)preposicional sin completar" s&
   language-error  ; is unresolved-preposition.error
-  \ Informa de que se ha producido un error
+  \ Error de que se ha producido un error
   \ porque un complemento (seudo)preposicional quedó incompleto.
 
 :noname  ( -- )
   there-is$ s" una (seudo)preposición repetida" s&
   language-error  ; is repeated-preposition.error
-  \ Informa de que se ha producido un error por
+  \ Error de que se ha producido un error por
   \ la repetición de una (seudo)preposición.
+
+:noname  ( -- )
+  there-is$ s" una combinación de complementos no permitada" s&
+  language-error  ; is not-allowed-complements.error
+  \ Error de que se ha producido un error por
+  \ una combinación no permitida de complementos.
 
 \ vim:filetype=gforth:fileencoding=utf-8
