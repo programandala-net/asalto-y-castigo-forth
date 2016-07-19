@@ -7,7 +7,7 @@
 \
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 \
-\ Last update: 201607191748
+\ Last update: 201607191848
 
 \ ==============================================================
 \ Credits
@@ -63,7 +63,7 @@ s" key_input.fs" including
 s" printing.fs" including
 s" command_input.fs" including
 require flibustre/entity.fs
-s" data_structure.fs" including
+require flibustre/entity_structure.fs
 s" data_basic_interface.fs" including
 s" entity_identifiers.fs" including
 s" data_advanced_interface.fs" including
