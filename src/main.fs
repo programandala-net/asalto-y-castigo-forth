@@ -64,7 +64,7 @@ s" printing.fs" including
 s" command_input.fs" including
 require flibustre/entity.fs
 require flibustre/entity_structure.fs
-s" data_basic_interface.fs" including
+require flibustre/entity_structure_interface.fs
 s" entity_identifiers.fs" including
 s" data_advanced_interface.fs" including
 s" data_tools.fs" including

@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607132143
+\ Last update: 201607191925
 
 \ Note: The comments of the code are in Spanish.
 
@@ -508,14 +508,14 @@ thread~ :init  ( -- )
   s" hilo" self~ ms-name!  ;
 
 : describe-torch  ( -- )
-  s" Está" torch~ is-lit?
+  s" Está" torch~ is-lighted?
   if  s" encendida."  else  s" apagada."  then  s& paragraph  ;
 
 torch~ :init  ( -- )
   ['] describe-torch self~ be-describer
   s" antorcha" self~ fs-name!
-  self~ be-light
-  self~ be-not-lit  ;
+  self~ be-light-source
+  self~ be-not-lighted  ;
 
 : describe-waterfall  ( -- )
   s" No ves nada por la cortina de agua."

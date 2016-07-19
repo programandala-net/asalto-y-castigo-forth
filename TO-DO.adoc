@@ -1,7 +1,20 @@
 = Tareas pendientes de Asalto y castigo
-:revdate: 2016-07-17
+:revdate: 2016-07-19
 
 == Programación
+
+2016-07-19:
+
+Error: cuando se usan tres complementos separados por "y", el segundo
+da error de que hay dos complementos principales.
+
+2016-07-19:
+
+Mover `protagonist~` a Flibustre.
+
+2016-07-19:
+
+Verbo "apagar".
 
 2016-07-17:
 

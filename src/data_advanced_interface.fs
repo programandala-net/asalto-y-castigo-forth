@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607182308
+\ Last update: 201607191924
 
 \ Note: The comments of the code are in Spanish.
 
@@ -33,9 +33,6 @@ set-current
 
 : taken  ( a -- )  protagonist~ swap be-there  ;
   \ Hace que el protagonista sea la localización de un ente _a_.
-
-: was-there  ( a1 a2 -- )  ~previous-location !  ;
-  \ Hace que el ente _a1_ sea la localización previa del ente _a2_.
 
 : my-location  ( -- a )  protagonist~ location  ;
   \ Devuelve la localización del protagonista.
@@ -146,7 +143,7 @@ set-current
   \ programa, en relación a los refugiados.
 
 : no-torch?  ( -- f )
-  torch~ is-not-accessible?  torch~ is-not-lit?  or  ;
+  torch~ is-not-accessible?  torch~ is-not-lighted?  or  ;
   \ ¿La antorcha no está accesible y encendida?
 
 \ ----------------------------------------------

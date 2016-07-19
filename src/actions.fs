@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607142133
+\ Last update: 201607191926
 
 \ Note: The comments of the code are in Spanish.
 
@@ -801,7 +801,7 @@ false [if]
 : lit-the-torch  ( -- )
   s" Poderosas chispas salen del choque entre espada y pedernal,"
   s" encendiendo la antorcha." s& narrate
-  torch~ be-lit  ;
+  torch~ be-lighted  ;
   \ XXX TODO -- variar el texto
 
 : hit-the-flint  ( -- )
