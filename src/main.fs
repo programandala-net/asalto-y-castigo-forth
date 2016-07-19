@@ -7,7 +7,7 @@
 \
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 \
-\ Last update: 201607191631
+\ Last update: 201607191748
 
 \ ==============================================================
 \ Credits
@@ -92,7 +92,7 @@ s" intro.fs" including
 : init-session  ( -- )  restore-wordlists  init-screen  ;
   \ Initialize the session.
 
-: init-parser/game  ( -- )  erase-last-command-elements  ;
+: init-parser/game  ( -- )  erase-last-complements  ;
   \ Initialize the parser before every game.
   \ XXX TODO -- move to other file
 
@@ -108,6 +108,8 @@ s" intro.fs" including
   \ snake~ be-here
   \ ambrosio~ be-here
   \ key~ be-hold
+  log~ be-hold
+  idol~ be-hold
   flint~ be-hold
   torch~ be-hold
   ;
@@ -118,7 +120,7 @@ s" intro.fs" including
   randomize
   init-parser/game init-entities init-plot
   get-config new-page
-  \ init-game-for-debugging exit  \ XXX TMP -- for debugging
+  init-game-for-debugging exit  \ XXX TMP -- for debugging
   about cr intro  \ XXX TMP -- commented out for debugging
   location-01~ enter-location  ;
   \ Initialization needed before every game.

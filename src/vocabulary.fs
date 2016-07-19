@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607191631
+\ Last update: 201607191753
 
 \ Note: Most comments of the code are in Spanish.
 
@@ -165,29 +165,29 @@ player-wordlist dup >order set-current
 \ : esto  last-complement @ set-complement  ;
 \ : aquello  last-but-one-complement @ set-complement  ;
 
-: éste  ( -- )  last-complement >masculine >singular @ set-complement  ;
+: éste  ( -- )  last-complement >masculine-singular @ set-complement  ;
 
 ' éste aliases: ése  ;aliases
 
-: ésta  ( -- )  last-complement >feminine >singular @ set-complement  ;
+: ésta  ( -- )  last-complement >feminine-singular @ set-complement  ;
 
 ' ésta aliases: ésa  ;aliases
 
-: éstos  ( -- )  last-complement >masculine >plural @ set-complement  ;
+: éstos  ( -- )  last-complement >masculine-plural @ set-complement  ;
 
 ' éstos aliases: ésos  ;aliases
 
-: éstas  ( -- )  last-complement >feminine >plural @ set-complement  ;
+: éstas  ( -- )  last-complement >feminine-plural @ set-complement  ;
 
 ' éstas aliases: ésas  ;aliases
 
-: aquél  ( -- )  last-but-one-complement >masculine >singular @ set-complement  ;
+: aquél  ( -- )  last-but-one-complement >masculine-singular @ set-complement  ;
 
-: aquélla  ( -- )  last-but-one-complement >feminine >singular @ set-complement  ;
+: aquélla  ( -- )  last-but-one-complement >feminine-singular @ set-complement  ;
 
-: aquéllos  ( -- )  last-but-one-complement >masculine >plural @ set-complement  ;
+: aquéllos  ( -- )  last-but-one-complement >masculine-plural @ set-complement  ;
 
-: aquéllas  ( -- )  last-but-one-complement >feminine >plural @ set-complement  ;
+: aquéllas  ( -- )  last-but-one-complement >feminine-plural @ set-complement  ;
 
 \ ----------------------------------------------
 \ Verbos
@@ -264,7 +264,7 @@ player-wordlist dup >order set-current
   recogerlo recógelo recogedlo recójolo recójalo
   ;aliases
 
-: cogerla  ( -- )  coger éste  ;
+: cogerla  ( -- )  coger ésta  ;
 
 ' cogerla aliases:
   cógela cogedla cójola cójala
@@ -497,21 +497,21 @@ player-wordlist dup >order set-current
   construirlo constrúyelo construidlo constrúyolo constrúyalo
   ;aliases
 
-: fabricarla  ( -- )  fabricar éste  ;
+: fabricarla  ( -- )  fabricar ésta  ;
 
 ' fabricarla aliases:
   fabrícala fabricadla fabrícola fabríquela
   construirla constrúyela construidla constrúyola constrúyala
   ;aliases
 
-: fabricarlos  ( -- )  fabricar éste  ;
+: fabricarlos  ( -- )  fabricar éstos  ;
 
 ' fabricarlos aliases:
   fabrícalos fabricadlos fabrícolos fabríquelos
   construirlos constrúyelos construidlos constrúyolos constrúyalos
   ;aliases
 
-: fabricarlas  ( -- )  fabricar éste  ;
+: fabricarlas  ( -- )  fabricar éstas  ;
 
 ' fabricarlas aliases:
   fabrícalas fabricadlas fabrícolas fabríquelas
@@ -927,8 +927,10 @@ player-wordlist dup >order set-current
 : escalar  ['] do-climb set-action  ;
 
 ' escalar aliases:  escala escalo escale  ;aliases
+  \ XXX TODO
 
 ' escalar aliases:  trepar trepa trepo trepe  ;aliases
+  \ XXX TODO
 
 : hablar  ['] do-speak set-action  ;
   \ XXX TODO -- Crear nuevas palabras según la preposición que necesiten.
