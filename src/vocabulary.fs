@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607171858
+\ Last update: 201607191631
 
 \ Note: Most comments of the code are in Spanish.
 
@@ -23,6 +23,8 @@ require galope/question-question.fs   \ `??`
 require galope/system-colors.fs       \ `system-colors`
 
 set-current
+
+require flibustre/last-complements.es.fs
 
 \ ==============================================================
 \ Resolución de entes ambiguos

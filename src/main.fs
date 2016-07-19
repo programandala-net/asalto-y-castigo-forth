@@ -7,7 +7,7 @@
 \
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 \
-\ Last update: 201607171857
+\ Last update: 201607191631
 
 \ ==============================================================
 \ Credits
@@ -73,6 +73,7 @@ s" lists.fs" including
 require flibustre/errors.fs
 require flibustre/error_conditions.fs
 require flibustre/parser.6c.fs
+require flibustre/last-complements.es.fs
 s" language_errors.fs" including
 s" config.fs" including
 s" plot.fs" including
