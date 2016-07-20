@@ -7,7 +7,7 @@
 \
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 \
-\ Last update: 201607191848
+\ Last update: 201607202109
 
 \ ==============================================================
 \ Credits
@@ -31,11 +31,35 @@ only forth definitions
 
 require galope/randomize.fs  \ `randomize`
 
+false [if]
+
+  \ XXX OLD -- deprecated
+
 require galope/sb.fs  \ Circular string buffer
 ' bs+ alias s+
 ' bs& alias s&
 ' bs" alias s" immediate
 2048 dictionary_sb
+
+[else]
+
+  \ XXX NEW --
+
+require galope/stringer.fs  \ Circular string buffer
+require galope/s-s-plus.fs  \ `ss+`
+
+' ss+ alias s+
+  \ Replace Gforth's `s+`. This must be done before loading `txt+`, to
+  \ make sure it uses `ss+`.
+
+require galope/txt-plus.fs  \ `txt+`
+
+2048 create-stringer
+
+' ss+ alias bs+  ' txt+ dup alias s& alias bs&
+  \ XXX TMP -- backward compatibility with the old string buffer
+
+[then]
 
 require galope/tilde-tilde.fs    \ improved `~~`
 

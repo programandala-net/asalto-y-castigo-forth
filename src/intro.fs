@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607111405
+\ Last update: 201607202048
 
 \ Note: The comments of the code are in Spanish.
 
@@ -29,21 +29,21 @@ set-current
 : intro-0  ( -- )
   s{
   s{ s" El " s" La luz del" }s sun$ s&
-    s{ s" despunta de entre" s" penetra en" s" atraviesa" s" corta" }s&
+    s{ s" despunta de entre" s" penetra en" s" atraviesa" s" corta" }s bs&
   s" Los rayos del" sun$ s&
-    s{ s" despuntan de entre" s" penetran en" s" atraviesan" s" cortan" }s&
+    s{ s" despuntan de entre" s" penetran en" s" atraviesan" s" cortan" }s bs&
   }s
-  s" la" s& s" densa" s?& s" niebla," s&
-  s" haciendo humear los" s& s" pobres" s?& s" tejados de paja." s&
+  s" la" s& s" densa" s? bs& s" niebla," s&
+  s" haciendo humear los" s& s" pobres" s? bs& s" tejados de paja." s&
   narrate  narration-break  ;
   \ Muestra la introducción al juego (parte 0).
 
 : intro-1  ( -- )
   s" Piensas en"
   s{ s" el encargo de"
-  s" la" s{ s" tarea" s" misión" }s& s" encomendada por" s&
-  s" la orden dada por" s" las órdenes de" }s&
-  s{ s" Uther Pendragon" s" , tu rey" s?+ s" tu rey" }s& \ XXX TMP
+  s" la" s{ s" tarea" s" misión" }s bs& s" encomendada por" s&
+  s" la orden dada por" s" las órdenes de" }s bs&
+  s{ s" Uther Pendragon" s" , tu rey" s? bs+ s" tu rey" }s bs& \ XXX TMP
   s" ..." s+
   narrate  narration-break  ;
   \ Muestra la introducción al juego (parte 1).
@@ -51,30 +51,30 @@ set-current
 : intro-2  ( -- )
   s{ s" Atacar" s" Arrasar" s" Destruir" }s s" una" s&
   s" aldea" s{ s" tranquila" s" pacífica" }s rnd2swap s& s&
-  s" , aunque" s+ s{ s" se trate de una" s" sea una" s" esté" }s&
-  s{ s" llena de" s" habitada por" s" repleta de" }s&
-  s" sajones, no te" s&{ s" llena" s" colma" }s&
+  s" , aunque" s+ s{ s" se trate de una" s" sea una" s" esté" }s bs&
+  s{ s" llena de" s" habitada por" s" repleta de" }s bs&
+  s" sajones, no te" bs& s{ s" llena" s" colma" }s bs&
   s" de orgullo." s&
   narrate  narration-break  ;
   \ Muestra la introducción al juego (parte 2).
 
 : intro-3  ( -- )
   ^your-soldiers$ s{
-    s" se" s{ s" lanzan" s" arrojan" }s& s" sobre" s&
-    s" se" s{ s" amparan" s" apoderan" }s& s" de" s&
+    s" se" s{ s" lanzan" s" arrojan" }s bs& s" sobre" s&
+    s" se" s{ s" amparan" s" apoderan" }s bs& s" de" s&
     s{ s" rodean" s" cercan" }s
-  }s& s" la aldea y la" s&
-  s{ s" destruyen." s" arrasan." }s&
-  s" No hubo" s&{
+  }s bs& s" la aldea y la" s&
+  s{ s" destruyen." s" arrasan." }s bs&
+  s" No hubo" bs& s{
     s" tropas enemigas"
     s" ejército enemigo"
     s" guerreros enemigos"
-  }s&
+  }s bs&
   s{
-    s"  ni honor" s" alguno" s?&
-    s" , como tampoco honor" s" alguno" s?& comma+
-  }s+
-  s" en" s& s{ s" la batalla" s" el combate" s" la lucha" s" la pelea" }s& period+
+    s"  ni honor" s" alguno" s? bs&
+    s" , como tampoco honor" s" alguno" s? bs& comma+
+  }s bs+
+  s" en" s& s{ s" la batalla" s" el combate" s" la lucha" s" la pelea" }s bs& period+
   narrate  scene-break  ;
   \ Muestra la introducción al juego (parte 3).
 
@@ -82,12 +82,12 @@ set-current
   sire,$ s{
   s" el asalto" s" el combate" s" la batalla"
   s" la lucha" s" todo"
-  }s& s" ha" s&{ s" terminado" s" concluido" }s&
+  }s bs& s" ha" bs& s{ s" terminado" s" concluido" }s bs&
   period+ speak  ;
   \ Muestra la introducción al juego (parte 4).
 
 : needed-orders$  ( -- ca len )
-  s" órdenes" s{ null$ s" necesarias" s" pertinentes" }s&  ;
+  s" órdenes" s{ null$ s" necesarias" s" pertinentes" }s bs&  ;
   \ Devuelve una variante de «órdenes necesarias».
 
 : intro-5  ( -- )
@@ -95,7 +95,7 @@ set-current
   s" ordenas"
   s" das la orden de"
   s" das las" needed-orders$ s& s" para" s&
-  }s& to-go-back$ s& s" a casa." s&
+  }s bs& to-go-back$ s& s" a casa." s&
   narrate  narration-break  ;
   \ Muestra la introducción al juego (parte 5).
 

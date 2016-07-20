@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607111350
+\ Last update: 201607202045
 
 \ Note: The comments of the code are in Spanish.
 
@@ -79,7 +79,7 @@ is cannot-be-seen.error
   s" eso"
   s" semejante cosa"
   s" tal cosa"
-  s" una cosa así" }s&  ;
+  s" una cosa así" }s bs&  ;
   \ Devuelve una variante de «hacer eso».
 
 : is-impossible$  ( -- ca len )
@@ -228,15 +228,15 @@ is dangerous.error
 : no-reason-for$  ( -- ca len )
   s" No hay" s{
     s" nada que justifique"
-    s{  s" necesidad" s" alguna" s?&
+    s{  s" necesidad" s" alguna" s? bs&
         s" ninguna necesidad"
     }s s" de" s&
     s{  s" ninguna razón"
         s" ningún motivo"
-        s" motivo" s" alguno" s?&
-        s" razón" s" alguna" s?&
+        s" motivo" s" alguno" s? bs&
+        s" razón" s" alguna" s? bs&
     }s s" para" s&
-  }s&  ;
+  }s bs&  ;
   \ Devuelve una variante de «no hay motivo para».
   \ XXX TODO -- quitar las variantes que no sean adecuadas a todos los casos
   \ XXX TODO -- añadir «no es menester/necesario»
@@ -263,13 +263,13 @@ is no-reason.error
   s" Seguro que hay"
   s" Sin duda hay"
   }s
-  s{ s" cosas" s" tareas" s" asuntos" s" cuestiones" }s&
+  s{ s" cosas" s" tareas" s" asuntos" s" cuestiones" }s bs&
   s" más" s&
-  s{ s" importantes" s" urgentes" s" útiles" }s&
+  s{ s" importantes" s" urgentes" s" útiles" }s bs&
   s{
   null$ s" a que prestar atención" s" de que ocuparse"
   s" para ocuparse" s" para prestarles atención"
-  }s&  ;
+  }s bs&  ;
   \ Primera versión posible del mensaje de `do-not-worry`.
 
 : (do-not-worry-1)$  ( -- a u)
@@ -283,7 +283,7 @@ is no-reason.error
   \ s" parece necesario"
   s" tiene importancia"
   s" tiene utilidad"
-  }s&  ;
+  }s bs&  ;
   \ Segunda versión posible del mensaje de `do-not-worry`.
 
 :noname  ( -- )
@@ -308,9 +308,9 @@ is unnecessary-tool-for-that.error
   s" No" s{ s" te" s? s" hace falta" s&
   s" necesitas" s" se necesita"
   s" precisas" s" se precisa"
-  s" hay necesidad de" s{ s" usar" s" emplear" s" utilizar" }s?&
-  }s&  2swap s&
-  s{ s" para nada" s" para eso" }s?&  period+ action-error  ;
+  s" hay necesidad de" s{ s" usar" s" emplear" s" utilizar" }s s? bs&
+  }s bs&  2swap s&
+  s{ s" para nada" s" para eso" }s s? bs&  period+ action-error  ;
   \ Informa de que un ente _a_ es innecesario como herramienta
   \ para ejecutar una acción sin especificar.
   \
@@ -396,16 +396,16 @@ is is-not-hold.error
     s" no" possible-to-do$ s&
     impossible-to-do$
     can-not-be-done$
-  }s&
+  }s bs&
   only-by-hand$ s& period+ ^uppercase  ;
   \ Devuelve la primera versión del mensaje de `not-by-hand.error`.
 
 : some-tool$  ( -- ca len )
   s{
   s{ s" la" s" alguna" s" una" }s s" herramienta" s&
-  s{ s" adecuada" s" apropiada" }s&
+  s{ s" adecuada" s" apropiada" }s bs&
   s{ s" el" s" algún" s" un" }s s" instrumento" s&
-  s{ s" adecuado" s" apropiado" }s&
+  s{ s" adecuado" s" apropiado" }s bs&
   }s  ;
 
 : not-by-hand-1$  ( -- ca len )
@@ -415,8 +415,8 @@ is is-not-hold.error
     s{
       s{ s" será" s" sería" s" es" }s s" menester" s&
       s{ s" habrá" s" habría" s" hay" }s s" que" s&
-    }s{ s" usar" s" utilizar" s" emplear" }s&
-  }s& some-tool$ s& period+ ^uppercase  ;
+    }s s{ s" usar" s" utilizar" s" emplear" }s bs&
+  }s bs& some-tool$ s& period+ ^uppercase  ;
   \ Devuelve la segunda versión del mensaje de `not-by-hand.error`.
 
 : not-by-hand$  ( -- ca len )

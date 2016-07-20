@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607111404
+\ Last update: 201607202047
 
 \ Note: The comments of the code are in Spanish.
 
@@ -75,7 +75,7 @@ variable #answer
   \ Muestra error: se dijo «sí» tras «no».
 
 : two-options-only$  ( -- ca len )
-  ^only$ s{ s" hay" s" tienes" }s&
+  ^only$ s{ s" hay" s" tienes" }s bs&
   s" dos" s& s" respuestas" s" posibles" rnd2swap s& s& colon+
   s" «sí»" s" «no»" both& s" (o sus iniciales)" s& period+  ;
   \ Devuelve un mensaje que informa de las opciones disponibles.
@@ -86,10 +86,10 @@ variable #answer
 : wrong-yes$  ( -- ca len )
   s{ s" ¿Si qué...?" s" ¿Si...?" s" ¿Cómo «si»?" s" ¿Cómo que «si»?" }s
   s" No" s& s{
-  s{ s" hay" s" puedes poner" }s{ s" condiciones" s" condición alguna" }s&
-  s{ s" hay" s" tienes" }s s" nada que negociar" s& }s&
-  s{ s" aquí" s" en esto" s" en esta cuestión" }s& period+
-  \ two-options-only$ s?&  \ XXX TODO
+  s{ s" hay" s" puedes poner" }s s{ s" condiciones" s" condición alguna" }s bs&
+  s{ s" hay" s" tienes" }s s" nada que negociar" s& }s bs&
+  s{ s" aquí" s" en esto" s" en esta cuestión" }s bs& period+
+  \ two-options-only$ s? bs&  \ XXX TODO
   ;
   \ Devuelve el mensaje usado para advertir de que se ha escrito mal «sí».
 

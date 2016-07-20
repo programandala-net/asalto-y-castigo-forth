@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607191753
+\ Last update: 201607202101
 
 \ Note: Most comments of the code are in Spanish.
 
@@ -20,6 +20,7 @@ require galope/bracket-false.fs       \ `[false]`
 require galope/aliases-colon.fs       \ `aliases:`
 require galope/between.fs             \ `between`
 require galope/question-question.fs   \ `??`
+require galope/stringer.fs            \ Circular string buffer
 require galope/system-colors.fs       \ `system-colors`
 
 set-current
@@ -1336,7 +1337,7 @@ player-wordlist dup >order set-current
 
 : #graba  ( "name" -- )
   [debug-parsing] [??] ~~
-  parse-name >sb
+  parse-name >stringer
   [debug-parsing] [??] ~~
   ['] save-the-game set-action
   [debug-parsing] [??] ~~
@@ -1347,7 +1348,7 @@ player-wordlist dup >order set-current
   [debug-parsing] [??] ~~
   parse-name
   [debug-parsing] [??] ~~
-  >sb
+  >stringer
   [debug-parsing] [??] ~~
   ['] load-the-game set-action
   [debug-parsing] [??] ~~

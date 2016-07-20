@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607191926
+\ Last update: 201607202059
 
 \ Note: The comments of the code are in Spanish.
 
@@ -24,6 +24,7 @@ require galope/question-keep.fs       \ `?keep`
 require galope/question-question.fs   \ `??`
 require galope/random_strings.fs
 require galope/shuffle.fs             \ `shuffle`
+require galope/stringer.fs            \ Circular string buffer
 require galope/svariable.fs           \ `svariable`
 require galope/to-yyyymmddhhmmss.fs   \ `>yyyymmddhhss`
 require galope/two-choose.fs          \ `2choose`
@@ -162,7 +163,7 @@ variable #free-exits
 
 : no-exit$  ( -- ca len )
   s" No hay"
-  s{ s" salidas" s" salida" s" ninguna salida" }s&  ;
+  s{ s" salidas" s" salida" s" ninguna salida" }s bs&  ;
   \ Devuelve mensaje usado cuando no hay salidas que listar.
 
 : go-out$  ( -- ca len )
@@ -173,7 +174,7 @@ variable #free-exits
 
 : one-exit-only$  ( -- ca len )
   s{
-  s" La única salida" possible1$ s& s" es" s& s" hacia" s?&
+  s" La única salida" possible1$ s& s" es" s& s" hacia" s? bs&
   ^only$ s" hay salida" s& possible1$ s& s" hacia" s&
   ^only$ s" es posible" s& go-out-to&
   ^only$ s" se puede" s& go-out-to&
@@ -406,7 +407,7 @@ false [if]
 
 : cannot-take-a-human  ( -- )
   no-reason-for$
-  s{ s" molestar" s" incomodar" s" ofender" }s&
+  s{ s" molestar" s" incomodar" s" ofender" }s bs&
   main-complement direct-pronoun s+ period+ narrate ;
 
 :noname  ( -- )
@@ -433,7 +434,7 @@ false [if]
   if    silently-do-take-off
         you-take-off-main-complement$ s" y" s&
         s{ s" te desprendes de" object personal-pronoun s&
-        object direct-pronoun s" dejas" s& }s& period+
+        object direct-pronoun s" dejas" s& }s bs& period+
   else  object >do-drop-done$
   then  ( ca len )  object be-here  well-done-this  ;
   \ Deja un ente _a_ que está en inventario.
@@ -478,8 +479,8 @@ false [if]
 
 : .the-door-closes  ( -- )
   s" La puerta"
-  s{ s" rechina" s" emite un chirrido" }s&
-  s{ s" mientras la cierras" s" al cerrarse" }s&
+  s{ s" rechina" s" emite un chirrido" }s bs&
+  s{ s" mientras la cierras" s" al cerrarse" }s bs&
   period+ narrate  ;
   \ Muestra el mensaje de cierre de la puerta.
 
@@ -574,29 +575,29 @@ false [if]
   s{
   s{ s" Tengo" s" Ten" }s s" por seguro" s&
   s{ s" Estoy" s" Estate" }s s" seguro de" s&
-  s{ s" Tengo" s" Ten" }s s" la" s& s{ s" seguridad" s" certeza" }s& s" de" s&
-  s" No" s{ s" me cabe" s" te quepa" }s& s" duda de" s&
-  s" No" s{ s" dudo" s" dudes" }s&
+  s{ s" Tengo" s" Ten" }s s" la" s& s{ s" seguridad" s" certeza" }s bs& s" de" s&
+  s" No" s{ s" me cabe" s" te quepa" }s bs& s" duda de" s&
+  s" No" s{ s" dudo" s" dudes" }s bs&
   }s s" que" s&
   s{
-  s" nos volveremos a" s{ s" encontrar" s" ver" }s& again$ s?&
-  s" volveremos a" s{ s" encontrarnos" s" vernos" }s& again$ s?&
-  s" nos" s{ s" encontraremos" s" veremos" }s& again$ s&
-  s" nuestros caminos" s{ s" volverán a cruzarse" s" se cruzarán" }s& again$ s&
-  }s& period+ speak
+  s" nos volveremos a" s{ s" encontrar" s" ver" }s bs& again$ s? bs&
+  s" volveremos a" s{ s" encontrarnos" s" vernos" }s bs& again$ s? bs&
+  s" nos" s{ s" encontraremos" s" veremos" }s bs& again$ s&
+  s" nuestros caminos" s{ s" volverán a cruzarse" s" se cruzarán" }s bs& again$ s&
+  }s bs& period+ speak
   ^and|but$ s" , antes de que puedas" s+
-  s{ s" decir algo" s" corresponderle" s" responderle" s" despedirte" s" de él" s?& }s&
-  s" , te das cuenta de que" s+ s" Ambrosio" s?&
-  s" , misteriosamente," s?+
-  s{ s" ha desaparecido" s" se ha marchado" s" se ha ido" s" ya no está" }s&
+  s{ s" decir algo" s" corresponderle" s" responderle" s" despedirte" s" de él" s? bs& }s bs&
+  s" , te das cuenta de que" s+ s" Ambrosio" s? bs&
+  s" , misteriosamente," s? bs+
+  s{ s" ha desaparecido" s" se ha marchado" s" se ha ido" s" ya no está" }s bs&
   period+ narrate  ;
   \ Ambrosio se despide cuando se abre la puerta por primera vez.
 
 : the-door-opens-first-time$  ( -- ca len )
-  s" La puerta" s{ s" cede" s" se abre" }s&
-  s{ s" despacio" s" poco a poco" s" lentamente" }s&
+  s" La puerta" s{ s" cede" s" se abre" }s bs&
+  s{ s" despacio" s" poco a poco" s" lentamente" }s bs&
   s" y no sin" s&
-  s{ s" dificultad" s" ofrecer resistencia" }s& comma+
+  s{ s" dificultad" s" ofrecer resistencia" }s bs& comma+
   the-door-sounds$ comma+ s&
   the-door-breaks-the-plants$ s& period+  ;
   \ Devuelve el mensaje de apertura de la puerta
@@ -652,8 +653,8 @@ false [if]
   s" la serpiente" s&
   s{ s" huye" s" se aleja" s" se esconde"
      s" se da a la fuga" s" se quita de enmedio"
-     s" se aparta" s" escapa" }s&
-  s{ null$ s" asustada" s" atemorizada" }s& period+  ;
+     s" se aparta" s" escapa" }s bs&
+  s{ null$ s" asustada" s" atemorizada" }s bs& period+  ;
   \ Texto de que la serpiente huye.
 
 : the-snake-runs-away  ( ca len -- )
@@ -833,26 +834,26 @@ false [if]
             s" está afilado de antes"
             s" tiene una buena punta"
             s" quedó antes bien afilado"
-         }s&  ;
+         }s bs&  ;
   \ Devuelve una variante de «Ya está afilado».
 
 : no-need-to-do-it-again$  ( -- ca len )
   s{
   s" no es necesario"
-  s" no hace" s" ninguna" s?& s" falta" s&
+  s" no hace" s" ninguna" s? bs& s" falta" s&
   s" no es menester"
   s" no serviría de nada"
   s" no serviría de mucho"
   s" serviría de poco"
   s" sería inútil"
   s" sería en balde"
-  s" sería un esfuerzo" s{ s" inútil" s" baldío" }s&
+  s" sería un esfuerzo" s{ s" inútil" s" baldío" }s bs&
   s" sería un esfuerzo baldío"
-  }s{
+  }s s{
   s" hacerlo"
   s" volver a hacerlo"
   s" repetirlo"
-  }s& again$ s&  ;
+  }s bs& again$ s&  ;
   \ Devuelve una variante de «no hace falta hacerlo otra vez».
 
 : ^no-need-to-do-it-again$  ( -- ca len )
@@ -1025,7 +1026,7 @@ false [if]
 
 : in-a-different-place$  ( -- ca len )
   s" en un" s& place$
-  s{ s" desconocido" s" nuevo" s" diferente" }s&
+  s{ s" desconocido" s" nuevo" s" diferente" }s bs&
   s" en otra parte"
   s" en otro lugar"
   3 2choose  ;
@@ -1033,16 +1034,16 @@ false [if]
 
 : you-emerge$  ( -- ca len )
   s{ s" Consigues" s" Logras" }s
-  s{ s" emerger," s" salir a la superficie," }s&
+  s{ s" emerger," s" salir a la superficie," }s bs&
   though$ s& in-a-different-place$ s&
   s" de la" s& cave$ s& s" ..." s+  ;
   \ Devuelve mensaje sobre la salida a la superficie.
 
 : swiming$  ( -- ca len )
   s" Buceas" s{ s" pensando en" s" deseando"
-  s" con la esperanza de" s" con la intención de" }s&
-  s{ s" avanzar," s" huir," s" escapar,"  s" salir," }s&
-  s" aunque" s&{ s" perdido." s" desorientado." }s&  ;
+  s" con la esperanza de" s" con la intención de" }s bs&
+  s{ s" avanzar," s" huir," s" escapar,"  s" salir," }s bs&
+  s" aunque" bs& s{ s" perdido." s" desorientado." }s bs&  ;
   \ Devuelve mensaje sobre el buceo.
 
 : drop-the-cuirasse$  ( f -- ca len )
@@ -1050,7 +1051,7 @@ false [if]
   s" la dejas caer" s" la sueltas" }s
   rot if
     s{ s" Rápidamente" s" Sin dilación"
-    s" Sin dudarlo" s{ null$ s" un momento" s" un instante" }s&
+    s" Sin dudarlo" s{ null$ s" un momento" s" un instante" }s bs&
     }s 2swap s&
   then  period+  ;
   \ Devuelve mensaje sobre deshacerse de la coraza dentro del agua.
@@ -1060,29 +1061,29 @@ false [if]
 : you-leave-the-cuirasse$  ( -- ca len )
   cuirasse~ is-worn-by-me?
   if  s{ s" Como puedes," s" No sin dificultad," }s
-      s{ s" logras quitártela" s" te la quitas" }s&
+      s{ s" logras quitártela" s" te la quitas" }s bs&
       s" y" s& false drop-the-cuirasse$ s&
   else  true drop-the-cuirasse$  then  ;
   \ Devuelve mensaje sobre quitarse y soltar la coraza dentro del agua.
 
 : (you-sink-0)$ ( -- ca len )
   s{ s" Caes" s" Te hundes"
-  s{ s" Empiezas" s" Comienzas" }s{ s" a hundirte" s" a caer" }s&
-  }s s" sin remedio" s?& s" hacia" s&
-  s{ s" el fondo" s" las profundidades" }s&
-  s{ s" por el" s" debido al" s" arrastrado por" s" a causa del" }s&
+  s{ s" Empiezas" s" Comienzas" }s s{ s" a hundirte" s" a caer" }s bs&
+  }s s" sin remedio" s? bs& s" hacia" s&
+  s{ s" el fondo" s" las profundidades" }s bs&
+  s{ s" por el" s" debido al" s" arrastrado por" s" a causa del" }s bs&
   s" peso de tu coraza" s&  ;
   \ Devuelve la primera versión del mensaje sobre hundirse con la coraza.
 
 : (you-sink-1)$ ( -- ca len )
   s" El peso de tu coraza"
-  s{ s" te arrastra" s" tira de ti" }s&
-  s{ null$ s" sin remedio" s" con fuerza" }s&
+  s{ s" te arrastra" s" tira de ti" }s bs&
+  s{ null$ s" sin remedio" s" con fuerza" }s bs&
   s{
   s" hacia el fondo"
   s" hacia las profundidades"
   s" hacia abajo"
-  }s&  ;
+  }s bs&  ;
   \ Devuelve la segunda versión del mensaje sobre hundirse con la coraza.
 
 : you-sink$ ( -- ca len )
@@ -1123,23 +1124,23 @@ false [if]
       s" la situación parece desesperada"
       s" el regreso parece inevitable"
       s" continuar parece imposible"
-  }s& comma+
-  s{ s" optas por" s" decides" s" tomas la decisión de" }s&
-  s{ s" explorar" s" examinar" }s& s" el" s&
-  s{ s" derrumbe" s" muro de" rocks$ s& }s&
+  }s bs& comma+
+  s{ s" optas por" s" decides" s" tomas la decisión de" }s bs&
+  s{ s" explorar" s" examinar" }s bs& s" el" s&
+  s{ s" derrumbe" s" muro de" rocks$ s& }s bs&
   s{  s" en compañía de" s" junto con"
       s" ayudado por" s" acompañado por"
-  }s&
-  s{ s" algunos" s" varios" }s& s" de tus" s&
-  s{ s" oficiales" soldiers$ }s& s" , con la" s+
-  s{ s" vana" s" pobre" s" débil" }s& s" esperanza" s&
+  }s bs&
+  s{ s" algunos" s" varios" }s bs& s" de tus" s&
+  s{ s" oficiales" soldiers$ }s bs& s" , con la" s+
+  s{ s" vana" s" pobre" s" débil" }s bs& s" esperanza" s&
   s" de" s&
-  s{ s" encontrar" s" hallar" s" descubrir" }s&
-  s{ s" la" s" alguna" }s& way$ s& s" de" s&
+  s{ s" encontrar" s" hallar" s" descubrir" }s bs&
+  s{ s" la" s" alguna" }s bs& way$ s& s" de" s&
   s{  s" escalarlo" s" vencerlo" s" atravesarlo"
       s" superarlo" s" pasarlo"
       s{ s" pasar" s" cruzar" }s s" al otro lado" s&
-  }s&  period+ narrate narration-break  ;
+  }s bs&  period+ narrate narration-break  ;
   \ Imprime la primera parte del mensaje
   \ previo al primer intento de escalar el derrumbe.
 
@@ -1147,16 +1148,16 @@ false [if]
   ^but$
   s{  s{ s" pronto" s" enseguida" }s s" has de" s&
       s" no tardas mucho en"
-  }s&
-  s{  s" rendirte ante" s" aceptar" s" resignarte ante" }s&
+  }s bs&
+  s{  s" rendirte ante" s" aceptar" s" resignarte ante" }s bs&
   s{
     s{ s" los hechos" s" la realidad" s" la situación" s" tu suerte" }s
     s{  s" la voluntad"
         s{ s" el" s" este" }s s" giro" s&
         s{ s" el" s" este" }s s" capricho" s&
         s{ s" la" s" esta" }s s" mudanza" s&
-    }s s" de" s& s" la diosa" s?& s" Fortuna" s&
-  }s& s" ..." s+ narrate narration-break  ;
+    }s s" de" s& s" la diosa" s? bs& s" Fortuna" s&
+  }s bs& s" ..." s+ narrate narration-break  ;
   \ Imprime la segunda parte del mensaje
   \ previo al primer intento de escalar el derrumbe.
 
@@ -1172,7 +1173,7 @@ false [if]
     s" el derrumbe"
     s{ s" el muro" s" la pared" s" el montón" }s s" de" s& rocks$ s&
     s" las" rocks$ s&
-  }s&  ;
+  }s bs&  ;
   \ Devuelve el mensaje de error de que es imposible escalar el
   \ derrumbe.
 
@@ -1279,32 +1280,32 @@ false [if]
 
 : a-man-takes-the-stone  ( -- )
   s{  s" Un hombre" s" Un refugiado"
-      s" Uno de los" s{ s" hombres" s" refugiados" }s&
-  }s{ s" se adelanta,"
+      s" Uno de los" s{ s" hombres" s" refugiados" }s bs&
+  }s s{ s" se adelanta,"
       s" sale de entre"
         s{  s" sus compañeros" s" los otros"
             s" la multitud" s" la gente"
-        }s& comma+
-  }s?&
+        }s bs& comma+
+  }s s? bs&
   s{  s" se te acerca," s" se acerca a ti,"
       s" se te aproxima," s" se aproxima a ti,"
-  }s?&
-  s" te" s&{ s" arrebata" s" quita" }s&
-  s" la piedra" s& s" de las manos" s?& s" y" s&
+  }s s? bs&
+  s" te" bs& s{ s" arrebata" s" quita" }s bs&
+  s" la piedra" s& s" de las manos" s? bs& s" y" s&
   s{
     s" se la lleva"
-    s{ s" se marcha" s" se va" s" desaparece" }s s" con ella" s?&
-  }s& period+ narrate
+    s{ s" se marcha" s" se va" s" desaparece" }s s" con ella" s? bs&
+  }s bs& period+ narrate
   location-18~ stone~ be-there  ;
   \ Un hombre te quita la piedra.
 
 : gets-angry$  ( -- ca len )
-  s" se" s{ s" irrita" s" enfada" s" enoja" s" enfurece" }s&  ;
+  s" se" s{ s" irrita" s" enfada" s" enoja" s" enfurece" }s bs&  ;
   \ Devuelve una variante de «se enfada».
 
 : the-leader-gets-angry$  ( -- ca len )
   s{ s" Al verte" s" Viéndote" s" Tras verte" }s
-  s{ s" llegar" s" aparecer" s" venir" }s&
+  s{ s" llegar" s" aparecer" s" venir" }s bs&
   again$ stone-forbidden? @ ?keep s&
   s" con la piedra," s&
   s" el" s& old-man$ s& gets-angry$ s&  ;
@@ -1384,12 +1385,12 @@ false [if]
 : already-warned$  ( -- ca len )
   s" ya" s?
   s{
-    s" fuisteis" s{ s" avisado" s" advertido" }s& s" de ello" s?&
-    s" se os" s{ s" avisó" s" advirtió" }s& s" de ello" s?&
-    s" os lo" s{ s" hicimos saber" s" advertimos" }s&
-    s" os lo" s{ s" hice saber" s" advertí" }s&
-    s" se os" s{ s" hizo saber" s" dejó claro" }s&
-  }s&  ;
+    s" fuisteis" s{ s" avisado" s" advertido" }s bs& s" de ello" s? bs&
+    s" se os" s{ s" avisó" s" advirtió" }s bs& s" de ello" s? bs&
+    s" os lo" s{ s" hicimos saber" s" advertimos" }s bs&
+    s" os lo" s{ s" hice saber" s" advertí" }s bs&
+    s" se os" s{ s" hizo saber" s" dejó claro" }s bs&
+  }s bs&  ;
   \ Mensaje de que el líder ya te advirtió sobre un objeto.
   \ XXX TODO -- elaborar más
 
@@ -1403,38 +1404,38 @@ false [if]
   s" podemos" s&
   s{
     s{ s" permitiros" s" consentiros" }s
-      s{ s" huir" s" escapar" s" marchar" s" pasar" }s& s" con" s&
+      s{ s" huir" s" escapar" s" marchar" s" pasar" }s bs& s" con" s&
     s{ s" permitir" s" consentir" s" aceptar" }s s" que" s&
       s{  s{ s" huyáis" s" escapéis" s" marchéis" s" paséis" }s s" con" s&
           s" os vayáis con"
           s" os" s? s" marchéis con" s&
           s" os llevéis"
           s" nos" s? s" robéis" s&
-          s" os" s{ s" apropiés" s" apoderéis" s" adueñéis" }s& s" de" s&
-      }s&
-  }s& s" la" s" piedra del druida"
+          s" os" s{ s" apropiés" s" apoderéis" s" adueñéis" }s bs& s" de" s&
+      }s bs&
+  }s bs& s" la" s" piedra del druida"
   2dup stone~ fs-name!
   s& s& period+  ;
   \ Devuelve el mensaje de que no te puedes llevar la piedra.
   \ También cambia el nombre de la piedra.
 
 : gesture-about-the-stone$  ( -- ca len )
-  s" y" s? s{ s" entonces" s" a continuación" s" seguidamente" }s& ^uppercase
+  s" y" s? s{ s" entonces" s" a continuación" s" seguidamente" }s bs& ^uppercase
   s" hace un" s&
-  s" pequeño" s?& s" gesto" s& s" con la mano," s?&
-  s" casi imperceptible" s?&
+  s" pequeño" s? bs& s" gesto" s& s" con la mano," s? bs&
+  s" casi imperceptible" s? bs&
   s" ..." s+  ;
   \ Mensaje de que el líder hace un gesto sobre la piedra.
 
 : the-stone-must-be-in-its-place$  ( -- ca len )
-  s" La piedra" s{ s" ha de" s" debe" s" tiene que" }s&
-  s{ s" ser devuelta" s" devolverse" to-go-back$ }s&
+  s" La piedra" s{ s" ha de" s" debe" s" tiene que" }s bs&
+  s{ s" ser devuelta" s" devolverse" to-go-back$ }s bs&
   s{
-    s" a su lugar" s" de encierro" s?&
+    s" a su lugar" s" de encierro" s? bs&
     s" al lugar al que pertenece"
-    s" al lugar del que nunca debió" s{ s" salir" s" ser sacada" s" ser arrancada" }s&
-    s" al lugar que nunca debió" s{ s" abandonar" s" haber abandonado" }s&
-  }s&  ;
+    s" al lugar del que nunca debió" s{ s" salir" s" ser sacada" s" ser arrancada" }s bs&
+    s" al lugar que nunca debió" s{ s" abandonar" s" haber abandonado" }s bs&
+  }s bs&  ;
   \ El líder dice que la piedra debe ser devuelta.
 
 : the-leader-warns-about-the-stone  ( -- )
@@ -1446,9 +1447,9 @@ false [if]
 
 : the-leader-points-to-the-north$  ( -- ca len )
   leader~ ^full-name
-  s{ s" alza" s" extiende" s" levanta" }s&
-  s{ s" su" s" el" }s& s" brazo" s&
-  s{ s" indicando" s" en dirección" s" señalando" }s&
+  s{ s" alza" s" extiende" s" levanta" }s bs&
+  s{ s" su" s" el" }s bs& s" brazo" s&
+  s{ s" indicando" s" en dirección" s" señalando" }s bs&
   toward-the(m)$ s& s" norte." s&  ;
   \ El líder se enfada y apunta al norte.
   \ XXX TODO -- crear ente "brazo" aquí, o activarlo como sinómino del anciano
@@ -1460,9 +1461,9 @@ false [if]
 : nobody-passes-with-arms$  ( -- ca len )
   s{ s" Nadie" s" Ningún hombre" }s
   s{ s" con" s" llevando" s" portando" s" portador de"
-  s" que porte" s" que lleve" }s&
-  s{ s" armas" s" un arma" s" una espada" }s&
-  with-him$ s&{ s" debe" s" puede" s" podrá" }s&
+  s" que porte" s" que lleve" }s bs&
+  s{ s" armas" s" un arma" s" una espada" }s bs&
+  with-him$ bs& s{ s" debe" s" puede" s" podrá" }s bs&
   s" pasar." s&  ;
   \ El líder dice que nadie pasa con armas.
 
@@ -1474,12 +1475,12 @@ false [if]
 
 : the-leader-points-to-the-east  ( -- )
   s" El" old-man$ s& comma+
-  s{ s" confiado" s" calmado" s" sereno" s" tranquilo" }s& comma+
-  s{ s" indica" s" señala" }s&
-  s{ toward-the(m)$ s" en dirección al" }s& s" este y" s&
+  s{ s" confiado" s" calmado" s" sereno" s" tranquilo" }s bs& comma+
+  s{ s" indica" s" señala" }s bs&
+  s{ toward-the(m)$ s" en dirección al" }s bs& s" este y" s&
   s{  s" te" s? s" dice" s&
       s" pronuncia las siguientes palabras"
-  }s& colon+ narrate  ;
+  }s bs& colon+ narrate  ;
   \ El líder apunta al este.
 
 : something-had-been-forbidden?  ( -- f )
@@ -1489,20 +1490,20 @@ false [if]
 : go-in-peace  ( -- )
   s{ s" Ya que" s" Puesto que" s" Dado que" s" Pues" }s
   something-had-been-forbidden? if
-    s{ s" esta vez" s" ahora" s" en esta ocasión" s" por fin" s" finalmente" }s&
+    s{ s" esta vez" s" ahora" s" en esta ocasión" s" por fin" s" finalmente" }s bs&
   then
-  s{ s" vienes" s" llegas" s" has venido" s" has llegado" }s&
+  s{ s" vienes" s" llegas" s" has venido" s" has llegado" }s bs&
   s" en paz, puedes" s&
-  s{ s" ir" s" marchar" s" continuar" s" tu camino" s?& }s&
+  s{ s" ir" s" marchar" s" continuar" s" tu camino" s? bs& }s bs&
   s" en paz." s& speak  ;
   \ El líder dice que puedes ir en paz.
 
 : the-refugees-let-you-go  ( -- )
   s" todos" s? s" los refugiados" s& ^uppercase
-  s" se apartan y" s& s" te" s?&
-  s{  s" permiten" s{ s" el paso" s" pasar" }s&
-      s" dejan" s" libre" s" el" s{ s" paso" s" camino" }s& rnd2swap s&
-  }s& toward-the(m)$ s& s" este." s& narrate  ;
+  s" se apartan y" s& s" te" s? bs&
+  s{  s" permiten" s{ s" el paso" s" pasar" }s bs&
+      s" dejan" s" libre" s" el" s{ s" paso" s" camino" }s bs& rnd2swap s&
+  }s bs& toward-the(m)$ s& s" este." s& narrate  ;
   \ Los refugiados te dejan pasar.
 
 : the-leader-lets-you-go  ( -- )
@@ -1519,7 +1520,7 @@ false [if]
 : we-are-refugees$  ( -- ca len )
   s" todos" s? s" nosotros" s? rnd2swap s&
   s" somos refugiados de" s& ^uppercase
-  s{ s" la gran" s" esta terrible" }s& s" guerra." s&
+  s{ s" la gran" s" esta terrible" }s bs& s" guerra." s&
   s" refugio" location-28~ ms-name!  ;
   \ Mensaje «Somos refugiados».
 
@@ -1529,23 +1530,23 @@ false [if]
 
 : the-leader-trusts  ( -- )
   s" El" old-man$ s& s" asiente" s&
-  s{ s" confiado" s" con confianza" }s& s" y," s&
-  s" con un suave gesto" s& s" de su mano" s?& comma+
+  s{ s" confiado" s" con confianza" }s bs& s" y," s&
+  s" con un suave gesto" s& s" de su mano" s? bs& comma+
   s" te interrumpe para" s&
-  s{  s" explicar" s{ s" te" s" se" null$ }s+
-      s" presentarse" s" contarte" s" decir" s" te" s?+
-  }s& colon+ narrate  ;
+  s{  s" explicar" s{ s" te" s" se" null$ }s bs+
+      s" presentarse" s" contarte" s" decir" s" te" s? bs+
+  }s bs& colon+ narrate  ;
   \ El líder te corta, confiado.
 
 : untrust$  ( -- ca len )
   s{ s" desconfianza" s" nerviosismo" s" impaciencia" }s  ;
 
 : the-leader-does-not-trust  ( -- )
-  s" El" old-man$ s& s" asiente" s& s" con la cabeza" s?& comma+
+  s" El" old-man$ s& s" asiente" s& s" con la cabeza" s? bs& comma+
   s{  s" desconfiado" s" nervioso" s" impaciente"
-      s" mostrando" s" claros" s?& s" signos de" s& untrust$ s&
-      s{ s" dando" s" con" }s s" claras" s?& s" muestras de" s& untrust$ s&
-  }s& comma+ s" y te interrumpe:" s& narrate  ;
+      s" mostrando" s" claros" s? bs& s" signos de" s& untrust$ s&
+      s{ s" dando" s" con" }s s" claras" s? bs& s" muestras de" s& untrust$ s&
+  }s bs& comma+ s" y te interrumpe:" s& narrate  ;
   \ El líder te corta, desconfiado.
 
 : the-leader-introduces-himself  ( -- )
@@ -1620,10 +1621,10 @@ false [if]
 : don't-insist$  ( -- ca len )
   s" ya" s?
   s{
-    s" habéis sido" s{ s" avisado" s" advertido" }s&
-    s" os lo he" s" mos" s?+ s{ s" hecho saber" s" advertido" s" dejado claro" }s&
-    s" se os ha" s{ s" hecho saber" s" advertido" s" dejado claro" }s&
-  }s&  ;
+    s" habéis sido" s{ s" avisado" s" advertido" }s bs&
+    s" os lo he" s" mos" s? bs+ s{ s" hecho saber" s" advertido" s" dejado claro" }s bs&
+    s" se os ha" s{ s" hecho saber" s" advertido" s" dejado claro" }s bs&
+  }s bs&  ;
   \ XXX TODO -- inconcluso
 
 : don't-insist  ( -- )
@@ -1665,56 +1666,56 @@ false [if]
 
 : you-cry  ( -- )
   s" Por" s" primera" s" vez" rnd2swap s& s& s" en" s&
-  s{ s" mucho" s" largo" }s& s" tiempo, te sientas y" s&
-  s" le" s?& s{ s" cuentas" s" narras" s" relatas" }s&
+  s{ s" mucho" s" largo" }s bs& s" tiempo, te sientas y" s&
+  s" le" s? bs& s{ s" cuentas" s" narras" s" relatas" }s bs&
   s" a alguien todo lo que ha" s&
-  s{ s" sucedido" s" pasado" s" ocurrido" }s& period+
-  s" Y, tras tanto" s& s" pesar" s?& s{ s" acontecido" s" vivido" }s&
-  s" , lloras" s+{ s" desconsoladamente" s" sin consuelo" }s&
+  s{ s" sucedido" s" pasado" s" ocurrido" }s bs& period+
+  s" Y, tras tanto" s& s" pesar" s? bs& s{ s" acontecido" s" vivido" }s bs&
+  s" , lloras" bs+ s{ s" desconsoladamente" s" sin consuelo" }s bs&
   period+ narrate  ;
 
 : ambrosio-proposes-a-deal  ( -- )
-  s" Ambrosio te propone un" s{ s" trato" s" acuerdo" }s& comma+
+  s" Ambrosio te propone un" s{ s" trato" s" acuerdo" }s bs& comma+
   s{  the-that(m)$ s" aceptas" s&
-      s" con el" that(m)$ s&{ s" consientes" s" estás de acuerdo" }s&
+      s" con el" that(m)$ bs& s{ s" consientes" s" estás de acuerdo" }s bs&
       the-that(m)$ s" te parece justo" s&
-  }s& colon+
-  s" por ayudarlo a salir de" s&{ s" la" s" esta" }s& s" cueva," s&
-  s{ s" objetos" s" útiles" }s& comma+
-  s{ s" vitales" s" imprescindibles" s" necesarios" }s&
-  s" para" s& s" el éxito de" s?&
-  s{ s" la" s" tal" s" dicha" }s& s{ s" misión" s" empresa" }s&
+  }s bs& colon+
+  s" por ayudarlo a salir de" bs& s{ s" la" s" esta" }s bs& s" cueva," s&
+  s{ s" objetos" s" útiles" }s bs& comma+
+  s{ s" vitales" s" imprescindibles" s" necesarios" }s bs&
+  s" para" s& s" el éxito de" s? bs&
+  s{ s" la" s" tal" s" dicha" }s bs& s{ s" misión" s" empresa" }s bs&
   s" , te son entregados." s+ narrate
   torch~ be-hold  flint~ be-hold  ;
 
 : ambrosio-let's-go  ( -- )
   s{  s" Bien"
-      s{ s" Venga" s" Vamos" }s s" pues" s?&
+      s{ s" Venga" s" Vamos" }s s" pues" s? bs&
   }s comma+ s" Ambrosio," s&
-  s{  s{ s" iniciemos" s" emprendamos" }s{ s" la marcha" s" el camino" }s&
-      s" pongámonos en" s{ s" marcha" s" camino" }s&
-  }s& period+  speak
+  s{  s{ s" iniciemos" s" emprendamos" }s s{ s" la marcha" s" el camino" }s bs&
+      s" pongámonos en" s{ s" marcha" s" camino" }s bs&
+  }s bs& period+  speak
   location-46~ ambrosio~ be-there
-  s" Te" s{ s" giras" s" das la vuelta" }s& s" para" s&
+  s" Te" s{ s" giras" s" das la vuelta" }s bs& s" para" s&
   s{  s{ s" comprobar" s" ver" }s s" si" s&
       s{ s" cerciorarte" s" asegurarte" }s s" de que" s&
-  }s& s" Ambrosio te sigue," s& but$ s& s" ..." s+
+  }s bs& s" Ambrosio te sigue," s& but$ s& s" ..." s+
   s{  s" ha desaparecido"
       s" se ha esfumado"
-      s" no hay" s" ni" s?& s" rastro de él" s&
+      s" no hay" s" ni" s? bs& s" rastro de él" s&
       s" ya" s? s" no está" s&
       s" ya" s? s" no hay nadie" s&
       s" ya" s? s" no ves a nadie" s&
       s" es como si se lo hubiera tragado la tierra"
-  }s& period+ narrate  ;
+  }s bs& period+ narrate  ;
 
 : ambrosio-is-gone  ( -- )
   s{  suddenly|then$ s" piensas" rnd2swap s& s" en el" s&
       suddenly|then$ s" caes en la cuenta" rnd2swap s& s" del" s&
   }s ^uppercase s" hecho" s" curioso" rnd2swap s& s& s" de que" s&
-  s{  s{ s" supiera" s" conociera" }s{ s" cómo te llamas" s" tu nombre" }s&
+  s{  s{ s" supiera" s" conociera" }s s{ s" cómo te llamas" s" tu nombre" }s bs&
       s" te llamara por tu nombre"
-  }s& s" ..." s+ narrate  ;
+  }s bs& s" ..." s+ narrate  ;
 
 : (conversation-0-with-ambrosio)  ( -- )
   s" Hola, buen hombre." speak
@@ -1734,51 +1735,51 @@ false [if]
 : i-am-stuck-in-the-cave$  ( -- ca len )
   s{  s" por desgracia" s" desgraciadamente" s" desafortunadamente"
       s" tristemente" s" lamentablemente"
-  }s? s{ s" estoy" s" me encuentro" s" me hallo" }s& ^uppercase
-  s{ s" atrapado" s" encerrado" }s&
-  s" en" s&{ s" la" s" esta" }s& s" cueva" s&
-  s{ s" debido a" s" por causa de" s" por influjo de" }s&
-  s{ s" una" s" cierta" }s& s" magia de" s&
-  s{ s" maligno" s" maléfico" s" malvado" s" terrible" }s&
+  }s s? s{ s" estoy" s" me encuentro" s" me hallo" }s bs& ^uppercase
+  s{ s" atrapado" s" encerrado" }s bs&
+  s" en" bs& s{ s" la" s" esta" }s bs& s" cueva" s&
+  s{ s" debido a" s" por causa de" s" por influjo de" }s bs&
+  s{ s" una" s" cierta" }s bs& s" magia de" s&
+  s{ s" maligno" s" maléfico" s" malvado" s" terrible" }s bs&
   s" poder." s&  ;
 
 : you-must-follow-your-way$  ( -- ca len )
-  s{ s" En cuanto" s" Por lo que respecta" }s&
+  s{ s" En cuanto" s" Por lo que respecta" }s bs&
   s" al camino, vos" s&
-  s{ s" habéis de" s" debéis" s" habréis de" }s&
-  s{ s" recorrer" s" seguir" s" hacer " }s& s" el vuestro," s&
-  s{ s" ver" s" mirar" s" contemplar" }s s" lo" s?+
-  s" todo con vuestros" s& s" propios" s?& s" ojos." s&  ;
+  s{ s" habéis de" s" debéis" s" habréis de" }s bs&
+  s{ s" recorrer" s" seguir" s" hacer " }s bs& s" el vuestro," s&
+  s{ s" ver" s" mirar" s" contemplar" }s s" lo" s? bs+
+  s" todo con vuestros" s& s" propios" s? bs& s" ojos." s&  ;
 
 : ambrosio-explains  ( -- )
   s" Ambrosio"
   s{  s" parece meditar un instante"
       s" asiente ligeramente con la cabeza"
-  }s& s" y" s&
-  s{  s" te" s{ s" dice" s" explica" }s&
+  }s bs& s" y" s&
+  s{  s" te" s{ s" dice" s" explica" }s bs&
       s" se explica"
-  }s&
+  }s bs&
   colon+ narrate
   i-am-stuck-in-the-cave$ you-must-follow-your-way$ s& speak  ;
 
 : i-can-not-understand-it$  ( -- ca len )
   s" no"
-  s{  s" lo" s? s{ s" entiendo" s" comprendo" }s&
+  s{  s" lo" s? s{ s" entiendo" s" comprendo" }s bs&
       s{ s" alcanzo" s" acierto" }s s" a" s&
-         s{ s" entender" s" comprender" }s& s" lo" s?+
-  }s&  ;
+         s{ s" entender" s" comprender" }s bs& s" lo" s? bs+
+  }s bs&  ;
 
 : you-shake-your-head  ( -- )
   s{ s" Sacudes" s" Mueves" s" Haces un gesto con" }s s" la cabeza" s&
   s{  s{ s" poniendo"  s" dejando" }s
-        s{ s" clara" s" de manifiesto" s" patente" s" manifiesta" }s&
-      s{ s" manifestando" s" delatando" s" mostrando" }s s" claramente" s?&
+        s{ s" clara" s" de manifiesto" s" patente" s" manifiesta" }s bs&
+      s{ s" manifestando" s" delatando" s" mostrando" }s s" claramente" s? bs&
   }s s" tu" s&
-  s{ s" sorpresa" s" perplejidad" s" resignación" s" incredulidad" }s&? s&
+  s{ s" sorpresa" s" perplejidad" s" resignación" s" incredulidad" }s bs& s? s&
   colon+ narrate  ;
 
 : you-don't-understand  ( -- )
-  s{  i-can-not-understand-it$ s" , la verdad" s?+
+  s{  i-can-not-understand-it$ s" , la verdad" s? bs+
       s{ s" la verdad" s" lo cierto" }s s" es que" s&
         i-can-not-understand-it$ s&
       s{ s" en verdad" s" realmente" s" verdaderamente" }s
@@ -1794,14 +1795,14 @@ false [if]
   \ XXX TODO -- ampliar y variar
 
 : you-know-other-way$  ( -- ca len )
-  s" Y" s{ s" por lo demás" s" por otra parte" }s?&
-  s{ s" es" s" parece" }s&
-  s{ s" obvio" s" evidente" s" claro" s" indudable" }s&
-  s" que" s&{ s" conocéis" s" sabéis" s" no desconocéis" }s&
-  s{ s" un" s" algún" s" otro" }s& s" camino" s&
-  s{  s" más" s{ s" corto" s" directo" s" fácil" s" llevadero" }s&
-      s" menos" s{ s" largo" s" luengo" s" difícil" s" pesado" }s&
-  }s& period+  ;
+  s" Y" s{ s" por lo demás" s" por otra parte" }s s? bs&
+  s{ s" es" s" parece" }s bs&
+  s{ s" obvio" s" evidente" s" claro" s" indudable" }s bs&
+  s" que" bs& s{ s" conocéis" s" sabéis" s" no desconocéis" }s bs&
+  s{ s" un" s" algún" s" otro" }s bs& s" camino" s&
+  s{  s" más" s{ s" corto" s" directo" s" fácil" s" llevadero" }s bs&
+      s" menos" s{ s" largo" s" luengo" s" difícil" s" pesado" }s bs&
+  }s bs& period+  ;
 
 : you-reproach-ambrosio  ( -- )
   you-already-had-the-key$ you-know-other-way$ s& speak  ;
@@ -1822,10 +1823,10 @@ false [if]
 : ambrosio-gives-you-the-key  ( -- )
   s{ s" Por favor," s" Os lo ruego," }s
   s" Ulfius," s&
-  s" cumplid vuestra" s{ s" promesa." s" palabra." }s&
+  s" cumplid vuestra" s{ s" promesa." s" palabra." }s bs&
   s" Tomad" this|the(f)$ s& s" llave" s&
-  s{ null$ s" en vuestra mano" s" en vuestras manos" s" con vos" }s&
-  s" y abrid" s& s" la puerta de" s?& this|the(f)$ s& s" cueva." s&
+  s{ null$ s" en vuestra mano" s" en vuestras manos" s" con vos" }s bs&
+  s" y abrid" s& s" la puerta de" s? bs& this|the(f)$ s& s" cueva." s&
   speak
   key~ be-hold  ;
 
@@ -1895,8 +1896,8 @@ create conversations-with-ambrosio
   \ XXX TODO
 
 : talk-to-yourself$  ( -- ca len )
-  s{  s" hablar" s{ s" solo" s" con uno mismo" }s&
-      s" hablarse" s{ s" a sí" s" a uno" }s& s" mismo" s?&
+  s{  s" hablar" s{ s" solo" s" con uno mismo" }s bs&
+      s" hablarse" s{ s" a sí" s" a uno" }s bs& s" mismo" s? bs&
   }s  ;
   \ Devuelve una variante de «hablar solo».
 
@@ -2092,7 +2093,7 @@ immediate
 restore-wordlists
 
 : string>file  ( ca len -- )
-  bs| s" | 2swap s+ bs| "| s+ >file  ;
+  s\" s\" " 2swap s+ s\" \"" s+ >file  ;
   \ Escribe una cadena en el fichero de la partida.
 
 : f>string  ( f -- ca len )
@@ -2103,13 +2104,13 @@ restore-wordlists
   \ Escribe un indicador binario en el fichero de la partida.
 
 : n>string  ( n -- ca len )
-  s>d swap over dabs <# #s rot sign #> >sb  ;
+  s>d swap over dabs <# #s rot sign #> >stringer  ;
   \ Convierte un número con signo en una cadena.
 
-: u>string ( u -- ca len )  s>d <# #s #> >sb  ;
+: u>string ( u -- ca len )  s>d <# #s #> >stringer  ;
   \ Convierte un número sin signo en una cadena.
 
-: 00>s  ( u -- ca1 len1 )  s>d <# # #s #> >sb  ;
+: 00>s  ( u -- ca1 len1 )  s>d <# # #s #> >stringer  ;
   \ Convierte un número sin signo en una cadena (de dos dígitos como mínimo).
 
 : 00>s+  ( u ca1 len1 -- ca2 len2 )  rot 00>s s+  ;

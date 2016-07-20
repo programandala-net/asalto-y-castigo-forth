@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607172110
+\ Last update: 201607202041
 
 \ Note: The comments of the code are in Spanish.
 
@@ -69,23 +69,23 @@ set-current
   s" más claramente"
   s" más sencillamente"
   s{ s" con más" s" con mayor" }s
-  s{ s" sencillez" s" claridad" }s&
+  s{ s" sencillez" s" claridad" }s bs&
   }s s&  ;
   \ Devuelve la variante 1 del mensaje de acompañamiento para los
   \ errores lingüísticos.
 
 : error-comment-2-start$  ( -- ca len )
   s{ s" intenta" s" procura" s" prueba a" }s
-  s{ s" reescribir" s" expresar" s" escribir" s" decir" }s&
+  s{ s" reescribir" s" expresar" s" escribir" s" decir" }s bs&
   \ XXX TODO -- este "lo" crea problema de concordancia con el final de la frase:
-  s{ s"  la frase" s" lo" s"  la idea" }s+  ;
+  s{ s"  la frase" s" lo" s"  la idea" }s bs+  ;
   \ Devuelve el comienzo de la variante 2 del mensaje de
   \ acompañamiento para los errores lingüísticos.
 
 : error-comment-2-end-0$  ( -- ca len )
-  s" de" s{ s" una" s" otra" }s& way$ s&
-  s{ null$ s" un poco" s" algo" }s& s" más" s&
-  s{ s" simple" s" sencilla" s" clara" }s&  ;
+  s" de" s{ s" una" s" otra" }s bs& way$ s&
+  s{ null$ s" un poco" s" algo" }s bs& s" más" s&
+  s{ s" simple" s" sencilla" s" clara" }s bs&  ;
   \ Devuelve el final 0 de la variante 2 del mensaje de
   \ acompañamiento para los errores lingüísticos.
 
@@ -96,7 +96,7 @@ set-current
 
 : error-comment-2$  ( -- ca len )
   error-comment-2-start$
-  s{ error-comment-2-end-0$ error-comment-2-end-1$ }s&  ;
+  s{ error-comment-2-end-0$ error-comment-2-end-1$ }s bs&  ;
   \ Devuelve la variante 2 del mensaje de acompañamiento para los
   \ errores lingüísticos.
 
@@ -132,8 +132,8 @@ set-current
   \ varios errores.
 
 : there-is-no$  ( -- ca len )
-  s" no se" s{ s" identifica" s" encuentra" s" reconoce" }s&
-  s{ s" el" s" ningún" }s&  ;
+  s" no se" s{ s" identifica" s" encuentra" s" reconoce" }s bs&
+  s{ s" el" s" ningún" }s bs&  ;
   \ Devuelve una variante de «no hay», comienzo de varios errores.
 
 :noname  ( -- )

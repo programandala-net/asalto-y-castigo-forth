@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607111325
+\ Last update: 201607192044
 
 \ Note: Most comments of the code are in Spanish.
 
@@ -16,7 +16,7 @@ get-current forth-wordlist set-current
 \ Galope
 \ http://programandala.net/en.program.galope.html
 
-require galope/bracket-true.fs  \ `[false]`
+require galope/bracket-true.fs  \ `[true]`
 
 set-current
 

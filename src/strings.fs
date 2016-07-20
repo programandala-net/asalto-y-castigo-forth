@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607111345
+\ Last update: 201607202101
 
 \ Note: The comments of the code are in Spanish.
 
@@ -25,6 +25,7 @@ require galope/null-dollar.fs         \ `null$`
 require galope/question-question.fs   \ `??`
 require galope/random_strings.fs
 require galope/replaced.fs            \ `replaced`
+require galope/stringer.fs            \ Circular string buffer
 require galope/x-c-store.fs           \ `xc!`
 require galope/xcase.fs               \ `xcase`
 require galope/xcase_es.fs            \ Spanish UTF-8 case table
@@ -59,8 +60,8 @@ str-create tmp-str
   [then]  ;
   \ Convierte en mayúsculas la primera letra de una cadena.
 
-: ^uppercase  ( a1 u -- a2 u )
-  >sb 2dup (^uppercase)  ;
+: ^uppercase  ( ca1 len -- ca2 len )
+  >stringer 2dup (^uppercase)  ;
   \ Hace una copia de una cadena en el almacén circular
   \ y la devuelve con la primera letra en mayúscula.
   \ Nota: Se necesita para los casos en que no queremos
@@ -157,7 +158,7 @@ str-create tmp-str
   \ Devuelve dos cadenas unidas en cualquier orden por «y»; y concatenada (con separación) a una tercera.
 
 : both?  ( ca1 len1 ca2 len2 -- ca3 len3 )
-  (both) s&? bs&  ;
+  (both) bs& s? bs&  ;
   \ Devuelve al azar una de dos cadenas,
   \ o bien ambas unidas en cualquier orden por «y».
   \ Ejemplo: si los parámetros fueran «espesa» y «fría»,

@@ -92,7 +92,7 @@ true dup constant [old-method] immediate
   \ Imprime el estado de la pila.
 
 : .sb  ( -- )
-  ." Espacio para cadenas:" sb# ?  ;
+  ." Espacio para cadenas:" unused-stringer ?  ;
   \ Imprime el estado del almacén circular de cadenas.
 
 : .system-status  ( -- )

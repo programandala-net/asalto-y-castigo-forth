@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607111408
+\ Last update: 201607202040
 
 \ Note: The comments of the code are in Spanish.
 
@@ -38,7 +38,7 @@ set-current
   s{ s" al" s" por lo" }s s" menos" s&  ;
 
 : that-(at-least)$  ( ca len -- )
-  s" que" at-least$ s?&  ;
+  s" que" at-least$ s? bs&  ;
 
 : that(m)$  ( -- ca len )
   s{ s" que" s" cual" }s  ;
@@ -184,13 +184,13 @@ set-current
 : the-enemies$  ( -- ca len )
   s{ s" los sajones"
   s{ s" las tropas" s" las huestes" }s
-  s{ s" enemigas" s" sajonas" }s& }s  ;
+  s{ s" enemigas" s" sajonas" }s bs& }s  ;
   \ Devuelve una variante de «los enemigos».
 
 : the-enemy$  ( -- ca len )
   s{ s" el enemigo"
   s{ s" la tropa" s" la hueste" }s
-  s{ s" enemiga" s" sajona" }s& }s  ;
+  s{ s" enemiga" s" sajona" }s bs& }s  ;
   \ Devuelve una variante de «el enemigo».
 
 : (the-enemy|enemies)  ( -- ca len f )
@@ -221,10 +221,10 @@ set-current
 
 : of-your-ex-cloak$  ( -- ca len )
   s{ null$ s" que queda" s" que quedó" }s s" de" s&
-  s{ s" lo" s" la" }s& s" que" s& s" antes" s?&
-  s{ s" era" s" fue" s" fuera" }s&
-  your|the(f)$ s& s{ s" negra" s" oscura" }s?&
-  s" capa" s& s" de lana" s?& period+  ;
+  s{ s" lo" s" la" }s bs& s" que" s& s" antes" s? bs&
+  s{ s" era" s" fue" s" fuera" }s bs&
+  your|the(f)$ s& s{ s" negra" s" oscura" }s s? bs&
+  s" capa" s& s" de lana" s? bs& period+  ;
   \ Devuelve un texto común a las descripciones de los restos de la capa.
 
 : but$  ( -- ca len )
@@ -246,7 +246,7 @@ set-current
   s{ s" hogar" s" casa" }s  ;
 
 : sire,$  ( -- ca len )
-  s" Sire" s" Ulfius" s?& comma+  ;
+  s" Sire" s" Ulfius" s? bs& comma+  ;
 
 : my-name-is$  ( -- ca len )
   s{ s" Me llamo" s" Mi nombre es" }s  ;
@@ -338,7 +338,7 @@ set-current
   can-glimpse$ ^uppercase  ;
 
 : in-half-darkness-you-glimpse$  ( -- ca len )
-  s" En la" s{ s" semioscuridad," s" penumbra," }s& s? dup
+  s" En la" s{ s" semioscuridad," s" penumbra," }s bs& s? dup
   if  can-glimpse$  else  ^can-glimpse$  then  s&  ;
   \ Devuelve un texto usado en varias descripciones de las cuevas.
 
@@ -407,7 +407,7 @@ set-current
 
 s" de Westmorland" sconstant of-westmorland$
 : the-village$  ( -- ca len )
-  s{ s" la villa" of-westmorland$ s?&
+  s{ s" la villa" of-westmorland$ s? bs&
   s" Westmorland" }s  ;
 
 : ^the-village$  ( -- ca len )
@@ -423,21 +423,21 @@ s" de Westmorland" sconstant of-westmorland$
   s{ s" impiden" s" bloquean" }s  ;
 
 : (rocks)-on-the-floor$  ( -- ca len )
-  s" yacen desmoronadas" s" a lo largo del pasaje" s?&  ;
+  s" yacen desmoronadas" s" a lo largo del pasaje" s? bs&  ;
   \ Devuelve un texto sobre las rocas que ya han sido desmoronadas.
 
 : (rocks)-clue$  ( -- ca len )
-  s" Son" s{ s" muchas" s" muy" s? s" numerosas" s& }s& comma+
+  s" Son" s{ s" muchas" s" muy" s? s" numerosas" s& }s bs& comma+
   s" aunque no parecen demasiado pesadas y" s&
   s{ s" pueden verse" s" se ven" s" hay" }s s" algunos huecos" s&
   s" entre ellas" rnd2swap s& s&  ;
   \ Devuelve una descripción de las rocas que sirve de pista.
 
 : from-that-way$  ( -- u )
-  s" de" s{ s" esa dirección" s" allí" s" ahí" s" allá" }s&  ;
+  s" de" s{ s" esa dirección" s" allí" s" ahí" s" allá" }s bs&  ;
 
 : that-way$  ( -- ca len )
-  s{ s" en esa dirección" s" por" s{ s" ahí" s" allí" s" allá" }s& }s  ;
+  s{ s" en esa dirección" s" por" s{ s" ahí" s" allí" s" allá" }s bs& }s  ;
   \ Devuelve una variante de «en esa dirección».
 
 : ^that-way$  ( -- ca len )
@@ -450,7 +450,7 @@ s" de Westmorland" sconstant of-westmorland$
   s{
   s" se" s{ s" ensancha" s" va ensanchando"
   s" va haciendo más ancho" s" hace más ancho"
-  s" vuelve más ancho" s" va volviendo más ancho" }s&
+  s" vuelve más ancho" s" va volviendo más ancho" }s bs&
   2dup 2dup 2dup \ Aumentar las probabilidades de la primera variante
   s{ s" ensánchase" s" hácese más ancho" s" vuélvese más ancho" }s
   }s  ;
@@ -476,10 +476,10 @@ s" de Westmorland" sconstant of-westmorland$
 
 : gets-narrower(f)$  ( -- ca len )
   s{
-  s" se" s{ s" estrecha" s" va estrechando" }s&
+  s" se" s{ s" estrecha" s" va estrechando" }s bs&
   2dup \ Aumentar las probabilidades de la primera variante
   s" se" s{ s" va haciendo más" s" hace más"
-  s" vuelve más" s" va volviendo más" }s& narrow(f)$ s&
+  s" vuelve más" s" va volviendo más" }s bs& narrow(f)$ s&
   2dup \ Aumentar las probabilidades de la segunda variante
   s{ s" estréchase" s{ s" hácese" s" vuélvese" }s s" más" s& narrow(f)$ s& }s
   }s  ;
@@ -514,12 +514,12 @@ s" de Westmorland" sconstant of-westmorland$
 
 : a-snake-blocks-the-way$  ( -- ca len )
   s" Una serpiente"
-  s{ s" bloquea" s" está bloqueando" }s&
-  the-pass$ s& toward-the(m)$ s" sur" s& s?&  ;
+  s{ s" bloquea" s" está bloqueando" }s bs&
+  the-pass$ s& toward-the(m)$ s" sur" s& s? bs&  ;
 
 : the-water-current$  ( -- ca len )
-  s" la" s{ s" caudalosa" s" furiosa" s" fuerte" s" brava" }s&
-  s" corriente" s& s" de agua" s?&  ;
+  s" la" s{ s" caudalosa" s" furiosa" s" fuerte" s" brava" }s bs&
+  s" corriente" s& s" de agua" s? bs&  ;
 
 : ^the-water-current$  ( -- ca len )
   the-water-current$ ^uppercase  ;
@@ -555,18 +555,18 @@ s" de Westmorland" sconstant of-westmorland$
 : wanted-peace$  ( -- ca len )
   s{  s" la" s" que haya"
       s" poder" s? s" vivir en" s&
-      s{ s" tener" s" poder tener" s" poder disfrutar de" }s? s" una vida en" s&
-      s" que" s{ s" reine" s" llegue" }s& s" la" s&
+      s{ s" tener" s" poder tener" s" poder disfrutar de" }s s? s" una vida en" s&
+      s" que" s{ s" reine" s" llegue" }s bs& s" la" s&
   }s s" paz." s&  ;
   \ Texto «la paz», parte final de los mensajes «Queremos/Quieren la paz».
 
 : they-want-peace$  ( -- ca len )
-  only$ s{ s" buscan" s" quieren" s" desean" s" anhelan" }s&
+  only$ s{ s" buscan" s" quieren" s" desean" s" anhelan" }s bs&
   wanted-peace$ s&  ;
   \ Mensaje «quieren la paz».
 
 : we-want-peace$  ( -- ca len )
-  ^only$ s{ s" buscamos" s" queremos" s" deseamos" s" anhelamos" }s&
+  ^only$ s{ s" buscamos" s" queremos" s" deseamos" s" anhelamos" }s bs&
   wanted-peace$ s&  ;
   \ Mensaje «Queremos la paz».
 
@@ -581,8 +581,8 @@ s" de Westmorland" sconstant of-westmorland$
 
 : more-carefully$  ( -- ca len )
   s{  s" mejor"
-      s" con" s{ s" más" s" un" s? s" mayor" s& s" algo más de" }s&
-        s{ s" detenimiento" s" cuidado" s" detalle" }s&
+      s" con" s{ s" más" s" un" s? s" mayor" s& s" algo más de" }s bs&
+        s{ s" detenimiento" s" cuidado" s" detalle" }s bs&
   }s  ;
 
 : finally$  ( -- ca len )
@@ -594,7 +594,7 @@ s" de Westmorland" sconstant of-westmorland$
   finally$ ^uppercase  ;
 
 : rocky(f)$  ( -- ca len )
-  s{ s" rocosa" s" de roca" s" s" s?+ }s  ;
+  s{ s" rocosa" s" de roca" s" s" s? bs+ }s  ;
 
 : using$  ( -- ca len )
   s{ s" Con la ayuda de"

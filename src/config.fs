@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607112348
+\ Last update: 201607202057
 
 \ Note: The comments of the code are in Spanish.
 
@@ -18,6 +18,7 @@ get-current forth-wordlist set-current
 
 require galope/colors.fs      \ color constants
 require galope/sourcepath.fs  \ `sourcepath`
+require galope/stringer.fs    \ Circular string buffer
 
 \ Forth Foundation Library
 \ http://irdvo.github.io/ffl/
@@ -50,7 +51,7 @@ svariable temporary-config-file  temporary-config-file off
 
 : current-config-file$  ( -- ca len )
   temporary-config-file count dup
-  if    >sb temporary-config-file off
+  if    >stringer temporary-config-file off
   else  2drop default-config-file$  then  ;
   \ Fichero de configuración actual: el temporal especificado en un
   \ comando o, si su nombre está vacío, el predeterminado. Sin ruta
