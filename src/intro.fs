@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607202048
+\ Last update: 201607202136
 
 \ Note: The comments of the code are in Spanish.
 
@@ -18,6 +18,7 @@ get-current forth-wordlist set-current
 
 require galope/bracket-false.fs   \ `[false]`
 require galope/random_strings.fs
+require galope/txt-plus.fs        \ `txt+`
 
 set-current
 
@@ -28,53 +29,53 @@ set-current
 
 : intro-0  ( -- )
   s{
-  s{ s" El " s" La luz del" }s sun$ s&
-    s{ s" despunta de entre" s" penetra en" s" atraviesa" s" corta" }s bs&
-  s" Los rayos del" sun$ s&
-    s{ s" despuntan de entre" s" penetran en" s" atraviesan" s" cortan" }s bs&
+  s{ s" El " s" La luz del" }s sun$ txt+
+    s{ s" despunta de entre" s" penetra en" s" atraviesa" s" corta" }s txt+
+  s" Los rayos del" sun$ txt+
+    s{ s" despuntan de entre" s" penetran en" s" atraviesan" s" cortan" }s txt+
   }s
-  s" la" s& s" densa" s? bs& s" niebla," s&
-  s" haciendo humear los" s& s" pobres" s? bs& s" tejados de paja." s&
+  s" la" txt+ s" densa" s? txt+ s" niebla," txt+
+  s" haciendo humear los" txt+ s" pobres" s? txt+ s" tejados de paja." txt+
   narrate  narration-break  ;
   \ Muestra la introducción al juego (parte 0).
 
 : intro-1  ( -- )
   s" Piensas en"
   s{ s" el encargo de"
-  s" la" s{ s" tarea" s" misión" }s bs& s" encomendada por" s&
-  s" la orden dada por" s" las órdenes de" }s bs&
-  s{ s" Uther Pendragon" s" , tu rey" s? bs+ s" tu rey" }s bs& \ XXX TMP
+  s" la" s{ s" tarea" s" misión" }s txt+ s" encomendada por" txt+
+  s" la orden dada por" s" las órdenes de" }s txt+
+  s{ s" Uther Pendragon" s" , tu rey" s? s+ s" tu rey" }s txt+ \ XXX TMP
   s" ..." s+
   narrate  narration-break  ;
   \ Muestra la introducción al juego (parte 1).
 
 : intro-2  ( -- )
-  s{ s" Atacar" s" Arrasar" s" Destruir" }s s" una" s&
-  s" aldea" s{ s" tranquila" s" pacífica" }s rnd2swap s& s&
-  s" , aunque" s+ s{ s" se trate de una" s" sea una" s" esté" }s bs&
-  s{ s" llena de" s" habitada por" s" repleta de" }s bs&
-  s" sajones, no te" bs& s{ s" llena" s" colma" }s bs&
-  s" de orgullo." s&
+  s{ s" Atacar" s" Arrasar" s" Destruir" }s s" una" txt+
+  s" aldea" s{ s" tranquila" s" pacífica" }s rnd2swap txt+ txt+
+  s" , aunque" s+ s{ s" se trate de una" s" sea una" s" esté" }s txt+
+  s{ s" llena de" s" habitada por" s" repleta de" }s txt+
+  s" sajones, no te" txt+ s{ s" llena" s" colma" }s txt+
+  s" de orgullo." txt+
   narrate  narration-break  ;
   \ Muestra la introducción al juego (parte 2).
 
 : intro-3  ( -- )
   ^your-soldiers$ s{
-    s" se" s{ s" lanzan" s" arrojan" }s bs& s" sobre" s&
-    s" se" s{ s" amparan" s" apoderan" }s bs& s" de" s&
+    s" se" s{ s" lanzan" s" arrojan" }s txt+ s" sobre" txt+
+    s" se" s{ s" amparan" s" apoderan" }s txt+ s" de" txt+
     s{ s" rodean" s" cercan" }s
-  }s bs& s" la aldea y la" s&
-  s{ s" destruyen." s" arrasan." }s bs&
-  s" No hubo" bs& s{
+  }s txt+ s" la aldea y la" txt+
+  s{ s" destruyen." s" arrasan." }s txt+
+  s" No hubo" txt+ s{
     s" tropas enemigas"
     s" ejército enemigo"
     s" guerreros enemigos"
-  }s bs&
+  }s txt+
   s{
-    s"  ni honor" s" alguno" s? bs&
-    s" , como tampoco honor" s" alguno" s? bs& comma+
-  }s bs+
-  s" en" s& s{ s" la batalla" s" el combate" s" la lucha" s" la pelea" }s bs& period+
+    s"  ni honor" s" alguno" s? txt+
+    s" , como tampoco honor" s" alguno" s? txt+ comma+
+  }s s+
+  s" en" txt+ s{ s" la batalla" s" el combate" s" la lucha" s" la pelea" }s txt+ period+
   narrate  scene-break  ;
   \ Muestra la introducción al juego (parte 3).
 
@@ -82,20 +83,20 @@ set-current
   sire,$ s{
   s" el asalto" s" el combate" s" la batalla"
   s" la lucha" s" todo"
-  }s bs& s" ha" bs& s{ s" terminado" s" concluido" }s bs&
+  }s txt+ s" ha" txt+ s{ s" terminado" s" concluido" }s txt+
   period+ speak  ;
   \ Muestra la introducción al juego (parte 4).
 
 : needed-orders$  ( -- ca len )
-  s" órdenes" s{ null$ s" necesarias" s" pertinentes" }s bs&  ;
+  s" órdenes" s{ null$ s" necesarias" s" pertinentes" }s txt+  ;
   \ Devuelve una variante de «órdenes necesarias».
 
 : intro-5  ( -- )
   s" Lentamente," s{
   s" ordenas"
   s" das la orden de"
-  s" das las" needed-orders$ s& s" para" s&
-  }s bs& to-go-back$ s& s" a casa." s&
+  s" das las" needed-orders$ txt+ s" para" txt+
+  }s txt+ to-go-back$ txt+ s" a casa." txt+
   narrate  narration-break  ;
   \ Muestra la introducción al juego (parte 5).
 

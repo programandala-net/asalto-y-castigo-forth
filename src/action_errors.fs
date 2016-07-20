@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607202045
+\ Last update: 201607202133
 
 \ Note: The comments of the code are in Spanish.
 
@@ -18,6 +18,7 @@ get-current forth-wordlist set-current
 
 require galope/choose.fs          \ `choose`
 require galope/random_strings.fs
+require galope/txt-plus.fs        \ `txt+`
 
 set-current
 
@@ -42,13 +43,13 @@ is generic-action-error
 \ Errores específicos
 
 : >known-is-not-here$  ( a -- ca len )
-  >r s{ r@ ^full-name s" no está aquí" s&
-        s" Aquí no está" r> full-name s& }s  ;
+  >r s{ r@ ^full-name s" no está aquí" txt+
+        s" Aquí no está" r> full-name txt+ }s  ;
   \  Devuelve mensaje de que un ente conocido no está presente.
 
 : >unknown-is-not-here$  ( a -- ca len )
-  s{ s" Aquí" s" Por aquí" }s s" no hay" s&
-  rot subjective-negative-name s&  ;
+  s{ s" Aquí" s" Por aquí" }s s" no hay" txt+
+  rot subjective-negative-name txt+  ;
   \  Devuelve mensaje de que un ente desconocido no está presente
 
 :noname  ( a -- )
@@ -62,7 +63,7 @@ is is-not-here.error
 
 :noname  ( a -- )
   ^cannot-see$
-  rot subjective-negative-name-as-direct-object s&
+  rot subjective-negative-name-as-direct-object txt+
   period+ action-error  ;
   \ Informa de que el ente _a_ no puede ser visto.
 
@@ -79,7 +80,7 @@ is cannot-be-seen.error
   s" eso"
   s" semejante cosa"
   s" tal cosa"
-  s" una cosa así" }s bs&  ;
+  s" una cosa así" }s txt+  ;
   \ Devuelve una variante de «hacer eso».
 
 : is-impossible$  ( -- ca len )
@@ -102,12 +103,12 @@ is cannot-be-seen.error
   \ acción.
 
 : x-is-impossible$  ( ca1 len1 -- ca2 len2 )
-  dup if    ^uppercase is-impossible$ s&
+  dup if    ^uppercase is-impossible$ txt+
       else  2drop ^is-impossible$  then  ;
   \ Devuelve una variante de «X es imposible».
 
 : it-is-impossible-x$  ( ca1 len1 -- ca2 len2 )
-  ^is-impossible$ 2swap s&  ;
+  ^is-impossible$ 2swap txt+  ;
   \ Devuelve una variante de «Es imposible x».
 
 :noname  ( ca len -- )
@@ -151,12 +152,12 @@ is impossible.error
   \ que formará parte de mensajes personalizados por cada acción.
 
 : x-is-nonsense$  ( ca1 len1 -- ca2 len2 )
-  dup if    try$ 2swap s& ^uppercase nonsense$ s&
+  dup if    try$ 2swap txt+ ^uppercase nonsense$ txt+
       else  2drop ^nonsense$  then  ;
   \ Devuelve una variante de «X no tiene sentido».
 
 : it-is-nonsense-x$  ( ca1 len1 -- ca2 len2 )
-  ^nonsense$ try$ s& 2swap s&  ;
+  ^nonsense$ try$ txt+ 2swap txt+  ;
   \ Devuelve una variante de «No tiene sentido x».
 
 :noname  ( ca len -- )
@@ -202,12 +203,12 @@ is nonsense.error
   \ acción.
 
 : x-is-dangerous$  ( ca1 len1 -- ca2 len2 )
-  dup if    try$ 2swap s& ^uppercase dangerous$ s&
+  dup if    try$ 2swap txt+ ^uppercase dangerous$ txt+
       else  2drop ^dangerous$  then  ;
   \ Devuelve una variante de «X es peligroso».
 
 : it-is-dangerous-x$  ( ca1 len1 -- ca2 len2 )
-  ^dangerous$ try$ s& 2swap s&  ;
+  ^dangerous$ try$ txt+ 2swap txt+  ;
   \ Devuelve una variante de «Es peligroso x».
 
 :noname  ( ca len -- )
@@ -228,22 +229,22 @@ is dangerous.error
 : no-reason-for$  ( -- ca len )
   s" No hay" s{
     s" nada que justifique"
-    s{  s" necesidad" s" alguna" s? bs&
+    s{  s" necesidad" s" alguna" s? txt+
         s" ninguna necesidad"
-    }s s" de" s&
+    }s s" de" txt+
     s{  s" ninguna razón"
         s" ningún motivo"
-        s" motivo" s" alguno" s? bs&
-        s" razón" s" alguna" s? bs&
-    }s s" para" s&
-  }s bs&  ;
+        s" motivo" s" alguno" s? txt+
+        s" razón" s" alguna" s? txt+
+    }s s" para" txt+
+  }s txt+  ;
   \ Devuelve una variante de «no hay motivo para».
   \ XXX TODO -- quitar las variantes que no sean adecuadas a todos los casos
   \ XXX TODO -- añadir «no es menester/necesario»
   \ XXX TODO -- añadir «no hay lugar»
 
 :noname  ( ca len -- )
-  no-reason-for$ 2swap s& period+ action-error  ;
+  no-reason-for$ 2swap txt+ period+ action-error  ;
   \ Informa de que no hay motivo para una acción (en infinitivo) _ca
   \ len_.
 
@@ -263,13 +264,13 @@ is no-reason.error
   s" Seguro que hay"
   s" Sin duda hay"
   }s
-  s{ s" cosas" s" tareas" s" asuntos" s" cuestiones" }s bs&
-  s" más" s&
-  s{ s" importantes" s" urgentes" s" útiles" }s bs&
+  s{ s" cosas" s" tareas" s" asuntos" s" cuestiones" }s txt+
+  s" más" txt+
+  s{ s" importantes" s" urgentes" s" útiles" }s txt+
   s{
   null$ s" a que prestar atención" s" de que ocuparse"
   s" para ocuparse" s" para prestarles atención"
-  }s bs&  ;
+  }s txt+  ;
   \ Primera versión posible del mensaje de `do-not-worry`.
 
 : (do-not-worry-1)$  ( -- a u)
@@ -283,19 +284,19 @@ is no-reason.error
   \ s" parece necesario"
   s" tiene importancia"
   s" tiene utilidad"
-  }s bs&  ;
+  }s txt+  ;
   \ Segunda versión posible del mensaje de `do-not-worry`.
 
 :noname  ( -- )
   ['] (do-not-worry-0)$
   ['] (do-not-worry-1)$ 2 choose execute
-  now-or-null$ s&  period+ action-error  ;
+  now-or-null$ txt+  period+ action-error  ;
   \ Informa de que una acción no tiene importancia.
 
 is do-not-worry.error
 
 :noname  ( ca len a -- )
-  full-name s" No necesitas" 2swap s& s" para" s& 2swap s&
+  full-name s" No necesitas" 2swap txt+ s" para" txt+ 2swap txt+
   period+ action-error  ;
   \ Informa de que el ente _a_ es innecesario como
   \ herramienta para ejecutar una acción descrita en la cadena
@@ -305,12 +306,12 @@ is unnecessary-tool-for-that.error
 
 :noname  ( a -- )
   ['] full-name ['] negative-full-name 2 choose execute
-  s" No" s{ s" te" s? s" hace falta" s&
+  s" No" s{ s" te" s? s" hace falta" txt+
   s" necesitas" s" se necesita"
   s" precisas" s" se precisa"
-  s" hay necesidad de" s{ s" usar" s" emplear" s" utilizar" }s s? bs&
-  }s bs&  2swap s&
-  s{ s" para nada" s" para eso" }s s? bs&  period+ action-error  ;
+  s" hay necesidad de" s{ s" usar" s" emplear" s" utilizar" }s s? txt+
+  }s txt+  2swap txt+
+  s{ s" para nada" s" para eso" }s s? txt+  period+ action-error  ;
   \ Informa de que un ente _a_ es innecesario como herramienta
   \ para ejecutar una acción sin especificar.
   \
@@ -326,17 +327,17 @@ is unnecessary-tool.error
   \  o bien, al azar, "eso".
 
 : you-do-not-have-it-(0)$  ( a -- ca len )
-  s" No" you-carry$ s& rot >that$ s& with-you$ s&  ;
+  s" No" you-carry$ txt+ rot >that$ txt+ with-you$ txt+  ;
   \ Devuelve mensaje _ca len_ de que el protagonista no tiene un ente
   \ _a_ (variante 0).
 
 : you-do-not-have-it-(1)$  ( a -- ca len )
-  s" No" rot direct-pronoun s& you-carry$ s& with-you$ s&  ;
+  s" No" rot direct-pronoun txt+ you-carry$ txt+ with-you$ txt+  ;
   \ Devuelve mensaje _ca len_ de que el protagonista no tiene un ente
   \ _a_ (variante 1, solo para entes conocidos).
 
 : you-do-not-have-it-(2)$  ( a -- ca len )
-  s" No" you-carry$ s& rot full-name s& with-you$ s&  ;
+  s" No" you-carry$ txt+ rot full-name txt+ with-you$ txt+  ;
   \ Devuelve mensaje _ca len_ de que el protagonista no tiene un ente
   \ _a_ (variante 2, solo para entes no citados en el comando).
 
@@ -361,17 +362,17 @@ is is-not-hold.error
   s" hacerlo" s?  ;
 
 : possible-to-do$  ( -- ca len )
-  it-is$ s" posible" s& to-do-it$ s&  ;
+  it-is$ s" posible" txt+ to-do-it$ txt+  ;
 
 : impossible-to-do$  ( -- ca len )
-  it-is$ s" imposible" s& to-do-it$ s&  ;
+  it-is$ s" imposible" txt+ to-do-it$ txt+  ;
 
 : can-be-done$  ( -- ca len )
   s{ s" podrá" s" podría" s" puede" }s
-  s" hacerse" s&  ;
+  s" hacerse" txt+  ;
 
 : can-not-be-done$  ( -- ca len )
-  s" no" can-be-done$ s&  ;
+  s" no" can-be-done$ txt+  ;
 
 : only-by-hand$  ( -- ca len )
   s{
@@ -393,30 +394,30 @@ is is-not-hold.error
 : not-by-hand-0$  ( -- ca len )
   it-seems$
   s{
-    s" no" possible-to-do$ s&
+    s" no" possible-to-do$ txt+
     impossible-to-do$
     can-not-be-done$
-  }s bs&
-  only-by-hand$ s& period+ ^uppercase  ;
+  }s txt+
+  only-by-hand$ txt+ period+ ^uppercase  ;
   \ Devuelve la primera versión del mensaje de `not-by-hand.error`.
 
 : some-tool$  ( -- ca len )
   s{
-  s{ s" la" s" alguna" s" una" }s s" herramienta" s&
-  s{ s" adecuada" s" apropiada" }s bs&
-  s{ s" el" s" algún" s" un" }s s" instrumento" s&
-  s{ s" adecuado" s" apropiado" }s bs&
+  s{ s" la" s" alguna" s" una" }s s" herramienta" txt+
+  s{ s" adecuada" s" apropiada" }s txt+
+  s{ s" el" s" algún" s" un" }s s" instrumento" txt+
+  s{ s" adecuado" s" apropiado" }s txt+
   }s  ;
 
 : not-by-hand-1$  ( -- ca len )
   it-seems$
   s{
-    s{ s" hará" s" haría" s" hace" }s s" falta" s&
+    s{ s" hará" s" haría" s" hace" }s s" falta" txt+
     s{
-      s{ s" será" s" sería" s" es" }s s" menester" s&
-      s{ s" habrá" s" habría" s" hay" }s s" que" s&
-    }s s{ s" usar" s" utilizar" s" emplear" }s bs&
-  }s bs& some-tool$ s& period+ ^uppercase  ;
+      s{ s" será" s" sería" s" es" }s s" menester" txt+
+      s{ s" habrá" s" habría" s" hay" }s s" que" txt+
+    }s s{ s" usar" s" utilizar" s" emplear" }s txt+
+  }s txt+ some-tool$ txt+ period+ ^uppercase  ;
   \ Devuelve la segunda versión del mensaje de `not-by-hand.error`.
 
 : not-by-hand$  ( -- ca len )
@@ -436,12 +437,12 @@ is not-by-hand.error
 is is-needed.error
 
 : >you-already-have-it-(0)$  ( a -- ca len )
-  s" Ya" you-carry$ s& rot >that$ s& with-you$ s&  ;
+  s" Ya" you-carry$ txt+ rot >that$ txt+ with-you$ txt+  ;
   \ Devuelve mensaje _ca len_ de que el protagonista ya tiene un ente
   \ _a_ (variante 0).
 
 : >you-already-have-it-(1)$  ( a -- ca len )
-  s" Ya" rot direct-pronoun s& you-carry$ s& with-you$ s&  ;
+  s" Ya" rot direct-pronoun txt+ you-carry$ txt+ with-you$ txt+  ;
   \ Devuelve mensaje _ca len_ de que el protagonista ya tiene un ente
   \ _a_ (variante 1, solo para entes conocidos).
 
@@ -458,7 +459,7 @@ is is-hold.error
 
 : >you-do-not-wear-it$  ( a -- ca len )
   >r s" No llevas puest" r@ noun-ending+
-  r> full-name s& period+  ;
+  r> full-name txt+ period+  ;
   \ Devuelve un mensaje _ca len_ de que el protagonista no lleva
   \ puesto un ente prenda _a_.
 
@@ -473,7 +474,7 @@ is is-not-worn-by-me.error
 
 :noname  ( a -- )
   >r s" Ya llevas puest" r@ noun-ending+
-  r> full-name s& period+ action-error  ;
+  r> full-name txt+ period+ action-error  ;
   \ Informa de que el protagonista lleva puesto un ente prenda _a_.
 
 is is-worn-by-me.error
@@ -482,8 +483,8 @@ is is-worn-by-me.error
   full-name 2>r
   s{ s" Con eso no..."
      s" No con eso..."
-     s" Con" 2r@ s& s" no..." s&
-     s" No con" 2r> s& s" ..." s&
+     s" Con" 2r@ txt+ s" no..." txt+
+     s" No con" 2r> txt+ s" ..." txt+
   }s  ;
   \ Devuelve una variante _ca len_ del mensaje de «Con eso no», para
   \ el ente _a_.
@@ -496,7 +497,7 @@ is is-worn-by-me.error
 is wrong-tool.error
 
 :noname  ( a -- )
-  s" Lo intentas con" rot full-name s&
+  s" Lo intentas con" rot full-name txt+
   s" , pero no sirve de nada." s+ action-error  ;
   \ Informa de que el ente herramienta _a_ no es adecuado.
   \ XXX TODO -- variar el mensaje
@@ -521,15 +522,15 @@ is is-closed.error
   dup >r  has-no-article?
   if    s" hacia" r> full-name
   else  toward-the(m)$ r> name
-  then  s&  ;
+  then  txt+  ;
   \ Devuelve en _ca len_ variante de mensaje «al/hacia la dirección
   \ indicada», correspondiente al ente dirección _a_.
 
 :noname  ( a -- )
-  ^is-impossible$ s" ir" s&  rot
+  ^is-impossible$ s" ir" txt+  rot
   3 random if    >toward-that-direction$
            else  drop that-way$
-           then  s& period+ action-error  ;
+           then  txt+ period+ action-error  ;
   \ Informa de que el movimiento es imposible hacia el ente dirección
   \ _a_.
   \

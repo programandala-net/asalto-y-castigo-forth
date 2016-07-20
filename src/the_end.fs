@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607202048
+\ Last update: 201607202140
 
 \ Note: The comments of the code are in Spanish.
 
@@ -18,6 +18,7 @@ get-current forth-wordlist set-current
 
 require galope/question-question.fs  \ `??`
 require galope/random_strings.fs
+require galope/txt-plus.fs           \ `txt+`
 
 set-current
 
@@ -46,26 +47,26 @@ false [if]
   \ Abandona el programa.
 
 : play-again?$  ( -- ca len )
-  s{ s" ¿Quieres" s" ¿Te" s{ s" animas a" s" apetece" }s bs& }s
-  s{ s" jugar" s" empezar" }s bs&  again?$ s&  ;
+  s{ s" ¿Quieres" s" ¿Te" s{ s" animas a" s" apetece" }s txt+ }s
+  s{ s" jugar" s" empezar" }s txt+  again?$ txt+  ;
   \ Devuelve la pregunta que se hace al jugador tras haber completado
   \ con éxito el juego.
 
 : retry?0$  ( -- ca len )
   s" ¿Tienes"
-  s{ s" fuerzas" s" arrestos" s" agallas" s" energías" s" ánimos" }s bs&  ;
+  s{ s" fuerzas" s" arrestos" s" agallas" s" energías" s" ánimos" }s txt+  ;
   \ Devuelve una variante para el comienzo de la pregunta que se hace
   \ al jugador tras haber fracasado.
 
 : retry?1$  ( -- ca len )
   s{ s" ¿Te quedan" s" ¿Guardas" s" ¿Conservas" }s
-  s{ s" fuerzas" s" energías" s" ánimos" }s bs&  ;
+  s{ s" fuerzas" s" energías" s" ánimos" }s txt+  ;
   \ Devuelve una variante para el comienzo de la pregunta que se hace
   \ al jugador tras haber fracasado.
 
 : retry?$  ( -- ca len )
-  s{ retry?0$ retry?1$ }s s" para" s&
-  s{ s" jugar" s" probar" s" intentarlo" }s bs& again?$ s&  ;
+  s{ retry?0$ retry?1$ }s s" para" txt+
+  s{ s" jugar" s" probar" s" intentarlo" }s txt+ again?$ txt+  ;
   \ Devuelve la pregunta que se hace al jugador tras haber fracasado.
 
 : enough?  ( -- f )
@@ -79,13 +80,13 @@ false [if]
   s" ¿Quieres"
   s" ¿En serio quieres"
   s" ¿De verdad quieres"
-  s" ¿Estás segur" player-gender-ending$+ s" de que quieres" s&
-  s" ¿Estás decidid" player-gender-ending$+ s" a" s&
+  s" ¿Estás segur" player-gender-ending$+ s" de que quieres" txt+
+  s" ¿Estás decidid" player-gender-ending$+ s" a" txt+
   }s s{
   s" dejarlo?"
   s" rendirte?"
   s" abandonar?"
-  }s bs&  ;
+  }s txt+  ;
   \ Devuelve la pregunta de si el jugador quiere dejar el juego.
 
 : surrender?  ( -- f )
@@ -96,28 +97,28 @@ false [if]
   \ ¿Se terminó ya el juego?
 
 : the-favorite-says$  ( -- ca len )
-  s" te" s{ s" indica" s" hace saber" }s bs&
-  s" el valido" s&  ;
+  s" te" s{ s" indica" s" hace saber" }s txt+
+  s" el valido" txt+  ;
 
 : do-not-disturb$  ( -- ca len )
   s" ha" s{
   s" ordenado"
   s" dado órdenes de"
-  s" dado" s" la" s? bs& s" orden de" s&
-  }s bs& s" que" s& s{ s" nadie" s" no se" }s bs&
-  s" lo moleste" s& comma+  ;
+  s" dado" s" la" s? txt+ s" orden de" txt+
+  }s txt+ s" que" txt+ s{ s" nadie" s" no se" }s txt+
+  s" lo moleste" txt+ comma+  ;
 
 : favorite's-speech$  ( -- ca len )
   s" El rey"  castilian-quotes? @
-  if    rquote$ s+ comma+ the-favorite-says$ s& comma+
-        lquote$ do-not-disturb$ s+ s&
-  else  dash$ the-favorite-says$ s+ dash$ s+ comma+ s&
-        do-not-disturb$ s&
-  then  s" pues sufre una amarga tristeza." s&  ;
+  if    rquote$ s+ comma+ the-favorite-says$ txt+ comma+
+        lquote$ do-not-disturb$ s+ txt+
+  else  dash$ the-favorite-says$ s+ dash$ s+ comma+ txt+
+        do-not-disturb$ txt+
+  then  s" pues sufre una amarga tristeza." txt+  ;
 
 : the-happy-end  ( -- )
   s" Agotado, das parte en el castillo de tu llegada"
-  s" y de lo que ha pasado." s&
+  s" y de lo que ha pasado." txt+
   narrate  narration-break
   s" Pides audiencia al rey, Uther Pendragon."
   narrate  scene-break
@@ -125,36 +126,36 @@ false [if]
   s" No puedes entenderlo. El rey, tu amigo."
   narrate  narration-break
   s" Agotado, decepcionado, apesadumbrado,"
-  s" decides ir a dormir a tu casa." s&
-  s" Es lo poco que puedes hacer." s&
+  s" decides ir a dormir a tu casa." txt+
+  s" Es lo poco que puedes hacer." txt+
   narrate  narration-break
   s" Te has ganado un buen descanso."
   narrate  ;
   \ Final del juego con éxito.
 
 : ransom$  ( -- ca len )
-  s" un" s{ s" buen" s" suculento" }s bs& s" rescate" s&  ;
+  s" un" s{ s" buen" s" suculento" }s txt+ s" rescate" txt+  ;
 
 : my-lucky-day$  ( -- ca len )
-  s{  s" Hoy" s{ s" es" s" parece ser" s" sin duda es" s" al parecer es" }s bs&
+  s{  s" Hoy" s{ s" es" s" parece ser" s" sin duda es" s" al parecer es" }s txt+
       s{  s" Sin duda" s" No cabe duda de que"
           s" Parece que" s" Por lo que parece"
-      }s s" hoy es" s&
-  }s s{ s" un" s" mi" }s bs& s" día" s&
-  s{ s" de suerte" s" afortunado" }s bs& s" ..." s+  ;
+      }s s" hoy es" txt+
+  }s s{ s" un" s" mi" }s txt+ s" día" txt+
+  s{ s" de suerte" s" afortunado" }s txt+ s" ..." s+  ;
   \ Texto de las palabras del general enemigo.
 
 : enemy-speech$  ( -- ca len )
   my-lucky-day$
-  s{ s" Bien, bien..." s" Excelente..." }s bs&
+  s{ s" Bien, bien..." s" Excelente..." }s txt+
   s{  s" Por el gran Ulfius"
-        s{  s" podremos" s{ s" pedir" s" negociar" s" exigir" }s bs&
+        s{  s" podremos" s{ s" pedir" s" negociar" s" exigir" }s txt+
             s" pediremos" s" exigiremos" s" nos darán" s" negociaremos"
-        }s bs& ransom$ s&
-      s" Del gran Ulfius" s{ s" podremos" s" lograremos" }s bs&
-        s{ s" sacar" s" obtener" }s bs&
-        s{ ransom$ s{ s" alguna" s" una" }s s" buena ventaja" s& }s bs&
-  }s bs&  ;
+        }s txt+ ransom$ txt+
+      s" Del gran Ulfius" s{ s" podremos" s" lograremos" }s txt+
+        s{ s" sacar" s" obtener" }s txt+
+        s{ ransom$ s{ s" alguna" s" una" }s s" buena ventaja" txt+ }s txt+
+  }s txt+  ;
 
 : enemy-speech  ( -- )  enemy-speech$ period+  speak  ;
   \ Palabras del general enemigo.
@@ -165,23 +166,23 @@ false [if]
   location-10~ am-i-there? if
     \ XXX TODO -- ampliar y variar
     comma+
-    s" que te han visto entrar," s&
-    s" siguen tus pasos y" s&
+    s" que te han visto entrar," txt+
+    s" siguen tus pasos y" txt+
   then
   \ XXX TODO -- ampliar, explicar por qué no lo matan
-  s" te" s&
-  s{ s" hacen prisionero" s" capturan" s" atrapan" }s bs& period+
-  s" Su general" s&
-  s" , que no tarda en" s{ s" llegar" s" aparecer" }s bs& comma+ s? bs+
-  s" te" bs& s{
-    s" reconoce" s{ s" enseguida" s" de immediato" s" al instante" }s bs&
+  s" te" txt+
+  s{ s" hacen prisionero" s" capturan" s" atrapan" }s txt+ period+
+  s" Su general" txt+
+  s" , que no tarda en" s{ s" llegar" s" aparecer" }s txt+ comma+ s? s+
+  s" te" txt+ s{
+    s" reconoce" s{ s" enseguida" s" de immediato" s" al instante" }s txt+
     s{ s" contempla" s" observa" s" mira" }s
-      s" durante" s? bs& s{ s" un momento" s" un instante" }s bs&
-  }s bs& s" y" s& comma+
-  s{  s" sonriendo" s{ s" ampliamente" s" despectivamente" s" cruelmente" }s bs&
-      s" con una" s{ s" amplia" s" cruel" s" despectiva" }s bs& s" sonrisa" s&
-  }s bs& comma+
-  s{  s" exclama" s" dice" }s bs& colon+ ^uppercase narrate
+      s" durante" s? txt+ s{ s" un momento" s" un instante" }s txt+
+  }s txt+ s" y" txt+ comma+
+  s{  s" sonriendo" s{ s" ampliamente" s" despectivamente" s" cruelmente" }s txt+
+      s" con una" s{ s" amplia" s" cruel" s" despectiva" }s txt+ s" sonrisa" txt+
+  }s txt+ comma+
+  s{  s" exclama" s" dice" }s txt+ colon+ ^uppercase narrate
   narration-break enemy-speech  ;
   \ Final del juego con fracaso.
 

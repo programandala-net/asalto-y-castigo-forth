@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607202059
+\ Last update: 201607202134
 
 \ Note: The comments of the code are in Spanish.
 
@@ -26,6 +26,7 @@ require galope/random_strings.fs
 require galope/shuffle.fs             \ `shuffle`
 require galope/stringer.fs            \ Circular string buffer
 require galope/svariable.fs           \ `svariable`
+require galope/txt-plus.fs            \ `txt+`
 require galope/to-yyyymmddhhmmss.fs   \ `>yyyymmddhhss`
 require galope/two-choose.fs          \ `2choose`
 require galope/ends-question.fs       \ `ends?`
@@ -163,31 +164,31 @@ variable #free-exits
 
 : no-exit$  ( -- ca len )
   s" No hay"
-  s{ s" salidas" s" salida" s" ninguna salida" }s bs&  ;
+  s{ s" salidas" s" salida" s" ninguna salida" }s txt+  ;
   \ Devuelve mensaje usado cuando no hay salidas que listar.
 
 : go-out$  ( -- ca len )
   s{ s" salir" s" seguir" }s  ;
 
 : go-out-to& ( ca len -- ca1 len1 )
-  go-out$ s& s" hacia" s&  ;
+  go-out$ txt+ s" hacia" txt+  ;
 
 : one-exit-only$  ( -- ca len )
   s{
-  s" La única salida" possible1$ s& s" es" s& s" hacia" s? bs&
-  ^only$ s" hay salida" s& possible1$ s& s" hacia" s&
-  ^only$ s" es posible" s& go-out-to&
-  ^only$ s" se puede" s& go-out-to&
+  s" La única salida" possible1$ txt+ s" es" txt+ s" hacia" s? txt+
+  ^only$ s" hay salida" txt+ possible1$ txt+ s" hacia" txt+
+  ^only$ s" es posible" txt+ go-out-to&
+  ^only$ s" se puede" txt+ go-out-to&
   }s  ;
   \ Devuelve mensaje usado cuando solo hay una salidas que listar.
 
 : possible-exits$  ( -- ca len )
-  s" salidas" possible2$ s&  ;
+  s" salidas" possible2$ txt+  ;
 
 : several-exits$  ( -- ca len )
   s{
-  s" Hay" possible-exits$ s& s" hacia" s&
-  s" Las" possible-exits$ s& s" son" s&
+  s" Hay" possible-exits$ txt+ s" hacia" txt+
+  s" Las" possible-exits$ txt+ s" son" txt+
   }s  ;
   \ Devuelve mensaje usado cuando hay varias salidas que listar.
 
@@ -288,11 +289,11 @@ false [if]
 
 : >you-take-it$  ( a -- ca len )
   s{ s" Recoges" s" Tomas" s" Coges" }s
-  rot full-name s&  ;
+  rot full-name txt+  ;
   \ XXX TODO -- configurar español americano
 
 : >you-put-on$  ( a -- ca len )
-  s" Te pones" rot full-name s& period+  ;
+  s" Te pones" rot full-name txt+ period+  ;
 
 : silently-do-take  ( -- )
   show-well-done off  do-take  show-well-done on  ;
@@ -301,8 +302,8 @@ false [if]
   dup is-hold?
   if    dup >you-put-on$
   else  silently-do-take
-        dup dup >you-take-it$ s" y te" s&
-        rot direct-pronoun s& s" pones." s&
+        dup dup >you-take-it$ s" y te" txt+
+        rot direct-pronoun txt+ s" pones." txt+
   then  ( a ca len ) rot be-worn well-done-this  ;
   \ Ponerse una prenda.
   \ XXX TODO -- mejorar el mensaje
@@ -317,7 +318,7 @@ false [if]
   \ Acción de ponerse una prenda.
 
 : >you-take-off-it$  ( a -- ca len )
-  s" Te quitas" rot full-name s&  ;
+  s" Te quitas" rot full-name txt+  ;
 
 : you-take-off-main-complement$  ( -- ca len )
   main-complement >you-take-off-it$  ;
@@ -381,11 +382,11 @@ false [if]
 \   ;
 
 : cannot-take-the-flags.error  ( -- )
-  no-reason-for$ s" ofender a" s&
+  no-reason-for$ s" ofender a" txt+
   talked-to-the-leader?
   if    s" los refugiados."
   else  s{ s" esta gente." s" estas personas." s" nadie." }s
-  then  s& action-error  ;
+  then  txt+ action-error  ;
 
 : (do-take)  ( a -- )
   dup be-hold dup familiar++
@@ -407,7 +408,7 @@ false [if]
 
 : cannot-take-a-human  ( -- )
   no-reason-for$
-  s{ s" molestar" s" incomodar" s" ofender" }s bs&
+  s{ s" molestar" s" incomodar" s" ofender" }s txt+
   main-complement direct-pronoun s+ period+ narrate ;
 
 :noname  ( -- )
@@ -424,7 +425,7 @@ false [if]
 
 : >do-drop-done$  ( a -- ca1 len1 ) { object }
   s{ s" Te desprendes de" s" Dejas" }s
-  object full-name s& period+  ;
+  object full-name txt+ period+  ;
 
 : silently-do-take-off  ( -- )
   show-well-done off  do-take-off  show-well-done on  ;
@@ -432,9 +433,9 @@ false [if]
 : (do-drop)  ( a -- ) { object }
   object is-worn?
   if    silently-do-take-off
-        you-take-off-main-complement$ s" y" s&
-        s{ s" te desprendes de" object personal-pronoun s&
-        object direct-pronoun s" dejas" s& }s bs& period+
+        you-take-off-main-complement$ s" y" txt+
+        s{ s" te desprendes de" object personal-pronoun txt+
+        object direct-pronoun s" dejas" txt+ }s txt+ period+
   else  object >do-drop-done$
   then  ( ca len )  object be-here  well-done-this  ;
   \ Deja un ente _a_ que está en inventario.
@@ -456,8 +457,8 @@ false [if]
 \ Cerrar y abrir
 
 : first-close-the-door  ( -- )
-  s" cierras" s" primero" rnd2swap s& ^uppercase
-  door~ full-name s& period+ narrate
+  s" cierras" s" primero" rnd2swap txt+ ^uppercase
+  door~ full-name txt+ period+ narrate
   door~ be-closed  ;
   \ Informa de que la puerta está abierta
   \ y hay que cerrarla antes de poder cerrar el candado.
@@ -479,8 +480,8 @@ false [if]
 
 : .the-door-closes  ( -- )
   s" La puerta"
-  s{ s" rechina" s" emite un chirrido" }s bs&
-  s{ s" mientras la cierras" s" al cerrarse" }s bs&
+  s{ s" rechina" s" emite un chirrido" }s txt+
+  s{ s" mientras la cierras" s" al cerrarse" }s txt+
   period+ narrate  ;
   \ Muestra el mensaje de cierre de la puerta.
 
@@ -522,7 +523,7 @@ false [if]
   \ Acción de cerrar.
 
 : the-door-is-locked  ( -- )
-  lock~ ^full-name s" bloquea la puerta." s&
+  lock~ ^full-name s" bloquea la puerta." txt+
   narrate
   lock-found  ;
   \ Informa de que la puerta está cerrada por el candado.
@@ -532,7 +533,7 @@ false [if]
   the-door-is-locked
   key~ ?needed
   lock~ dup be-open
-  ^pronoun s" abres con" s& key~ full-name s& period+ narrate  ;
+  ^pronoun s" abres con" txt+ key~ full-name txt+ period+ narrate  ;
   \ Abrir la puerta candada, si es posible.
   \ XXX TODO -- falta mensaje adecuado sobre la llave que gira
 
@@ -553,12 +554,12 @@ false [if]
 
 : the-door-breaks-the-plants-0$  ( -- ca len )
   s{ s" mientras" s" al tiempo que" }s
-  the-plants$ s& s" se rompen en su trazado" s&  ;
+  the-plants$ txt+ s" se rompen en su trazado" txt+  ;
   \ Devuelve el mensaje sobre la rotura de las plantas por la puerta
   \ (primera variante).
 
 : the-door-breaks-the-plants-1$  ( -- ca len )
-  s" rompiendo" the-plants$ s& s" a su paso" s&  ;
+  s" rompiendo" the-plants$ txt+ s" a su paso" txt+  ;
   \ Devuelve el mensaje sobre la rotura de las plantas por la puerta
   \ (segunda variante).
 
@@ -573,38 +574,38 @@ false [if]
 : ambrosio-byes  ( -- )
   s" Ambrosio, alegre, se despide de ti:" narrate
   s{
-  s{ s" Tengo" s" Ten" }s s" por seguro" s&
-  s{ s" Estoy" s" Estate" }s s" seguro de" s&
-  s{ s" Tengo" s" Ten" }s s" la" s& s{ s" seguridad" s" certeza" }s bs& s" de" s&
-  s" No" s{ s" me cabe" s" te quepa" }s bs& s" duda de" s&
-  s" No" s{ s" dudo" s" dudes" }s bs&
-  }s s" que" s&
+  s{ s" Tengo" s" Ten" }s s" por seguro" txt+
+  s{ s" Estoy" s" Estate" }s s" seguro de" txt+
+  s{ s" Tengo" s" Ten" }s s" la" txt+ s{ s" seguridad" s" certeza" }s txt+ s" de" txt+
+  s" No" s{ s" me cabe" s" te quepa" }s txt+ s" duda de" txt+
+  s" No" s{ s" dudo" s" dudes" }s txt+
+  }s s" que" txt+
   s{
-  s" nos volveremos a" s{ s" encontrar" s" ver" }s bs& again$ s? bs&
-  s" volveremos a" s{ s" encontrarnos" s" vernos" }s bs& again$ s? bs&
-  s" nos" s{ s" encontraremos" s" veremos" }s bs& again$ s&
-  s" nuestros caminos" s{ s" volverán a cruzarse" s" se cruzarán" }s bs& again$ s&
-  }s bs& period+ speak
+  s" nos volveremos a" s{ s" encontrar" s" ver" }s txt+ again$ s? txt+
+  s" volveremos a" s{ s" encontrarnos" s" vernos" }s txt+ again$ s? txt+
+  s" nos" s{ s" encontraremos" s" veremos" }s txt+ again$ txt+
+  s" nuestros caminos" s{ s" volverán a cruzarse" s" se cruzarán" }s txt+ again$ txt+
+  }s txt+ period+ speak
   ^and|but$ s" , antes de que puedas" s+
-  s{ s" decir algo" s" corresponderle" s" responderle" s" despedirte" s" de él" s? bs& }s bs&
-  s" , te das cuenta de que" s+ s" Ambrosio" s? bs&
-  s" , misteriosamente," s? bs+
-  s{ s" ha desaparecido" s" se ha marchado" s" se ha ido" s" ya no está" }s bs&
+  s{ s" decir algo" s" corresponderle" s" responderle" s" despedirte" s" de él" s? txt+ }s txt+
+  s" , te das cuenta de que" s+ s" Ambrosio" s? txt+
+  s" , misteriosamente," s? s+
+  s{ s" ha desaparecido" s" se ha marchado" s" se ha ido" s" ya no está" }s txt+
   period+ narrate  ;
   \ Ambrosio se despide cuando se abre la puerta por primera vez.
 
 : the-door-opens-first-time$  ( -- ca len )
-  s" La puerta" s{ s" cede" s" se abre" }s bs&
-  s{ s" despacio" s" poco a poco" s" lentamente" }s bs&
-  s" y no sin" s&
-  s{ s" dificultad" s" ofrecer resistencia" }s bs& comma+
-  the-door-sounds$ comma+ s&
-  the-door-breaks-the-plants$ s& period+  ;
+  s" La puerta" s{ s" cede" s" se abre" }s txt+
+  s{ s" despacio" s" poco a poco" s" lentamente" }s txt+
+  s" y no sin" txt+
+  s{ s" dificultad" s" ofrecer resistencia" }s txt+ comma+
+  the-door-sounds$ comma+ txt+
+  the-door-breaks-the-plants$ txt+ period+  ;
   \ Devuelve el mensaje de apertura de la puerta
   \ la primera vez.
 
 : the-door-opens-once-more$  ( -- ca len )
-  s" La puerta se abre" the-door-sounds$ s& period+  ;
+  s" La puerta se abre" the-door-sounds$ txt+ period+  ;
   \ Devuelve el mensaje de apertura de la puerta
   \ la segunda y siguientes veces.
 
@@ -650,15 +651,15 @@ false [if]
 \ Agredir
 
 : the-snake-runs-away$  ( -- ca len )
-  s" la serpiente" s&
+  s" la serpiente" txt+
   s{ s" huye" s" se aleja" s" se esconde"
      s" se da a la fuga" s" se quita de enmedio"
-     s" se aparta" s" escapa" }s bs&
-  s{ null$ s" asustada" s" atemorizada" }s bs& period+  ;
+     s" se aparta" s" escapa" }s txt+
+  s{ null$ s" asustada" s" atemorizada" }s txt+ period+  ;
   \ Texto de que la serpiente huye.
 
 : the-snake-runs-away  ( ca len -- )
-  the-snake-runs-away$ s& narrate snake~ vanish  ;
+  the-snake-runs-away$ txt+ narrate snake~ vanish  ;
 
 : attack-the-snake  ( -- )
   sword~ ?needed
@@ -749,8 +750,8 @@ false [if]
 
 : shatter-the-cloak-with-the-sword  ( -- )
   take-sword-if-needed
-  using$ sword~ full-name s& comma+
-  s" rasgas" s& cloak~ full-name s& period+ narrate
+  using$ sword~ full-name txt+ comma+
+  s" rasgas" txt+ cloak~ full-name txt+ period+ narrate
   cloak-pieces  cloak~ vanish  ;
 
 : objects-that-could-cut  ( -- a#1..a#n n )
@@ -801,15 +802,15 @@ false [if]
 
 : lit-the-torch  ( -- )
   s" Poderosas chispas salen del choque entre espada y pedernal,"
-  s" encendiendo la antorcha." s& narrate
+  s" encendiendo la antorcha." txt+ narrate
   torch~ be-lighted  ;
   \ XXX TODO -- variar el texto
 
 : hit-the-flint  ( -- )
   flint~ ?accessible
   sword~ taken
-  using$ sword~ full-name s& comma+
-  s" golpeas" s& flint~ full-name s& period+ narrate
+  using$ sword~ full-name txt+ comma+
+  s" golpeas" txt+ flint~ full-name txt+ period+ narrate
   lit-the-torch  ;
 
 : (do-hit)  ( a -- )
@@ -834,26 +835,26 @@ false [if]
             s" está afilado de antes"
             s" tiene una buena punta"
             s" quedó antes bien afilado"
-         }s bs&  ;
+         }s txt+  ;
   \ Devuelve una variante de «Ya está afilado».
 
 : no-need-to-do-it-again$  ( -- ca len )
   s{
   s" no es necesario"
-  s" no hace" s" ninguna" s? bs& s" falta" s&
+  s" no hace" s" ninguna" s? txt+ s" falta" txt+
   s" no es menester"
   s" no serviría de nada"
   s" no serviría de mucho"
   s" serviría de poco"
   s" sería inútil"
   s" sería en balde"
-  s" sería un esfuerzo" s{ s" inútil" s" baldío" }s bs&
+  s" sería un esfuerzo" s{ s" inútil" s" baldío" }s txt+
   s" sería un esfuerzo baldío"
   }s s{
   s" hacerlo"
   s" volver a hacerlo"
   s" repetirlo"
-  }s bs& again$ s&  ;
+  }s txt+ again$ txt+  ;
   \ Devuelve una variante de «no hace falta hacerlo otra vez».
 
 : ^no-need-to-do-it-again$  ( -- ca len )
@@ -862,12 +863,12 @@ false [if]
 
 : log-already-sharpened-0$  ( -- ca len )
   log-already-sharpened$ ^uppercase period+
-  ^no-need-to-do-it-again$ period+ s&  ;
+  ^no-need-to-do-it-again$ period+ txt+  ;
   \ Devuelve mensaje de que el tronco ya estaba afilado (variante 0).
 
 : log-already-sharpened-1$  ( -- ca len )
-  ^no-need-to-do-it-again$ period+ s&
-  log-already-sharpened$ ^uppercase period+ s&  ;
+  ^no-need-to-do-it-again$ period+ txt+
+  log-already-sharpened$ ^uppercase period+ txt+  ;
   \ Devuelve mensaje de que el tronco ya estaba afilado (variante 1).
 
 : log-already-sharpened  ( -- )
@@ -1025,8 +1026,8 @@ false [if]
 \ Nadar
 
 : in-a-different-place$  ( -- ca len )
-  s" en un" s& place$
-  s{ s" desconocido" s" nuevo" s" diferente" }s bs&
+  s" en un" txt+ place$
+  s{ s" desconocido" s" nuevo" s" diferente" }s txt+
   s" en otra parte"
   s" en otro lugar"
   3 2choose  ;
@@ -1034,16 +1035,16 @@ false [if]
 
 : you-emerge$  ( -- ca len )
   s{ s" Consigues" s" Logras" }s
-  s{ s" emerger," s" salir a la superficie," }s bs&
-  though$ s& in-a-different-place$ s&
-  s" de la" s& cave$ s& s" ..." s+  ;
+  s{ s" emerger," s" salir a la superficie," }s txt+
+  though$ txt+ in-a-different-place$ txt+
+  s" de la" txt+ cave$ txt+ s" ..." s+  ;
   \ Devuelve mensaje sobre la salida a la superficie.
 
 : swiming$  ( -- ca len )
   s" Buceas" s{ s" pensando en" s" deseando"
-  s" con la esperanza de" s" con la intención de" }s bs&
-  s{ s" avanzar," s" huir," s" escapar,"  s" salir," }s bs&
-  s" aunque" bs& s{ s" perdido." s" desorientado." }s bs&  ;
+  s" con la esperanza de" s" con la intención de" }s txt+
+  s{ s" avanzar," s" huir," s" escapar,"  s" salir," }s txt+
+  s" aunque" txt+ s{ s" perdido." s" desorientado." }s txt+  ;
   \ Devuelve mensaje sobre el buceo.
 
 : drop-the-cuirasse$  ( f -- ca len )
@@ -1051,8 +1052,8 @@ false [if]
   s" la dejas caer" s" la sueltas" }s
   rot if
     s{ s" Rápidamente" s" Sin dilación"
-    s" Sin dudarlo" s{ null$ s" un momento" s" un instante" }s bs&
-    }s 2swap s&
+    s" Sin dudarlo" s{ null$ s" un momento" s" un instante" }s txt+
+    }s 2swap txt+
   then  period+  ;
   \ Devuelve mensaje sobre deshacerse de la coraza dentro del agua.
   \ El indicador _f_ es cierto si el resultado debe ser el inicio de
@@ -1061,29 +1062,29 @@ false [if]
 : you-leave-the-cuirasse$  ( -- ca len )
   cuirasse~ is-worn-by-me?
   if  s{ s" Como puedes," s" No sin dificultad," }s
-      s{ s" logras quitártela" s" te la quitas" }s bs&
-      s" y" s& false drop-the-cuirasse$ s&
+      s{ s" logras quitártela" s" te la quitas" }s txt+
+      s" y" txt+ false drop-the-cuirasse$ txt+
   else  true drop-the-cuirasse$  then  ;
   \ Devuelve mensaje sobre quitarse y soltar la coraza dentro del agua.
 
 : (you-sink-0)$ ( -- ca len )
   s{ s" Caes" s" Te hundes"
-  s{ s" Empiezas" s" Comienzas" }s s{ s" a hundirte" s" a caer" }s bs&
-  }s s" sin remedio" s? bs& s" hacia" s&
-  s{ s" el fondo" s" las profundidades" }s bs&
-  s{ s" por el" s" debido al" s" arrastrado por" s" a causa del" }s bs&
-  s" peso de tu coraza" s&  ;
+  s{ s" Empiezas" s" Comienzas" }s s{ s" a hundirte" s" a caer" }s txt+
+  }s s" sin remedio" s? txt+ s" hacia" txt+
+  s{ s" el fondo" s" las profundidades" }s txt+
+  s{ s" por el" s" debido al" s" arrastrado por" s" a causa del" }s txt+
+  s" peso de tu coraza" txt+  ;
   \ Devuelve la primera versión del mensaje sobre hundirse con la coraza.
 
 : (you-sink-1)$ ( -- ca len )
   s" El peso de tu coraza"
-  s{ s" te arrastra" s" tira de ti" }s bs&
-  s{ null$ s" sin remedio" s" con fuerza" }s bs&
+  s{ s" te arrastra" s" tira de ti" }s txt+
+  s{ null$ s" sin remedio" s" con fuerza" }s txt+
   s{
   s" hacia el fondo"
   s" hacia las profundidades"
   s" hacia abajo"
-  }s bs&  ;
+  }s txt+  ;
   \ Devuelve la segunda versión del mensaje sobre hundirse con la coraza.
 
 : you-sink$ ( -- ca len )
@@ -1092,14 +1093,14 @@ false [if]
   \ Devuelve mensaje sobre hundirse con la coraza.
 
 : you-swim-with-cuirasse$  ( -- ca len )
-  you-sink$ you-leave-the-cuirasse$ s&  ;
+  you-sink$ you-leave-the-cuirasse$ txt+  ;
   \  Devuelve mensaje inicial sobre nadar con coraza.
 
 : you-swim$  ( -- ca len )
   cuirasse~ is-hold?
   if  you-swim-with-cuirasse$  cuirasse~ vanish
   else  null$
-  then  swiming$ s&  ;
+  then  swiming$ txt+  ;
   \  Devuelve mensaje sobre nadar.
 
 :noname  ( -- )
@@ -1108,7 +1109,7 @@ false [if]
         you-swim$ narrate narration-break
         you-emerge$ narrate narration-break
         location-12~ enter-location  the-battle-ends
-  else  s" nadar" now-or-here-or-null$ s&
+  else  s" nadar" now-or-here-or-null$ txt+
         that-is-nonsense.error
   then  ; is do-swim
   \ Acción de nadar.
@@ -1124,40 +1125,40 @@ false [if]
       s" la situación parece desesperada"
       s" el regreso parece inevitable"
       s" continuar parece imposible"
-  }s bs& comma+
-  s{ s" optas por" s" decides" s" tomas la decisión de" }s bs&
-  s{ s" explorar" s" examinar" }s bs& s" el" s&
-  s{ s" derrumbe" s" muro de" rocks$ s& }s bs&
+  }s txt+ comma+
+  s{ s" optas por" s" decides" s" tomas la decisión de" }s txt+
+  s{ s" explorar" s" examinar" }s txt+ s" el" txt+
+  s{ s" derrumbe" s" muro de" rocks$ txt+ }s txt+
   s{  s" en compañía de" s" junto con"
       s" ayudado por" s" acompañado por"
-  }s bs&
-  s{ s" algunos" s" varios" }s bs& s" de tus" s&
-  s{ s" oficiales" soldiers$ }s bs& s" , con la" s+
-  s{ s" vana" s" pobre" s" débil" }s bs& s" esperanza" s&
-  s" de" s&
-  s{ s" encontrar" s" hallar" s" descubrir" }s bs&
-  s{ s" la" s" alguna" }s bs& way$ s& s" de" s&
+  }s txt+
+  s{ s" algunos" s" varios" }s txt+ s" de tus" txt+
+  s{ s" oficiales" soldiers$ }s txt+ s" , con la" s+
+  s{ s" vana" s" pobre" s" débil" }s txt+ s" esperanza" txt+
+  s" de" txt+
+  s{ s" encontrar" s" hallar" s" descubrir" }s txt+
+  s{ s" la" s" alguna" }s txt+ way$ txt+ s" de" txt+
   s{  s" escalarlo" s" vencerlo" s" atravesarlo"
       s" superarlo" s" pasarlo"
-      s{ s" pasar" s" cruzar" }s s" al otro lado" s&
-  }s bs&  period+ narrate narration-break  ;
+      s{ s" pasar" s" cruzar" }s s" al otro lado" txt+
+  }s txt+  period+ narrate narration-break  ;
   \ Imprime la primera parte del mensaje
   \ previo al primer intento de escalar el derrumbe.
 
 : you-can-not-climb-the-fallen-away  ( -- )
   ^but$
-  s{  s{ s" pronto" s" enseguida" }s s" has de" s&
+  s{  s{ s" pronto" s" enseguida" }s s" has de" txt+
       s" no tardas mucho en"
-  }s bs&
-  s{  s" rendirte ante" s" aceptar" s" resignarte ante" }s bs&
+  }s txt+
+  s{  s" rendirte ante" s" aceptar" s" resignarte ante" }s txt+
   s{
     s{ s" los hechos" s" la realidad" s" la situación" s" tu suerte" }s
     s{  s" la voluntad"
-        s{ s" el" s" este" }s s" giro" s&
-        s{ s" el" s" este" }s s" capricho" s&
-        s{ s" la" s" esta" }s s" mudanza" s&
-    }s s" de" s& s" la diosa" s? bs& s" Fortuna" s&
-  }s bs& s" ..." s+ narrate narration-break  ;
+        s{ s" el" s" este" }s s" giro" txt+
+        s{ s" el" s" este" }s s" capricho" txt+
+        s{ s" la" s" esta" }s s" mudanza" txt+
+    }s s" de" txt+ s" la diosa" s? txt+ s" Fortuna" txt+
+  }s txt+ s" ..." s+ narrate narration-break  ;
   \ Imprime la segunda parte del mensaje
   \ previo al primer intento de escalar el derrumbe.
 
@@ -1171,9 +1172,9 @@ false [if]
   s{ s" pasar" s" escalar" s" subir por" }s
   s{
     s" el derrumbe"
-    s{ s" el muro" s" la pared" s" el montón" }s s" de" s& rocks$ s&
-    s" las" rocks$ s&
-  }s bs&  ;
+    s{ s" el muro" s" la pared" s" el montón" }s s" de" txt+ rocks$ txt+
+    s" las" rocks$ txt+
+  }s txt+  ;
   \ Devuelve el mensaje de error de que es imposible escalar el
   \ derrumbe.
 
@@ -1224,33 +1225,33 @@ false [if]
 \ Inventario
 
 : anything-with-you$  ( -- ca len )
-  s" nada" with-you$ ?dup if   2 random ?? 2swap s&
+  s" nada" with-you$ ?dup if   2 random ?? 2swap txt+
                           else  drop  then  ;
   \ Devuelve una variante de «nada contigo».
 
 : you-are-carrying-nothing$  ( -- ca len )
-  s" No" you-carry$ anything-with-you$ period+ s& s&  ;
+  s" No" you-carry$ anything-with-you$ period+ txt+ txt+  ;
   \ Devuelve mensaje para sustituir a un inventario vacío.
 
 : ^you-are-carrying$  ( -- ca len )
-  ^you-carry$ with-you$ s&  ;
+  ^you-carry$ with-you$ txt+  ;
   \ Devuelve mensaje para encabezar la lista de inventario,
   \ con la primera letra mayúscula.
 
-: you-are-carrying$  ( -- ca len )  you-carry$ with-you$ s&  ;
+: you-are-carrying$  ( -- ca len )  you-carry$ with-you$ txt+  ;
   \ Devuelve mensaje para encabezar la lista de inventario.
 
 : you-are-carrying-only$  ( -- ca len )
-  2 random if    ^you-are-carrying$ only-or-null$ s&
-           else  ^only-or-null$ you-are-carrying$ s&  then  ;
+  2 random if    ^you-are-carrying$ only-or-null$ txt+
+           else  ^only-or-null$ you-are-carrying$ txt+  then  ;
   \ Devuelve mensaje para encabezar una lista de inventario de un solo elemento.
 
 :noname  ( -- )
   protagonist~ content-list
   #listed @ case
-    0 of  you-are-carrying-nothing$ 2swap s& endof
-    1 of  you-are-carrying-only$ 2swap s& endof
-    >r ^you-are-carrying$ 2swap s& r>
+    0 of  you-are-carrying-nothing$ 2swap txt+ endof
+    1 of  you-are-carrying-only$ 2swap txt+ endof
+    >r ^you-are-carrying$ 2swap txt+ r>
   endcase  narrate
   ; is do-inventory
   \ Acción de hacer inventario.
@@ -1280,35 +1281,35 @@ false [if]
 
 : a-man-takes-the-stone  ( -- )
   s{  s" Un hombre" s" Un refugiado"
-      s" Uno de los" s{ s" hombres" s" refugiados" }s bs&
+      s" Uno de los" s{ s" hombres" s" refugiados" }s txt+
   }s s{ s" se adelanta,"
       s" sale de entre"
         s{  s" sus compañeros" s" los otros"
             s" la multitud" s" la gente"
-        }s bs& comma+
-  }s s? bs&
+        }s txt+ comma+
+  }s s? txt+
   s{  s" se te acerca," s" se acerca a ti,"
       s" se te aproxima," s" se aproxima a ti,"
-  }s s? bs&
-  s" te" bs& s{ s" arrebata" s" quita" }s bs&
-  s" la piedra" s& s" de las manos" s? bs& s" y" s&
+  }s s? txt+
+  s" te" txt+ s{ s" arrebata" s" quita" }s txt+
+  s" la piedra" txt+ s" de las manos" s? txt+ s" y" txt+
   s{
     s" se la lleva"
-    s{ s" se marcha" s" se va" s" desaparece" }s s" con ella" s? bs&
-  }s bs& period+ narrate
+    s{ s" se marcha" s" se va" s" desaparece" }s s" con ella" s? txt+
+  }s txt+ period+ narrate
   location-18~ stone~ be-there  ;
   \ Un hombre te quita la piedra.
 
 : gets-angry$  ( -- ca len )
-  s" se" s{ s" irrita" s" enfada" s" enoja" s" enfurece" }s bs&  ;
+  s" se" s{ s" irrita" s" enfada" s" enoja" s" enfurece" }s txt+  ;
   \ Devuelve una variante de «se enfada».
 
 : the-leader-gets-angry$  ( -- ca len )
   s{ s" Al verte" s" Viéndote" s" Tras verte" }s
-  s{ s" llegar" s" aparecer" s" venir" }s bs&
-  again$ stone-forbidden? @ ?keep s&
-  s" con la piedra," s&
-  s" el" s& old-man$ s& gets-angry$ s&  ;
+  s{ s" llegar" s" aparecer" s" venir" }s txt+
+  again$ stone-forbidden? @ ?keep txt+
+  s" con la piedra," txt+
+  s" el" txt+ old-man$ txt+ gets-angry$ txt+  ;
   \ Devuelve una variante de «El líder se enfada».
   \ XXX OLD -- yo no se usa.
 
@@ -1385,72 +1386,72 @@ false [if]
 : already-warned$  ( -- ca len )
   s" ya" s?
   s{
-    s" fuisteis" s{ s" avisado" s" advertido" }s bs& s" de ello" s? bs&
-    s" se os" s{ s" avisó" s" advirtió" }s bs& s" de ello" s? bs&
-    s" os lo" s{ s" hicimos saber" s" advertimos" }s bs&
-    s" os lo" s{ s" hice saber" s" advertí" }s bs&
-    s" se os" s{ s" hizo saber" s" dejó claro" }s bs&
-  }s bs&  ;
+    s" fuisteis" s{ s" avisado" s" advertido" }s txt+ s" de ello" s? txt+
+    s" se os" s{ s" avisó" s" advirtió" }s txt+ s" de ello" s? txt+
+    s" os lo" s{ s" hicimos saber" s" advertimos" }s txt+
+    s" os lo" s{ s" hice saber" s" advertí" }s txt+
+    s" se os" s{ s" hizo saber" s" dejó claro" }s txt+
+  }s txt+  ;
   \ Mensaje de que el líder ya te advirtió sobre un objeto.
   \ XXX TODO -- elaborar más
 
 : already-warned  ( u -- ca1 len1 )
-  times-warned already-warned$ rnd2swap s& period+ ^uppercase  ;
+  times-warned already-warned$ rnd2swap txt+ period+ ^uppercase  ;
   \ Mensaje de que el líder ya te advirtió sobre un objeto,
   \ con indicación al azar del número de veces.
 
 : you-can-not-take-the-stone$  ( -- ca len )
-  s{ s" No" s" En modo alguno" s" De ninguna" way$ s& s" De ningún modo" }s
-  s" podemos" s&
+  s{ s" No" s" En modo alguno" s" De ninguna" way$ txt+ s" De ningún modo" }s
+  s" podemos" txt+
   s{
     s{ s" permitiros" s" consentiros" }s
-      s{ s" huir" s" escapar" s" marchar" s" pasar" }s bs& s" con" s&
-    s{ s" permitir" s" consentir" s" aceptar" }s s" que" s&
-      s{  s{ s" huyáis" s" escapéis" s" marchéis" s" paséis" }s s" con" s&
+      s{ s" huir" s" escapar" s" marchar" s" pasar" }s txt+ s" con" txt+
+    s{ s" permitir" s" consentir" s" aceptar" }s s" que" txt+
+      s{  s{ s" huyáis" s" escapéis" s" marchéis" s" paséis" }s s" con" txt+
           s" os vayáis con"
-          s" os" s? s" marchéis con" s&
+          s" os" s? s" marchéis con" txt+
           s" os llevéis"
-          s" nos" s? s" robéis" s&
-          s" os" s{ s" apropiés" s" apoderéis" s" adueñéis" }s bs& s" de" s&
-      }s bs&
-  }s bs& s" la" s" piedra del druida"
+          s" nos" s? s" robéis" txt+
+          s" os" s{ s" apropiés" s" apoderéis" s" adueñéis" }s txt+ s" de" txt+
+      }s txt+
+  }s txt+ s" la" s" piedra del druida"
   2dup stone~ fs-name!
-  s& s& period+  ;
+  txt+ txt+ period+  ;
   \ Devuelve el mensaje de que no te puedes llevar la piedra.
   \ También cambia el nombre de la piedra.
 
 : gesture-about-the-stone$  ( -- ca len )
-  s" y" s? s{ s" entonces" s" a continuación" s" seguidamente" }s bs& ^uppercase
-  s" hace un" s&
-  s" pequeño" s? bs& s" gesto" s& s" con la mano," s? bs&
-  s" casi imperceptible" s? bs&
+  s" y" s? s{ s" entonces" s" a continuación" s" seguidamente" }s txt+ ^uppercase
+  s" hace un" txt+
+  s" pequeño" s? txt+ s" gesto" txt+ s" con la mano," s? txt+
+  s" casi imperceptible" s? txt+
   s" ..." s+  ;
   \ Mensaje de que el líder hace un gesto sobre la piedra.
 
 : the-stone-must-be-in-its-place$  ( -- ca len )
-  s" La piedra" s{ s" ha de" s" debe" s" tiene que" }s bs&
-  s{ s" ser devuelta" s" devolverse" to-go-back$ }s bs&
+  s" La piedra" s{ s" ha de" s" debe" s" tiene que" }s txt+
+  s{ s" ser devuelta" s" devolverse" to-go-back$ }s txt+
   s{
-    s" a su lugar" s" de encierro" s? bs&
+    s" a su lugar" s" de encierro" s? txt+
     s" al lugar al que pertenece"
-    s" al lugar del que nunca debió" s{ s" salir" s" ser sacada" s" ser arrancada" }s bs&
-    s" al lugar que nunca debió" s{ s" abandonar" s" haber abandonado" }s bs&
-  }s bs&  ;
+    s" al lugar del que nunca debió" s{ s" salir" s" ser sacada" s" ser arrancada" }s txt+
+    s" al lugar que nunca debió" s{ s" abandonar" s" haber abandonado" }s txt+
+  }s txt+  ;
   \ El líder dice que la piedra debe ser devuelta.
 
 : the-leader-warns-about-the-stone  ( -- )
   stone-forbidden? @ already-warned
   you-can-not-take-the-stone$
-  the-stone-must-be-in-its-place$ rnd2swap s& s&
+  the-stone-must-be-in-its-place$ rnd2swap txt+ txt+
   period+ speak  ;
   \ El líder habla acerca de la piedra.
 
 : the-leader-points-to-the-north$  ( -- ca len )
   leader~ ^full-name
-  s{ s" alza" s" extiende" s" levanta" }s bs&
-  s{ s" su" s" el" }s bs& s" brazo" s&
-  s{ s" indicando" s" en dirección" s" señalando" }s bs&
-  toward-the(m)$ s& s" norte." s&  ;
+  s{ s" alza" s" extiende" s" levanta" }s txt+
+  s{ s" su" s" el" }s txt+ s" brazo" txt+
+  s{ s" indicando" s" en dirección" s" señalando" }s txt+
+  toward-the(m)$ txt+ s" norte." txt+  ;
   \ El líder se enfada y apunta al norte.
   \ XXX TODO -- crear ente "brazo" aquí, o activarlo como sinómino del anciano
 
@@ -1461,26 +1462,26 @@ false [if]
 : nobody-passes-with-arms$  ( -- ca len )
   s{ s" Nadie" s" Ningún hombre" }s
   s{ s" con" s" llevando" s" portando" s" portador de"
-  s" que porte" s" que lleve" }s bs&
-  s{ s" armas" s" un arma" s" una espada" }s bs&
-  with-him$ bs& s{ s" debe" s" puede" s" podrá" }s bs&
-  s" pasar." s&  ;
+  s" que porte" s" que lleve" }s txt+
+  s{ s" armas" s" un arma" s" una espada" }s txt+
+  with-him$ txt+ s{ s" debe" s" puede" s" podrá" }s txt+
+  s" pasar." txt+  ;
   \ El líder dice que nadie pasa con armas.
 
 : the-leader-warns-about-the-sword  ( -- )
   the-leader-points-to-the-north
   sword-forbidden? @ already-warned
-  nobody-passes-with-arms$ s& speak  ;
+  nobody-passes-with-arms$ txt+ speak  ;
   \ El líder habla acerca de la espada.
 
 : the-leader-points-to-the-east  ( -- )
-  s" El" old-man$ s& comma+
-  s{ s" confiado" s" calmado" s" sereno" s" tranquilo" }s bs& comma+
-  s{ s" indica" s" señala" }s bs&
-  s{ toward-the(m)$ s" en dirección al" }s bs& s" este y" s&
-  s{  s" te" s? s" dice" s&
+  s" El" old-man$ txt+ comma+
+  s{ s" confiado" s" calmado" s" sereno" s" tranquilo" }s txt+ comma+
+  s{ s" indica" s" señala" }s txt+
+  s{ toward-the(m)$ s" en dirección al" }s txt+ s" este y" txt+
+  s{  s" te" s? s" dice" txt+
       s" pronuncia las siguientes palabras"
-  }s bs& colon+ narrate  ;
+  }s txt+ colon+ narrate  ;
   \ El líder apunta al este.
 
 : something-had-been-forbidden?  ( -- f )
@@ -1490,20 +1491,20 @@ false [if]
 : go-in-peace  ( -- )
   s{ s" Ya que" s" Puesto que" s" Dado que" s" Pues" }s
   something-had-been-forbidden? if
-    s{ s" esta vez" s" ahora" s" en esta ocasión" s" por fin" s" finalmente" }s bs&
+    s{ s" esta vez" s" ahora" s" en esta ocasión" s" por fin" s" finalmente" }s txt+
   then
-  s{ s" vienes" s" llegas" s" has venido" s" has llegado" }s bs&
-  s" en paz, puedes" s&
-  s{ s" ir" s" marchar" s" continuar" s" tu camino" s? bs& }s bs&
-  s" en paz." s& speak  ;
+  s{ s" vienes" s" llegas" s" has venido" s" has llegado" }s txt+
+  s" en paz, puedes" txt+
+  s{ s" ir" s" marchar" s" continuar" s" tu camino" s? txt+ }s txt+
+  s" en paz." txt+ speak  ;
   \ El líder dice que puedes ir en paz.
 
 : the-refugees-let-you-go  ( -- )
-  s" todos" s? s" los refugiados" s& ^uppercase
-  s" se apartan y" s& s" te" s? bs&
-  s{  s" permiten" s{ s" el paso" s" pasar" }s bs&
-      s" dejan" s" libre" s" el" s{ s" paso" s" camino" }s bs& rnd2swap s&
-  }s bs& toward-the(m)$ s& s" este." s& narrate  ;
+  s" todos" s? s" los refugiados" txt+ ^uppercase
+  s" se apartan y" txt+ s" te" s? txt+
+  s{  s" permiten" s{ s" el paso" s" pasar" }s txt+
+      s" dejan" s" libre" s" el" s{ s" paso" s" camino" }s txt+ rnd2swap txt+
+  }s txt+ toward-the(m)$ txt+ s" este." txt+ narrate  ;
   \ Los refugiados te dejan pasar.
 
 : the-leader-lets-you-go  ( -- )
@@ -1518,35 +1519,35 @@ false [if]
   \ Aumentar el contador de conversaciones con el jefe de los refugiados.
 
 : we-are-refugees$  ( -- ca len )
-  s" todos" s? s" nosotros" s? rnd2swap s&
-  s" somos refugiados de" s& ^uppercase
-  s{ s" la gran" s" esta terrible" }s bs& s" guerra." s&
+  s" todos" s? s" nosotros" s? rnd2swap txt+
+  s" somos refugiados de" txt+ ^uppercase
+  s{ s" la gran" s" esta terrible" }s txt+ s" guerra." txt+
   s" refugio" location-28~ ms-name!  ;
   \ Mensaje «Somos refugiados».
 
 : we-are-refugees  ( -- )
-  we-are-refugees$ we-want-peace$ s& speak narration-break  ;
+  we-are-refugees$ we-want-peace$ txt+ speak narration-break  ;
   \ Somos refugiados.
 
 : the-leader-trusts  ( -- )
-  s" El" old-man$ s& s" asiente" s&
-  s{ s" confiado" s" con confianza" }s bs& s" y," s&
-  s" con un suave gesto" s& s" de su mano" s? bs& comma+
-  s" te interrumpe para" s&
-  s{  s" explicar" s{ s" te" s" se" null$ }s bs+
-      s" presentarse" s" contarte" s" decir" s" te" s? bs+
-  }s bs& colon+ narrate  ;
+  s" El" old-man$ txt+ s" asiente" txt+
+  s{ s" confiado" s" con confianza" }s txt+ s" y," txt+
+  s" con un suave gesto" txt+ s" de su mano" s? txt+ comma+
+  s" te interrumpe para" txt+
+  s{  s" explicar" s{ s" te" s" se" null$ }s s+
+      s" presentarse" s" contarte" s" decir" s" te" s? s+
+  }s txt+ colon+ narrate  ;
   \ El líder te corta, confiado.
 
 : untrust$  ( -- ca len )
   s{ s" desconfianza" s" nerviosismo" s" impaciencia" }s  ;
 
 : the-leader-does-not-trust  ( -- )
-  s" El" old-man$ s& s" asiente" s& s" con la cabeza" s? bs& comma+
+  s" El" old-man$ txt+ s" asiente" txt+ s" con la cabeza" s? txt+ comma+
   s{  s" desconfiado" s" nervioso" s" impaciente"
-      s" mostrando" s" claros" s? bs& s" signos de" s& untrust$ s&
-      s{ s" dando" s" con" }s s" claras" s? bs& s" muestras de" s& untrust$ s&
-  }s bs& comma+ s" y te interrumpe:" s& narrate  ;
+      s" mostrando" s" claros" s? txt+ s" signos de" txt+ untrust$ txt+
+      s{ s" dando" s" con" }s s" claras" s? txt+ s" muestras de" txt+ untrust$ txt+
+  }s txt+ comma+ s" y te interrumpe:" txt+ narrate  ;
   \ El líder te corta, desconfiado.
 
 : the-leader-introduces-himself  ( -- )
@@ -1557,7 +1558,7 @@ false [if]
   \ El líder se presenta.
 
 : first-conversation-with-the-leader  ( -- )
-  my-name-is$ s" Ulfius y..." s& speak talked-to-the-leader
+  my-name-is$ s" Ulfius y..." txt+ speak talked-to-the-leader
   the-leader-introduces-himself  ;
   \ XXX TODO -- elaborar mejor el texto
 
@@ -1593,13 +1594,13 @@ false [if]
 
 : insisted-several-times$  ( -- ca len )
   s{ s" las otras" s" más de dos" s" más de un par de" s" varias" }s
-  s" veces" s&  ;
+  s" veces" txt+  ;
   \ XXX TODO -- inconcluso
 
 : insisted-many-times$  ( -- ca len )
   s{  s" demasiadas" s" incontables" s" innumerables"
       s" las otras" s" muchas" s" varias"
-  }s  s" veces" s&  ;
+  }s  s" veces" txt+  ;
   \ XXX TODO -- inconcluso
 
 : times-insisted  ( u -- ca1 len1 )
@@ -1615,20 +1616,20 @@ false [if]
 
 : please-don't-insist$  ( -- ca len )
   s{ s" os ruego que" s" os lo ruego," s" he de rogaros que" }s
-  s" no insistáis" s&  ;
+  s" no insistáis" txt+  ;
   \ Mensaje de que por favor no insistas.
 
 : don't-insist$  ( -- ca len )
   s" ya" s?
   s{
-    s" habéis sido" s{ s" avisado" s" advertido" }s bs&
-    s" os lo he" s" mos" s? bs+ s{ s" hecho saber" s" advertido" s" dejado claro" }s bs&
-    s" se os ha" s{ s" hecho saber" s" advertido" s" dejado claro" }s bs&
-  }s bs&  ;
+    s" habéis sido" s{ s" avisado" s" advertido" }s txt+
+    s" os lo he" s" mos" s? s+ s{ s" hecho saber" s" advertido" s" dejado claro" }s txt+
+    s" se os ha" s{ s" hecho saber" s" advertido" s" dejado claro" }s txt+
+  }s txt+  ;
   \ XXX TODO -- inconcluso
 
 : don't-insist  ( -- )
-  times-insisted don't-insist$ rnd2swap s& period+ ^uppercase  ;
+  times-insisted don't-insist$ rnd2swap txt+ period+ ^uppercase  ;
   \ XXX TODO -- inconcluso
 
 : the-leader-ignores-you  ( -- )  ;
@@ -1661,61 +1662,61 @@ false [if]
 
 : ambrosio-introduces-himself  ( -- )
   s" Hola, Ulfius."
-  my-name-is$ s& s" Ambrosio" 2dup be-ambrosio's-name
-  period+ s& speak  ;
+  my-name-is$ txt+ s" Ambrosio" 2dup be-ambrosio's-name
+  period+ txt+ speak  ;
 
 : you-cry  ( -- )
-  s" Por" s" primera" s" vez" rnd2swap s& s& s" en" s&
-  s{ s" mucho" s" largo" }s bs& s" tiempo, te sientas y" s&
-  s" le" s? bs& s{ s" cuentas" s" narras" s" relatas" }s bs&
-  s" a alguien todo lo que ha" s&
-  s{ s" sucedido" s" pasado" s" ocurrido" }s bs& period+
-  s" Y, tras tanto" s& s" pesar" s? bs& s{ s" acontecido" s" vivido" }s bs&
-  s" , lloras" bs+ s{ s" desconsoladamente" s" sin consuelo" }s bs&
+  s" Por" s" primera" s" vez" rnd2swap txt+ txt+ s" en" txt+
+  s{ s" mucho" s" largo" }s txt+ s" tiempo, te sientas y" txt+
+  s" le" s? txt+ s{ s" cuentas" s" narras" s" relatas" }s txt+
+  s" a alguien todo lo que ha" txt+
+  s{ s" sucedido" s" pasado" s" ocurrido" }s txt+ period+
+  s" Y, tras tanto" txt+ s" pesar" s? txt+ s{ s" acontecido" s" vivido" }s txt+
+  s" , lloras" s+ s{ s" desconsoladamente" s" sin consuelo" }s txt+
   period+ narrate  ;
 
 : ambrosio-proposes-a-deal  ( -- )
-  s" Ambrosio te propone un" s{ s" trato" s" acuerdo" }s bs& comma+
-  s{  the-that(m)$ s" aceptas" s&
-      s" con el" that(m)$ bs& s{ s" consientes" s" estás de acuerdo" }s bs&
-      the-that(m)$ s" te parece justo" s&
-  }s bs& colon+
-  s" por ayudarlo a salir de" bs& s{ s" la" s" esta" }s bs& s" cueva," s&
-  s{ s" objetos" s" útiles" }s bs& comma+
-  s{ s" vitales" s" imprescindibles" s" necesarios" }s bs&
-  s" para" s& s" el éxito de" s? bs&
-  s{ s" la" s" tal" s" dicha" }s bs& s{ s" misión" s" empresa" }s bs&
+  s" Ambrosio te propone un" s{ s" trato" s" acuerdo" }s txt+ comma+
+  s{  the-that(m)$ s" aceptas" txt+
+      s" con el" that(m)$ txt+ s{ s" consientes" s" estás de acuerdo" }s txt+
+      the-that(m)$ s" te parece justo" txt+
+  }s txt+ colon+
+  s" por ayudarlo a salir de" txt+ s{ s" la" s" esta" }s txt+ s" cueva," txt+
+  s{ s" objetos" s" útiles" }s txt+ comma+
+  s{ s" vitales" s" imprescindibles" s" necesarios" }s txt+
+  s" para" txt+ s" el éxito de" s? txt+
+  s{ s" la" s" tal" s" dicha" }s txt+ s{ s" misión" s" empresa" }s txt+
   s" , te son entregados." s+ narrate
   torch~ be-hold  flint~ be-hold  ;
 
 : ambrosio-let's-go  ( -- )
   s{  s" Bien"
-      s{ s" Venga" s" Vamos" }s s" pues" s? bs&
-  }s comma+ s" Ambrosio," s&
-  s{  s{ s" iniciemos" s" emprendamos" }s s{ s" la marcha" s" el camino" }s bs&
-      s" pongámonos en" s{ s" marcha" s" camino" }s bs&
-  }s bs& period+  speak
+      s{ s" Venga" s" Vamos" }s s" pues" s? txt+
+  }s comma+ s" Ambrosio," txt+
+  s{  s{ s" iniciemos" s" emprendamos" }s s{ s" la marcha" s" el camino" }s txt+
+      s" pongámonos en" s{ s" marcha" s" camino" }s txt+
+  }s txt+ period+  speak
   location-46~ ambrosio~ be-there
-  s" Te" s{ s" giras" s" das la vuelta" }s bs& s" para" s&
-  s{  s{ s" comprobar" s" ver" }s s" si" s&
-      s{ s" cerciorarte" s" asegurarte" }s s" de que" s&
-  }s bs& s" Ambrosio te sigue," s& but$ s& s" ..." s+
+  s" Te" s{ s" giras" s" das la vuelta" }s txt+ s" para" txt+
+  s{  s{ s" comprobar" s" ver" }s s" si" txt+
+      s{ s" cerciorarte" s" asegurarte" }s s" de que" txt+
+  }s txt+ s" Ambrosio te sigue," txt+ but$ txt+ s" ..." s+
   s{  s" ha desaparecido"
       s" se ha esfumado"
-      s" no hay" s" ni" s? bs& s" rastro de él" s&
-      s" ya" s? s" no está" s&
-      s" ya" s? s" no hay nadie" s&
-      s" ya" s? s" no ves a nadie" s&
+      s" no hay" s" ni" s? txt+ s" rastro de él" txt+
+      s" ya" s? s" no está" txt+
+      s" ya" s? s" no hay nadie" txt+
+      s" ya" s? s" no ves a nadie" txt+
       s" es como si se lo hubiera tragado la tierra"
-  }s bs& period+ narrate  ;
+  }s txt+ period+ narrate  ;
 
 : ambrosio-is-gone  ( -- )
-  s{  suddenly|then$ s" piensas" rnd2swap s& s" en el" s&
-      suddenly|then$ s" caes en la cuenta" rnd2swap s& s" del" s&
-  }s ^uppercase s" hecho" s" curioso" rnd2swap s& s& s" de que" s&
-  s{  s{ s" supiera" s" conociera" }s s{ s" cómo te llamas" s" tu nombre" }s bs&
+  s{  suddenly|then$ s" piensas" rnd2swap txt+ s" en el" txt+
+      suddenly|then$ s" caes en la cuenta" rnd2swap txt+ s" del" txt+
+  }s ^uppercase s" hecho" s" curioso" rnd2swap txt+ txt+ s" de que" txt+
+  s{  s{ s" supiera" s" conociera" }s s{ s" cómo te llamas" s" tu nombre" }s txt+
       s" te llamara por tu nombre"
-  }s bs& s" ..." s+ narrate  ;
+  }s txt+ s" ..." s+ narrate  ;
 
 : (conversation-0-with-ambrosio)  ( -- )
   s" Hola, buen hombre." speak
@@ -1735,55 +1736,55 @@ false [if]
 : i-am-stuck-in-the-cave$  ( -- ca len )
   s{  s" por desgracia" s" desgraciadamente" s" desafortunadamente"
       s" tristemente" s" lamentablemente"
-  }s s? s{ s" estoy" s" me encuentro" s" me hallo" }s bs& ^uppercase
-  s{ s" atrapado" s" encerrado" }s bs&
-  s" en" bs& s{ s" la" s" esta" }s bs& s" cueva" s&
-  s{ s" debido a" s" por causa de" s" por influjo de" }s bs&
-  s{ s" una" s" cierta" }s bs& s" magia de" s&
-  s{ s" maligno" s" maléfico" s" malvado" s" terrible" }s bs&
-  s" poder." s&  ;
+  }s s? s{ s" estoy" s" me encuentro" s" me hallo" }s txt+ ^uppercase
+  s{ s" atrapado" s" encerrado" }s txt+
+  s" en" txt+ s{ s" la" s" esta" }s txt+ s" cueva" txt+
+  s{ s" debido a" s" por causa de" s" por influjo de" }s txt+
+  s{ s" una" s" cierta" }s txt+ s" magia de" txt+
+  s{ s" maligno" s" maléfico" s" malvado" s" terrible" }s txt+
+  s" poder." txt+  ;
 
 : you-must-follow-your-way$  ( -- ca len )
-  s{ s" En cuanto" s" Por lo que respecta" }s bs&
-  s" al camino, vos" s&
-  s{ s" habéis de" s" debéis" s" habréis de" }s bs&
-  s{ s" recorrer" s" seguir" s" hacer " }s bs& s" el vuestro," s&
-  s{ s" ver" s" mirar" s" contemplar" }s s" lo" s? bs+
-  s" todo con vuestros" s& s" propios" s? bs& s" ojos." s&  ;
+  s{ s" En cuanto" s" Por lo que respecta" }s txt+
+  s" al camino, vos" txt+
+  s{ s" habéis de" s" debéis" s" habréis de" }s txt+
+  s{ s" recorrer" s" seguir" s" hacer " }s txt+ s" el vuestro," txt+
+  s{ s" ver" s" mirar" s" contemplar" }s s" lo" s? s+
+  s" todo con vuestros" txt+ s" propios" s? txt+ s" ojos." txt+  ;
 
 : ambrosio-explains  ( -- )
   s" Ambrosio"
   s{  s" parece meditar un instante"
       s" asiente ligeramente con la cabeza"
-  }s bs& s" y" s&
-  s{  s" te" s{ s" dice" s" explica" }s bs&
+  }s txt+ s" y" txt+
+  s{  s" te" s{ s" dice" s" explica" }s txt+
       s" se explica"
-  }s bs&
+  }s txt+
   colon+ narrate
-  i-am-stuck-in-the-cave$ you-must-follow-your-way$ s& speak  ;
+  i-am-stuck-in-the-cave$ you-must-follow-your-way$ txt+ speak  ;
 
 : i-can-not-understand-it$  ( -- ca len )
   s" no"
-  s{  s" lo" s? s{ s" entiendo" s" comprendo" }s bs&
-      s{ s" alcanzo" s" acierto" }s s" a" s&
-         s{ s" entender" s" comprender" }s bs& s" lo" s? bs+
-  }s bs&  ;
+  s{  s" lo" s? s{ s" entiendo" s" comprendo" }s txt+
+      s{ s" alcanzo" s" acierto" }s s" a" txt+
+         s{ s" entender" s" comprender" }s txt+ s" lo" s? s+
+  }s txt+  ;
 
 : you-shake-your-head  ( -- )
-  s{ s" Sacudes" s" Mueves" s" Haces un gesto con" }s s" la cabeza" s&
+  s{ s" Sacudes" s" Mueves" s" Haces un gesto con" }s s" la cabeza" txt+
   s{  s{ s" poniendo"  s" dejando" }s
-        s{ s" clara" s" de manifiesto" s" patente" s" manifiesta" }s bs&
-      s{ s" manifestando" s" delatando" s" mostrando" }s s" claramente" s? bs&
-  }s s" tu" s&
-  s{ s" sorpresa" s" perplejidad" s" resignación" s" incredulidad" }s bs& s? s&
+        s{ s" clara" s" de manifiesto" s" patente" s" manifiesta" }s txt+
+      s{ s" manifestando" s" delatando" s" mostrando" }s s" claramente" s? txt+
+  }s s" tu" txt+
+  s{ s" sorpresa" s" perplejidad" s" resignación" s" incredulidad" }s txt+ s? txt+
   colon+ narrate  ;
 
 : you-don't-understand  ( -- )
-  s{  i-can-not-understand-it$ s" , la verdad" s? bs+
-      s{ s" la verdad" s" lo cierto" }s s" es que" s&
-        i-can-not-understand-it$ s&
+  s{  i-can-not-understand-it$ s" , la verdad" s? s+
+      s{ s" la verdad" s" lo cierto" }s s" es que" txt+
+        i-can-not-understand-it$ txt+
       s{ s" en verdad" s" realmente" s" verdaderamente" }s
-        i-can-not-understand-it$ s&
+        i-can-not-understand-it$ txt+
   }s ^uppercase speak  ;
 
 : you-already-had-the-key$  ( -- ca len )
@@ -1795,17 +1796,17 @@ false [if]
   \ XXX TODO -- ampliar y variar
 
 : you-know-other-way$  ( -- ca len )
-  s" Y" s{ s" por lo demás" s" por otra parte" }s s? bs&
-  s{ s" es" s" parece" }s bs&
-  s{ s" obvio" s" evidente" s" claro" s" indudable" }s bs&
-  s" que" bs& s{ s" conocéis" s" sabéis" s" no desconocéis" }s bs&
-  s{ s" un" s" algún" s" otro" }s bs& s" camino" s&
-  s{  s" más" s{ s" corto" s" directo" s" fácil" s" llevadero" }s bs&
-      s" menos" s{ s" largo" s" luengo" s" difícil" s" pesado" }s bs&
-  }s bs& period+  ;
+  s" Y" s{ s" por lo demás" s" por otra parte" }s s? txt+
+  s{ s" es" s" parece" }s txt+
+  s{ s" obvio" s" evidente" s" claro" s" indudable" }s txt+
+  s" que" txt+ s{ s" conocéis" s" sabéis" s" no desconocéis" }s txt+
+  s{ s" un" s" algún" s" otro" }s txt+ s" camino" txt+
+  s{  s" más" s{ s" corto" s" directo" s" fácil" s" llevadero" }s txt+
+      s" menos" s{ s" largo" s" luengo" s" difícil" s" pesado" }s txt+
+  }s txt+ period+  ;
 
 : you-reproach-ambrosio  ( -- )
-  you-already-had-the-key$ you-know-other-way$ s& speak  ;
+  you-already-had-the-key$ you-know-other-way$ txt+ speak  ;
   \ Reprochas a Ambrosio acerca de la llave y el camino.
 
 : (conversation-1-with-ambrosio)  ( -- )
@@ -1822,11 +1823,11 @@ false [if]
 
 : ambrosio-gives-you-the-key  ( -- )
   s{ s" Por favor," s" Os lo ruego," }s
-  s" Ulfius," s&
-  s" cumplid vuestra" s{ s" promesa." s" palabra." }s bs&
-  s" Tomad" this|the(f)$ s& s" llave" s&
-  s{ null$ s" en vuestra mano" s" en vuestras manos" s" con vos" }s bs&
-  s" y abrid" s& s" la puerta de" s? bs& this|the(f)$ s& s" cueva." s&
+  s" Ulfius," txt+
+  s" cumplid vuestra" s{ s" promesa." s" palabra." }s txt+
+  s" Tomad" this|the(f)$ txt+ s" llave" txt+
+  s{ null$ s" en vuestra mano" s" en vuestras manos" s" con vos" }s txt+
+  s" y abrid" txt+ s" la puerta de" s? txt+ this|the(f)$ txt+ s" cueva." txt+
   speak
   key~ be-hold  ;
 
@@ -1889,15 +1890,15 @@ create conversations-with-ambrosio
 : talk-to-something  ( a -- )
   2 random
   if    drop nonsense.error
-  else  full-name s" hablar con" 2swap s&
+  else  full-name s" hablar con" 2swap txt+
         that-is-nonsense.error
   then  ;
   \ Hablar con un ente que no es un personaje.
   \ XXX TODO
 
 : talk-to-yourself$  ( -- ca len )
-  s{  s" hablar" s{ s" solo" s" con uno mismo" }s bs&
-      s" hablarse" s{ s" a sí" s" a uno" }s bs& s" mismo" s? bs&
+  s{  s" hablar" s{ s" solo" s" con uno mismo" }s txt+
+      s" hablarse" s{ s" a sí" s" a uno" }s txt+ s" mismo" s? txt+
   }s  ;
   \ Devuelve una variante de «hablar solo».
 
@@ -1923,7 +1924,7 @@ create conversations-with-ambrosio
 
 : (you-speak-to)  ( a -- )
   dup familiar++
-  s" Hablas con" rot full-name s& colon+ narrate  ;
+  s" Hablas con" rot full-name txt+ colon+ narrate  ;
 
 : you-speak-to  ( a | 0 -- )  ?dup ?? (you-speak-to)  ;
 
@@ -2194,7 +2195,7 @@ restore-wordlists
   >file/
   s" \ (http://pragramandala.net/es.programa.asalto_y_castigo.forth.html)"
   >file/
-  s" \ Fichero creado en" yyyy-mm-dd-hh:mm:ss$ s& >file/  ;
+  s" \ Fichero creado en" yyyy-mm-dd-hh:mm:ss$ txt+ >file/  ;
   \ Escribe la cabecera del fichero de la partida.
 
 : write-game-file  ( -- )

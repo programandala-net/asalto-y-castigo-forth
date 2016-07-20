@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607202041
+\ Last update: 201607202131
 
 \ Note: The comments of the code are in Spanish.
 
@@ -19,6 +19,7 @@ get-current forth-wordlist set-current
 require galope/choose.fs          \ `choose`
 require galope/random_strings.fs
 require galope/shuffle.fs         \ `shuffle`
+require galope/txt-plus.fs        \ `txt+`
 
 set-current
 
@@ -40,33 +41,33 @@ set-current
 
 : they-don't-let-you-pass$  ( -- ca len )
   s{
-  s" te" s? (they)-block$ s&
+  s" te" s? (they)-block$ txt+
   s" te rodean,"
   s{ s" impidiéndote" s" impidiendo"
   s" obstruyendo" s" obstruyéndote"
-  s" bloqueando" s" bloqueándote" }s bs&
-  }s the-pass$ s&  ;
+  s" bloqueando" s" bloqueándote" }s txt+
+  }s the-pass$ txt+  ;
   \ Mensaje de que los refugiados no te dejan pasar.
 
-: the-pass-free$  ( -- ca len )  s" libre" the-pass$ s&  ;
+: the-pass-free$  ( -- ca len )  s" libre" the-pass$ txt+  ;
   \ Variante de «libre el paso».
 
 : they-let-you-pass-0$  ( -- ca len )
   s{
-  s" te" s? s" han dejado" s&
-  s" se han" s{ s" apartado" s" echado a un lado" }s bs& s" para dejar" s& s" te" s? bs+
-  }s the-pass-free$ s&  ;
+  s" te" s? s" han dejado" txt+
+  s" se han" s{ s" apartado" s" echado a un lado" }s txt+ s" para dejar" txt+ s" te" s? s+
+  }s the-pass-free$ txt+  ;
   \ Primera versión del mensaje de que te dejan pasar.
 
 : they-let-you-pass-1$  ( -- ca len )
-  s" se han" s{ s" apartado" s" retirado" }s bs&
-  s" a" s{ s{ s" los" s" ambos" }s s" lados" s& s" uno y otro lado" }s bs& s? bs& comma+
-  s{ s" dejándote" s" dejando" s" para dejar" s" te" s? bs+ }s bs&
-  the-pass-free$ s&  ;
+  s" se han" s{ s" apartado" s" retirado" }s txt+
+  s" a" s{ s{ s" los" s" ambos" }s s" lados" txt+ s" uno y otro lado" }s txt+ s? txt+ comma+
+  s{ s" dejándote" s" dejando" s" para dejar" s" te" s? s+ }s txt+
+  the-pass-free$ txt+  ;
   \ Segunda versión del mensaje de que te dejan pasar.
 
 : they-let-you-pass-2$  ( -- ca len )
-  s" ya no" they-don't-let-you-pass$ s& s" como antes" s? bs&  ;
+  s" ya no" they-don't-let-you-pass$ txt+ s" como antes" s? txt+  ;
   \ Tercera versión del mensaje de que te dejan pasar.
 
 : they-let-you-pass$  ( -- ca len )
@@ -77,9 +78,9 @@ set-current
   \ Mensaje de que te dejan pasar.
 
 : the-leader-said-they-want-peace$  ( -- ca len )
-  s" que," s" tal y" s? bs& s" como" s& leader~ full-name s&
-  s" te" s? bs& s" ha" bs& s{ s" referido" s" hecho saber" s" contado" s" explicado" }s bs& comma+
-  they-want-peace$ s&  ;
+  s" que," s" tal y" s? txt+ s" como" txt+ leader~ full-name txt+
+  s" te" s? txt+ s" ha" txt+ s{ s" referido" s" hecho saber" s" contado" s" explicado" }s txt+ comma+
+  they-want-peace$ txt+  ;
   \ El líder te dijo qué buscan los refugiados.
 
 : you-don't-know-why-they're-here$  ( -- ca len )
@@ -88,65 +89,65 @@ set-current
                   s" acabas de"
                   s" aciertas a"
                   s" puedes"
-                }s bs& to-understand$ s&
-      s" No" s{ s" entiendes" s" comprendes" }s bs&
+                }s txt+ to-understand$ txt+
+      s" No" s{ s" entiendes" s" comprendes" }s txt+
   }s s{
-    s" qué" s{ s" pueden estar" s" están" }s bs& s" haciendo" s&
-    s" qué" s{ s" los ha" s{ s" podría" s" puede" }s s" haberlos" s& }s bs&
-      s{ s" reunido" s" traído" s" congregado" }s bs&
-    s" cuál es" s{ s" el motivo" s" la razón" }s bs&
-      s" de que se" bs& s{ s" encuentren" s" hallen" }s bs&
-    s" por qué" s{ s" motivo" s" razón" }s s? bs& s" se encuentran" s&
-  }s bs& here$ s& period+  ;
+    s" qué" s{ s" pueden estar" s" están" }s txt+ s" haciendo" txt+
+    s" qué" s{ s" los ha" s{ s" podría" s" puede" }s s" haberlos" txt+ }s txt+
+      s{ s" reunido" s" traído" s" congregado" }s txt+
+    s" cuál es" s{ s" el motivo" s" la razón" }s txt+
+      s" de que se" txt+ s{ s" encuentren" s" hallen" }s txt+
+    s" por qué" s{ s" motivo" s" razón" }s s? txt+ s" se encuentran" txt+
+  }s txt+ here$ txt+ period+  ;
   \ No sabes por qué están aquí los refugiados.
 
 : some-refugees-look-at-you$  ( -- ca len )
-  s" Algunos" s" de ellos" s? bs&
-  s" reparan en" bs& s{ s" ti" s" tu persona" s" tu presencia" }s bs&  ;
+  s" Algunos" s" de ellos" s? txt+
+  s" reparan en" txt+ s{ s" ti" s" tu persona" s" tu presencia" }s txt+  ;
 
 : in-their-eyes-and-gestures$  ( -- ca len )
-  s" En sus" s{ s" ojos" s" miradas" }s bs&
-  s" y" s" en sus" s? bs& s" gestos" bs& s? s&  ;
+  s" En sus" s{ s" ojos" s" miradas" }s txt+
+  s" y" s" en sus" s? txt+ s" gestos" txt+ s? txt+  ;
   \ En sus ojos y gestos.
 
 : the-refugees-trust$  ( -- ca len )
   some-refugees-look-at-you$ period+
-  in-their-eyes-and-gestures$ s&
-  s{ s" ves" s" notas" s" adviertes" s" aprecias" }s bs&
+  in-their-eyes-and-gestures$ txt+
+  s{ s" ves" s" notas" s" adviertes" s" aprecias" }s txt+
   s{
     s" amabilidad" s" confianza" s" tranquilidad"
     s" serenidad" s" afabilidad"
-  }s bs&  ;
+  }s txt+  ;
   \ Los refugiados confían.
 
 : you-feel-they-observe-you$  ( -- ca len )
   s{ s" tienes la sensación de que" s" sientes que" }s s?
-  s" te observan" s& s" como" s? bs&
+  s" te observan" txt+ s" como" s? txt+
   s{  s" con timidez" s" tímidamente"
-      s" de" way$ s& s" subrepticia" s& s" subrepticiamente"
+      s" de" way$ txt+ s" subrepticia" txt+ s" subrepticiamente"
       s" a escondidas"
-  }s bs& period+  ;
+  }s txt+ period+  ;
   \ Sientes que te observan.
 
 : the-refugees-don't-trust$  ( -- ca len )
-  some-refugees-look-at-you$ s{ s" . Entonces" s"  y" }s bs+
-  you-feel-they-observe-you$ s&
-  in-their-eyes-and-gestures$ s&
+  some-refugees-look-at-you$ s{ s" . Entonces" s"  y" }s s+
+  you-feel-they-observe-you$ txt+
+  in-their-eyes-and-gestures$ txt+
   s{
-    s{ s" crees" s" te parece" }s to-realize$ s&
+    s{ s" crees" s" te parece" }s to-realize$ txt+
     s{ s" ves" s" notas" s" adviertes" s" aprecias" }s
-    s" parece" to-realize$ s& s" se" s+
-  }s bs& s{
+    s" parece" to-realize$ txt+ s" se" s+
+  }s txt+ s{
     s" cierta" s? s{
       s" preocupación" s" desconfianza" s" intranquilidad"
-      s" indignación" }s bs&
-    s" cierto" s? s{ s" nerviosismo" s" temor" }s bs&
-  }s bs&  ;
+      s" indignación" }s txt+
+    s" cierto" s? s{ s" nerviosismo" s" temor" }s txt+
+  }s txt+  ;
   \ Los refugiados no confían.
 
 : diverse-people$  ( -- ca len )
   s{ s" personas" s" hombres, mujeres y niños" }s
-  s" de toda" s& s" edad y" s? bs& s" condición" s&  ;
+  s" de toda" txt+ s" edad y" s? txt+ s" condición" txt+  ;
 
 \ ----------------------------------------------
 \ Tramos de cueva (laberinto)
@@ -156,7 +157,7 @@ set-current
 : this-narrow-cave-pass$  ( -- ca len )
   my-location dup is-known? if    not-distant-article
                             else  undefined-article
-                            then  narrow-cave-pass$ s&  ;
+                            then  narrow-cave-pass$ txt+  ;
   \ Devuelve una variante de «estrecho tramo de cueva», con el
   \ artículo adecuado.
 
@@ -174,27 +175,27 @@ set-current
   dup has-no-article?
   if    s" hacia"
   else  dup toward-the(m/f)
-  then  rot name s&  ;
+  then  rot name txt+  ;
   \ Devuelve una variante de «hacia el nombre-de-ente» adecuada a un
   \ ente _a_.
 
 : main-cave-exits-are$  ( -- ca len )
-  ^this-narrow-cave-pass$ lets-you$ s& to-keep-going$ s&  ;
+  ^this-narrow-cave-pass$ lets-you$ txt+ to-keep-going$ txt+  ;
   \ Devuelve una variante del inicio de la descripción de los tramos
   \ de cueva
 
 \ Variantes para la descripción de cada salida
 
 : cave-exit-description-0$  ( -- ca len )
-  ^this-narrow-cave-pass$  lets-you$ s& to-keep-going$ s&
-  in-that-direction$ s&  ;
+  ^this-narrow-cave-pass$  lets-you$ txt+ to-keep-going$ txt+
+  in-that-direction$ txt+  ;
   \ Devuelve la primera variante de la descripción de una salida de un
   \ tramo de cueva.
 
 : cave-exit-description-1$ ( -- ca len )
   ^a-pass-way$
-  s{ s" surge" s" se ve" s" nace" s" sale" s" puede verse" }s bs&
-  in-that-direction$ s&  ;
+  s{ s" surge" s" se ve" s" nace" s" sale" s" puede verse" }s txt+
+  in-that-direction$ txt+  ;
   \ Devuelve la segunda variante de la descripción de una salida de un
   \ tramo de cueva.
 
@@ -204,9 +205,9 @@ false [if]  \ XXX OLD -- código obsoleto
 
 : $two-main-exits-in-cave ( ca1 len1 ca2 len2 -- ca3 len3 )
   2>r 2>r
-  this-narrow-cave-pass$ lets-you$ s& to-keep-going$ s&
-  toward-the(m)$ 2dup 2r> s&  \ Una dirección
-  2swap 2r> s&  \ La otra dirección
+  this-narrow-cave-pass$ lets-you$ txt+ to-keep-going$ txt+
+  toward-the(m)$ 2dup 2r> txt+  \ Una dirección
+  2swap 2r> txt+  \ La otra dirección
   both&  ;
   \ Devuelve la descripción _ca3 len3_ de un tramo de cueva con dos salidas a dos
   \ puntos cardinales, cuyos nombres (sin artículo) son _ca1 len1_ y
@@ -217,9 +218,9 @@ false [if]  \ XXX OLD -- código obsoleto
   \ XXX TODO -- no usado
 
 : $other-exit-in-cave  ( ca1 len1 -- ca2 len2 )
-  ^a-pass-way$ s&
-  s{ s" surge" s" se ve" s" nace" s" sale" s" puede verse" }s bs&
-  toward-the(m)$ s& 2swap s&  ;
+  ^a-pass-way$ txt+
+  s{ s" surge" s" se ve" s" nace" s" sale" s" puede verse" }s txt+
+  toward-the(m)$ txt+ 2swap txt+  ;
   \ Devuelve la descripción _ca2 len2_ de una salida adicional en un
   \ tramo de cueva, siendo _ca1 len1_ el nombre de la dirección
   \ cardinal.  Se usa en la descripción principal de un escenario Esta
@@ -231,14 +232,14 @@ false [if]  \ XXX OLD -- código obsoleto
 [then]  \ XXX NOTE: fin del código obsoleto
 
 : cave-exit-separator+  ( ca1 len1 -- ca2 len2 )
-  s{ s" ," s" ;" s" ..." }s bs+
-  s{ s" y" 2dup s" aunque" but$ }s bs& s" también" s? bs&  ;
+  s{ s" ," s" ;" s" ..." }s s+
+  s{ s" y" 2dup s" aunque" but$ }s txt+ s" también" s? txt+  ;
   \ Concatena (sin separación) a una cadena el separador entre las
   \ salidas principales y las secundarias.
 
 : (paths)-can-be-seen-0$  ( -- ca len )
   s{ s" parten" s" surgen" s" nacen" s" salen" }s
-  s" de" s{ s" aquí" s" este lugar" }s bs& s? rnd2swap s&  ;
+  s" de" s{ s" aquí" s" este lugar" }s txt+ s? rnd2swap txt+  ;
 
 : (paths)-can-be-seen-1$  ( -- ca len )
   s{ s" se ven" s" pueden verse"
@@ -254,36 +255,36 @@ false [if]  \ XXX OLD -- código obsoleto
   \ escenario es conocido
 
 : paths-seen  ( ca1 len1 -- ca2 len2 )
-  pass-ways$ s& s" más" s? bs&
-  (paths)-can-be-seen$ rnd2swap s&  ;
+  pass-ways$ txt+ s" más" s? txt+
+  (paths)-can-be-seen$ rnd2swap txt+  ;
   \ Devuelve la presentación de la lista de salidas secundarias.
   \ ca1 len1 = Cadena con el número de pasajes
   \ ca2 len2 = Cadena con el resultado
 
 : secondary-exit-in-cave&  ( a ca2 len2 -- ca3 len3 )
-  rot toward-(the)-name s&  ;
+  rot toward-(the)-name txt+  ;
   \ Devuelve la descripción de una salida adicional en un tramo de cueva.
   \ a1 = Ente dirección cuya descripción hay que añadir
   \ ca2 len2 = Descripción en curso
 
 : one-secondary-exit-in-cave  ( a -- ca len )
   a-pass-way$
-  s{ s" parte" s" surge" s" se ve" s" nace" s" sale" s" puede verse" }s bs&
+  s{ s" parte" s" surge" s" se ve" s" nace" s" sale" s" puede verse" }s txt+
   secondary-exit-in-cave&  ;
   \ Devuelve la descripción _ca len_ de una salida adicional en un
   \ tramo de cueva, del ente dirección _a_.
 
 : two-secondary-exits-in-cave  ( a1 a2 -- ca3 len3 )
-  s" dos" paths-seen s" :" s? bs+
-  secondary-exit-in-cave& s" y" s&
+  s" dos" paths-seen s" :" s? s+
+  secondary-exit-in-cave& s" y" txt+
   secondary-exit-in-cave&  ;
   \ Devuelve la descripción de dos salidas adicionales en un tramo de
   \ cueva.
 
 : three-secondary-exits-in-cave  ( a1 a2 a3 -- ca4 len4 )
-  s" tres" paths-seen s" :" s? bs+
+  s" tres" paths-seen s" :" s? s+
   secondary-exit-in-cave& comma+
-  secondary-exit-in-cave& s" y" s&
+  secondary-exit-in-cave& s" y" txt+
   secondary-exit-in-cave&  ;
   \ Devuelve la descripción de tres salidas adicionales en un tramo de
   \ cueva.
@@ -302,7 +303,7 @@ false [if]  \ XXX OLD -- código obsoleto
 
 : 1+1-cave-exits  ( a1 a2 -- ca len )
   one-main-exit-in-cave cave-exit-separator+
-  rot one-secondary-exit-in-cave s&  ;
+  rot one-secondary-exit-in-cave txt+  ;
   \ Devuelve la descripción de un tramo de cueva
   \ con una salida principal y una secundaria.
   \ a1 = Ente dirección
@@ -310,7 +311,7 @@ false [if]  \ XXX OLD -- código obsoleto
 
 : 1+2-cave-exits  ( a1 a2 a3 -- ca len )
   one-main-exit-in-cave cave-exit-separator+
-  2swap two-secondary-exits-in-cave s&  ;
+  2swap two-secondary-exits-in-cave txt+  ;
   \ Devuelve la descripción de un tramo de cueva
   \ con una salida principal y dos secundarias.
   \ a1 = Ente dirección
@@ -319,7 +320,7 @@ false [if]  \ XXX OLD -- código obsoleto
 
 : 1+3-cave-exits  ( a1 a2 a3 a4 -- ca len )
   one-main-exit-in-cave cave-exit-separator+
-  2>r three-secondary-exits-in-cave 2r> 2swap s&  ;
+  2>r three-secondary-exits-in-cave 2r> 2swap txt+  ;
   \ Devuelve la descripción de un tramo de cueva
   \ con una salida principal y tres secundarias.
   \ a1 = Ente dirección
@@ -335,7 +336,7 @@ false [if]  \ XXX OLD -- código obsoleto
 
 : 2+1-cave-exits  ( a1 a2 a3 -- ca len )
   two-main-exits-in-cave cave-exit-separator+
-  rot one-secondary-exit-in-cave s&  ;
+  rot one-secondary-exit-in-cave txt+  ;
   \ Devuelve la descripción de un tramo de cueva
   \ con dos salidas principales y ninguna secundaria.
   \ a1 = Ente dirección
@@ -344,7 +345,7 @@ false [if]  \ XXX OLD -- código obsoleto
 
 : 2+2-cave-exits  ( a1 a2 a3 a4 -- ca len )
   two-main-exits-in-cave cave-exit-separator+
-  2swap two-secondary-exits-in-cave s&  ;
+  2swap two-secondary-exits-in-cave txt+  ;
   \ Devuelve la descripción de un tramo de cueva
   \ con dos salidas principales y dos secundarias.
   \ a1 = Ente dirección
@@ -414,7 +415,7 @@ create 'cave-descriptions
 
 : exits-cave-description  ( a1 ... an u -- ca2 len2 )
   shuffle-cave-exits  (exits-cave-description) period+
-  main-cave-exits-are$ 2swap s&  ;  \ Añadir el encabezado
+  main-cave-exits-are$ 2swap txt+  ;  \ Añadir el encabezado
   \ Devuelve la descripción principal de un tramo de cueva.
   \ a1 ... an = Entes de dirección correspondientes a las salidas
   \ u = Número de entes de dirección suministrados
@@ -432,11 +433,11 @@ create 'cave-descriptions
   s{ s" desgraciada" s" desdichada" }s  ;
 
 : poor-village$  ( -- ca len )
-  poor$ s" aldea" s&  ;
+  poor$ s" aldea" txt+  ;
 
 : rests-of-the-village$  ( -- ca len )
-  s" los restos" still$ s? s" humeantes" s& s? bs&
-  s" de la" s& poor-village$ s&  ;
+  s" los restos" still$ s? s" humeantes" txt+ s? txt+
+  s" de la" txt+ poor-village$ txt+  ;
   \ Devuelve parte de otras descripciones de la aldea arrasada.
 
 \ ----------------------------------------------
@@ -450,57 +451,57 @@ create 'cave-descriptions
   s{ s" por su aspecto" s" a primera vista" }s s?
   s{  s" parece"
       s" diríase que es"
-      s" bien" s? s" puede decirse que es" s&
-  }s bs&
-  s{  s" imposible de" to-pass-(wall)$ s&
-      s" imposible" to-pass-(wall)$ s& s" la" s+
+      s" bien" s? s" puede decirse que es" txt+
+  }s txt+
+  s{  s" imposible de" to-pass-(wall)$ txt+
+      s" imposible" to-pass-(wall)$ txt+ s" la" s+
       s{ s" insuperable" s" invencible" s" infranqueable" }s
-  }s bs&  ;
+  }s txt+  ;
   \ Mensaje «parece infranqueable».
   \ XXX TODO -- ojo: género femenino; generalizar factorizando cuando se use en otro contexto
 
 : the-cave-entrance-is-visible$  ( -- ca len )
   s{  s" se" s{ s" ve" s" abre" s" haya"
-                s" encuentra" s" aprecia" s" distingue" }s bs&
-      s" puede" s{ s" verse" s" apreciarse" s" distinguirse" }s bs&
-  }s cave-entrance~ full-name s&  ;
+                s" encuentra" s" aprecia" s" distingue" }s txt+
+      s" puede" s{ s" verse" s" apreciarse" s" distinguirse" }s txt+
+  }s cave-entrance~ full-name txt+  ;
 
 \ ----------------------------------------------
 \ Entrada a la cueva
 
 : you-discover-the-cave-entrance$  ( -- ca len )
   ^but$ comma+
-  s{  s" reconociendo" s" el terreno" more-carefully$ rnd2swap s& s&
-      s" fijándote" s" ahora" s? bs& more-carefully$ s&
-  }s bs& comma+ s" descubres" s& s{ s" lo" s" algo" }s bs& s" que" s&
-  s" sin duda" s? bs& s{ s" parece ser" s" es" s" debe de ser" }s bs&
-  s{ s" la entrada" s" el acceso" }s bs& s" a una" s& cave$ s&  ;
+  s{  s" reconociendo" s" el terreno" more-carefully$ rnd2swap txt+ txt+
+      s" fijándote" s" ahora" s? txt+ more-carefully$ txt+
+  }s txt+ comma+ s" descubres" txt+ s{ s" lo" s" algo" }s txt+ s" que" txt+
+  s" sin duda" s? txt+ s{ s" parece ser" s" es" s" debe de ser" }s txt+
+  s{ s" la entrada" s" el acceso" }s txt+ s" a una" txt+ cave$ txt+  ;
   \ Mensaje de que descubres la cueva.
 
 : the-cave-entrance-is-hidden$  ( -- ca len )
-  s" La entrada" s" a la cueva" s? bs&
-  s{ s" está" s" muy" s? bs& s" no podría estar más" }s bs&
-  s{ s" oculta" s" camuflada" s" escondida" }s bs&
-  s" en la pared" s& rocky(f)$ s& period+  ;
+  s" La entrada" s" a la cueva" s? txt+
+  s{ s" está" s" muy" s? txt+ s" no podría estar más" }s txt+
+  s{ s" oculta" s" camuflada" s" escondida" }s txt+
+  s" en la pared" txt+ rocky(f)$ txt+ period+  ;
 
 : you-were-lucky-discovering-it$ ( -- ca len )
-  s" Has tenido" s" muy" s? bs& s" buena" bs& s{ s" fortuna" s" suerte" }s bs&
+  s" Has tenido" s" muy" s? txt+ s" buena" txt+ s{ s" fortuna" s" suerte" }s txt+
   s{  s{ s" al" s" en" s" con" }s
-        s{ s" hallarla" s" encontrarla" s" dar con ella" s" descubrirla" }s bs&
+        s{ s" hallarla" s" encontrarla" s" dar con ella" s" descubrirla" }s txt+
       s{  s" hallándola" s" encontrándola"
           s" dando con ella" s" descubriéndola"
       }s
-  }s bs& period+  ;
+  }s txt+ period+  ;
 
 : it's-your-last-hope$  ( -- ca len )
   s{ s" te das cuenta de que" s" sabes que" }s s?
-  s{ s" es" s" se trata de" }s bs& ^uppercase
-  your|the(f)$ s& s{ s" única" s" última" }s bs&
-  s{ s" salida" s" opción" s" esperanza" s" posibilidad" }s bs&
+  s{ s" es" s" se trata de" }s txt+ ^uppercase
+  your|the(f)$ txt+ s{ s" única" s" última" }s txt+
+  s{ s" salida" s" opción" s" esperanza" s" posibilidad" }s txt+
   s{ s" de" s" para" }s
   s{  s" escapar" s" huir"
-      s" evitar" s{ s" ser capturado" s" que te capturen" }s bs&
-  }s bs& s? s& period+  ;
+      s" evitar" s{ s" ser capturado" s" que te capturen" }s txt+
+  }s txt+ s? txt+ period+  ;
 
 \ ----------------------------------------------
 \ Entrada a la cueva
@@ -511,33 +512,33 @@ create 'cave-descriptions
 \ Otros escenarios
 
 : bridge-that-way$  ( -- ca len )
-  s" El puente" leads$ s& that-way$ s& period+  ;
+  s" El puente" leads$ txt+ that-way$ txt+ period+  ;
 
 : stairway-that-way$  ( -- ca len )
-  s" Las escaleras" (they)-lead$ s& that-way$ s& period+  ;
+  s" Las escaleras" (they)-lead$ txt+ that-way$ txt+ period+  ;
 
 : comes-from-there$  ( -- ca len )
-  comes-from$ from-that-way$ s&  ;
+  comes-from$ from-that-way$ txt+  ;
 
 : water-from-there$  ( -- ca len )
-  the-water-current$ comes-from-there$ s&  ;
+  the-water-current$ comes-from-there$ txt+  ;
 
 : ^water-from-there$  ( -- ca len )
-  ^the-water-current$ comes-from-there$ s&  ;
+  ^the-water-current$ comes-from-there$ txt+  ;
 
 : water-that-way$  ( -- ca len )
-  ^the-water-current$ s{ s" corre" s" fluye" s" va" }s bs&
-  in-that-direction$ s& period+  ;
+  ^the-water-current$ s{ s" corre" s" fluye" s" va" }s txt+
+  in-that-direction$ txt+ period+  ;
 
 : stairway-to-river$  ( -- ca len )
-  s" Las escaleras" (they)-go-down$ s&
-  that-way$ s& comma+
-  s{ s" casi" s? s" hasta el" s& s" mismo" s? bs& s" borde del" s&
-  s" casi" s? s" hasta la" s& s" misma" s? bs& s" orilla del" s&
-  s" casi" s? s" hasta el" s&
-  s" hasta" s? s" cerca del" s& }s bs& s" agua." s&  ;
+  s" Las escaleras" (they)-go-down$ txt+
+  that-way$ txt+ comma+
+  s{ s" casi" s? s" hasta el" txt+ s" mismo" s? txt+ s" borde del" txt+
+  s" casi" s? s" hasta la" txt+ s" misma" s? txt+ s" orilla del" txt+
+  s" casi" s? s" hasta el" txt+
+  s" hasta" s? s" cerca del" txt+ }s txt+ s" agua." txt+  ;
 
 : a-high-narrow-pass-way$  ( -- ca len )
-  s" un" narrow(m)$ s& pass-way$ s& s" elevado" s&  ;
+  s" un" narrow(m)$ txt+ pass-way$ txt+ s" elevado" txt+  ;
 
 \ vim:filetype=gforth:fileencoding=utf-8

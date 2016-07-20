@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607191924
+\ Last update: 201607202131
 
 \ Note: The comments of the code are in Spanish.
 
@@ -20,6 +20,7 @@ require galope/bracket-false.fs    \ `[false]`
 require galope/bracket-true.fs     \ `[true]`
 require galope/random_strings.fs
 require galope/replaced.fs         \ `replaced`
+require galope/txt-plus.fs         \ `txt+`
 
 set-current
 
@@ -454,7 +455,7 @@ create 'articles
 : ^name  ( a -- ca len )  name ^uppercase  ;
   \ Devuelve el nombre de un ente, con la primera letra mayúscula.
 
-: name&  ( a ca1 len1 -- ca2 len2 )  rot name s&  ;
+: name&  ( a ca1 len1 -- ca2 len2 )  rot name txt+  ;
   \ Añade a un (supuesto) artículo _ca1 len1_ el nombre de un ente _a_,
   \ formando el nombre completo _ca2 len2_.
 
@@ -512,7 +513,7 @@ create 'articles
   \ XXX TODO -- no usado
 
 : subjective-negative-name-as-direct-object  ( a -- ca len )
-  dup a/$ rot subjective-negative-name s&  ;
+  dup a/$ rot subjective-negative-name txt+  ;
   \ Devuelve el nombre subjetivo (negativo) _ca len_ de un ente _a_,
   \ desde el punto de vista del protagonista, para ser usado como
   \ objeto directo.

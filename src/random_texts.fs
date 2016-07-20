@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607202040
+\ Last update: 201607202130
 
 \ Note: The comments of the code are in Spanish.
 
@@ -21,6 +21,7 @@ require galope/question-question.fs   \ `??`
 require galope/random_strings.fs
 require galope/replaced.fs            \ `replaced`
 require galope/sconstant.fs           \ `sconstant`
+require galope/txt-plus.fs            \ `txt+`
 
 set-current
 
@@ -35,10 +36,10 @@ set-current
 \ de cadena creadas con `sconstant`.
 
 : at-least$  ( ca len -- )
-  s{ s" al" s" por lo" }s s" menos" s&  ;
+  s{ s" al" s" por lo" }s s" menos" txt+  ;
 
 : that-(at-least)$  ( ca len -- )
-  s" que" at-least$ s? bs&  ;
+  s" que" at-least$ s? txt+  ;
 
 : that(m)$  ( -- ca len )
   s{ s" que" s" cual" }s  ;
@@ -132,7 +133,7 @@ set-current
   s{ s" a" s" hacia" }s  ;
 
 : toward-the(f)$  ( -- ca len )
-  toward$ s" la" s&  ;
+  toward$ s" la" txt+  ;
 
 : toward-the(m)$  ( -- ca len )
   s{ s" al" s" hacia el" }s  ;
@@ -141,7 +142,7 @@ set-current
   toward-the(m)$ ^uppercase  ;
 
 : from-the(m)$  ( -- ca len )
-  s{ s" desde el" s" procedente" s? s" del" s& }s  ;
+  s{ s" desde el" s" procedente" s? s" del" txt+ }s  ;
 
 : to-go-back$  ( -- ca len )
   s{ s" volver" s" regresar" }s  ;
@@ -170,7 +171,7 @@ set-current
   \ Devuelve una variante de «soldados».
 
 : your-soldiers$  ( -- ca len )
-  s" tus" soldiers$ s&  ;
+  s" tus" soldiers$ txt+  ;
   \ Devuelve una variante de "tus hombres".
 
 : ^your-soldiers$  ( -- ca len )
@@ -184,13 +185,13 @@ set-current
 : the-enemies$  ( -- ca len )
   s{ s" los sajones"
   s{ s" las tropas" s" las huestes" }s
-  s{ s" enemigas" s" sajonas" }s bs& }s  ;
+  s{ s" enemigas" s" sajonas" }s txt+ }s  ;
   \ Devuelve una variante de «los enemigos».
 
 : the-enemy$  ( -- ca len )
   s{ s" el enemigo"
   s{ s" la tropa" s" la hueste" }s
-  s{ s" enemiga" s" sajona" }s bs& }s  ;
+  s{ s" enemiga" s" sajona" }s txt+ }s  ;
   \ Devuelve una variante de «el enemigo».
 
 : (the-enemy|enemies)  ( -- ca len f )
@@ -209,7 +210,7 @@ set-current
 
 : of-the-enemy|enemies$  ( -- ca len )
   (the-enemy|enemies) >r
-  s" de" 2swap s&
+  s" de" 2swap txt+
   r> 0= ?? «de-el»>«del»  ;
   \ Devuelve una variante de «del/de los enemigo/s».
 
@@ -220,11 +221,11 @@ set-current
   \ f = ¿El texto está en plural?
 
 : of-your-ex-cloak$  ( -- ca len )
-  s{ null$ s" que queda" s" que quedó" }s s" de" s&
-  s{ s" lo" s" la" }s bs& s" que" s& s" antes" s? bs&
-  s{ s" era" s" fue" s" fuera" }s bs&
-  your|the(f)$ s& s{ s" negra" s" oscura" }s s? bs&
-  s" capa" s& s" de lana" s? bs& period+  ;
+  s{ null$ s" que queda" s" que quedó" }s s" de" txt+
+  s{ s" lo" s" la" }s txt+ s" que" txt+ s" antes" s? txt+
+  s{ s" era" s" fue" s" fuera" }s txt+
+  your|the(f)$ txt+ s{ s" negra" s" oscura" }s s? txt+
+  s" capa" txt+ s" de lana" s? txt+ period+  ;
   \ Devuelve un texto común a las descripciones de los restos de la capa.
 
 : but$  ( -- ca len )
@@ -246,7 +247,7 @@ set-current
   s{ s" hogar" s" casa" }s  ;
 
 : sire,$  ( -- ca len )
-  s" Sire" s" Ulfius" s? bs& comma+  ;
+  s" Sire" s" Ulfius" s? txt+ comma+  ;
 
 : my-name-is$  ( -- ca len )
   s{ s" Me llamo" s" Mi nombre es" }s  ;
@@ -273,14 +274,14 @@ set-current
   s{ s" paso" s" camino" }s  ;
 
 : the-pass$  ( -- ca len )
-  s" el" pass$ s&  ;
+  s" el" pass$ txt+  ;
 
 : pass-way$  ( -- ca len )
   s{ s" paso" s" pasaje" }s  ;
   \ Devuelve una variante de «pasaje».
 
 : a-pass-way$  ( -- ca len )
-  s" un" pass-way$ s&  ;
+  s" un" pass-way$ txt+  ;
   \ Devuelve una variante de «un pasaje».
 
 : ^a-pass-way$  ( -- ca len )
@@ -288,7 +289,7 @@ set-current
   \ Devuelve una variante de «Un pasaje» (con la primera mayúscula).
 
 : the-pass-way$  ( -- ca len )
-  s" el" pass-way$ s&  ;
+  s" el" pass-way$ txt+  ;
   \ Devuelve una variante de «el pasaje».
 
 : ^the-pass-way$  ( -- ca len )
@@ -322,7 +323,7 @@ set-current
   \ Devuelve una forma de decir «ves», con la primera letra mayúscula.
 
 : cannot-see$  ( -- ca len )
-  s" no" can-see$ s&  ;
+  s" no" can-see$ txt+  ;
   \ Devuelve una forma de decir «no ves».
 
 : ^cannot-see$  ( -- ca len )
@@ -338,12 +339,12 @@ set-current
   can-glimpse$ ^uppercase  ;
 
 : in-half-darkness-you-glimpse$  ( -- ca len )
-  s" En la" s{ s" semioscuridad," s" penumbra," }s bs& s? dup
-  if  can-glimpse$  else  ^can-glimpse$  then  s&  ;
+  s" En la" s{ s" semioscuridad," s" penumbra," }s txt+ s? dup
+  if  can-glimpse$  else  ^can-glimpse$  then  txt+  ;
   \ Devuelve un texto usado en varias descripciones de las cuevas.
 
 : you-glimpse-the-cave$  ( -- a u)
-  in-half-darkness-you-glimpse$ s" la continuación de la cueva." s&  ;
+  in-half-darkness-you-glimpse$ s" la continuación de la cueva." txt+  ;
   \ Devuelve un texto usado en varias descripciones de las cuevas.
   \ XXX TODO -- distinguir la antorcha encendida
 
@@ -359,7 +360,7 @@ set-current
   s" no tiene nada"  ;
 
 : is-normal$  ( -- ca len )
-  has-nothing$ rimarkable$ s&  ;
+  has-nothing$ rimarkable$ txt+  ;
   \ Devuelve una variante de «no tiene nada especial».
 
 : ^is-normal$  ( -- ca len )
@@ -371,13 +372,13 @@ set-current
   s{ s" allí" s" allá" }s  ;
 
 : goes-down-into-the-deep$  ( -- ca len )
-  s{ s" desciende" toward$ s& s" se adentra en"
-  s" conduce" toward$ s& s" baja" toward$ s& }s
-  s" las profundidades" s&  ;
+  s{ s" desciende" toward$ txt+ s" se adentra en"
+  s" conduce" toward$ txt+ s" baja" toward$ txt+ }s
+  s" las profundidades" txt+  ;
   \ Devuelve una variante de «desciende a las profundidades».
 
 : in-that-direction$  ( -- ca len )
-  s{ s" en esa dirección" s{ s" por" s" hacia" }s over-there$ s& }s  ;
+  s{ s" en esa dirección" s{ s" por" s" hacia" }s over-there$ txt+ }s  ;
   \ Devuelve una variante de «en esa dirección».
 
 : ^in-that-direction$  ( -- ca len )
@@ -385,17 +386,17 @@ set-current
   \ Devuelve una variante de «En esa dirección».
 
 : (uninteresting-direction-0)$  ( -- ca len )
-  s{ s" Esa dirección" is-normal$ s&
-  ^in-that-direction$ s" no hay nada" s& rimarkable$ s&
-  ^in-that-direction$ cannot-see$ s& s" nada" s& rimarkable$ s&
+  s{ s" Esa dirección" is-normal$ txt+
+  ^in-that-direction$ s" no hay nada" txt+ rimarkable$ txt+
+  ^in-that-direction$ cannot-see$ txt+ s" nada" txt+ rimarkable$ txt+
   }s period+  ;
   \ Devuelve primera variante de «En esa dirección no hay nada especial».
 
 : (uninteresting-direction-1)$  ( -- ca len )
   s{
-  ^is-normal$ s" esa dirección" s&
-  ^cannot-see$ s" nada" s& rimarkable$ s& in-that-direction$ s&
-  s" No hay nada" rimarkable$ s& in-that-direction$ s&
+  ^is-normal$ s" esa dirección" txt+
+  ^cannot-see$ s" nada" txt+ rimarkable$ txt+ in-that-direction$ txt+
+  s" No hay nada" rimarkable$ txt+ in-that-direction$ txt+
   }s period+  ;
   \ Devuelve segunda variante de «En esa dirección no hay nada especial».
 
@@ -407,14 +408,14 @@ set-current
 
 s" de Westmorland" sconstant of-westmorland$
 : the-village$  ( -- ca len )
-  s{ s" la villa" of-westmorland$ s? bs&
+  s{ s" la villa" of-westmorland$ s? txt+
   s" Westmorland" }s  ;
 
 : ^the-village$  ( -- ca len )
   the-village$ ^uppercase  ;
 
 : of-the-village$  ( -- ca len )
-  s" de" the-village$ s&  ;
+  s" de" the-village$ txt+  ;
 
 : (it)-blocks$  ( -- ca len )
   s{ s" impide" s" bloquea" }s  ;
@@ -423,21 +424,21 @@ s" de Westmorland" sconstant of-westmorland$
   s{ s" impiden" s" bloquean" }s  ;
 
 : (rocks)-on-the-floor$  ( -- ca len )
-  s" yacen desmoronadas" s" a lo largo del pasaje" s? bs&  ;
+  s" yacen desmoronadas" s" a lo largo del pasaje" s? txt+  ;
   \ Devuelve un texto sobre las rocas que ya han sido desmoronadas.
 
 : (rocks)-clue$  ( -- ca len )
-  s" Son" s{ s" muchas" s" muy" s? s" numerosas" s& }s bs& comma+
-  s" aunque no parecen demasiado pesadas y" s&
-  s{ s" pueden verse" s" se ven" s" hay" }s s" algunos huecos" s&
-  s" entre ellas" rnd2swap s& s&  ;
+  s" Son" s{ s" muchas" s" muy" s? s" numerosas" txt+ }s txt+ comma+
+  s" aunque no parecen demasiado pesadas y" txt+
+  s{ s" pueden verse" s" se ven" s" hay" }s s" algunos huecos" txt+
+  s" entre ellas" rnd2swap txt+ txt+  ;
   \ Devuelve una descripción de las rocas que sirve de pista.
 
 : from-that-way$  ( -- u )
-  s" de" s{ s" esa dirección" s" allí" s" ahí" s" allá" }s bs&  ;
+  s" de" s{ s" esa dirección" s" allí" s" ahí" s" allá" }s txt+  ;
 
 : that-way$  ( -- ca len )
-  s{ s" en esa dirección" s" por" s{ s" ahí" s" allí" s" allá" }s bs& }s  ;
+  s{ s" en esa dirección" s" por" s{ s" ahí" s" allí" s" allá" }s txt+ }s  ;
   \ Devuelve una variante de «en esa dirección».
 
 : ^that-way$  ( -- ca len )
@@ -450,7 +451,7 @@ s" de Westmorland" sconstant of-westmorland$
   s{
   s" se" s{ s" ensancha" s" va ensanchando"
   s" va haciendo más ancho" s" hace más ancho"
-  s" vuelve más ancho" s" va volviendo más ancho" }s bs&
+  s" vuelve más ancho" s" va volviendo más ancho" }s txt+
   2dup 2dup 2dup \ Aumentar las probabilidades de la primera variante
   s{ s" ensánchase" s" hácese más ancho" s" vuélvese más ancho" }s
   }s  ;
@@ -476,12 +477,12 @@ s" de Westmorland" sconstant of-westmorland$
 
 : gets-narrower(f)$  ( -- ca len )
   s{
-  s" se" s{ s" estrecha" s" va estrechando" }s bs&
+  s" se" s{ s" estrecha" s" va estrechando" }s txt+
   2dup \ Aumentar las probabilidades de la primera variante
   s" se" s{ s" va haciendo más" s" hace más"
-  s" vuelve más" s" va volviendo más" }s bs& narrow(f)$ s&
+  s" vuelve más" s" va volviendo más" }s txt+ narrow(f)$ txt+
   2dup \ Aumentar las probabilidades de la segunda variante
-  s{ s" estréchase" s{ s" hácese" s" vuélvese" }s s" más" s& narrow(f)$ s& }s
+  s{ s" estréchase" s{ s" hácese" s" vuélvese" }s s" más" txt+ narrow(f)$ txt+ }s
   }s  ;
   \ Devuelve una variante de «se hace más estrecha» (femenino).
 
@@ -507,19 +508,19 @@ s" de Westmorland" sconstant of-westmorland$
   \ XXX TODO -- confirmar significados
 
 : ^a-narrow-pass-way$  ( -- ca len )
-  s" Un" narrow(m)$ pass-way$ rnd2swap s& s&  ;
+  s" Un" narrow(m)$ pass-way$ rnd2swap txt+ txt+  ;
 
 : beautiful(m)$  ( -- ca len )
   s{ s" bonito" s" bello" s" hermoso" }s  ;
 
 : a-snake-blocks-the-way$  ( -- ca len )
   s" Una serpiente"
-  s{ s" bloquea" s" está bloqueando" }s bs&
-  the-pass$ s& toward-the(m)$ s" sur" s& s? bs&  ;
+  s{ s" bloquea" s" está bloqueando" }s txt+
+  the-pass$ txt+ toward-the(m)$ s" sur" txt+ s? txt+  ;
 
 : the-water-current$  ( -- ca len )
-  s" la" s{ s" caudalosa" s" furiosa" s" fuerte" s" brava" }s bs&
-  s" corriente" s& s" de agua" s? bs&  ;
+  s" la" s{ s" caudalosa" s" furiosa" s" fuerte" s" brava" }s txt+
+  s" corriente" txt+ s" de agua" s? txt+  ;
 
 : ^the-water-current$  ( -- ca len )
   the-water-current$ ^uppercase  ;
@@ -531,14 +532,14 @@ s" de Westmorland" sconstant of-westmorland$
   s{ s" avanzar" s" proseguir" s" continuar" }s  ;
 
 : lets-you$  ( -- ca len )
-  s" te" s? s" permite" s&  ;
+  s" te" s? s" permite" txt+  ;
 
 : narrow-cave-pass$  ( -- ca len )
-  s" tramo de cueva" narrow(m)$ rnd2swap s&  ;
+  s" tramo de cueva" narrow(m)$ rnd2swap txt+  ;
   \ Devuelve una variante de «estrecho tramo de cueva».
 
 : a-narrow-cave-pass$  ( -- ca len )
-  s" un" narrow-cave-pass$ s&  ;
+  s" un" narrow-cave-pass$ txt+  ;
   \ Devuelve una variante de «un estrecho tramo de cueva».
 
 : but|and$  ( -- ca len )
@@ -554,20 +555,20 @@ s" de Westmorland" sconstant of-westmorland$
 
 : wanted-peace$  ( -- ca len )
   s{  s" la" s" que haya"
-      s" poder" s? s" vivir en" s&
-      s{ s" tener" s" poder tener" s" poder disfrutar de" }s s? s" una vida en" s&
-      s" que" s{ s" reine" s" llegue" }s bs& s" la" s&
-  }s s" paz." s&  ;
+      s" poder" s? s" vivir en" txt+
+      s{ s" tener" s" poder tener" s" poder disfrutar de" }s s? s" una vida en" txt+
+      s" que" s{ s" reine" s" llegue" }s txt+ s" la" txt+
+  }s s" paz." txt+  ;
   \ Texto «la paz», parte final de los mensajes «Queremos/Quieren la paz».
 
 : they-want-peace$  ( -- ca len )
-  only$ s{ s" buscan" s" quieren" s" desean" s" anhelan" }s bs&
-  wanted-peace$ s&  ;
+  only$ s{ s" buscan" s" quieren" s" desean" s" anhelan" }s txt+
+  wanted-peace$ txt+  ;
   \ Mensaje «quieren la paz».
 
 : we-want-peace$  ( -- ca len )
-  ^only$ s{ s" buscamos" s" queremos" s" deseamos" s" anhelamos" }s bs&
-  wanted-peace$ s&  ;
+  ^only$ s{ s" buscamos" s" queremos" s" deseamos" s" anhelamos" }s txt+
+  wanted-peace$ txt+  ;
   \ Mensaje «Queremos la paz».
 
 : to-understand$  ( -- ca len )
@@ -581,12 +582,12 @@ s" de Westmorland" sconstant of-westmorland$
 
 : more-carefully$  ( -- ca len )
   s{  s" mejor"
-      s" con" s{ s" más" s" un" s? s" mayor" s& s" algo más de" }s bs&
-        s{ s" detenimiento" s" cuidado" s" detalle" }s bs&
+      s" con" s{ s" más" s" un" s? s" mayor" txt+ s" algo más de" }s txt+
+        s{ s" detenimiento" s" cuidado" s" detalle" }s txt+
   }s  ;
 
 : finally$  ( -- ca len )
-  s{  s{ s" al" s" por" }s s" fin" s&
+  s{  s{ s" al" s" por" }s s" fin" txt+
       s" finalmente"
   }s  ;
 
@@ -594,7 +595,7 @@ s" de Westmorland" sconstant of-westmorland$
   finally$ ^uppercase  ;
 
 : rocky(f)$  ( -- ca len )
-  s{ s" rocosa" s" de roca" s" s" s? bs+ }s  ;
+  s{ s" rocosa" s" de roca" s" s" s? s+ }s  ;
 
 : using$  ( -- ca len )
   s{ s" Con la ayuda de"

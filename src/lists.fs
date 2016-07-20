@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607111408
+\ Last update: 201607202132
 
 \ Note: The comments of the code are in Spanish.
 
@@ -19,6 +19,7 @@ get-current forth-wordlist set-current
 require galope/plus-plus.fs    \ `++`
 require galope/replaced.fs     \ `replaced`
 require galope/two-choose.fs   \ `2choose`
+require galope/txt-plus.fs     \ `txt+`
 
 set-current
 
@@ -77,14 +78,14 @@ variable #elements
   \ Devuelve «(puesto/a/s)», según el género y número del ente indicado.
 
 : (worn)&  ( ca1 len1 a -- ca1 len1 | ca2 len2 )
-  dup  is-worn? if  (worn)$ s&  else  drop  then  ;
+  dup  is-worn? if  (worn)$ txt+  else  drop  then  ;
   \ Añade a una cadena _ca1 len1_, si es necesario, el indicador de
   \ que el ente _a_ es una prenda puesta, devolviendo una nueva cadena
   \ _ca2 len2_ con el resultado.
 
 : full-name-as-direct-complement  ( a -- ca len )
   dup s" a" rot is-human? and
-  rot full-name s&
+  rot full-name txt+
   s" al" s" a el" replaced  ;
   \ Devuelve el nombre completo de un ente en función de complemento
   \ directo.  Esto es necesario para añadir la preposición «a» a las
@@ -116,7 +117,7 @@ variable #elements
 
 : .present  ( -- )
   my-location content-list dup
-  if  s" Ves" s" Puedes ver" 2 2choose 2swap s& narrate
+  if  s" Ves" s" Puedes ver" 2 2choose 2swap txt+ narrate
   else  2drop  then  ;
   \ Lista los entes presentes.
 

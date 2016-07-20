@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607202101
+\ Last update: 201607202129
 
 \ Note: The comments of the code are in Spanish.
 
@@ -26,6 +26,7 @@ require galope/question-question.fs   \ `??`
 require galope/random_strings.fs
 require galope/replaced.fs            \ `replaced`
 require galope/stringer.fs            \ Circular string buffer
+require galope/txt-plus.fs            \ `txt+`
 require galope/x-c-store.fs           \ `xc!`
 require galope/xcase.fs               \ `xcase`
 require galope/xcase_es.fs            \ Spanish UTF-8 case table
@@ -130,11 +131,11 @@ str-create tmp-str
 : hyphen+  ( ca1 len1 -- ca2 len2 )  s" -" s+  ;
   \ Añade un guion a una cadena.
 
-: and&  ( ca1 len1 -- ca2 len2 )  s" y" s&  ;
+: and&  ( ca1 len1 -- ca2 len2 )  s" y" txt+  ;
   \ Añade una conjunción «y» al final de una cadena.
   \ XXX TODO -- no usado
 
-: or&  ( ca1 len1 -- ca2 len2 )  s" o" s&  ;
+: or&  ( ca1 len1 -- ca2 len2 )  s" o" txt+  ;
   \ Añade una conjunción «o» al final de una cadena.
   \ XXX TODO -- no usado
 
@@ -148,17 +149,17 @@ str-create tmp-str
   \ y separadas en la pila por la cadena «y».
 
 : both  ( ca1 len1 ca2 len2 -- ca3 len3 )
-  (both) bs& bs&  ;
+  (both) txt+ txt+  ;
   \ Devuelve dos cadenas unidas en cualquier orden por «y».
   \ Ejemplo: si los parámetros fueran «espesa» y «fría»,
   \ los dos resultados posibles serían: «fría y espesa» y «espesa y fría».
 
 : both&  ( ca0 len0 ca1 len1 ca2 len2 -- ca3 len3 )
-  both bs&  ;
+  both txt+  ;
   \ Devuelve dos cadenas unidas en cualquier orden por «y»; y concatenada (con separación) a una tercera.
 
 : both?  ( ca1 len1 ca2 len2 -- ca3 len3 )
-  (both) bs& s? bs&  ;
+  (both) txt+ s? txt+  ;
   \ Devuelve al azar una de dos cadenas,
   \ o bien ambas unidas en cualquier orden por «y».
   \ Ejemplo: si los parámetros fueran «espesa» y «fría»,
@@ -166,12 +167,12 @@ str-create tmp-str
   \ «espesa», «fría», «fría y espesa» y «espesa y fría».
 
 : both?&  ( ca0 len0 ca1 len1 ca2 len2 -- ca3 len3 )
-  both? bs&  ;
+  both? txt+  ;
   \ Concatena (con separación) al azar una de dos cadenas
   \ (o bien ambas unidas en cualquier orden por «y») a una tercera cadena.
 
 : both?+  ( ca0 len0 ca1 len1 ca2 len2 -- ca3 len3 )
-  both? bs+  ;
+  both? s+  ;
   \ Concatena (sin separación) al azar una de dos cadenas
   \ (o bien ambas unidas en cualquier orden por «y») a una tercera cadena.
 

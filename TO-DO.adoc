@@ -1,7 +1,11 @@
 = Tareas pendientes de Asalto y castigo
-:revdate: 2016-07-19
+:revdate: 2016-07-20
 
 == Programación
+
+2016-07-20:
+
+Reservar mensajes como "no llevas eso" para cuando el objeto no es conocido.
 
 2016-07-19:
 

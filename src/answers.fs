@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607202047
+\ Last update: 201607202134
 
 \ Note: The comments of the code are in Spanish.
 
@@ -20,6 +20,7 @@ require galope/plus-plus.fs           \ `++`
 require galope/question-execute.fs    \ `?execute`
 require galope/question-question.fs   \ `??`
 require galope/random_strings.fs
+require galope/txt-plus.fs            \ `txt+`
 
 set-current
 
@@ -54,18 +55,18 @@ variable #answer
   s{ s" Piénsalo mejor"
   s" Decídete" s" Cálmate" s" Concéntrate"
   s" Presta atención"
-  s{ s" Prueba" s" Inténtalo" }s again$ s&
+  s{ s" Prueba" s" Inténtalo" }s again$ txt+
   s" No es tan difícil" }s colon+  ;
   \ Devuelve un mensaje complementario para los errores.
 
 : yes-but-no$  ( -- ca len )
-  s" ¿Primero «sí»" but|and$ s&
-  s" después «no»?" s& think-it-again$ s&  ;
+  s" ¿Primero «sí»" but|and$ txt+
+  s" después «no»?" txt+ think-it-again$ txt+  ;
   \ Devuelve mensaje de error: se dijo «no» tras «sí».
 
 : no-but-yes$  ( -- ca len )
-  s" ¿Primero «no»" but|and$ s&
-  s" después «sí»?" s& think-it-again$ s&  ;
+  s" ¿Primero «no»" but|and$ txt+
+  s" después «sí»?" txt+ think-it-again$ txt+  ;
   \ Devuelve mensaje de error: se dijo «sí» tras «no».
 
 : yes-but-no.error  ( -- )  yes-but-no$ language-error  ;
@@ -75,9 +76,9 @@ variable #answer
   \ Muestra error: se dijo «sí» tras «no».
 
 : two-options-only$  ( -- ca len )
-  ^only$ s{ s" hay" s" tienes" }s bs&
-  s" dos" s& s" respuestas" s" posibles" rnd2swap s& s& colon+
-  s" «sí»" s" «no»" both& s" (o sus iniciales)" s& period+  ;
+  ^only$ s{ s" hay" s" tienes" }s txt+
+  s" dos" txt+ s" respuestas" s" posibles" rnd2swap txt+ txt+ colon+
+  s" «sí»" s" «no»" both& s" (o sus iniciales)" txt+ period+  ;
   \ Devuelve un mensaje que informa de las opciones disponibles.
 
 : two-options-only.error  ( -- )  two-options-only$ language-error  ;
@@ -85,11 +86,11 @@ variable #answer
 
 : wrong-yes$  ( -- ca len )
   s{ s" ¿Si qué...?" s" ¿Si...?" s" ¿Cómo «si»?" s" ¿Cómo que «si»?" }s
-  s" No" s& s{
-  s{ s" hay" s" puedes poner" }s s{ s" condiciones" s" condición alguna" }s bs&
-  s{ s" hay" s" tienes" }s s" nada que negociar" s& }s bs&
-  s{ s" aquí" s" en esto" s" en esta cuestión" }s bs& period+
-  \ two-options-only$ s? bs&  \ XXX TODO
+  s" No" txt+ s{
+  s{ s" hay" s" puedes poner" }s s{ s" condiciones" s" condición alguna" }s txt+
+  s{ s" hay" s" tienes" }s s" nada que negociar" txt+ }s txt+
+  s{ s" aquí" s" en esto" s" en esta cuestión" }s txt+ period+
+  \ two-options-only$ s? txt+  \ XXX TODO
   ;
   \ Devuelve el mensaje usado para advertir de que se ha escrito mal «sí».
 

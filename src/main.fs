@@ -7,7 +7,7 @@
 \
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 \
-\ Last update: 201607202109
+\ Last update: 201607202124
 
 \ ==============================================================
 \ Credits
@@ -31,35 +31,17 @@ only forth definitions
 
 require galope/randomize.fs  \ `randomize`
 
-false [if]
-
-  \ XXX OLD -- deprecated
-
-require galope/sb.fs  \ Circular string buffer
-' bs+ alias s+
-' bs& alias s&
-' bs" alias s" immediate
-2048 dictionary_sb
-
-[else]
-
-  \ XXX NEW --
-
 require galope/stringer.fs  \ Circular string buffer
-require galope/s-s-plus.fs  \ `ss+`
-
-' ss+ alias s+
-  \ Replace Gforth's `s+`. This must be done before loading `txt+`, to
-  \ make sure it uses `ss+`.
-
-require galope/txt-plus.fs  \ `txt+`
 
 2048 create-stringer
 
-' ss+ alias bs+  ' txt+ dup alias s& alias bs&
-  \ XXX TMP -- backward compatibility with the old string buffer
+require galope/s-s-plus.fs  \ `ss+`
 
-[then]
+' ss+ alias s+
+  \ Replace Gforth's `s+`. This must be done before requiring `txt+`,
+  \ to make sure `txt+` uses `ss+`.
+
+require galope/txt-plus.fs  \ `txt+`
 
 require galope/tilde-tilde.fs    \ improved `~~`
 
@@ -144,7 +126,7 @@ s" intro.fs" including
   randomize
   init-parser/game init-entities init-plot
   get-config new-page
-  init-game-for-debugging exit  \ XXX TMP -- for debugging
+  \ init-game-for-debugging exit  \ XXX TMP -- for debugging
   about cr intro  \ XXX TMP -- commented out for debugging
   location-01~ enter-location  ;
   \ Initialization needed before every game.
