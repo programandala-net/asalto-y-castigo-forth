@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607212120
+\ Last update: 201607212129
 
 \ Note: The comments of the code are in Spanish.
 
@@ -52,7 +52,9 @@ str-create out-str
   \ justificado.
 
 : str-txt-concatenation?  ( len str -- f )
-  str-length@ 0<> 0<> and  ;
+  str-length@ 0<> swap 0<> and  ;
+  \ Do a string of _len_ chars and a dynamic string _str_
+  \ need a separation space when they are concatenated?
 
 : str-append-txt  ( ca len str -- )
   2dup str-txt-concatenation?
