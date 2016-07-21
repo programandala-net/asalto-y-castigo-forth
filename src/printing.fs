@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607212129
+\ Last update: 201607212141
 
 \ Note: The comments of the code are in Spanish.
 
@@ -23,11 +23,15 @@ require galope/question-question.fs   \ `??`
 require galope/row.fs                 \ `row`
 require galope/sconstant.fs           \ `sconstant`
 require galope/seconds.fs             \ `seconds`
+require galope/str-append-txt.fs      \ `str-append-txt`
+require galope/str-prepend-txt.fs     \ `str-prepend-txt`
 require galope/svariable.fs           \ `svariable`
 require galope/system-colors.fs       \ `system-colors`
 
 \ Forth Foundation Library
 \ http://irdvo.github.io/ffl/
+
+require ffl/str.fs
 
 set-current
 
@@ -50,23 +54,6 @@ variable scroll
 str-create out-str
   \ Cadena dinámica para almacenar el texto antes de imprimirlo
   \ justificado.
-
-: str-txt-concatenation?  ( len str -- f )
-  str-length@ 0<> swap 0<> and  ;
-  \ Do a string of _len_ chars and a dynamic string _str_
-  \ need a separation space when they are concatenated?
-
-: str-append-txt  ( ca len str -- )
-  2dup str-txt-concatenation?
-  if  dup >r bl str-append-char r>  then  str-append-string  ;
-  \ Añade una cadena al final de la cadena dinámica `out-str`,
-  \ con un espacio de separación.
-
-: str-prepend-txt  ( ca len str -- )
-  2dup str-txt-concatenation?
-  if  dup >r bl str-prepend-char r>  then  str-prepend-string  ;
-  \ Añade una cadena al principio de la cadena dinámica `out-str`,
-  \ con un espacio de separación.
 
 \ ==============================================================
 \ Presto de pausa en la impresión de párrafos
