@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607212118
+\ Last update: 201607212201
 
 \ Note: The comments of the code are in Spanish.
 
@@ -24,6 +24,7 @@ require galope/question-keep.fs       \ `?keep`
 require galope/question-question.fs   \ `??`
 require galope/random_strings.fs
 require galope/shuffle.fs             \ `shuffle`
+require galope/str-prepend-txt.fs     \ `str-prepend-txt`
 require galope/stringer.fs            \ Circular string buffer
 require galope/svariable.fs           \ `svariable`
 require galope/txt-plus.fs            \ `txt+`
@@ -34,7 +35,11 @@ require galope/ends-question.fs       \ `ends?`
 \ Forth Foundation Library
 \ http://irdvo.github.io/ffl/
 
+require ffl/str.fs
+
 set-current
+
+require out-str.fs
 
 \ ==============================================================
 \ Mensaje de acción completada

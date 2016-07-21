@@ -23,8 +23,6 @@ require galope/question-question.fs   \ `??`
 require galope/row.fs                 \ `row`
 require galope/sconstant.fs           \ `sconstant`
 require galope/seconds.fs             \ `seconds`
-require galope/str-append-txt.fs      \ `str-append-txt`
-require galope/str-prepend-txt.fs     \ `str-prepend-txt`
 require galope/svariable.fs           \ `svariable`
 require galope/system-colors.fs       \ `system-colors`
 
@@ -42,18 +40,6 @@ variable #lines
 
 variable scroll
   \ Indicador de que la impresión no debe parar.
-
-\ ==============================================================
-\ Cadena dinámica para impresión
-
-\ Usamos una cadena dinámica llamada `out-str` para guardar
-\ los párrafos enteros que hay que mostrar en pantalla. En
-\ esta sección creamos la cadena y palabras útiles para
-\ manipularla.
-
-str-create out-str
-  \ Cadena dinámica para almacenar el texto antes de imprimirlo
-  \ justificado.
 
 \ ==============================================================
 \ Presto de pausa en la impresión de párrafos
