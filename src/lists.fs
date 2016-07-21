@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607202132
+\ Last update: 201607212118
 
 \ Note: The comments of the code are in Spanish.
 
@@ -41,14 +41,14 @@ variable #elements
   \ ca len = Cadena devuelta, que podrá ser « y » o «, » o «» (vacía)
 
 : (list-separator)  ( u1 u2 -- )
-  1+ = if  s" y" »&  else  s" ," »+  then  ;
-  \ Añade a la cadena dinámica `print-str` el separador adecuado («y»
+  1+ = if  s" y" out-str str-append-txt  else  s" ," out-str str-append-string  then  ;
+  \ Añade a la cadena dinámica `out-str` el separador adecuado («y»
   \ o «,») para un elemento de una lista, siendo _u1_ el número de
   \ elementos que tiene la lista y _u2_ el número de elementos ya listados.
 
 : list-separator  ( u1 u2 -- )
   ?dup if  (list-separator)  else  drop  then  ;
-  \ Añade a la cadena dinámica `print-str` el separador adecuado (o
+  \ Añade a la cadena dinámica `out-str` el separador adecuado (o
   \ ninguno) para un elemento de una lista, siendo _u1_ el número de
   \ elementos que tiene la lista y _u2_ el número de elementos ya
   \ listados.
@@ -93,8 +93,8 @@ variable #elements
 
 : (content-list)  ( a -- )
   #elements @ #listed @  list-separator
-  dup full-name-as-direct-complement rot (worn)& »&  #listed ++  ;
-  \ Añade a la lista en la cadena dinámica `print-str` el separador y
+  dup full-name-as-direct-complement rot (worn)& out-str str-append-txt  #listed ++  ;
+  \ Añade a la lista en la cadena dinámica `out-str` el separador y
   \ el nombre de un ente.
 
 : about-to-list  ( a -- u )  #listed off  /list dup #elements !  ;
@@ -103,15 +103,15 @@ variable #elements
   \ de entes que serán listados.
 
 : content-list  ( a -- ca len )
-  «»-clear
+  out-str str-clear
   dup about-to-list if
     #entities 1 do
       dup i #>entity dup can-be-listed? if
         is-there? if  i #>entity (content-list)  then
       else  2drop
       then
-    loop  s" ." »+
-  then  drop  «»@  ;
+    loop  s" ." out-str str-append-string
+  then  drop  out-str str-get  ;
   \ Devuelve una lista _ca len_ de entes cuya localización es el
   \ ente _a_.
 

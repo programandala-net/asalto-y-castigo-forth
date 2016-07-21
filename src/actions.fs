@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607202134
+\ Last update: 201607212118
 
 \ Note: The comments of the code are in Spanish.
 
@@ -198,7 +198,7 @@ variable #free-exits
     1 of  one-exit-only$  endof
     several-exits$ rot
   endcase
-  «& «»@ period+ narrate  ;
+  out-str str-prepend-txt out-str str-get period+ narrate  ;
   \ Imprime las salidas posibles.
 
 : exit-separator$  ( -- ca len )
@@ -207,8 +207,8 @@ variable #free-exits
 
 : exit>list  ( u -- )
   [debug-do-exits] [if]  cr ." exit>list" cr .stack  [then]  \ XXX INFORMER
-  exit-separator$ »+
-  exits-table@ full-name »+
+  exit-separator$ out-str str-append-string
+  exits-table@ full-name out-str str-append-string
   #listed ++
   [debug-do-exits] [if]  cr .stack  [then]  ;  \ XXX INFORMER
   \ Lista una salida.
@@ -231,7 +231,7 @@ false [if]
   \ Devuelve el número de salidas posibles de un ente.
 
 :noname  ( -- )
-  «»-clear
+  out-str str-clear
   #listed off
   my-location dup free-exits #free-exits !
   last-exit> 1+ first-exit> do
@@ -265,7 +265,7 @@ false [if]
   \ _a1 ... au_ son los entes de salida del ente _a_.
 
 : (list-exits)  ( -- )
-  «»-clear
+  out-str str-clear
   #listed off
   my-location free-exits
   dup >r shuffle r>  dup #free-exits !

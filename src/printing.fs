@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607171834
+\ Last update: 201607212120
 
 \ Note: The comments of the code are in Spanish.
 
@@ -42,46 +42,28 @@ variable scroll
 \ ==============================================================
 \ Cadena dinámica para impresión
 
-\ Usamos una cadena dinámica llamada `print-str` para guardar
+\ Usamos una cadena dinámica llamada `out-str` para guardar
 \ los párrafos enteros que hay que mostrar en pantalla. En
 \ esta sección creamos la cadena y palabras útiles para
 \ manipularla.
 
-str-create print-str
+str-create out-str
   \ Cadena dinámica para almacenar el texto antes de imprimirlo
   \ justificado.
 
-: «»-clear  ( -- )  print-str str-clear  ;
-  \ Vacía la cadena dinámica `print-str`.
+: str-txt-concatenation?  ( len str -- f )
+  str-length@ 0<> 0<> and  ;
 
-: «»!  ( ca len -- )  print-str str-set  ;
-  \ Guarda una cadena en la cadena dinámica `print-str`.
-
-: «»@  ( -- ca len )  print-str str-get  ;
-  \ Devuelve el contenido de la cadena dinámica `print-str`.
-
-: «+  ( ca len -- )  print-str str-prepend-string  ;
-  \ Añade una cadena al principio de la cadena dinámica `print-str`.
-
-: »+  ( ca len -- )  print-str str-append-string  ;
-  \ Añade una cadena al final de la cadena dinámica `print-str`.
-
-: «c+  ( c -- )  print-str str-prepend-char  ;
-  \ Añade un carácter al principio de la cadena dinámica `print-str`.
-
-: »c+  ( c -- )  print-str str-append-char  ;
-  \ Añade un carácter al final de la cadena dinámica `print-str`.
-
-: «»bl+?  ( len -- f )  0<> print-str str-length@ 0<> and  ;
-  \ ¿Se debe añadir un espacio al concatenar una cadena de longitud
-  \ _len_ a la cadena dinámica `print-str`?
-
-: »&  ( ca len -- )  dup «»bl+? if  bl »c+  then  »+  ;
-  \ Añade una cadena al final de la cadena dinámica `print-str`,
+: str-append-txt  ( ca len str -- )
+  2dup str-txt-concatenation?
+  if  dup >r bl str-append-char r>  then  str-append-string  ;
+  \ Añade una cadena al final de la cadena dinámica `out-str`,
   \ con un espacio de separación.
 
-: «&  ( ca len -- )  dup «»bl+? if  bl «c+  then  «+  ;
-  \ Añade una cadena al principio de la cadena dinámica `print-str`,
+: str-prepend-txt  ( ca len str -- )
+  2dup str-txt-concatenation?
+  if  dup >r bl str-prepend-char r>  then  str-prepend-string  ;
+  \ Añade una cadena al principio de la cadena dinámica `out-str`,
   \ con un espacio de separación.
 
 \ ==============================================================
