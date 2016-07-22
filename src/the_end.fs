@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607202140
+\ Last update: 201607221417
 
 \ Note: The comments of the code are in Spanish.
 
@@ -17,7 +17,7 @@ get-current forth-wordlist set-current
 \ http://programandala.net/en.program.galope.html
 
 require galope/question-question.fs  \ `??`
-require galope/random_strings.fs
+require galope/s-curly-bracket.fs    \ `s{`
 require galope/txt-plus.fs           \ `txt+`
 
 set-current
@@ -104,7 +104,7 @@ false [if]
   s" ha" s{
   s" ordenado"
   s" dado órdenes de"
-  s" dado" s" la" s? txt+ s" orden de" txt+
+  s" dado" s" la" 50%nullify txt+ s" orden de" txt+
   }s txt+ s" que" txt+ s{ s" nadie" s" no se" }s txt+
   s" lo moleste" txt+ comma+  ;
 
@@ -173,11 +173,11 @@ false [if]
   s" te" txt+
   s{ s" hacen prisionero" s" capturan" s" atrapan" }s txt+ period+
   s" Su general" txt+
-  s" , que no tarda en" s{ s" llegar" s" aparecer" }s txt+ comma+ s? s+
+  s" , que no tarda en" s{ s" llegar" s" aparecer" }s txt+ comma+ 50%nullify s+
   s" te" txt+ s{
     s" reconoce" s{ s" enseguida" s" de immediato" s" al instante" }s txt+
     s{ s" contempla" s" observa" s" mira" }s
-      s" durante" s? txt+ s{ s" un momento" s" un instante" }s txt+
+      s" durante" 50%nullify txt+ s{ s" un momento" s" un instante" }s txt+
   }s txt+ s" y" txt+ comma+
   s{  s" sonriendo" s{ s" ampliamente" s" despectivamente" s" cruelmente" }s txt+
       s" con una" s{ s" amplia" s" cruel" s" despectiva" }s txt+ s" sonrisa" txt+

@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607202133
+\ Last update: 201607221417
 
 \ Note: The comments of the code are in Spanish.
 
@@ -16,9 +16,10 @@ get-current forth-wordlist set-current
 \ Galope
 \ http://programandala.net/en.program.galope.html
 
-require galope/choose.fs          \ `choose`
-require galope/random_strings.fs
-require galope/txt-plus.fs        \ `txt+`
+require galope/choose.fs                  \ `choose`
+require galope/s-curly-bracket.fs         \ `s{`
+require galope/fifty-percent-nullify.fs   \ `50%nullify`
+require galope/txt-plus.fs                \ `txt+`
 
 set-current
 
@@ -74,7 +75,7 @@ is cannot-be-seen.error
   \ XXX TODO -- no usado
 
 : something-like-that$  ( -- ca len )
-  s" hacer" s?
+  s" hacer" 50%nullify
   s{ s" algo así"
   s" algo semejante"
   s" eso"
@@ -229,13 +230,13 @@ is dangerous.error
 : no-reason-for$  ( -- ca len )
   s" No hay" s{
     s" nada que justifique"
-    s{  s" necesidad" s" alguna" s? txt+
+    s{  s" necesidad" s" alguna" 50%nullify txt+
         s" ninguna necesidad"
     }s s" de" txt+
     s{  s" ninguna razón"
         s" ningún motivo"
-        s" motivo" s" alguno" s? txt+
-        s" razón" s" alguna" s? txt+
+        s" motivo" s" alguno" 50%nullify txt+
+        s" razón" s" alguna" 50%nullify txt+
     }s s" para" txt+
   }s txt+  ;
   \ Devuelve una variante de «no hay motivo para».
@@ -306,12 +307,12 @@ is unnecessary-tool-for-that.error
 
 :noname  ( a -- )
   ['] full-name ['] negative-full-name 2 choose execute
-  s" No" s{ s" te" s? s" hace falta" txt+
+  s" No" s{ s" te" 50%nullify s" hace falta" txt+
   s" necesitas" s" se necesita"
   s" precisas" s" se precisa"
-  s" hay necesidad de" s{ s" usar" s" emplear" s" utilizar" }s s? txt+
+  s" hay necesidad de" s{ s" usar" s" emplear" s" utilizar" }s 50%nullify txt+
   }s txt+  2swap txt+
-  s{ s" para nada" s" para eso" }s s? txt+  period+ action-error  ;
+  s{ s" para nada" s" para eso" }s 50%nullify txt+  period+ action-error  ;
   \ Informa de que un ente _a_ es innecesario como herramienta
   \ para ejecutar una acción sin especificar.
   \
@@ -359,7 +360,7 @@ is is-not-hold.error
   s{ s" es" s" sería" s" será" }s  ;
 
 : to-do-it$  ( -- ca len )
-  s" hacerlo" s?  ;
+  s" hacerlo" 50%nullify  ;
 
 : possible-to-do$  ( -- ca len )
   it-is$ s" posible" txt+ to-do-it$ txt+  ;

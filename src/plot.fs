@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607202133
+\ Last update: 201607221417
 
 \ Note: The comments of the code are in Spanish.
 
@@ -16,13 +16,14 @@ get-current forth-wordlist set-current
 \ Galope
 \ http://programandala.net/en.program.galope.html
 
-require galope/choose.fs              \ `choose`
-require galope/plus-plus.fs           \ `++`
-require galope/random_strings.fs
-require galope/question-execute.fs    \ `?execute`
-require galope/question-question.fs   \ `??`
-require galope/two-choose.fs          \ `2choose`
-require galope/txt-plus.fs            \ `txt+`
+require galope/choose.fs                  \ `choose`
+require galope/fifty-percent-nullify.fs   \ `50%nullify`
+require galope/plus-plus.fs               \ `++`
+require galope/s-curly-bracket.fs         \ `s{`
+require galope/question-execute.fs        \ `?execute`
+require galope/question-question.fs       \ `??`
+require galope/two-choose.fs              \ `2choose`
+require galope/txt-plus.fs                \ `txt+`
 
 set-current
 
@@ -209,10 +210,10 @@ set-current
 
 : but-it's-an-impression$  ( -- ca len )
   s" ," but$ txt+
-  s{ s" dentro de ti" s" en tu interior" s" en el fondo" }s s? txt+
+  s{ s" dentro de ti" s" en tu interior" s" en el fondo" }s 50%nullify txt+
   s{
-    s{  s" sabes" s" bien" s? txt+ s" eres consciente de" }s s" que" txt+
-    s{  s" tu instinto" s{ s" militar" s" guerrero" s" de soldado" }s s? txt+
+    s{  s" sabes" s" bien" 50%nullify txt+ s" eres consciente de" }s s" que" txt+
+    s{  s" tu instinto" s{ s" militar" s" guerrero" s" de soldado" }s 50%nullify txt+
         s" una voz"
         s" algo"
     }s s{ s" no te engaña"
@@ -222,14 +223,14 @@ set-current
   }s txt+ s{
     only$ s" es una falsa impresión" txt+
     still$  s{  s" no lo has" s{ s" logrado" s" conseguido" }s txt+
-                s" podrían" s{ s" encontrarte" s" atraparte" }s txt+ s" aquí" s? txt+
+                s" podrían" s{ s" encontrarte" s" atraparte" }s txt+ s" aquí" 50%nullify txt+
             }s txt+
-    s" puede que te hayan" s{ s" visto" s" entrar" s? txt+
+    s" puede que te hayan" s{ s" visto" s" entrar" 50%nullify txt+
                               s" seguido" }s txt+
     s{ s" probablemente" s" seguramente" }s
       s" te" txt+ s{  s" estarán buscando"
                     s" habrán seguido"
-                    s" hayan visto" s" entrar" s? txt+ }s txt+
+                    s" hayan visto" s" entrar" 50%nullify txt+ }s txt+
   }s txt+  ;
 
 \ ----------------------------------------------
@@ -270,11 +271,11 @@ set-current
   \ Devuelve una variante de «héroes».
 
 : like-a-heroe$ ( -- ca len )
-  s" como un" s" auténtico" s? txt+ heroe$ txt+  ;
+  s" como un" s" auténtico" 50%nullify txt+ heroe$ txt+  ;
   \ Devuelve una variante de «como un héroe».
 
 : like-heroes$ ( -- ca len )
-  s" como" s" auténticos" s? txt+ heroes$ txt+  ;
+  s" como" s" auténticos" 50%nullify txt+ heroes$ txt+  ;
   \ Devuelve una variante de «como héroes».
 
 : (bravery)$  ( -- ca len )
@@ -312,7 +313,7 @@ set-current
 : battle-phase-00$  ( -- ca len )
   s" A pesar de" s{
   s" haber sido" s{ s" atacados por sorpresa" s" sorprendidos" }s txt+
-  s" la sorpresa" s" inicial" s? txt+
+  s" la sorpresa" s" inicial" 50%nullify txt+
   s" lo" s{ s" inesperado" s" sorpresivo" s" sorprendente" s" imprevisto" }s txt+
   s" del ataque" txt+ }s txt+ comma+ your-soldiers$ txt+
   s{ s" responden" s" reaccionan" }s txt+
@@ -354,7 +355,7 @@ set-current
   ^your-soldiers$
   s" empiezan a acusar" txt+
   s{ null$ s" visiblemente" s" notoriamente" }s txt+
-  s" el" txt+ s{ s" titánico" s" enorme" }s s? txt+
+  s" el" txt+ s{ s" titánico" s" enorme" }s 50%nullify txt+
   s" esfuerzo." txt+  ;
   \ Devuelve la descripción del combate (fase 03).
   \ XXX TODO -- inconcluso
@@ -402,7 +403,7 @@ set-current
 : battle-phase-07$  ( -- ca len )
   ^your-soldiers$
   s{ s" caen" s" van cayendo," }s txt+
-  s" uno tras otro," s? txt+
+  s" uno tras otro," 50%nullify txt+
   s{ s" vendiendo cara su vida" s" defendiéndose" }s txt+
   like-heroes$ txt+ period+  ;
   \ Devuelve la descripción del combate (fase 07).
@@ -414,7 +415,7 @@ set-current
   ^the-enemy|enemies
   s{ s" aplasta* a" s" acaba* con" }s
   rot *>verb-ending txt+
-  s" los últimos de" s" entre" s? txt+ txt+
+  s" los últimos de" s" entre" 50%nullify txt+ txt+
   your-soldiers$ txt+ s" que," txt+
   s{  s" heridos" s{ s" extenuados" s" exhaustos" s" agotados" }s both?
       s{ s" apurando" s" con" }s s" sus" txt+ last-energy(fp)$ txt+
@@ -424,7 +425,7 @@ set-current
   s{  s" combaten" s" resisten"
       s{ s" se mantienen" s" aguantan" s" pueden mantenerse" }s
       s" en pie" txt+
-      s{ s" ofrecen" s" pueden ofrecer" }s s" alguna" s? txt+
+      s{ s" ofrecen" s" pueden ofrecer" }s s" alguna" 50%nullify txt+
       s" resistencia" txt+
   }s txt+ period+  ;
   \ Devuelve la descripción del combate (fase 08).
@@ -493,13 +494,13 @@ here swap - cell / constant battle-phases
 : suddenly|then$  ( -- ca len )  s{ suddenly$ s" entonces" }s  ;
 
 : the-ambush-begins  ( -- )
-  s{  suddenly$ s" ," s? s+ a-group-of-saxons$ txt+ s" aparece" txt+
+  s{  suddenly$ s" ," 50%nullify s+ a-group-of-saxons$ txt+ s" aparece" txt+
       a-group-of-saxons$  s" aparece" txt+ suddenly$ txt+
   }s ^uppercase s" por el este." txt+
   s" Para cuando" txt+
   s{ s" te vuelves" s" intentas volver" }s txt+
   toward-the(m)$ txt+ s" norte," txt+
-  s" ya no" txt+ s{ s" te" s? s" queda" txt+ s" tienes" }s txt+
+  s" ya no" txt+ s{ s" te" 50%nullify s" queda" txt+ s" tienes" }s txt+
   s{ s" duda:" s" duda alguna:" s" ninguna duda:" }s txt+
   s{  s" es" s" se trata de"
       s{ s" te" s" os" }s s" han tendido" txt+
@@ -531,7 +532,7 @@ here swap - cell / constant battle-phases
   \ Devuelve una parte de las palabras de los oficiales.
 
 : officers-speach  ( -- )
-  sire,$ s?  dup taking-prisioner$
+  sire,$ 50%nullify  dup taking-prisioner$
   rot 0= ?? ^uppercase txt+
   s" a un general britano" txt+ they-win$ txt+  speak  ;
   \ Palabras de los oficiales.
@@ -546,7 +547,7 @@ here swap - cell / constant battle-phases
   s{ s" Sabes" s" Comprendes" }s s" que" txt+
   s{  s" es cierto" s{ s" tienen" s" llevan" }s s" razón" txt+
       s" están en lo cierto" }s txt+ comma+
-  s{  but$ s{ s" a pesar de ello" s" aun así" }s s? txt+
+  s{  but$ s{ s" a pesar de ello" s" aun así" }s 50%nullify txt+
       s" y"
   }s txt+ s" te duele" txt+ period+ narrate  ;
   \ Los oficiales hablan con el protagonista.
@@ -557,12 +558,12 @@ here swap - cell / constant battle-phases
   s{ s" por desgracia" s" desgraciadamente" }s txt+
   s{
     s{ s" los sajones" s" ellos" }s s" son" txt+
-      s{  s" muy" s? s" superiores en número" txt+
-          s" mucho" s? s" más numerosos" txt+
+      s{  s" muy" 50%nullify s" superiores en número" txt+
+          s" mucho" 50%nullify s" más numerosos" txt+
       }s txt+
-    s" sus tropas son" s" mucho" s? txt+ s" más numerosas que las tuyas" txt+
+    s" sus tropas son" s" mucho" 50%nullify txt+ s" más numerosas que las tuyas" txt+
     s" sus" s{ s" hombres" s" soldados" }s txt+
-      s" son" txt+ s" mucho" s? txt+ s" más numerosos que los tuyos" txt+
+      s" son" txt+ s" mucho" 50%nullify txt+ s" más numerosos que los tuyos" txt+
   }s txt+  ;
   \ Mensaje de que el enemigo es superior.
 
@@ -582,7 +583,7 @@ here swap - cell / constant battle-phases
 \ Oscuridad en la cueva
 
 : considering-the-darkness$  ( -- ca len )
-  s" Ante" s" el muro de" s? txt+ s" la reinante" txt+
+  s" Ante" s" el muro de" 50%nullify txt+ s" la reinante" txt+
   s{ s" e intimidante" s" e impenetrable" s" e infranqueable" s" y sobrecogedora" }s txt+
   s" oscuridad," txt+  ;
 
@@ -595,22 +596,22 @@ here swap - cell / constant battle-phases
           s{ s" no te queda" s" no tienes" }s s{ s" otro" s" más" }s txt+
             s{ s" remedio" s" camino" }s txt+ s" que" txt+
       }s s{ s" volver atrás" s" retroceder" }s txt+
-      s{ s" vuelves atrás" s" retrocedes" }s s" sin remedio" s? txt+
+      s{ s" vuelves atrás" s" retrocedes" }s s" sin remedio" 50%nullify txt+
   }s s{ null$ s" unos pasos" s" sobre tus pasos" }s txt+  ;
 
 : to-the-place-where$  ( -- a u)
-  s" hasta" s" el lugar" s? dup if  s" de la cueva" s? txt+  then txt+
+  s" hasta" s" el lugar" 50%nullify dup if  s" de la cueva" 50%nullify txt+  then txt+
   s" donde" txt+  ;
 
 : to-see-something$  ( -- ca len )
-  s" ver" s" algo" s? txt+  ;
+  s" ver" s" algo" 50%nullify txt+  ;
 
 : there-is-some-light$  ( -- ca len )
-  still$ s? s{ s" hay" s" llega" s" entra" s" penetra" s" se filtra" }s txt+
+  still$ 50%nullify s{ s" hay" s" llega" s" entra" s" penetra" s" se filtra" }s txt+
   s{  s" un mínimo de" s" una mínima" s" cierta"
       s" algo de" s" suficiente" s" bastante"
   }s txt+ s{ s" luz" s" claridad" s" luminosidad" }s txt+
-  that-(at-least)$ s" permite" txt+ to-see-something$ txt+ s? txt+  ;
+  that-(at-least)$ s" permite" txt+ to-see-something$ txt+ 50%nullify txt+  ;
 
 : sun-adjectives$  ( -- ca len )
   \ s" tímido" s" débil" s" triste" s" lejano"
@@ -618,13 +619,13 @@ here swap - cell / constant battle-phases
   \ XXX TODO -- hacer que seleccione uno o dos adjetivos
 
 : there-are-some-sun-rays$  ( -- ca len )
-  still$ s? s{ s" llegan" s" entran" s" penetran" s" se filtran" }s txt+
-  s" alg" s? s" unos" s+ s" pocos" s? txt+ txt+
+  still$ 50%nullify s{ s" llegan" s" entran" s" penetran" s" se filtran" }s txt+
+  s" alg" 50%nullify s" unos" s+ s" pocos" 50%nullify txt+ txt+
   s" rayos de" txt+ s{ s" luz" sun-adjectives$ s" sol" txt+ }s txt+
-  that-(at-least)$ s" permiten" txt+ to-see-something$ txt+ s? txt+  ;
+  that-(at-least)$ s" permiten" txt+ to-see-something$ txt+ 50%nullify txt+  ;
 
 : it's-possible-to-see$  ( -- ca len )
-  s{ s" se puede" s" puedes" s" es posible" }s s" ver" txt+ s" algo" s? txt+  ;
+  s{ s" se puede" s" puedes" s" es posible" }s s" ver" txt+ s" algo" 50%nullify txt+  ;
 
 : dark-cave  ( -- )
   new-page
@@ -644,7 +645,7 @@ here swap - cell / constant battle-phases
   \ ¿El anciano se enfada porque llevas algo prohibido?
 
 : he-looks-at-you-with-anger$  ( -- ca len )
-  s" parece sorprendido y" s?
+  s" parece sorprendido y" 50%nullify
   s{
   s" te mira" s{ s" con dureza" s" con preocupación" }s txt+
   s" te dirige una dura mirada"
@@ -653,8 +654,8 @@ here swap - cell / constant battle-phases
   \ Texto de que el líder de los refugiados te mira.
 
 : he-looks-at-you-with-calm$  ( -- ca len )
-  s" advierte tu presencia y" s?
-  s{ s" por un momento" s" durante unos instantes" }s s? txt+
+  s" advierte tu presencia y" 50%nullify
+  s{ s" por un momento" s" durante unos instantes" }s 50%nullify txt+
   s" te" txt+ s{ s" observa" s" contempla" }s txt+
   s{ s" con serenidad" s" con expresión serena" s" en calma" s" sereno" }s txt+  ;
   \ Texto de que el líder de los refugiados te mira.
@@ -713,7 +714,7 @@ here swap - cell / constant battle-phases
   s{ s" los" s" tus" }s s" oficiales" txt+
   s{
   s" intentan detener" s" detienen como pueden"
-  s" hacen" s{ s" todo" s? s" lo que pueden" txt+ s" lo imposible" }s txt+
+  s" hacen" s{ s" todo" 50%nullify s" lo que pueden" txt+ s" lo imposible" }s txt+
     s{ s" para" s" por" }s txt+ s" detener" txt+
   }s txt+ s{ s" el saqueo" 2dup s" el pillaje" }s txt+  ;
   \ Devuelve una variante de «Tus oficiales detienen el saqueo».
@@ -735,13 +736,13 @@ here swap - cell / constant battle-phases
   s" victoria" rnd2swap txt+ txt+  ;
 
 : (soldiers-steal$)  ( ca1 len1 -- ca2 len2 )
-  soldiers$ txt+ s{ s" aún" s" todavía" }s s? txt+
+  soldiers$ txt+ s{ s" aún" s" todavía" }s 50%nullify txt+
   s{ s" celebran" s{ s" están" s" siguen" s" continúan" }s s" celebrando" txt+ }s txt+
-  (they-do-it)-their-way$ s? s+
+  (they-do-it)-their-way$ 50%nullify s+
   this-sad-victory$ txt+ s{ s" :" s" ..." }s s+
   s{ s" saqueando" s" buscando" s" apropiándose de" s" robando" }s txt+
-  s" todo" s? txt+ s" cuanto de valor" txt+
-  s" aún" s? txt+ s{ s" quede" s" pueda quedar" }s txt+
+  s" todo" 50%nullify txt+ s" cuanto de valor" txt+
+  s" aún" 50%nullify txt+ s{ s" quede" s" pueda quedar" }s txt+
   s" entre" txt+ rests-of-the-village$ txt+  ;
   \ Completa una descripción de tus soldados en la aldea arrasada.
 
@@ -760,8 +761,8 @@ here swap - cell / constant battle-phases
 
 : soldiers-steal-spite-of-officers-1$  ( -- ca len )
   ^soldiers-steal$
-  s{ s" , mientras" s" que" s? txt+
-  s{ s" ; mientras" s" . Mientras" }s s" tanto" s? txt+ comma+
+  s{ s" , mientras" s" que" 50%nullify txt+
+  s{ s" ; mientras" s" . Mientras" }s s" tanto" 50%nullify txt+ comma+
   s" . Al mismo tiempo," }s s+
   officers-forbid-to-steal$ txt+  ;
   \ Devuelve la segunda versión de la descripción de los soldados en
@@ -769,7 +770,7 @@ here swap - cell / constant battle-phases
 
 : soldiers-steal-spite-of-officers-2$  ( -- ca len )
   ^officers-forbid-to-steal$
-  s" , pero" s+ s" a pesar de ello" s? txt+
+  s" , pero" s+ s" a pesar de ello" 50%nullify txt+
   soldiers-steal$ txt+  ;
   \ Devuelve la tercera versión de la descripción de los soldados en
   \ la aldea.
@@ -804,7 +805,7 @@ here swap - cell / constant battle-phases
 : officers-go-home  ( -- )
   ^all-your$ officers$ txt+
   s" , como"
-  s{ s" el resto de tus" all-your$ }s txt+ soldiers$ txt+ comma+ s? s+
+  s{ s" el resto de tus" all-your$ }s txt+ soldiers$ txt+ comma+ 50%nullify s+
   will-follow-you-forever  ;
   \ Describe a tus soldados durante el regreso a casa.
 

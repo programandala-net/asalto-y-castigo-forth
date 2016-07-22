@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607202136
+\ Last update: 201607221417
 
 \ Note: The comments of the code are in Spanish.
 
@@ -16,9 +16,10 @@ get-current forth-wordlist set-current
 \ Galope
 \ http://programandala.net/en.program.galope.html
 
-require galope/bracket-false.fs   \ `[false]`
-require galope/random_strings.fs
-require galope/txt-plus.fs        \ `txt+`
+require galope/bracket-false.fs           \ `[false]`
+require galope/fifty-percent-nullify.fs   \ `50%nullify`
+require galope/s-curly-bracket.fs         \ `s{`
+require galope/txt-plus.fs                \ `txt+`
 
 set-current
 
@@ -34,8 +35,8 @@ set-current
   s" Los rayos del" sun$ txt+
     s{ s" despuntan de entre" s" penetran en" s" atraviesan" s" cortan" }s txt+
   }s
-  s" la" txt+ s" densa" s? txt+ s" niebla," txt+
-  s" haciendo humear los" txt+ s" pobres" s? txt+ s" tejados de paja." txt+
+  s" la" txt+ s" densa" 50%nullify txt+ s" niebla," txt+
+  s" haciendo humear los" txt+ s" pobres" 50%nullify txt+ s" tejados de paja." txt+
   narrate  narration-break  ;
   \ Muestra la introducción al juego (parte 0).
 
@@ -44,7 +45,7 @@ set-current
   s{ s" el encargo de"
   s" la" s{ s" tarea" s" misión" }s txt+ s" encomendada por" txt+
   s" la orden dada por" s" las órdenes de" }s txt+
-  s{ s" Uther Pendragon" s" , tu rey" s? s+ s" tu rey" }s txt+ \ XXX TMP
+  s{ s" Uther Pendragon" s" , tu rey" 50%nullify s+ s" tu rey" }s txt+ \ XXX TMP
   s" ..." s+
   narrate  narration-break  ;
   \ Muestra la introducción al juego (parte 1).
@@ -72,8 +73,8 @@ set-current
     s" guerreros enemigos"
   }s txt+
   s{
-    s"  ni honor" s" alguno" s? txt+
-    s" , como tampoco honor" s" alguno" s? txt+ comma+
+    s"  ni honor" s" alguno" 50%nullify txt+
+    s" , como tampoco honor" s" alguno" 50%nullify txt+ comma+
   }s s+
   s" en" txt+ s{ s" la batalla" s" el combate" s" la lucha" s" la pelea" }s txt+ period+
   narrate  scene-break  ;

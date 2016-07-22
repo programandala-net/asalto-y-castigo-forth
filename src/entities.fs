@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607202133
+\ Last update: 201607221417
 
 \ Note: The comments of the code are in Spanish.
 
@@ -16,10 +16,11 @@ get-current forth-wordlist set-current
 \ Galope
 \ http://programandala.net/en.program.galope.html
 
-require galope/question-keep.fs       \ `?keep`
-require galope/question-question.fs   \ `??`
-require galope/random_strings.fs
-require galope/txt-plus.fs            \ `txt+`
+require galope/fifty-percent-nullify.fs   \ `50%nullify`
+require galope/question-keep.fs           \ `?keep`
+require galope/question-question.fs       \ `??`
+require galope/s-curly-bracket.fs         \ `s{`
+require galope/txt-plus.fs                \ `txt+`
 
 set-current
 
@@ -236,7 +237,7 @@ cuirasse~ :init  ( -- )
 
 : describe-door  ( -- )
   door~ times-open if  s" Es"  else  s" Parece"  then
-  s" muy" s? txt+ s{ s" recia" s" gruesa" s" fuerte" }s txt+
+  s" muy" 50%nullify txt+ s{ s" recia" s" gruesa" s" fuerte" }s txt+
   location-47~ am-i-there? if
     lock~ is-known?
     if    s" . A ella está unido el candado"
@@ -270,7 +271,7 @@ emerald~ :init  ( -- )
     \ s" Un muro de" s" Una pared de"
   }s
   s{ s" inalcanzables" s" inaccesibles" }s txt+
-  s{ s" y enormes" s" y pesadas" s" y grandes" }s s? txt+
+  s{ s" y enormes" s" y pesadas" s" y grandes" }s 50%nullify txt+
   s" rocas," txt+ s{ s" apiladas" s" amontonadas" }s txt+
   s{
     s" una sobre otra"
@@ -324,7 +325,7 @@ flint~ :init  ( -- )
     s{ s" indica" s" significa" s" delata" }s
     s" que ésta" txt+
     s{ s" no ha sido abierta en" s" lleva cerrada"
-    s" ha permanecido cerrada" s" durante" s? txt+ }s
+    s" ha permanecido cerrada" s" durante" 50%nullify txt+ }s
     s" mucho tiempo." txt+
   then  paragraph  ;
 
@@ -403,7 +404,7 @@ piece~ :init  ( -- )
 
 : describe-rags  ( -- )
   s" Un" s{ s" retal" s" pedazo" s" trozo" }s txt+
-  s{ s" un poco" s" algo" }s s? txt+ s" grande" txt+
+  s{ s" un poco" s" algo" }s 50%nullify txt+ s" grande" txt+
   of-your-ex-cloak$ txt+
   paragraph  ;
 
@@ -426,7 +427,7 @@ rags~ :init  ( -- )
   s" en" was-the-cave-entrance-discovered? ?keep
   s" la pared" txt+ rocky(f)$ txt+ ^uppercase
   was-the-cave-entrance-discovered? if
-    s" , que" it-looks-impassable$ txt+ comma+ s? s+
+    s" , que" it-looks-impassable$ txt+ comma+ 50%nullify s+
     the-cave-entrance-is-visible$ txt+
     period+ paragraph
   else
@@ -546,7 +547,7 @@ waterfall~ :init  ( -- )
     s{ s" El entorno es desolador." s" Todo alrededor es desolación." }s
     rnd2swap txt+
     s{ ^only$ remains$ txt+
-    s" Lo único que" remains$ txt+ s" por hacer" s? txt+ s" es" txt+
+    s" Lo único que" remains$ txt+ s" por hacer" 50%nullify txt+ s" es" txt+
     s" No" remains$ txt+ s{ s" más" s" otra cosa" }s txt+ s" que" txt+
     }s txt+ to-go-back$ txt+ s" al sur, a casa." txt+
     paragraph
@@ -567,17 +568,17 @@ waterfall~ :init  ( -- )
     s{ s" pronto" s" sin compasión" s" de inmediato" }s
     s{ s" vencidas" s" derrotadas" s" sojuzgadas" }s rnd2swap txt+ ^uppercase
     s" por la fría" txt+
-    s{ s" e implacable" s" y despiadada" }s s? txt+
+    s{ s" e implacable" s" y despiadada" }s 50%nullify txt+
     s" niebla," txt+ s" torpes" s" tristes" both?&
     s" columnas de" txt+ s" negro" s" humo" rnd2swap txt+ txt+
     (they)-go-up$ txt+
     s{ s" lastimosamente" s" penosamente" }s txt+
-    s" hacia" s{ s" el cielo" s" las alturas" }s txt+ s? txt+
+    s" hacia" s{ s" el cielo" s" las alturas" }s txt+ 50%nullify txt+
     s{ s" desde" s" de entre" }s txt+ rests-of-the-village$ txt+
-    s" , como si" s" también" s" ellas" rnd2swap txt+ s? txt+
+    s" , como si" s" también" s" ellas" rnd2swap txt+ 50%nullify txt+
     s{ s" desearan" s" anhelaran" s" soñaran" }s txt+
-    s" poder hacer un último esfuerzo por" s? txt+
-    s" escapar" txt+ but|and$ txt+ s" no supieran cómo" txt+ s? s+
+    s" poder hacer un último esfuerzo por" 50%nullify txt+
+    s" escapar" txt+ but|and$ txt+ s" no supieran cómo" txt+ 50%nullify s+
     s" ..." s+
     paragraph
     endof
@@ -601,7 +602,7 @@ location-01~ :init  ( -- )
 : describe-location-02  ( -- )
   sight case
   my-location of
-    s" Sobre" s" la cima de" s? txt+
+    s" Sobre" s" la cima de" 50%nullify txt+
     s" la colina, casi" txt+ s{ s" sobre" s" por encima de" }s txt+
     s" la" txt+
     s" espesa" s" fría" both?& s" niebla de la aldea sajona arrasada al norte, a tus pies." txt+
@@ -609,12 +610,12 @@ location-01~ :init  ( -- )
     paragraph
     endof
   north~ of
-    s" La" poor-village$ txt+ s" sajona" txt+ s" , arrasada," s? s+ s" agoniza bajo la" txt+
+    s" La" poor-village$ txt+ s" sajona" txt+ s" , arrasada," 50%nullify s+ s" agoniza bajo la" txt+
     s" espesa" s" fría" both?& s" niebla." txt+
     paragraph
     endof
   west~ of
-    ^the-path$ goes-down$ txt+ s" por la" txt+ s" ladera de la" s? txt+ s" colina." txt+
+    ^the-path$ goes-down$ txt+ s" por la" txt+ s" ladera de la" 50%nullify txt+ s" colina." txt+
     paragraph
     endof
   down~ of
@@ -820,7 +821,7 @@ location-07~ :init  ( -- )
       period+ paragraph
     else
       ravine-wall~ is-known? if
-        s" que" it-looks-impassable$ txt+ s? txt+
+        s" que" it-looks-impassable$ txt+ 50%nullify txt+
         you-maybe-discover-the-cave-entrance
       else
         period+ paragraph  ravine-wall~ familiar++
@@ -847,7 +848,7 @@ location-08~ :init  ( -- )
   my-location of
     ^the-path$ goes-down$ txt+ s" hacia la agreste sierra, al oeste," txt+
     s" desde los" txt+ s" verdes" s" valles" rnd2swap txt+ txt+ s" al este." txt+
-    ^but$ txt+ s" un" txt+ s{ s" gran" s" enorme" }s s? txt+ s" derrumbe" txt+
+    ^but$ txt+ s" un" txt+ s{ s" gran" s" enorme" }s 50%nullify txt+ s" derrumbe" txt+
     (it)-blocks$ txt+ s" el paso hacia" txt+ s{ s" el oeste." s" la sierra." }s txt+
     paragraph
     endof
@@ -890,10 +891,10 @@ location-09~ :init  ( -- )
   cave-entrance~ familiar++
   location-08~ my-previous-location = if  \ Venimos del exterior
     location-10~ visits
-    if  ^again$  else  ^finally$ s" ya" s? txt+  then
+    if  ^again$  else  ^finally$ s" ya" 50%nullify txt+  then
     \ XXX TODO -- ampliar con otros textos alternativos
     you-think-you're-safe$ txt+
-    but-it's-an-impression$ s? s+
+    but-it's-an-impression$ 50%nullify s+
     period+ narrate
   then  ;
   \ XXX TODO -- si venimos del interior, mostrar otros textos
@@ -911,23 +912,23 @@ location-10~ :init  ( -- )
   my-location of
     s" Una" s{
       s{ s" gran" s" amplia" }s s" estancia" txt+
-      s" estancia" s" muy" s? txt+ s{ s" grande" s" amplia" }s txt+
+      s" estancia" s" muy" 50%nullify txt+ s{ s" grande" s" amplia" }s txt+
     }s txt+ s" alberga un lago de" txt+
     s{
-      s" profundas" s" aguas" rnd2swap txt+ comma+ s" e" s? txt+ s" iridiscentes" txt+
+      s" profundas" s" aguas" rnd2swap txt+ comma+ s" e" 50%nullify txt+ s" iridiscentes" txt+
       s" aguas tan profundas como iridiscentes,"
     }s txt+
     s{ s" gracias a" s" debido a" s" a causa de" s" por el efecto de" }s txt+
     s{
-      s" la" s{ s" débil" s" tenue" }s s? txt+ s" luz" txt+
+      s" la" s{ s" débil" s" tenue" }s 50%nullify txt+ s" luz" txt+
         s{  s" que se filtra" s{ s" del" s" desde el" }s txt+
             s{ s" procendente" s" que procede" s" que entra" }s s" del" txt+
         }s
-      s" los" s{ s" débiles" s" tenues" }s s? txt+ s" rayos de luz" txt+
+      s" los" s{ s" débiles" s" tenues" }s 50%nullify txt+ s" rayos de luz" txt+
         s{  s" que se filtran" s{ s" del" s" desde el" }s txt+
             s{ s" procendentes" s" que proceden" s" que entran" }s s" del" txt+
         }s
-    }s s? txt+ s" exterior." txt+
+    }s 50%nullify txt+ s" exterior." txt+
     s" No hay" txt+ s{ s" otra" s" más" }s txt+ s" salida que el este." txt+
     paragraph
     endof
@@ -1144,7 +1145,7 @@ location-17~ :init  ( -- )
     s" Un arco de piedra se extiende,"
     s{ s" cual" s" como si fuera un" s" a manera de" }s txt+
     s" puente" txt+
-    s" que se" s{ s" elevara" s" alzara" }s txt+ s? txt+
+    s" que se" s{ s" elevara" s" alzara" }s txt+ 50%nullify txt+
     s{ s" sobre" s" por encima de" }s txt+
     s" la oscuridad, de este a oeste." txt+
     s{ s" Hacia" s" En" }s txt+ s" su mitad" txt+
@@ -1177,7 +1178,7 @@ location-18~ :init  ( -- )
   sight case
   my-location of
     ^the-water-current$ comma+
-    s" que discurre" s? txt+
+    s" que discurre" 50%nullify txt+
     s" de norte a este," txt+ (it)-blocks$ txt+
     s" el paso, excepto al oeste." txt+
     s{ s" Al" s" Del" s" Hacia el" s" Proveniente del" s" Procedente del" }s txt+
@@ -1708,7 +1709,7 @@ location-36~ :init  ( -- )
 : describe-location-37  ( -- )
   sight case
   my-location of
-    s" El agua" goes-down$ txt+ s" por un canal" s? txt+
+    s" El agua" goes-down$ txt+ s" por un canal" 50%nullify txt+
     from-the(m)$ txt+ s" oeste con" txt+
     s{ s" renovadas fuerzas" s" renovada energía" s" renovado ímpetu" }s txt+ comma+
     s" dejando" txt+ s{
@@ -1720,12 +1721,12 @@ location-36~ :init  ( -- )
     period+ paragraph
     endof
   east~ of
-    ^the-pass-way$ s" elevado" s? txt+ lets-you$ txt+ to-keep-going$ txt+ that-way$ txt+ period+
+    ^the-pass-way$ s" elevado" 50%nullify txt+ lets-you$ txt+ to-keep-going$ txt+ that-way$ txt+ period+
     paragraph
     endof
   west~ of
     water-from-there$
-    the-pass-way$ s" elevado" s? txt+ lets-you$ txt+ to-keep-going$ txt+ that-way$ txt+
+    the-pass-way$ s" elevado" 50%nullify txt+ lets-you$ txt+ to-keep-going$ txt+ that-way$ txt+
     both s" también" txt+ ^uppercase period+
     paragraph
     endof
@@ -1939,7 +1940,7 @@ location-43~ :init  ( -- )
     s" Unas escaleras" s{ s" dan" s" permiten el" }s txt+ s{ s" paso" s" acceso" }s txt+
     s" a un" txt+ beautiful(m)$ txt+ s" lago interior, hacia el oeste." txt+
     s" Al norte, un oscuro y"
-    narrow(m)$ txt+ pass-way$ txt+ goes-up$ txt+ period+ s? txt+
+    narrow(m)$ txt+ pass-way$ txt+ goes-up$ txt+ period+ 50%nullify txt+
     paragraph
     endof
   north~ of
@@ -1947,7 +1948,7 @@ location-43~ :init  ( -- )
     paragraph
     endof
   west~ of
-    s" Las escaleras" (they)-lead$ txt+ that-way$ txt+ s" , hacia el lago" s? s+ period+
+    s" Las escaleras" (they)-lead$ txt+ that-way$ txt+ s" , hacia el lago" 50%nullify s+ period+
     paragraph
     endof
   uninteresting-direction
@@ -2009,7 +2010,7 @@ location-45~ :init  ( -- )
     endof
   east~ of
     s" La salida"
-    s{ s" de la casa" s" del hogar" }s s" de Ambrosio" txt+ s? txt+
+    s{ s" de la casa" s" del hogar" }s s" de Ambrosio" txt+ 50%nullify txt+
     s" está" txt+ that-way$ txt+ period+
     paragraph
     endof
@@ -2068,7 +2069,7 @@ location-47~ :init  ( -- )
   s" cuando" s{ s" la" s" su" }s txt+ s" puerta" txt+  ;
 
 : like-now$+  ( ca1 len1 -- ca1 len1 | ca2 len2 )
-  s" , como ahora" s? s+  ;
+  s" , como ahora" 50%nullify s+  ;
 
 : describe-location-48  ( -- )
   sight case
@@ -2082,7 +2083,7 @@ location-47~ :init  ( -- )
     endof
   east~ of
     s" La entrada de la cueva" s{
-    s" está" s" bien" s? txt+ s{ s" camuflada" s" escondida" }s txt+
+    s" está" s" bien" 50%nullify txt+ s{ s" camuflada" s" escondida" }s txt+
     s" apenas se ve" s" casi no se ve" s" pasa casi desapercibida"
     }s txt+ comma+
     door~ is-open? if
@@ -2112,7 +2113,7 @@ location-48~ :init  ( -- )
 : describe-location-49  ( -- )
   sight case
   my-location of
-    ^the-path$ s" recorre" txt+ s" toda" s? txt+
+    ^the-path$ s" recorre" txt+ s" toda" 50%nullify txt+
     s" esta" txt+ s{ s" parte" s" zona" }s txt+
     s" del bosque de este a oeste." txt+
     paragraph

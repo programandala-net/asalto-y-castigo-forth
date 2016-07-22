@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607202131
+\ Last update: 201607221417
 
 \ Note: The comments of the code are in Spanish.
 
@@ -16,10 +16,11 @@ get-current forth-wordlist set-current
 \ Galope
 \ http://programandala.net/en.program.galope.html
 
-require galope/choose.fs          \ `choose`
-require galope/random_strings.fs
-require galope/shuffle.fs         \ `shuffle`
-require galope/txt-plus.fs        \ `txt+`
+require galope/choose.fs                  \ `choose`
+require galope/fifty-percent-nullify.fs   \ `50%nullify`
+require galope/s-curly-bracket.fs         \ `s{`
+require galope/shuffle.fs                 \ `shuffle`
+require galope/txt-plus.fs                \ `txt+`
 
 set-current
 
@@ -41,7 +42,7 @@ set-current
 
 : they-don't-let-you-pass$  ( -- ca len )
   s{
-  s" te" s? (they)-block$ txt+
+  s" te" 50%nullify (they)-block$ txt+
   s" te rodean,"
   s{ s" impidiéndote" s" impidiendo"
   s" obstruyendo" s" obstruyéndote"
@@ -54,20 +55,20 @@ set-current
 
 : they-let-you-pass-0$  ( -- ca len )
   s{
-  s" te" s? s" han dejado" txt+
-  s" se han" s{ s" apartado" s" echado a un lado" }s txt+ s" para dejar" txt+ s" te" s? s+
+  s" te" 50%nullify s" han dejado" txt+
+  s" se han" s{ s" apartado" s" echado a un lado" }s txt+ s" para dejar" txt+ s" te" 50%nullify s+
   }s the-pass-free$ txt+  ;
   \ Primera versión del mensaje de que te dejan pasar.
 
 : they-let-you-pass-1$  ( -- ca len )
   s" se han" s{ s" apartado" s" retirado" }s txt+
-  s" a" s{ s{ s" los" s" ambos" }s s" lados" txt+ s" uno y otro lado" }s txt+ s? txt+ comma+
-  s{ s" dejándote" s" dejando" s" para dejar" s" te" s? s+ }s txt+
+  s" a" s{ s{ s" los" s" ambos" }s s" lados" txt+ s" uno y otro lado" }s txt+ 50%nullify txt+ comma+
+  s{ s" dejándote" s" dejando" s" para dejar" s" te" 50%nullify s+ }s txt+
   the-pass-free$ txt+  ;
   \ Segunda versión del mensaje de que te dejan pasar.
 
 : they-let-you-pass-2$  ( -- ca len )
-  s" ya no" they-don't-let-you-pass$ txt+ s" como antes" s? txt+  ;
+  s" ya no" they-don't-let-you-pass$ txt+ s" como antes" 50%nullify txt+  ;
   \ Tercera versión del mensaje de que te dejan pasar.
 
 : they-let-you-pass$  ( -- ca len )
@@ -78,8 +79,8 @@ set-current
   \ Mensaje de que te dejan pasar.
 
 : the-leader-said-they-want-peace$  ( -- ca len )
-  s" que," s" tal y" s? txt+ s" como" txt+ leader~ full-name txt+
-  s" te" s? txt+ s" ha" txt+ s{ s" referido" s" hecho saber" s" contado" s" explicado" }s txt+ comma+
+  s" que," s" tal y" 50%nullify txt+ s" como" txt+ leader~ full-name txt+
+  s" te" 50%nullify txt+ s" ha" txt+ s{ s" referido" s" hecho saber" s" contado" s" explicado" }s txt+ comma+
   they-want-peace$ txt+  ;
   \ El líder te dijo qué buscan los refugiados.
 
@@ -97,17 +98,17 @@ set-current
       s{ s" reunido" s" traído" s" congregado" }s txt+
     s" cuál es" s{ s" el motivo" s" la razón" }s txt+
       s" de que se" txt+ s{ s" encuentren" s" hallen" }s txt+
-    s" por qué" s{ s" motivo" s" razón" }s s? txt+ s" se encuentran" txt+
+    s" por qué" s{ s" motivo" s" razón" }s 50%nullify txt+ s" se encuentran" txt+
   }s txt+ here$ txt+ period+  ;
   \ No sabes por qué están aquí los refugiados.
 
 : some-refugees-look-at-you$  ( -- ca len )
-  s" Algunos" s" de ellos" s? txt+
+  s" Algunos" s" de ellos" 50%nullify txt+
   s" reparan en" txt+ s{ s" ti" s" tu persona" s" tu presencia" }s txt+  ;
 
 : in-their-eyes-and-gestures$  ( -- ca len )
   s" En sus" s{ s" ojos" s" miradas" }s txt+
-  s" y" s" en sus" s? txt+ s" gestos" txt+ s? txt+  ;
+  s" y" s" en sus" 50%nullify txt+ s" gestos" txt+ 50%nullify txt+  ;
   \ En sus ojos y gestos.
 
 : the-refugees-trust$  ( -- ca len )
@@ -121,8 +122,8 @@ set-current
   \ Los refugiados confían.
 
 : you-feel-they-observe-you$  ( -- ca len )
-  s{ s" tienes la sensación de que" s" sientes que" }s s?
-  s" te observan" txt+ s" como" s? txt+
+  s{ s" tienes la sensación de que" s" sientes que" }s 50%nullify
+  s" te observan" txt+ s" como" 50%nullify txt+
   s{  s" con timidez" s" tímidamente"
       s" de" way$ txt+ s" subrepticia" txt+ s" subrepticiamente"
       s" a escondidas"
@@ -138,16 +139,16 @@ set-current
     s{ s" ves" s" notas" s" adviertes" s" aprecias" }s
     s" parece" to-realize$ txt+ s" se" s+
   }s txt+ s{
-    s" cierta" s? s{
+    s" cierta" 50%nullify s{
       s" preocupación" s" desconfianza" s" intranquilidad"
       s" indignación" }s txt+
-    s" cierto" s? s{ s" nerviosismo" s" temor" }s txt+
+    s" cierto" 50%nullify s{ s" nerviosismo" s" temor" }s txt+
   }s txt+  ;
   \ Los refugiados no confían.
 
 : diverse-people$  ( -- ca len )
   s{ s" personas" s" hombres, mujeres y niños" }s
-  s" de toda" txt+ s" edad y" s? txt+ s" condición" txt+  ;
+  s" de toda" txt+ s" edad y" 50%nullify txt+ s" condición" txt+  ;
 
 \ ----------------------------------------------
 \ Tramos de cueva (laberinto)
@@ -233,13 +234,13 @@ false [if]  \ XXX OLD -- código obsoleto
 
 : cave-exit-separator+  ( ca1 len1 -- ca2 len2 )
   s{ s" ," s" ;" s" ..." }s s+
-  s{ s" y" 2dup s" aunque" but$ }s txt+ s" también" s? txt+  ;
+  s{ s" y" 2dup s" aunque" but$ }s txt+ s" también" 50%nullify txt+  ;
   \ Concatena (sin separación) a una cadena el separador entre las
   \ salidas principales y las secundarias.
 
 : (paths)-can-be-seen-0$  ( -- ca len )
   s{ s" parten" s" surgen" s" nacen" s" salen" }s
-  s" de" s{ s" aquí" s" este lugar" }s txt+ s? rnd2swap txt+  ;
+  s" de" s{ s" aquí" s" este lugar" }s txt+ 50%nullify rnd2swap txt+  ;
 
 : (paths)-can-be-seen-1$  ( -- ca len )
   s{ s" se ven" s" pueden verse"
@@ -255,7 +256,7 @@ false [if]  \ XXX OLD -- código obsoleto
   \ escenario es conocido
 
 : paths-seen  ( ca1 len1 -- ca2 len2 )
-  pass-ways$ txt+ s" más" s? txt+
+  pass-ways$ txt+ s" más" 50%nullify txt+
   (paths)-can-be-seen$ rnd2swap txt+  ;
   \ Devuelve la presentación de la lista de salidas secundarias.
   \ ca1 len1 = Cadena con el número de pasajes
@@ -275,14 +276,14 @@ false [if]  \ XXX OLD -- código obsoleto
   \ tramo de cueva, del ente dirección _a_.
 
 : two-secondary-exits-in-cave  ( a1 a2 -- ca3 len3 )
-  s" dos" paths-seen s" :" s? s+
+  s" dos" paths-seen s" :" 50%nullify s+
   secondary-exit-in-cave& s" y" txt+
   secondary-exit-in-cave&  ;
   \ Devuelve la descripción de dos salidas adicionales en un tramo de
   \ cueva.
 
 : three-secondary-exits-in-cave  ( a1 a2 a3 -- ca4 len4 )
-  s" tres" paths-seen s" :" s? s+
+  s" tres" paths-seen s" :" 50%nullify s+
   secondary-exit-in-cave& comma+
   secondary-exit-in-cave& s" y" txt+
   secondary-exit-in-cave&  ;
@@ -436,7 +437,7 @@ create 'cave-descriptions
   poor$ s" aldea" txt+  ;
 
 : rests-of-the-village$  ( -- ca len )
-  s" los restos" still$ s? s" humeantes" txt+ s? txt+
+  s" los restos" still$ 50%nullify s" humeantes" txt+ 50%nullify txt+
   s" de la" txt+ poor-village$ txt+  ;
   \ Devuelve parte de otras descripciones de la aldea arrasada.
 
@@ -448,10 +449,10 @@ create 'cave-descriptions
   \ Infinitivo aplicable para atravesar una pared o un muro.
 
 : it-looks-impassable$  ( -- ca len )
-  s{ s" por su aspecto" s" a primera vista" }s s?
+  s{ s" por su aspecto" s" a primera vista" }s 50%nullify
   s{  s" parece"
       s" diríase que es"
-      s" bien" s? s" puede decirse que es" txt+
+      s" bien" 50%nullify s" puede decirse que es" txt+
   }s txt+
   s{  s" imposible de" to-pass-(wall)$ txt+
       s" imposible" to-pass-(wall)$ txt+ s" la" s+
@@ -472,20 +473,20 @@ create 'cave-descriptions
 : you-discover-the-cave-entrance$  ( -- ca len )
   ^but$ comma+
   s{  s" reconociendo" s" el terreno" more-carefully$ rnd2swap txt+ txt+
-      s" fijándote" s" ahora" s? txt+ more-carefully$ txt+
+      s" fijándote" s" ahora" 50%nullify txt+ more-carefully$ txt+
   }s txt+ comma+ s" descubres" txt+ s{ s" lo" s" algo" }s txt+ s" que" txt+
-  s" sin duda" s? txt+ s{ s" parece ser" s" es" s" debe de ser" }s txt+
+  s" sin duda" 50%nullify txt+ s{ s" parece ser" s" es" s" debe de ser" }s txt+
   s{ s" la entrada" s" el acceso" }s txt+ s" a una" txt+ cave$ txt+  ;
   \ Mensaje de que descubres la cueva.
 
 : the-cave-entrance-is-hidden$  ( -- ca len )
-  s" La entrada" s" a la cueva" s? txt+
-  s{ s" está" s" muy" s? txt+ s" no podría estar más" }s txt+
+  s" La entrada" s" a la cueva" 50%nullify txt+
+  s{ s" está" s" muy" 50%nullify txt+ s" no podría estar más" }s txt+
   s{ s" oculta" s" camuflada" s" escondida" }s txt+
   s" en la pared" txt+ rocky(f)$ txt+ period+  ;
 
 : you-were-lucky-discovering-it$ ( -- ca len )
-  s" Has tenido" s" muy" s? txt+ s" buena" txt+ s{ s" fortuna" s" suerte" }s txt+
+  s" Has tenido" s" muy" 50%nullify txt+ s" buena" txt+ s{ s" fortuna" s" suerte" }s txt+
   s{  s{ s" al" s" en" s" con" }s
         s{ s" hallarla" s" encontrarla" s" dar con ella" s" descubrirla" }s txt+
       s{  s" hallándola" s" encontrándola"
@@ -494,14 +495,14 @@ create 'cave-descriptions
   }s txt+ period+  ;
 
 : it's-your-last-hope$  ( -- ca len )
-  s{ s" te das cuenta de que" s" sabes que" }s s?
+  s{ s" te das cuenta de que" s" sabes que" }s 50%nullify
   s{ s" es" s" se trata de" }s txt+ ^uppercase
   your|the(f)$ txt+ s{ s" única" s" última" }s txt+
   s{ s" salida" s" opción" s" esperanza" s" posibilidad" }s txt+
   s{ s" de" s" para" }s
   s{  s" escapar" s" huir"
       s" evitar" s{ s" ser capturado" s" que te capturen" }s txt+
-  }s txt+ s? txt+ period+  ;
+  }s txt+ 50%nullify txt+ period+  ;
 
 \ ----------------------------------------------
 \ Entrada a la cueva
@@ -533,10 +534,10 @@ create 'cave-descriptions
 : stairway-to-river$  ( -- ca len )
   s" Las escaleras" (they)-go-down$ txt+
   that-way$ txt+ comma+
-  s{ s" casi" s? s" hasta el" txt+ s" mismo" s? txt+ s" borde del" txt+
-  s" casi" s? s" hasta la" txt+ s" misma" s? txt+ s" orilla del" txt+
-  s" casi" s? s" hasta el" txt+
-  s" hasta" s? s" cerca del" txt+ }s txt+ s" agua." txt+  ;
+  s{ s" casi" 50%nullify s" hasta el" txt+ s" mismo" 50%nullify txt+ s" borde del" txt+
+  s" casi" 50%nullify s" hasta la" txt+ s" misma" 50%nullify txt+ s" orilla del" txt+
+  s" casi" 50%nullify s" hasta el" txt+
+  s" hasta" 50%nullify s" cerca del" txt+ }s txt+ s" agua." txt+  ;
 
 : a-high-narrow-pass-way$  ( -- ca len )
   s" un" narrow(m)$ txt+ pass-way$ txt+ s" elevado" txt+  ;

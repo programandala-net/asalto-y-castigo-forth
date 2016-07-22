@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607202131
+\ Last update: 201607221417
 
 \ Note: The comments of the code are in Spanish.
 
@@ -18,7 +18,7 @@ get-current forth-wordlist set-current
 
 require galope/bracket-false.fs    \ `[false]`
 require galope/bracket-true.fs     \ `[true]`
-require galope/random_strings.fs
+require galope/s-curly-bracket.fs  \ `s{`
 require galope/replaced.fs         \ `replaced`
 require galope/txt-plus.fs         \ `txt+`
 
@@ -109,6 +109,14 @@ set-current
 
 : is-not-accessible?  ( a -- f )  is-accessible? 0=  ;
   \ ¿Un ente no es accesible para el protagonista?
+
+: must-be-listed?  ( a -- f )
+  dup protagonist~ <>  \ ¿No es el protagonista?
+  over is-decoration? 0=  and  \ ¿Y no es decorativo?
+  over is-listed? and  \ ¿Y puede ser listado?
+  swap is-global? 0=  and  ;  \ ¿Y no es global?
+  \ ¿El ente debe ser incluido en las listas?
+  \ XXX TODO -- inconcluso
 
 : can-be-looked-at?  ( a -- f )
   dup am-i-there?    ?dup if  nip exit  then
@@ -517,6 +525,14 @@ create 'articles
   \ Devuelve el nombre subjetivo (negativo) _ca len_ de un ente _a_,
   \ desde el punto de vista del protagonista, para ser usado como
   \ objeto directo.
+
+: full-name-as-direct-complement  ( a -- ca len )
+  dup s" a" rot is-human? and
+  rot full-name txt+
+  s" al" s" a el" replaced  ;
+  \ Devuelve el nombre completo de un ente en función de complemento
+  \ directo.  Esto es necesario para añadir la preposición «a» a las
+  \ personas.
 
 \ ----------------------------------------------
 \ Otros campos calculados

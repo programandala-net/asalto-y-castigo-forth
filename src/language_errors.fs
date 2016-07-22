@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607202132
+\ Last update: 201607221417
 
 \ Note: The comments of the code are in Spanish.
 
@@ -16,10 +16,11 @@ get-current forth-wordlist set-current
 \ Galope
 \ http://programandala.net/en.program.galope.html
 
-require galope/question-question.fs   \ `??`
-require galope/random_strings.fs
-require galope/two-choose.fs          \ `2choose`
-require galope/txt-plus.fs            \ `txt+`
+require galope/fifty-percent-nullify.fs   \ `50%nullify`
+require galope/question-question.fs       \ `??`
+require galope/s-curly-bracket.fs         \ `s{`
+require galope/two-choose.fs              \ `2choose`
+require galope/txt-plus.fs                \ `txt+`
 
 \ Forth Foundation Library
 \ http://irdvo.github.io/ffl/
@@ -42,7 +43,7 @@ set-current
 \ Gestión de los errores específicos
 
 : please$  ( -- ca len )
-  s" por favor" s?  ;
+  s" por favor" 50%nullify  ;
   \ Devuelve «por favor» o vacía.
 
 : (please&)  ( ca1 len1 ca2 len2 -- ca3 len3 )

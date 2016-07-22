@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607202134
+\ Last update: 201607221417
 
 \ Note: The comments of the code are in Spanish.
 
@@ -16,11 +16,12 @@ get-current forth-wordlist set-current
 \ Galope
 \ http://programandala.net/en.program.galope.html
 
-require galope/plus-plus.fs           \ `++`
-require galope/question-execute.fs    \ `?execute`
-require galope/question-question.fs   \ `??`
-require galope/random_strings.fs
-require galope/txt-plus.fs            \ `txt+`
+require galope/fifty-percent-nullify.fs   \ `50%nullify`
+require galope/plus-plus.fs               \ `++`
+require galope/question-execute.fs        \ `?execute`
+require galope/question-question.fs       \ `??`
+require galope/s-curly-bracket.fs         \ `s{`
+require galope/txt-plus.fs                \ `txt+`
 
 set-current
 
@@ -90,7 +91,7 @@ variable #answer
   s{ s" hay" s" puedes poner" }s s{ s" condiciones" s" condición alguna" }s txt+
   s{ s" hay" s" tienes" }s s" nada que negociar" txt+ }s txt+
   s{ s" aquí" s" en esto" s" en esta cuestión" }s txt+ period+
-  \ two-options-only$ s? txt+  \ XXX TODO
+  \ two-options-only$ 50%nullify txt+  \ XXX TODO
   ;
   \ Devuelve el mensaje usado para advertir de que se ha escrito mal «sí».
 

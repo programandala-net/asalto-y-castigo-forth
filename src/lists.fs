@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607212202
+\ Last update: 201607212220
 
 \ Note: The comments of the code are in Spanish.
 
@@ -61,16 +61,8 @@ variable #elements
   \ elementos que tiene la lista y _u2_ el número de elementos ya
   \ listados.
 
-: can-be-listed?  ( a -- f )
-  dup protagonist~ <>  \ ¿No es el protagonista?
-  over is-decoration? 0=  and  \ ¿Y no es decorativo?
-  over is-listed? and  \ ¿Y puede ser listado?
-  swap is-global? 0=  and  ;  \ ¿Y no es global?
-  \ ¿El ente puede ser incluido en las listas?
-  \ XXX TODO -- inconcluso
-
 : /list++  ( u a1 a2 -- u | u+1 )
-  dup can-be-listed?
+  dup must-be-listed?
   if  location = abs +  else  2drop  then  ;
   \ Incrementa el contador _u_ si un ente _a1_ es la localización de
   \ otro ente _a2_ y puede ser listado.
@@ -91,30 +83,22 @@ variable #elements
   \ que el ente _a_ es una prenda puesta, devolviendo una nueva cadena
   \ _ca2 len2_ con el resultado.
 
-: full-name-as-direct-complement  ( a -- ca len )
-  dup s" a" rot is-human? and
-  rot full-name txt+
-  s" al" s" a el" replaced  ;
-  \ Devuelve el nombre completo de un ente en función de complemento
-  \ directo.  Esto es necesario para añadir la preposición «a» a las
-  \ personas.
-
 : (content-list)  ( a -- )
   #elements @ #listed @  list-separator
   dup full-name-as-direct-complement rot (worn)& out-str str-append-txt  #listed ++  ;
   \ Añade a la lista en la cadena dinámica `out-str` el separador y
   \ el nombre de un ente.
 
-: about-to-list  ( a -- u )  #listed off  /list dup #elements !  ;
+: about-to-list  ( a -- n )  #listed off  /list dup #elements !  ;
   \ Prepara el inicio de una lista, siendo _a_ el ente que es la
-  \ localización de los entes a incluir en la lista; y _u_ el número
+  \ localización de los entes a incluir en la lista; y _n_ el número
   \ de entes que serán listados.
 
 : content-list  ( a -- ca len )
   out-str str-clear
   dup about-to-list if
     #entities 1 do
-      dup i #>entity dup can-be-listed? if
+      dup i #>entity dup must-be-listed? if
         is-there? if  i #>entity (content-list)  then
       else  2drop
       then
