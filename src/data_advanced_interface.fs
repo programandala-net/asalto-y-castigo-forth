@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607221417
+\ Last update: 201607241941
 
 \ Note: The comments of the code are in Spanish.
 
@@ -32,9 +32,6 @@ set-current
 : belongs-to-protagonist?  ( a -- f )  protagonist~ is-owner?  ;
 : belongs-to-protagonist  ( a -- )  protagonist~ be-owner  ;
 
-: taken  ( a -- )  protagonist~ swap be-there  ;
-  \ Hace que el protagonista sea la localización de un ente _a_.
-
 : my-location  ( -- a )  protagonist~ location  ;
   \ Devuelve la localización del protagonista.
 
@@ -57,11 +54,14 @@ set-current
 : is-hold?  ( a -- f )  location protagonist~ =  ;
   \ ¿Es el protagonista la localización de un ente?
 
+\ XXX TODO -- write `is-carried` (also hold inside a container);
+\ or rename `is-hold` to `is-hold-by-hand`?
+
 : is-not-hold?  ( a -- f )  is-hold? 0=  ;
   \ ¿No es el protagonista la localización de un ente?
 
 : be-hold  ( a -- )  ~location protagonist~ swap !  ;
-  \ Hace que el protagonista sea la localización de un ente.
+  \ Hace que el protagonista sea la localización de un ente _a_.
 
 : is-worn-by-me?  ( a -- f )  dup is-hold?  swap is-worn?  and  ;
   \ ¿El protagonista lleva puesto el ente indicado?

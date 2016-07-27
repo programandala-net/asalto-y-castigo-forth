@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607221417
+\ Last update: 201607262150
 
 \ Note: The comments of the code are in Spanish.
 
@@ -225,14 +225,14 @@ cloak~ :init  ( -- )
   self~ be-wearable
   self~ belongs-to-protagonist
   self~ be-worn
-  self~ taken  ;
+  self~ be-hold  ;
 
 cuirasse~ :init  ( -- )
   \ ['] describe-cuirasse self~ be-describer
   s" coraza" self~ fs-name!
   self~ be-wearable
   self~ belongs-to-protagonist
-  self~ taken
+  self~ be-hold
   self~ be-worn  ;
 
 : describe-door  ( -- )
@@ -489,7 +489,7 @@ sword~ :init  ( -- )
   ['] describe-sword self~ be-describer
   s" espada" self~ fs-name!
   self~ belongs-to-protagonist
-  self~ taken  ;
+  self~ be-hold  ;
 
 : describe-table  ( -- )
   s" Es pequeña y de" s{ s" basta" s" tosca" }s txt+ s" madera." txt+

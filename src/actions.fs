@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607221417
+\ Last update: 201607262150
 
 \ Note: The comments of the code are in Spanish.
 
@@ -740,7 +740,7 @@ false [if]
   \ XXX TODO diferenciar de atacar
 
 : cloak-piece  ( a -- )
-  2 random if  be-here  else  taken  then  ;
+  2 random if  be-here  else  be-hold  then  ;
   \ Hace aparecer un resto de la capa rota de forma aleatoria:
   \ en el escenario o en el inventario.
   \ XXX TODO -- mejorar con mensajes, ejemplo:
@@ -814,7 +814,7 @@ false [if]
 
 : hit-the-flint  ( -- )
   flint~ ?accessible
-  sword~ taken
+  sword~ be-hold
   using$ sword~ full-name txt+ comma+
   s" golpeas" txt+ flint~ full-name txt+ period+ narrate
   lit-the-torch  ;
