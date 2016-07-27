@@ -5,42 +5,20 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201606292015
-
-\ Note: The comments of the code are in Spanish.
+\ Last update: 201607271410
 
 \ ==============================================================
-\ Identificadores de entes
 
-\ Cada ente es identificado mediante una palabra. Los
-\ identificadores de entes se crean con la palabra `entity`.
-\ Cuando se ejecutan devuelven la dirección en memoria de la
-\ ficha del ente en la base de datos, que después puede ser
-\ modificada con un identificador de campo para convertirla en
-\ la dirección de memoria de un campo concreto de la ficha.
-\
-\ Para reconocer mejor los identificadores de entes usamos el
-\ sufijo «%» en sus nombres.
-\
-\ Los entes escenario usan como nombre de identificador el número
-\ que tienen en la versión original del programa. Esto hace más
-\ fácil la adaptación del código original en BASIC.  Además, para
-\ que algunos cálculos tomados del código original funcionen, es
-\ preciso que los entes escenario se creen ordenados por ese
-\ número.
-\
-\ El orden en que se definan los restantes identificadores es
-\ irrelevante.  Si están agrupados por tipos y en orden
-\ alfabético es solo por claridad.
+require flibustre/entity_identifiers.fs
 
 \ ----------------------------------------------
-\ Ente protagonista
+\ Protagonist
 
 entity ulfius~
-' ulfius~ alias protagonist~
+' ulfius~ is protagonist~
 
 \ ----------------------------------------------
-\ Entes personaje
+\ Characters
 
 entity ambrosio~
 entity leader~
@@ -49,7 +27,7 @@ entity refugees~
 entity officers~
 
 \ ----------------------------------------------
-\ Entes objeto
+\ Objects
 
 entity altar~
 entity arch~
@@ -80,13 +58,14 @@ entity sword~
 entity table~
 entity thread~
 entity torch~
-entity wall~  \ XXX TODO -- inconcluso
+entity wall~  \ XXX TODO --
 entity waterfall~
 
 \ ----------------------------------------------
-\ Entes escenario
+\ Locations
 
-\ En orden de número, según el mapa del programa original.
+\ Named and ordered after their number in the original version of the
+\ adventure. This makes the conversion easier.
 
 entity location-01~
 entity location-02~
@@ -141,29 +120,15 @@ entity location-50~
 entity location-51~
 
 \ ----------------------------------------------
-\ Entes globales
+\ Global
 
 entity sky~
 entity floor~
 entity ceiling~
 entity clouds~
-entity cave~  \ XXX TODO -- inconcluso
+entity cave~  \ XXX TODO -- unfinished
 
 \ ----------------------------------------------
-\ Entes virtuales
+\ Virtual
 
-\ Son necesarios para algunos comandos.
-
-entity inventory~
-entity exits~
-entity north~
-entity south~
-entity east~
-entity west~
-entity up~
-entity down~
-entity out~
-entity in~
 entity enemy~
-
-\ vim:filetype=gforth:fileencoding=utf-8
