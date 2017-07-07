@@ -1,7 +1,11 @@
 = Tareas pendientes de Asalto y castigo
-:revdate: 2016-07-20
+:revdate: 2016-07-29
 
 == Programación
+
+2016-07-29:
+
+Move <accept_input.fs> to Flibustre.
 
 2016-07-20:
 
