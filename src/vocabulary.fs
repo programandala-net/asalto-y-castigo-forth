@@ -3,9 +3,9 @@
 \ This file is part of _Asalto y castigo_
 \ http://programandala.net/es.programa.asalto_y_castigo.forth.html
 
-\ Author: Marcos Cruz (programandala.net), 2011..2016
+\ Author: Marcos Cruz (programandala.net), 2011..2017
 
-\ Last modified 201607202101
+\ Last modified 201707071927
 
 \ Note: Most comments of the code are in Spanish.
 
@@ -779,7 +779,7 @@ player-wordlist dup >order set-current
 
 ' romperlas aliases:
   rómpelas rompedlas rómpolas rómpalas
-  despedazarlas despedazalas despedazadlas despedázolas despedácelas
+  despedazarlas despedázalas despedazadlas despedázolas despedácelas
   destrozarlas destrózalas destrozadlas destrózolas destrócelas
   dividirlas divídelas divididlas divídolas divídalas
   cortarlas córtalas cortadlas córtolas córtelas
