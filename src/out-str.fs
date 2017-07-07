@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607212213
+\ Last modified 201607212213
 
 \ ==============================================================
 

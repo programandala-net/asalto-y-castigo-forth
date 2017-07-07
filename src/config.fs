@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last update: 201607202057
+\ Last modified 201607202057
 
 \ Note: The comments of the code are in Spanish.
 
