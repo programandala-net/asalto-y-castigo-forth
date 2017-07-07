@@ -25,7 +25,7 @@ require galope/xlowercase.fs  \ `xlowercase` for UTF-8
 
 set-current
 
-require flibustre/parser.data.fs
+require talanto/parser.data.fs
 
 \ ==============================================================
 \ Entrada de comandos

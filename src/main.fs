@@ -47,10 +47,10 @@ require galope/tilde-tilde.fs    \ improved `~~`
 
 \ ==============================================================
 
-require flibustre/wordlists.fs
+require talanto/wordlists.fs
 
 $6C constant parser-id
-  \ Identifier of the parser that will be used from Flibustre.
+  \ Identifier of the parser that will be used from Talanto.
 
 include version.fs
 include debug_tools.fs
@@ -68,18 +68,18 @@ s" random_texts.fs" including
 s" key_input.fs" including
 s" printing.fs" including
 s" command_input.fs" including
-require flibustre/entity.fs
-require flibustre/entity_structure.fs
-require flibustre/entity_structure_interface.fs
+require talanto/entity.fs
+require talanto/entity_structure.fs
+require talanto/entity_structure_interface.fs
 s" entity_identifiers.fs" including
 s" data_advanced_interface.fs" including
 s" data_tools.fs" including
 s" calculated_texts.fs" including
 s" lists.fs" including
-require flibustre/errors.fs
-require flibustre/error_conditions.fs
-require flibustre/parser.6c.fs
-require flibustre/last-complements.es.fs
+require talanto/errors.fs
+require talanto/error_conditions.fs
+require talanto/parser.6c.fs
+require talanto/last-complements.es.fs
 s" language_errors.fs" including
 s" config.fs" including
 s" plot.fs" including

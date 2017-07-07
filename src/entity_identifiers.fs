@@ -9,7 +9,7 @@
 
 \ ==============================================================
 
-require flibustre/entity_identifiers.fs
+require talanto/entity_identifiers.fs
 
 \ ----------------------------------------------
 \ Protagonist

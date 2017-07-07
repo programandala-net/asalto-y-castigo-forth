@@ -45,7 +45,7 @@ require out-str.fs
 \ ==============================================================
 \ Mensaje de acción completada
 
-require flibustre/well-done.fs
+require talanto/well-done.fs
 
 ' narrate is type-well-done
 

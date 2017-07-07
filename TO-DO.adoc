@@ -1,11 +1,11 @@
 = Tareas pendientes de Asalto y castigo
-:revdate: 2016-07-29
+:revdate: 2017-07-07
 
 == Programación
 
 2016-07-29:
 
-Move <accept_input.fs> to Flibustre.
+Move <accept_input.fs> to Talanto.
 
 2016-07-20:
 
@@ -18,7 +18,7 @@ da error de que hay dos complementos principales.
 
 2016-07-19:
 
-Mover `protagonist~` a Flibustre.
+Mover `protagonist~` a Talanto.
 
 2016-07-19:
 
@@ -97,7 +97,7 @@ Sé más claro, por favor, no se reconoce ningún complemento principal en el co
 2016-07-06:
 
 Hacer que los errores asociados a los filtros de acción sean
-configurables por la aplicación (en Flibustre).
+configurables por la aplicación (en Talanto).
 
 2016-07-06:
 

@@ -25,7 +25,7 @@ require galope/system-colors.fs       \ `system-colors`
 
 set-current
 
-require flibustre/last-complements.es.fs
+require talanto/last-complements.es.fs
 
 \ ==============================================================
 \ Resolución de entes ambiguos
