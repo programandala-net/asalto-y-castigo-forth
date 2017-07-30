@@ -1,7 +1,36 @@
 = Tareas pendientes de Asalto y castigo
-:revdate: 2017-07-07
+:revdate: 2017-07-31
 
+// Programación {{{1
 == Programación
+
+2017-07-31:
+
+Fix some issues that arised when Gforth 0.7.3 was updated to Gforth
+0.7.9:
+
+....
+/usr/local/share/gforth/site-forth/galope/colors.fs:31:34: redefined Black with black
+/usr/local/share/gforth/site-forth/galope/colors.fs:32:34: redefined Blue with blue
+/usr/local/share/gforth/site-forth/galope/colors.fs:35:34: redefined Cyan with cyan
+/usr/local/share/gforth/site-forth/galope/colors.fs:37:34: redefined Green with green
+/usr/local/share/gforth/site-forth/galope/colors.fs:41:34: redefined Magenta with magenta
+/usr/local/share/gforth/site-forth/galope/colors.fs:43:34: redefined Red with red
+/usr/local/share/gforth/site-forth/galope/colors.fs:45:34: redefined White with white
+/usr/local/share/gforth/site-forth/galope/colors.fs:46:34: redefined Yellow with yellow
+lib/stringstack.fs:71:52: redefined cell/
+lib/stringstack.fs:82:34: redefined cell-
+lib/stringstack.fs:98:61: redefined stack
+lib/stringstack.fs:101:85: redefined stack:
+....
+
+And:
+
+
+....
+src/entities.fs:44: error: Invalid memory address
+  location-01~ self~ be-there  ;
+....
 
 2016-07-29:
 
@@ -616,6 +645,7 @@ debido a la oscuridad".
 
 - Acción de quemar, prender.
 
+// Vocabulario {{{1
 == Vocabulario
 
 .2016-07-14:
@@ -623,11 +653,13 @@ debido a la oscuridad".
 Hacer que ciertas palabras no tengan efecto si el ente que representan
 no es conocido.
 
+// Textos {{{1
 == Textos
 
 En las descripciones, mencionar el objeto descrito, para que los
 textos resulten más claros en las órdenes compuestas.
 
+// Trama y puzles {{{1
 == Trama y puzles
 
 2011..2012:
@@ -651,6 +683,7 @@ espada.
 Posibilidad de perder la capa al nadar si no la llevamos
 puesta.
 
+// Código fuente {{{1
 == Código fuente
 
 Unificar los comentarios de palabras que devuelven cadenas de texto:
@@ -667,9 +700,10 @@ A esto: «La palabra 'zx', a veces, se usa como 'zx2'.»
 
 Plegar las líneas que sobrepasen los 63 caracteres.
 
+// Notas {{{1
 == Notas
 
-
+// Esbozo de acciones y (seudo)preposiciones {{{2
 === Esbozo de acciones y (seudo)preposiciones
 
 ----
