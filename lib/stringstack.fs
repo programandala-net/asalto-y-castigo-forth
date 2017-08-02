@@ -3,8 +3,12 @@
 \ download as http://forthfreak.net/stringstack
 
 \ warnings dup @ swap off
-false constant use_library
 \ warnings !
+
+
+\ 2017-07-31: Modified by Marcos Cruz (programandala.net) to make it
+\ compatible with Gforth 0.7.9: Conditional compilation of `cell-` and
+\ `cell/`; rename `stack` `$stack`; rename `stack:` `$stack:`.
 
 \ strings.f   string words  (should be) ANS conform. compiles with vanilla gforth
 \ v0.10  20050107 Speuler  added -scan$, -skip$, searchn$ and dropn$
@@ -67,19 +71,18 @@ base @ decimal
 -24 constant invalid_argument   \ pick$, roll$ index too high
  32 constant maxtype            \ max chars per string typed by .s$
 
+[undefined] cell/ [if]
+
 cell 2 = [if]  ' 2/ alias cell/  ( n1 -- n2 )   [then]
 cell 4 = [if] : cell/ ( n1 -- n2 )        2 rshift ; [then]
 cell 8 = [if] : cell/ ( n1 -- n2 )        3 rshift ; [then]
 
+[then]
 
-use_library [if]
-
-  require cell-       require inc       require dec         require skim
-  require pluck       require 3dup      require exchange    require swapchars
-
-[else]
-
+[undefined] cell- [if]
   : cell- ( x1 -- x2 )   cell -  ;
+[then]
+
   : inc   ( a -- )   1 swap +!  ;
   : dec   ( a -- )   -1 swap +!  ;
   : skim  ( a1 -- a2 x )    cell+ dup cell- @  ;
@@ -88,17 +91,16 @@ use_library [if]
   : exchange ( x1 a -- x2 )     dup @ -rot ! ;
   : swapchars ( a1 a2 -- )   dup >r c@  swap dup c@  r> c! c! ;
 
-[then]
 
 
 
 \ builds stack with structure   maxdepth, depth, stackdata.
 \ expects that stack space has been allocated already at a
 \ depth and maxdepth are given in bytes.
-: stack  ( n a -- )                       0 over cell+ ! !  ;
+: $stack  ( n a -- )                       0 over cell+ ! !  ;
 
 
-: stack:  ( n -- )                        create here over cell+ cell+ allot stack  ;
+: $stack:  ( n -- )                        create here over cell+ cell+ allot $stack  ;
 : sp   ( a1 -- a2 )                       cell+ dup @ + ;          \ return address of top stack element
 : push ( x a -- )                         cell+ cell over +! dup @ + !  ;
 
@@ -122,8 +124,8 @@ use_library [if]
 \ --------------- string stack stuff -------------------
 
 
-maxstrings cells stack: stringstack
-maxstrings cells stack: flushstack
+maxstrings cells $stack: stringstack
+maxstrings cells $stack: flushstack
 
 
 : depth$ ( -- n )    stringstack stackused ;
