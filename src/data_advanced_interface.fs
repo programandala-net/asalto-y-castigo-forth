@@ -5,7 +5,8 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last modified 201607241941
+\ Last modified 201708051150
+\ See change log at the end of the file
 
 \ Note: The comments of the code are in Spanish.
 
@@ -628,147 +629,7 @@ in~ in-exit> exits-table!
 
 [then]
 
-\ A continuación definimos palabras para proporcionar la
-\ siguiente sintaxis (primero origen y después destino en la
-\ pila, como es convención en Forth):
-
-\   \ Hacer que la salida sur de `cave~` conduzca a `path~`
-\   \ pero sin afectar al sentido contrario:
-\   cave~ path~ s-->
-
-\   \ Hacer que la salida norte de `path~` conduzca a `cave~`
-\   \ pero sin afectar al sentido contrario:
-\   path~ cave~ n-->
-
-\ O en un solo paso:
-
-\   \ Hacer que la salida sur de `cave~` conduzca a `path~`
-\   \ y al contrario: la salida norte de `path~` conducirá a `cave~`:
-\   cave~ path~ s<-->
-
-: -->  ( a1 a2 u -- )  rot + !  ;
-  \ Conecta el ente _a1_ (origen) con el ente _a2_ (destino) mediante
-  \ la salida de _a1_ indicada por el desplazamiento de campo _u_.
-
-: -->|  ( a1 u -- )  + no-exit swap !  ;
-  \ Cierra la salida del ente _a1_ (origen) hacia el ente _a2_
-  \ (destino), indicada por el desplazamiento de campo _u_.
-
-\ Conexiones unidireccionales
-
-: n-->  ( a1 a2 -- )  north-exit> -->  ;
-  \ Comunica la salida norte del ente _a1_ con el ente _a2_.
-
-: s-->  ( a1 a2 -- )  south-exit> -->  ;
-  \ Comunica la salida sur del ente _a1_ con el ente _a2_.
-
-: e-->  ( a1 a2 -- )  east-exit> -->  ;
-  \ Comunica la salida este del ente _a1_ con el ente _a2_.
-
-: w-->  ( a1 a2 -- )  west-exit> -->  ;
-  \ Comunica la salida oeste del ente _a1_ con el ente _a2_.
-
-: u-->  ( a1 a2 -- )  up-exit> -->  ;
-  \ Comunica la salida hacia arriba del ente _a1_ con el ente _a2_.
-
-: d-->  ( a1 a2 -- )  down-exit> -->  ;
-  \ Comunica la salida hacia abajo del ente _a1_ con el ente _a2_.
-
-: o-->  ( a1 a2 -- )  out-exit> -->  ;
-  \ Comunica la salida hacia fuera del ente _a1_ con el ente _a2_.
-
-: i-->  ( a1 a2 -- )  in-exit> -->  ;
-  \ Comunica la salida hacia dentro del ente _a1_ con el ente _a2_.
-
-: n-->|  ( a1 -- )  north-exit> -->|  ;
-  \ Desconecta la salida norte del ente _a1_.
-
-: s-->|  ( a1 -- )  south-exit> -->|  ;
-  \ Desconecta la salida sur del ente _a1_.
-
-: e-->|  ( a1 -- )  east-exit> -->|  ;
-  \ Desconecta la salida este del ente _a1_.
-
-: w-->|  ( a1 -- )  west-exit> -->|  ;
-  \ Desconecta la salida oeste del ente _a1_.
-
-: u-->|  ( a1 -- )  up-exit> -->|  ;
-  \ Desconecta la salida hacia arriba del ente _a1_.
-
-: d-->|  ( a1 -- )  down-exit> -->|  ;
-  \ Desconecta la salida hacia abajo del ente _a1_.
-
-: o-->|  ( a1 -- )  out-exit> -->|  ;
-  \ Desconecta la salida hacia fuera del ente _a1_.
-
-: i-->|  ( a1 -- )  in-exit> -->|  ;
-  \ Desconecta la salida hacia dentro del ente _a1_.
-
-\ Conexiones bidireccionales
-
-: n<-->  ( a1 a2 -- )  2dup n-->  swap s-->  ;
-  \ Comunica la salida norte del ente _a1_ con el ente _a2_ (y al
-  \ contrario).
-
-: s<-->  ( a1 a2 -- )  2dup s-->  swap n-->  ;
-  \ Comunica la salida sur del ente _ente a1_ con el ente _ente a2_ (y
-  \ al contrario).
-
-: e<-->  ( a1 a2 -- )  2dup e-->  swap w-->  ;
-  \ Comunica la salida este del ente _ente a1_ con el ente _ente a2_
-  \ (y al contrario).
-
-: w<-->  ( a1 a2 -- )  2dup w-->  swap e-->  ;
-  \ Comunica la salida oeste del ente _ente a1_ con el ente _ente a2_
-  \ (y al contrario).
-
-: u<-->  ( a1 a2 -- )  2dup u-->  swap d-->  ;
-  \ Comunica la salida hacia arriba del ente _ente a1_ con el ente
-  \ _ente a2_ (y al contrario).
-
-: d<-->  ( a1 a2 -- )  2dup d-->  swap u-->  ;
-  \ Comunica la salida hacia abajo del ente _ente a1_ con el ente
-  \ _ente a2_ (y al contrario).
-
-: o<-->  ( a1 a2 -- )  2dup o-->  swap i-->  ;
-  \ Comunica la salida hacia fuera del ente _ente a1_ con el ente
-  \ _ente a2_ (y al contrario).
-
-: i<-->  ( a1 a2 -- )  2dup i-->  swap o-->  ;
-  \ Comunica la salida hacia dentro del ente _ente a1_ con el ente
-  \ _ente a2_ (y al contrario).
-
-: n|<-->|  ( a1 a2 -- )  s-->|  n-->|  ;
-  \ Desconecta la salida norte del ente _ente a1_ con el ente _ente
-  \ a2_ (y al contrario).
-
-: s|<-->|  ( a1 a2 -- )  n-->|  s-->|  ;
-  \ Desconecta la salida sur del ente _ente a1_ con el ente _ente a2_
-  \ (y al contrario).
-
-: e|<-->|  ( a1 a2 -- )  w-->|  e-->|  ;
-  \ Desconecta la salida este del ente _ente a1_ con el ente _ente a2_
-  \ (y al contrario).
-
-: w|<-->|  ( a1 a2 -- )  e-->|  w-->|  ;
-  \ Desconecta la salida oeste del ente _ente a1_ con el ente _ente
-  \ a2_ (y al contrario).
-
-: u|<-->|  ( a1 a2 -- )  d-->|  u-->|  ;
-  \ Desconecta la salida hacia arriba del ente _ente a1_ con el ente
-  \ _ente a2_ (y al contrario).
-
-: d|<-->|  ( a1 a2 -- )  u-->|  d-->|  ;
-  \ Desconecta la salida hacia abajo del ente _ente a1_ con el ente
-  \ _ente a2_ (y al contrario).
-
-: o|<-->|  ( a1 a2 -- )  i-->|  o-->|  ;
-  \ Desconecta la salida hacia fuera del ente _ente a1_ con el ente
-  \ _ente a2_ (y al contrario).
-
-: i|<-->|  ( a1 a2 -- )  o-->|  i-->|  ;
-  \ Desconecta la salida hacia dentro del ente _ente a1_ con el ente
-  \ _ente a2_ (y al contrario).
+require talanto/location_connectors.fs
 
 \ Por último, definimos dos palabras para hacer
 \ todas las asignaciones de salidas en un solo paso.
@@ -821,5 +682,10 @@ in~ in-exit> exits-table!
   \ Devuelve un ente personaje desconocido al que probablemente se
   \ refiera un comando.  Se usa para averiguar el objeto de algunas
   \ acciones cuando el jugador no lo especifica
+
+\ ==============================================================
+\ Change log
+
+\ 2017-08-05: Move the location connectors to Talanto.
 
 \ vim:filetype=gforth:fileencoding=utf-8

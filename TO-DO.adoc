@@ -1,5 +1,5 @@
 = Tareas pendientes de Asalto y castigo
-:revdate: 2017-08-02
+:revdate: 2017-08-04
 
 // Programación {{{1
 == Programación
@@ -687,9 +687,13 @@ Terminar de cambiar el formato de los nombres de palabras de Forth en
 los textos:
 
 De esto: «La palabra ZX , a veces, se usa como ZX2 .»
-A esto: «La palabra 'zx', a veces, se usa como 'zx2'.»
+A esto: «La palabra `zx`, a veces, se usa como `zx2`.»
 
 Plegar las líneas que sobrepasen los 63 caracteres.
+
+.2017-08-04:
+
+Update notation _a_ to _entity_.
 
 // Notas {{{1
 == Notas
