@@ -4,12 +4,12 @@
 \ Imita los colores de la versión original del juego para ZX Spectrum.
 
 \ Este fichero forma parte de
-\ «Asalto y castigo>
+\ «Asalto y castigo»
 \ http://programandala.net/es.programa.asalto_y_castigo.forth.html
 
 \ Autor: Marcos Cruz (programandala.net), 2011..2016
 
-\ Última modificación: 201607111047
+\ Última modificación: 201710190235
 
 \ ==============================================================
 
