@@ -3,9 +3,9 @@
 \ This file is part of _Asalto y castigo_
 \ http://programandala.net/es.programa.asalto_y_castigo.forth.html
 
-\ Author: Marcos Cruz (programandala.net), 2011..2016
+\ Author: Marcos Cruz (programandala.net), 2011..2017
 
-\ Last modified 201607221417
+\ Last modified 201711072219
 
 \ Note: The comments of the code are in Spanish.
 
@@ -38,7 +38,7 @@ set-current
   if  s" los refugiados"  else  s" todos"  then  ;
 
 : ^the-refugees$  ( -- ca len )
-  the-refugees$ ^uppercase  ;
+  the-refugees$ xcapitalized  ;
 
 : they-don't-let-you-pass$  ( -- ca len )
   s{
@@ -163,7 +163,7 @@ set-current
   \ artículo adecuado.
 
 : ^this-narrow-cave-pass$  ( -- ca len )
-  this-narrow-cave-pass$ ^uppercase  ;
+  this-narrow-cave-pass$ xcapitalized  ;
   \ Devuelve una variante de «estrecho tramo de cueva», con el
   \ artículo adecuado y la primera letra mayúscula.
 
@@ -496,7 +496,7 @@ create 'cave-descriptions
 
 : it's-your-last-hope$  ( -- ca len )
   s{ s" te das cuenta de que" s" sabes que" }s 50%nullify
-  s{ s" es" s" se trata de" }s txt+ ^uppercase
+  s{ s" es" s" se trata de" }s txt+ xcapitalized
   your|the(f)$ txt+ s{ s" única" s" última" }s txt+
   s{ s" salida" s" opción" s" esperanza" s" posibilidad" }s txt+
   s{ s" de" s" para" }s

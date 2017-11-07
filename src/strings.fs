@@ -3,9 +3,9 @@
 \ This file is part of _Asalto y castigo_
 \ http://programandala.net/es.programa.asalto_y_castigo.forth.html
 
-\ Author: Marcos Cruz (programandala.net), 2011..2016
+\ Author: Marcos Cruz (programandala.net), 2011..2017
 
-\ Last modified 201607221417
+\ Last modified 201711072221
 
 \ Note: The comments of the code are in Spanish.
 
@@ -28,7 +28,7 @@ require galope/s-curly-bracket.fs         \ `s{`
 require galope/replaced.fs                \ `replaced`
 require galope/stringer.fs                \ Circular string buffer
 require galope/txt-plus.fs                \ `txt+`
-require galope/x-c-store.fs               \ `xc!`
+require galope/x-capitalized.fs           \ `xcapitalized`
 require galope/xcase.fs                   \ `xcase`
 require galope/xcase_es.fs                \ Spanish UTF-8 case table
 
@@ -53,28 +53,6 @@ str-create tmp-str
   dup str-length@ 2 - swap str-get-char  ;
   \ Devuelve el penúltimo carácter de una cadena dinámica.
   \ XXX TODO -- soporte para UTF-8
-
-: (^uppercase)  ( ca len -- )
-  [false] [if]  \ XXX OLD -- antiguo, ascii
-    if  dup c@ toupper swap c!  else  drop  then
-  [else]  \ UTF-8
-    if  dup xc@ xtoupper swap xc!  else  drop  then
-  [then]  ;
-  \ Convierte en mayúsculas la primera letra de una cadena.
-
-: ^uppercase  ( ca1 len -- ca2 len )
-  >stringer 2dup (^uppercase)  ;
-  \ Hace una copia de una cadena en el almacén circular
-  \ y la devuelve con la primera letra en mayúscula.
-  \ Nota: Se necesita para los casos en que no queremos
-  \ modificar la cadena original.
-
-: ?^uppercase  ( ca1 len1 f -- ca1 len1 | ca2 len2 )
-  ?? ^uppercase  ;
-  \ Si _f_ es distinto de cero,
-  \ Devuelve una copia _ca2 len2_ de una cadena _ca1 len1_,
-  \ poniendo la primera letra en mayúscula.
-  \ XXX TODO -- no usado
 
 : -punctuation  ( ca len -- ca len )
   exit \ XXX TMP

@@ -3,9 +3,9 @@
 \ This file is part of _Asalto y castigo_
 \ http://programandala.net/es.programa.asalto_y_castigo.forth.html
 
-\ Author: Marcos Cruz (programandala.net), 2011..2016
+\ Author: Marcos Cruz (programandala.net), 2011..2017
 
-\ Last modified 201607262150
+\ Last modified 201711072219
 
 \ Note: The comments of the code are in Spanish.
 
@@ -425,7 +425,7 @@ rags~ :init  ( -- )
 
 : describe-ravine-wall  ( -- )
   s" en" was-the-cave-entrance-discovered? ?keep
-  s" la pared" txt+ rocky(f)$ txt+ ^uppercase
+  s" la pared" txt+ rocky(f)$ txt+ xcapitalized
   was-the-cave-entrance-discovered? if
     s" , que" it-looks-impassable$ txt+ comma+ 50%nullify s+
     the-cave-entrance-is-visible$ txt+
@@ -447,7 +447,7 @@ ravine-wall~ :init  ( -- )
 
 : describe-rocks  ( -- )
   location-31~ has-north-exit?
-  if  (rocks)-on-the-floor$ ^uppercase
+  if  (rocks)-on-the-floor$ xcapitalized
   else  (rocks)-clue$
   then  period+ paragraph  ;
 
@@ -566,7 +566,7 @@ waterfall~ :init  ( -- )
     endof
   up~ of
     s{ s" pronto" s" sin compasión" s" de inmediato" }s
-    s{ s" vencidas" s" derrotadas" s" sojuzgadas" }s rnd2swap txt+ ^uppercase
+    s{ s" vencidas" s" derrotadas" s" sojuzgadas" }s rnd2swap txt+ xcapitalized
     s" por la fría" txt+
     s{ s" e implacable" s" y despiadada" }s 50%nullify txt+
     s" niebla," txt+ s" torpes" s" tristes" both?&
@@ -1727,7 +1727,7 @@ location-36~ :init  ( -- )
   west~ of
     water-from-there$
     the-pass-way$ s" elevado" 50%nullify txt+ lets-you$ txt+ to-keep-going$ txt+ that-way$ txt+
-    both s" también" txt+ ^uppercase period+
+    both s" también" txt+ xcapitalized period+
     paragraph
     endof
   uninteresting-direction

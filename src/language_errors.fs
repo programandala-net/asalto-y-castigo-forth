@@ -3,9 +3,9 @@
 \ This file is part of _Asalto y castigo_
 \ http://programandala.net/es.programa.asalto_y_castigo.forth.html
 
-\ Author: Marcos Cruz (programandala.net), 2011..2016
+\ Author: Marcos Cruz (programandala.net), 2011..2017
 
-\ Last modified 201607221417
+\ Last modified 201711072219
 
 \ Note: The comments of the code are in Spanish.
 
@@ -107,12 +107,12 @@ set-current
   3 2choose please&  ;
   \ Devuelve mensaje de acompañamiento para los errores lingüísticos.
 
-: ^error-comment$  ( -- ca len )  error-comment$ ^uppercase  ;
+: ^error-comment$  ( -- ca len )  error-comment$ xcapitalized  ;
   \ Devuelve mensaje de acompañamiento para los errores lingüísticos, con la primera letra mayúscula.
 
 :noname  ( ca len -- )
   in-the-sentence$ txt+  3 random
-  if    ^uppercase period+ ^error-comment$
+  if    xcapitalized period+ ^error-comment$
   else  ^error-comment$ comma+ 2swap
   then  period+ txt+  language-error.  ;
   is specific-language-error

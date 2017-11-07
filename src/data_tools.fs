@@ -3,9 +3,9 @@
 \ This file is part of _Asalto y castigo_
 \ http://programandala.net/es.programa.asalto_y_castigo.forth.html
 
-\ Author: Marcos Cruz (programandala.net), 2011..2016
+\ Author: Marcos Cruz (programandala.net), 2011..2017
 
-\ Last modified 201607192044
+\ Last modified 201711072219
 
 \ Note: Most comments of the code are in Spanish.
 
@@ -59,7 +59,7 @@ defer default-description  ( -- )
 
 : .location-name  ( a -- )
   [debug-map] [if]  dup  [then]
-  name ^uppercase location-name-color paragraph
+  name xcapitalized location-name-color paragraph
   \ [debug-map] [ true or ] [if]
   [true] [if]
     dup entity># location-01~ entity># - 1+ ."  [#" 0 .r ." ]"

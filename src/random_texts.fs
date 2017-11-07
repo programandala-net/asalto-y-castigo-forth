@@ -3,9 +3,9 @@
 \ This file is part of _Asalto y castigo_
 \ http://programandala.net/es.programa.asalto_y_castigo.forth.html
 
-\ Author: Marcos Cruz (programandala.net), 2011..2016
+\ Author: Marcos Cruz (programandala.net), 2011..2017
 
-\ Last modified 201607221417
+\ Last modified 201711072220
 
 \ Note: The comments of the code are in Spanish.
 
@@ -77,7 +77,7 @@ set-current
   s{ s" tienes" s" llevas" }s  ;
 
 : ^you-carry$  ( -- ca len )
-  you-carry$ ^uppercase  ;
+  you-carry$ xcapitalized  ;
   \ Devuelve una variante de «Llevas» (con la primera mayúscula).
 
 : now$  ( -- ca len )
@@ -119,7 +119,7 @@ set-current
   s{ s" de nuevo" s" otra vez" s" otra vez más" s" una vez más" }s  ;
 
 : ^again$  ( -- ca len )
-  again$ ^uppercase  ;
+  again$ xcapitalized  ;
 
 : again?$  ( -- ca len )
   again$ s" ?" s+  ;
@@ -140,7 +140,7 @@ set-current
   s{ s" al" s" hacia el" }s  ;
 
 : ^toward-the(m)$  ( -- ca len )
-  toward-the(m)$ ^uppercase  ;
+  toward-the(m)$ xcapitalized  ;
 
 : from-the(m)$  ( -- ca len )
   s{ s" desde el" s" procedente" 50%nullify s" del" txt+ }s  ;
@@ -164,7 +164,7 @@ set-current
   \ Devuelve una variante de «todos tus».
 
 : ^all-your$  ( -- ca len )
-  all-your$ ^uppercase  ;
+  all-your$ xcapitalized  ;
   \ Devuelve una variante de «Todos tus» (con la primera mayúscula).
 
 : soldiers$  ( -- ca len )
@@ -176,7 +176,7 @@ set-current
   \ Devuelve una variante de "tus hombres".
 
 : ^your-soldiers$  ( -- ca len )
-  your-soldiers$ ^uppercase  ;
+  your-soldiers$ xcapitalized  ;
   \ Devuelve una variante de "Tus hombres".
 
 : officers$  ( -- ca len )
@@ -216,7 +216,7 @@ set-current
   \ Devuelve una variante de «del/de los enemigo/s».
 
 : ^the-enemy|enemies  ( -- ca len f )
-  (the-enemy|enemies) >r  ^uppercase  r>  ;
+  (the-enemy|enemies) >r  xcapitalized  r>  ;
   \ Devuelve una variante de «El/Los enemigo/s», y un indicador del número.
   \ ca len = Cadena con el texto
   \ f = ¿El texto está en plural?
@@ -233,7 +233,7 @@ set-current
   s{ s" pero" s" mas" }s  ;
 
 : ^but$  ( -- ca len )
-  but$ ^uppercase  ;
+  but$ xcapitalized  ;
 
 : though$  ( -- ca len )
   s{ s" si bien" but$ s" aunque" }s  ;
@@ -263,13 +263,13 @@ set-current
   s{ s" el camino" s" la senda" s" el sendero" }s  ;
 
 : ^the-path$  ( -- ca len )
-  the-path$ ^uppercase  ;
+  the-path$ xcapitalized  ;
 
 : a-path$  ( -- ca len )
   s{ s" un camino" s" una senda" }s  ;
 
 : ^a-path$  ( -- ca len )
-  a-path$ ^uppercase  ;
+  a-path$ xcapitalized  ;
 
 : pass$  ( -- ca len )
   s{ s" paso" s" camino" }s  ;
@@ -286,7 +286,7 @@ set-current
   \ Devuelve una variante de «un pasaje».
 
 : ^a-pass-way$  ( -- ca len )
-  a-pass-way$ ^uppercase  ;
+  a-pass-way$ xcapitalized  ;
   \ Devuelve una variante de «Un pasaje» (con la primera mayúscula).
 
 : the-pass-way$  ( -- ca len )
@@ -294,7 +294,7 @@ set-current
   \ Devuelve una variante de «el pasaje».
 
 : ^the-pass-way$  ( -- ca len )
-  the-pass-way$ ^uppercase  ;
+  the-pass-way$ xcapitalized  ;
   \ Devuelve una variante de «El pasaje» (con la primera mayúscula).
 
 : pass-ways$  ( -- ca len )
@@ -302,7 +302,7 @@ set-current
   \ Devuelve una variante de «pasajes».
 
 : ^pass-ways$  ( -- ca len )
-  pass-ways$ ^uppercase  ;
+  pass-ways$ xcapitalized  ;
   \ Devuelve una variante de «Pasajes» (con la primera mayúscula).
 
 : surrounds$  ( -- ca len )
@@ -320,7 +320,7 @@ set-current
   \ Devuelve una forma de decir «ves».
 
 : ^can-see$  ( -- ca len )
-  can-see$ ^uppercase  ;
+  can-see$ xcapitalized  ;
   \ Devuelve una forma de decir «ves», con la primera letra mayúscula.
 
 : cannot-see$  ( -- ca len )
@@ -328,7 +328,7 @@ set-current
   \ Devuelve una forma de decir «no ves».
 
 : ^cannot-see$  ( -- ca len )
-  cannot-see$ ^uppercase  ;
+  cannot-see$ xcapitalized  ;
   \ Devuelve una forma de decir «No ves».
 
 : can-glimpse$  ( -- ca len )
@@ -337,7 +337,7 @@ set-current
   s" columbras" s" se columbra" s" puedes columbrar" }s  ;
 
 : ^can-glimpse$  ( -- ca len )
-  can-glimpse$ ^uppercase  ;
+  can-glimpse$ xcapitalized  ;
 
 : in-half-darkness-you-glimpse$  ( -- ca len )
   s" En la" s{ s" semioscuridad," s" penumbra," }s txt+ 50%nullify dup
@@ -365,7 +365,7 @@ set-current
   \ Devuelve una variante de «no tiene nada especial».
 
 : ^is-normal$  ( -- ca len )
-  is-normal$ ^uppercase  ;
+  is-normal$ xcapitalized  ;
   \ Devuelve una variante de «No tiene nada especial»
   \ (con la primera letra en mayúscula).
 
@@ -383,7 +383,7 @@ set-current
   \ Devuelve una variante de «en esa dirección».
 
 : ^in-that-direction$  ( -- ca len )
-  in-that-direction$ ^uppercase  ;
+  in-that-direction$ xcapitalized  ;
   \ Devuelve una variante de «En esa dirección».
 
 : (uninteresting-direction-0)$  ( -- ca len )
@@ -413,7 +413,7 @@ s" de Westmorland" sconstant of-westmorland$
   s" Westmorland" }s  ;
 
 : ^the-village$  ( -- ca len )
-  the-village$ ^uppercase  ;
+  the-village$ xcapitalized  ;
 
 : of-the-village$  ( -- ca len )
   s" de" the-village$ txt+  ;
@@ -443,7 +443,7 @@ s" de Westmorland" sconstant of-westmorland$
   \ Devuelve una variante de «en esa dirección».
 
 : ^that-way$  ( -- ca len )
-  that-way$ ^uppercase  ;
+  that-way$ xcapitalized  ;
   \ Devuelve una variante de «En esa dirección»
   \ (con la primera letra mayúscula).
 
@@ -473,7 +473,7 @@ s" de Westmorland" sconstant of-westmorland$
   \ Devuelve una variante de «estrechos».
 
 : ^narrow(mp)$  ( -- ca len )
-  narrow(mp)$  ^uppercase  ;
+  narrow(mp)$  xcapitalized  ;
   \ Devuelve una variante de «Estrechos» (con la primera mayúscula).
 
 : gets-narrower(f)$  ( -- ca len )
@@ -524,7 +524,7 @@ s" de Westmorland" sconstant of-westmorland$
   s" corriente" txt+ s" de agua" 50%nullify txt+  ;
 
 : ^the-water-current$  ( -- ca len )
-  the-water-current$ ^uppercase  ;
+  the-water-current$ xcapitalized  ;
 
 : comes-from$  ( -- ca len )
   s{ s" viene" s" proviene" s" procede" }s  ;
@@ -548,7 +548,7 @@ s" de Westmorland" sconstant of-westmorland$
 
 ' but|and$ alias and|but$
 : ^but|and$  ( -- ca len )
-  but|and$ ^uppercase  ;
+  but|and$ xcapitalized  ;
 
 ' ^but|and$ alias ^and|but$
 : rocks$  ( -- ca len )
@@ -593,7 +593,7 @@ s" de Westmorland" sconstant of-westmorland$
   }s  ;
 
 : ^finally$  ( -- ca len )
-  finally$ ^uppercase  ;
+  finally$ xcapitalized  ;
 
 : rocky(f)$  ( -- ca len )
   s{ s" rocosa" s" de roca" s" s" 50%nullify s+ }s  ;

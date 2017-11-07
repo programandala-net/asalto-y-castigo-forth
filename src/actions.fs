@@ -3,9 +3,9 @@
 \ This file is part of _Asalto y castigo_
 \ http://programandala.net/es.programa.asalto_y_castigo.forth.html
 
-\ Author: Marcos Cruz (programandala.net), 2011..2016
+\ Author: Marcos Cruz (programandala.net), 2011..2017
 
-\ Last modified 201607262150
+\ Last modified 201711072219
 
 \ Note: The comments of the code are in Spanish.
 
@@ -463,7 +463,7 @@ false [if]
 \ Cerrar y abrir
 
 : first-close-the-door  ( -- )
-  s" cierras" s" primero" rnd2swap txt+ ^uppercase
+  s" cierras" s" primero" rnd2swap txt+ xcapitalized
   door~ full-name txt+ period+ narrate
   door~ be-closed  ;
   \ Informa de que la puerta está abierta
@@ -864,17 +864,17 @@ false [if]
   \ Devuelve una variante de «no hace falta hacerlo otra vez».
 
 : ^no-need-to-do-it-again$  ( -- ca len )
-  no-need-to-do-it-again$ ^uppercase  ;
+  no-need-to-do-it-again$ xcapitalized  ;
   \ Devuelve una variante de «No hace falta hacerlo otra vez».
 
 : log-already-sharpened-0$  ( -- ca len )
-  log-already-sharpened$ ^uppercase period+
+  log-already-sharpened$ xcapitalized period+
   ^no-need-to-do-it-again$ period+ txt+  ;
   \ Devuelve mensaje de que el tronco ya estaba afilado (variante 0).
 
 : log-already-sharpened-1$  ( -- ca len )
   ^no-need-to-do-it-again$ period+ txt+
-  log-already-sharpened$ ^uppercase period+ txt+  ;
+  log-already-sharpened$ xcapitalized period+ txt+  ;
   \ Devuelve mensaje de que el tronco ya estaba afilado (variante 1).
 
 : log-already-sharpened  ( -- )
@@ -1402,7 +1402,7 @@ false [if]
   \ XXX TODO -- elaborar más
 
 : already-warned  ( u -- ca1 len1 )
-  times-warned already-warned$ rnd2swap txt+ period+ ^uppercase  ;
+  times-warned already-warned$ rnd2swap txt+ period+ xcapitalized  ;
   \ Mensaje de que el líder ya te advirtió sobre un objeto,
   \ con indicación al azar del número de veces.
 
@@ -1427,7 +1427,7 @@ false [if]
   \ También cambia el nombre de la piedra.
 
 : gesture-about-the-stone$  ( -- ca len )
-  s" y" 50%nullify s{ s" entonces" s" a continuación" s" seguidamente" }s txt+ ^uppercase
+  s" y" 50%nullify s{ s" entonces" s" a continuación" s" seguidamente" }s txt+ xcapitalized
   s" hace un" txt+
   s" pequeño" 50%nullify txt+ s" gesto" txt+ s" con la mano," 50%nullify txt+
   s" casi imperceptible" 50%nullify txt+
@@ -1506,7 +1506,7 @@ false [if]
   \ El líder dice que puedes ir en paz.
 
 : the-refugees-let-you-go  ( -- )
-  s" todos" 50%nullify s" los refugiados" txt+ ^uppercase
+  s" todos" 50%nullify s" los refugiados" txt+ xcapitalized
   s" se apartan y" txt+ s" te" 50%nullify txt+
   s{  s" permiten" s{ s" el paso" s" pasar" }s txt+
       s" dejan" s" libre" s" el" s{ s" paso" s" camino" }s txt+ rnd2swap txt+
@@ -1526,7 +1526,7 @@ false [if]
 
 : we-are-refugees$  ( -- ca len )
   s" todos" 50%nullify s" nosotros" 50%nullify rnd2swap txt+
-  s" somos refugiados de" txt+ ^uppercase
+  s" somos refugiados de" txt+ xcapitalized
   s{ s" la gran" s" esta terrible" }s txt+ s" guerra." txt+
   s" refugio" location-28~ ms-name!  ;
   \ Mensaje «Somos refugiados».
@@ -1635,7 +1635,7 @@ false [if]
   \ XXX TODO -- inconcluso
 
 : don't-insist  ( -- )
-  times-insisted don't-insist$ rnd2swap txt+ period+ ^uppercase  ;
+  times-insisted don't-insist$ rnd2swap txt+ period+ xcapitalized  ;
   \ XXX TODO -- inconcluso
 
 : the-leader-ignores-you  ( -- )  ;
@@ -1719,7 +1719,7 @@ false [if]
 : ambrosio-is-gone  ( -- )
   s{  suddenly|then$ s" piensas" rnd2swap txt+ s" en el" txt+
       suddenly|then$ s" caes en la cuenta" rnd2swap txt+ s" del" txt+
-  }s ^uppercase s" hecho" s" curioso" rnd2swap txt+ txt+ s" de que" txt+
+  }s xcapitalized s" hecho" s" curioso" rnd2swap txt+ txt+ s" de que" txt+
   s{  s{ s" supiera" s" conociera" }s s{ s" cómo te llamas" s" tu nombre" }s txt+
       s" te llamara por tu nombre"
   }s txt+ s" ..." s+ narrate  ;
@@ -1742,7 +1742,7 @@ false [if]
 : i-am-stuck-in-the-cave$  ( -- ca len )
   s{  s" por desgracia" s" desgraciadamente" s" desafortunadamente"
       s" tristemente" s" lamentablemente"
-  }s 50%nullify s{ s" estoy" s" me encuentro" s" me hallo" }s txt+ ^uppercase
+  }s 50%nullify s{ s" estoy" s" me encuentro" s" me hallo" }s txt+ xcapitalized
   s{ s" atrapado" s" encerrado" }s txt+
   s" en" txt+ s{ s" la" s" esta" }s txt+ s" cueva" txt+
   s{ s" debido a" s" por causa de" s" por influjo de" }s txt+
@@ -1791,7 +1791,7 @@ false [if]
         i-can-not-understand-it$ txt+
       s{ s" en verdad" s" realmente" s" verdaderamente" }s
         i-can-not-understand-it$ txt+
-  }s ^uppercase speak  ;
+  }s xcapitalized speak  ;
 
 : you-already-had-the-key$  ( -- ca len )
   s{

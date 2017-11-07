@@ -3,9 +3,9 @@
 \ This file is part of _Asalto y castigo_
 \ http://programandala.net/es.programa.asalto_y_castigo.forth.html
 
-\ Author: Marcos Cruz (programandala.net), 2011..2016
+\ Author: Marcos Cruz (programandala.net), 2011..2017
 
-\ Last modified 201607221417
+\ Last modified 201711072218
 
 \ Note: The comments of the code are in Spanish.
 
@@ -98,13 +98,13 @@ is cannot-be-seen.error
   \ Devuelve una variante de «es imposible», que formará parte de
   \ mensajes personalizados por cada acción.
 
-: ^is-impossible$  ( -- ca len )  is-impossible$ ^uppercase  ;
+: ^is-impossible$  ( -- ca len )  is-impossible$ xcapitalized  ;
   \ Devuelve una variante de «Es imposible» (con la primera letra en
   \ mayúsculas) que formará parte de mensajes personalizados por cada
   \ acción.
 
 : x-is-impossible$  ( ca1 len1 -- ca2 len2 )
-  dup if    ^uppercase is-impossible$ txt+
+  dup if    xcapitalized is-impossible$ txt+
       else  2drop ^is-impossible$  then  ;
   \ Devuelve una variante de «X es imposible».
 
@@ -147,13 +147,13 @@ is impossible.error
   \ que formará parte de mensajes personalizados por cada acción.
   \ XXX TODO -- quitar las variantes que no sean adecuadas a todos los casos
 
-: ^nonsense$  ( -- ca len )  nonsense$ ^uppercase  ;
+: ^nonsense$  ( -- ca len )  nonsense$ xcapitalized  ;
   \ Devuelve una variante de «No tiene sentido»
   \ (con la primera letra en mayúsculas)
   \ que formará parte de mensajes personalizados por cada acción.
 
 : x-is-nonsense$  ( ca1 len1 -- ca2 len2 )
-  dup if    try$ 2swap txt+ ^uppercase nonsense$ txt+
+  dup if    try$ 2swap txt+ xcapitalized nonsense$ txt+
       else  2drop ^nonsense$  then  ;
   \ Devuelve una variante de «X no tiene sentido».
 
@@ -198,13 +198,13 @@ is nonsense.error
   \ XXX TODO -- quitar las variantes que no sean adecuadas a todos los
   \ casos y unificar
 
-: ^dangerous$  ( -- ca len )  dangerous$ ^uppercase  ;
+: ^dangerous$  ( -- ca len )  dangerous$ xcapitalized  ;
   \ Devuelve una variante de «Es peligroso» (con la primera letra en
   \ mayúsculas) que formará parte de mensajes personalizados por cada
   \ acción.
 
 : x-is-dangerous$  ( ca1 len1 -- ca2 len2 )
-  dup if    try$ 2swap txt+ ^uppercase dangerous$ txt+
+  dup if    try$ 2swap txt+ xcapitalized dangerous$ txt+
       else  2drop ^dangerous$  then  ;
   \ Devuelve una variante de «X es peligroso».
 
@@ -399,7 +399,7 @@ is is-not-hold.error
     impossible-to-do$
     can-not-be-done$
   }s txt+
-  only-by-hand$ txt+ period+ ^uppercase  ;
+  only-by-hand$ txt+ period+ xcapitalized  ;
   \ Devuelve la primera versión del mensaje de `not-by-hand.error`.
 
 : some-tool$  ( -- ca len )
@@ -418,11 +418,11 @@ is is-not-hold.error
       s{ s" será" s" sería" s" es" }s s" menester" txt+
       s{ s" habrá" s" habría" s" hay" }s s" que" txt+
     }s s{ s" usar" s" utilizar" s" emplear" }s txt+
-  }s txt+ some-tool$ txt+ period+ ^uppercase  ;
+  }s txt+ some-tool$ txt+ period+ xcapitalized  ;
   \ Devuelve la segunda versión del mensaje de `not-by-hand.error`.
 
 : not-by-hand$  ( -- ca len )
-  ['] not-by-hand-0$ ['] not-by-hand-1$ 2 choose execute ^uppercase  ;
+  ['] not-by-hand-0$ ['] not-by-hand-1$ 2 choose execute xcapitalized  ;
   \ Devuelve mensaje de `not-by-hand.error`.
 
 :noname  ( -- )  not-by-hand$ action-error  ;

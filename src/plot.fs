@@ -3,9 +3,9 @@
 \ This file is part of _Asalto y castigo_
 \ http://programandala.net/es.programa.asalto_y_castigo.forth.html
 
-\ Author: Marcos Cruz (programandala.net), 2011..2016
+\ Author: Marcos Cruz (programandala.net), 2011..2017
 
-\ Last modified 201607221417
+\ Last modified 201711072219
 
 \ Note: The comments of the code are in Spanish.
 
@@ -57,7 +57,7 @@ set-current
 
 : ambrosio-follows  ( -- )
   my-location ambrosio~ be-there
-  s{ s" tu benefactor" ambrosio~ full-name }s ^uppercase
+  s{ s" tu benefactor" ambrosio~ full-name }s xcapitalized
   s" te sigue, esperanzado." txt+ narrate  ;
   \ Ambrosio nos sigue.
 
@@ -496,7 +496,7 @@ here swap - cell / constant battle-phases
 : the-ambush-begins  ( -- )
   s{  suddenly$ s" ," 50%nullify s+ a-group-of-saxons$ txt+ s" aparece" txt+
       a-group-of-saxons$  s" aparece" txt+ suddenly$ txt+
-  }s ^uppercase s" por el este." txt+
+  }s xcapitalized s" por el este." txt+
   s" Para cuando" txt+
   s{ s" te vuelves" s" intentas volver" }s txt+
   toward-the(m)$ txt+ s" norte," txt+
@@ -533,7 +533,7 @@ here swap - cell / constant battle-phases
 
 : officers-speach  ( -- )
   sire,$ 50%nullify  dup taking-prisioner$
-  rot 0= ?? ^uppercase txt+
+  rot 0= ?? xcapitalized txt+
   s" a un general britano" txt+ they-win$ txt+  speak  ;
   \ Palabras de los oficiales.
 
@@ -720,7 +720,7 @@ here swap - cell / constant battle-phases
   \ Devuelve una variante de «Tus oficiales detienen el saqueo».
 
 : ^officers-forbid-to-steal$  ( -- ca len )
-  officers-forbid-to-steal$ ^uppercase  ;
+  officers-forbid-to-steal$ xcapitalized  ;
   \ Devuelve una variante de «Tus oficiales detienen el saqueo» (con
   \ la primera mayúscula).
 

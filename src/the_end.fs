@@ -3,9 +3,9 @@
 \ This file is part of _Asalto y castigo_
 \ http://programandala.net/es.programa.asalto_y_castigo.forth.html
 
-\ Author: Marcos Cruz (programandala.net), 2011..2016
+\ Author: Marcos Cruz (programandala.net), 2011..2017
 
-\ Last modified 201607221417
+\ Last modified 201711072221
 
 \ Note: The comments of the code are in Spanish.
 
@@ -182,7 +182,7 @@ false [if]
   s{  s" sonriendo" s{ s" ampliamente" s" despectivamente" s" cruelmente" }s txt+
       s" con una" s{ s" amplia" s" cruel" s" despectiva" }s txt+ s" sonrisa" txt+
   }s txt+ comma+
-  s{  s" exclama" s" dice" }s txt+ colon+ ^uppercase narrate
+  s{  s" exclama" s" dice" }s txt+ colon+ xcapitalized narrate
   narration-break enemy-speech  ;
   \ Final del juego con fracaso.
 
