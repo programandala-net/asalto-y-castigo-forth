@@ -1,5 +1,5 @@
 = Tareas pendientes de Asalto y castigo
-:revdate: 2017-08-16
+:revdate: 2017-11-07
 
 // Programación {{{1
 == Programación
@@ -698,6 +698,10 @@ Update notation _a_ to _entity_.
 .2017-08-16:
 
 Move <data_advanced_interface.fs> to Talanto.
+
+.2017-11-07:
+
+Update source code style.
 
 // Notas {{{1
 == Notas
