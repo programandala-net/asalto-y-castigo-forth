@@ -29,8 +29,7 @@ require galope/replaced.fs                \ `replaced`
 require galope/stringer.fs                \ Circular string buffer
 require galope/txt-plus.fs                \ `txt+`
 require galope/x-capitalized.fs           \ `xcapitalized`
-require galope/xcase.fs                   \ `xcase`
-require galope/xcase_es.fs                \ Spanish UTF-8 case table
+require galope/x-conversions.es.fs        \ `xconversions` Spanish table
 
 \ Forth Foundation Library
 \ http://irdvo.github.io/ffl/
