@@ -7,7 +7,7 @@
 \
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 \
-\ Last modified 201607202124
+\ Last modified 201711081926
 
 \ ==============================================================
 \ Credits
@@ -33,7 +33,7 @@ require galope/randomize.fs  \ `randomize`
 
 require galope/stringer.fs  \ Circular string buffer
 
-2048 create-stringer
+2048 allocate-stringer
 
 require galope/s-s-plus.fs  \ `ss+`
 
