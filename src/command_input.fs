@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2017
 
-\ Last modified 201711071643
+\ Last modified 201711091725
 \ See change log at the end of the file
 
 \ ==============================================================
@@ -20,7 +20,7 @@ require ../lib/stringstack.fs
 
 require galope/slash-csv.fs    \ `/csv`
 require galope/s-variable.fs   \ `svariable`
-require galope/xlowercase.fs   \ `xlowercase` for UTF-8
+require galope/x-lowercase.fs  \ `xlowercase`
 
 set-current
 
@@ -99,5 +99,7 @@ svariable command-prompt ( -- a )
 
 \ 2017-11-07: Update name of Galope module.  Translate comments into
 \ English and improve documentation.
+\
+\ 2017-11-09: Update requirements to Galope 0.120.0.
 
 \ vim:filetype=gforth:fileencoding=utf-8
