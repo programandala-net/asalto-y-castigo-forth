@@ -6,6 +6,7 @@
 \ Author: Marcos Cruz (programandala.net), 2011..2017
 
 \ Last modified 201711072219
+\ See change log at the end of the file
 
 \ Note: Most comments of the code are in Spanish.
 
@@ -87,7 +88,7 @@ defer default-description  ( -- )
   \ Describe un ente de otro tipo.
 
 : describe-direction  ( a -- )
-  to sight  my-location describe-other  ;
+  to sight  my-holder describe-other  ;
   \ Describe un ente dirección _a_.
 
 : description-type  ( a -- u )
@@ -118,5 +119,11 @@ defer default-description  ( -- )
 : uninteresting-direction  ( -- )
   uninteresting-direction$ paragraph  ;
   \ Muestra la descripción de la direcciones que no tienen nada especial.
+
+\ ==============================================================
+\ Change log
+
+\ 2017-11-10: Update to Talanto 0.62.0: replace field notation
+\ "location" with "holder".
 
 \ vim:filetype=gforth:fileencoding=utf-8

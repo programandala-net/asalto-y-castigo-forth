@@ -5,7 +5,8 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2017
 
-\ Last modified 201711072219
+\ Last modified 201711102240
+\ See change log at the end of the file
 
 \ Note: The comments of the code are in Spanish.
 
@@ -56,7 +57,7 @@ set-current
   \ diferente a que esté accesible.
 
 : ambrosio-follows  ( -- )
-  my-location ambrosio~ be-there
+  my-holder ambrosio~ be-there
   s{ s" tu benefactor" ambrosio~ full-name }s xcapitalized
   s" te sigue, esperanzado." txt+ narrate  ;
   \ Ambrosio nos sigue.
@@ -118,7 +119,7 @@ set-current
   \ Tareas previas a abandonar un escenario.
 
 : leave-my-location  ( -- )
-  my-location ?dup if  leave-location  then  ;
+  my-holder ?dup if  leave-location  then  ;
   \ Tareas previas a abandonar el escenario actual.
 
 : actually-enter-location  ( a -- )
@@ -198,7 +199,7 @@ set-current
   \ Perseguido por los sajones.
 
 : pursue-location?  ( -- f )
-  my-location location-12~ <  ;
+  my-holder location-12~ <  ;
   \ ¿En un escenario en que los sajones pueden perseguir al protagonista?
 
 : you-think-you're-safe$  ( -- ca len )
@@ -457,7 +458,7 @@ here swap - cell / constant battle-phases
   \ Ejecuta la fase en curso del combate.
 
 : battle-location?  ( -- f )
-  my-location location-10~ <
+  my-holder location-10~ <
   pass-still-open? 0=  and  ;
   \ ¿En el escenario de la batalla?
 
@@ -691,7 +692,7 @@ here swap - cell / constant battle-phases
 \ Varios
 
 : lock-found  ( -- )
-  door~ location lock~ be-there
+  door~ holder lock~ be-there
   lock~ familiar++  ;
   \ ;  ' (lock-found) is lock-found  \ XXX OLD
   \ Encontrar el candado (al mirar la puerta o al intentar abrirla).
@@ -808,6 +809,12 @@ here swap - cell / constant battle-phases
   s{ s" el resto de tus" all-your$ }s txt+ soldiers$ txt+ comma+ 50%nullify s+
   will-follow-you-forever  ;
   \ Describe a tus soldados durante el regreso a casa.
+
+\ ==============================================================
+\ Change log
+
+\ 2017-11-10: Update to Talanto 0.62.0: replace field notation
+\ "location" with "holder".
 
 \ vim:filetype=gforth:fileencoding=utf-8
 

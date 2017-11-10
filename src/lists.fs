@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
-\ Last modified 201708141855
+\ Last modified 201711102239
 \ See change log at the end of the file
 
 \ ==============================================================
@@ -64,7 +64,7 @@ variable #elements
 
 : /list++ ( u entity1 entity2 -- u | u+1 )
   dup must-be-listed?
-  if location = abs + else 2drop then ;
+  if holder = abs + else 2drop then ;
   \ If _entity1_ can be listed and it's the location of _entity2_,
   \ increment counter _u_.
 
@@ -108,7 +108,7 @@ variable #elements
   \ is _entity_.
 
 : .present ( -- )
-  my-location content-list dup
+  my-holder content-list dup
   if   s" Ves" s" Puedes ver" 2 2choose 2swap txt+ narrate
   else 2drop then ;
   \ List the present entities.
@@ -118,6 +118,9 @@ variable #elements
 
 \ 2017-08-14: Translate comments from Spanish to English. Update
 \ source style and stack notation.
+\
+\ 2017-11-10: Update to Talanto 0.62.0: replace field notation
+\ "location" with "holder".
 
 \ vim:filetype=gforth:fileencoding=utf-8
 

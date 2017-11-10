@@ -6,6 +6,7 @@
 \ Author: Marcos Cruz (programandala.net), 2011..2017
 
 \ Last modified 201711072219
+\ See change log at the end of the file
 
 \ Note: The comments of the code are in Spanish.
 
@@ -131,7 +132,7 @@ officers~ :init  ( -- )
   then  txt+ period+ narrate  ;
 
 : describe-refugees  ( -- )
-  my-location case
+  my-holder case
   location-28~ of  describe-present-refugees  endof
   location-29~ of  s" Todos los refugiados quedaron atrás."
                    paragraph  endof
@@ -542,7 +543,7 @@ waterfall~ :init  ( -- )
 
 : describe-location-01  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" No ha quedado nada en pie, ni piedra sobre piedra."
     s{ s" El entorno es desolador." s" Todo alrededor es desolación." }s
     rnd2swap txt+
@@ -601,7 +602,7 @@ location-01~ :init  ( -- )
 
 : describe-location-02  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" Sobre" s" la cima de" 50%nullify txt+
     s" la colina, casi" txt+ s{ s" sobre" s" por encima de" }s txt+
     s" la" txt+
@@ -653,7 +654,7 @@ location-02~ :init  ( -- )
 
 : describe-location-03  ( -- )
   sight case
-  my-location of
+  my-holder of
     ^the-path$ s" avanza por el valle," txt+
     s" desde la parte alta, al este," txt+
     s" a una zona" txt+ very-or-null$ txt+ s" boscosa, al oeste." txt+
@@ -679,7 +680,7 @@ location-03~ :init  ( -- )
 
 : describe-location-04  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" Una senda parte al oeste, a la sierra por el paso del Perro,"
     s" y otra hacia el norte, por un frondoso bosque que la rodea." txt+
     paragraph
@@ -706,7 +707,7 @@ location-04~ :init  ( -- )
 
 : describe-location-05  ( -- )
   sight case
-  my-location of
+  my-holder of
     ^toward-the(m)$ s" oeste se extiende" txt+
     s{ s" frondoso" s" exhuberante" }s txt+ \ XXX TODO -- independizar
     s" el bosque que rodea la sierra." txt+
@@ -736,7 +737,7 @@ location-05~ :init  ( -- )
 
 : describe-location-06  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" Jirones de niebla se enzarcen en frondosas ramas y arbustos."
     ^the-path$ txt+ s" serpentea entre raíces, de un luminoso este" txt+
     toward-the(m)$ txt+ s" oeste." txt+
@@ -767,7 +768,7 @@ location-06~ :init  ( -- )
 
 : describe-location-07  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" Abruptamente, el bosque desaparece y deja paso a un estrecho camino entre altas rocas."
     s" El" txt+ s{ s" inquietante" s" sobrecogedor" }s txt+
     s" desfiladero" txt+ s{ s" tuerce" s" gira" }s txt+
@@ -797,7 +798,7 @@ location-07~ :init  ( -- )
 
 : describe-location-08  ( -- )
   sight case
-  my-location of
+  my-holder of
     ^the-pass-way$ s" entre el desfiladero sigue de norte a este" txt+
     s" junto a una" txt+
     s{  s" pared" rocky(f)$ txt+ s" rocosa pared" }s txt+ period+
@@ -845,7 +846,7 @@ location-08~ :init  ( -- )
 
 : describe-location-09  ( -- )
   sight case
-  my-location of
+  my-holder of
     ^the-path$ goes-down$ txt+ s" hacia la agreste sierra, al oeste," txt+
     s" desde los" txt+ s" verdes" s" valles" rnd2swap txt+ txt+ s" al este." txt+
     ^but$ txt+ s" un" txt+ s{ s" gran" s" enorme" }s 50%nullify txt+ s" derrumbe" txt+
@@ -873,7 +874,7 @@ location-09~ :init  ( -- )
 
 : describe-location-10  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" El estrecho paso se adentra hacia el oeste, desde la boca, al norte."
     paragraph
     endof
@@ -889,7 +890,7 @@ location-09~ :init  ( -- )
 : after-describing-location-10  ( -- )
   s" entrada a la cueva" cave-entrance~ fs-name!
   cave-entrance~ familiar++
-  location-08~ my-previous-location = if  \ Venimos del exterior
+  location-08~ my-previous-holder = if  \ Venimos del exterior
     location-10~ visits
     if  ^again$  else  ^finally$ s" ya" 50%nullify txt+  then
     \ XXX TODO -- ampliar con otros textos alternativos
@@ -909,7 +910,7 @@ location-10~ :init  ( -- )
 
 : describe-location-11  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" Una" s{
       s{ s" gran" s" amplia" }s s" estancia" txt+
       s" estancia" s" muy" 50%nullify txt+ s{ s" grande" s" amplia" }s txt+
@@ -956,7 +957,7 @@ location-11~ :init  ( -- )
 
 : describe-location-12  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" Una" s{ s" gran" s" amplia" }s txt+
     s" estancia se abre hacia el oeste," txt+
     s" y se estrecha hasta" txt+ s{ s" morir" s" terminar" }s txt+
@@ -988,7 +989,7 @@ location-12~ :init  ( -- )
 
 : describe-location-13  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" La sala se abre en"
     s{ s" semioscuridad" s" penumbra" }s txt+
     s" a un puente cubierto de podredumbre" txt+
@@ -1017,7 +1018,7 @@ location-13~ :init  ( -- )
 
 : describe-location-14  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" La iridiscente cueva gira de este a sur."
     paragraph
     endof
@@ -1039,7 +1040,7 @@ location-14~ :init  ( -- )
 
 : describe-location-15  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" La gruta" goes-down$ txt+ s" de norte a sur" txt+
     s" sobre un lecho arenoso." txt+
     s" Al este, un agujero del que llega" txt+
@@ -1073,7 +1074,7 @@ location-15~ :init  ( -- )
 
 : describe-location-16  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" Como un acueducto, el agua"
     goes-down$ txt+ s" con gran fuerza de norte a este," txt+
     s" aunque la salida practicable es la del oeste." txt+
@@ -1114,7 +1115,7 @@ location-16~ :init  ( -- )
 
 : describe-location-17  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" Muchas estalactitas se agrupan encima de tu cabeza,"
     s" y se abren cual arco de entrada hacia el este y sur." txt+
     paragraph
@@ -1141,7 +1142,7 @@ location-17~ :init  ( -- )
 
 : describe-location-18  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" Un arco de piedra se extiende,"
     s{ s" cual" s" como si fuera un" s" a manera de" }s txt+
     s" puente" txt+
@@ -1176,7 +1177,7 @@ location-18~ :init  ( -- )
 
 : describe-location-19  ( -- )
   sight case
-  my-location of
+  my-holder of
     ^the-water-current$ comma+
     s" que discurre" 50%nullify txt+
     s" de norte a este," txt+ (it)-blocks$ txt+
@@ -1211,7 +1212,7 @@ location-19~ :init  ( -- )
 
 : describe-location-20  ( -- )
   sight case
-  my-location of
+  my-holder of
     north~ south~ east~ 3 exits-cave-description paragraph
     endof
   north~ of
@@ -1244,7 +1245,7 @@ location-20~ :init  ( -- )
 
 : describe-location-21  ( -- )
   sight case
-  my-location of
+  my-holder of
     east~ west~ south~ 3 exits-cave-description paragraph
     endof
   south~ of
@@ -1268,7 +1269,7 @@ location-21~ :init  ( -- )
 
 : describe-location-22  ( -- )
   sight case
-  my-location of
+  my-holder of
     south~ east~ west~ 3 exits-cave-description paragraph
     endof
   south~ of
@@ -1292,7 +1293,7 @@ location-22~ :init  ( -- )
 
 : describe-location-23  ( -- )
   sight case
-  my-location of
+  my-holder of
     west~ south~ 2 exits-cave-description paragraph
     endof
   south~ of
@@ -1313,7 +1314,7 @@ location-23~ :init  ( -- )
 
 : describe-location-24  ( -- )
   sight case
-  my-location of
+  my-holder of
     east~ north~ 2 exits-cave-description paragraph
     endof
   north~ of
@@ -1334,7 +1335,7 @@ location-24~ :init  ( -- )
 
 : describe-location-25  ( -- )
   sight case
-  my-location of
+  my-holder of
     north~ south~ east~ west~ 4 exits-cave-description paragraph
     endof
   east~ of
@@ -1355,7 +1356,7 @@ location-25~ :init  ( -- )
 
 : describe-location-26  ( -- )
   sight case
-  my-location of
+  my-holder of
     north~ east~ west~ 3 exits-cave-description paragraph
     endof
   north~ of
@@ -1382,7 +1383,7 @@ location-26~ :init  ( -- )
 
 : describe-location-27  ( -- )
   sight case
-  my-location of
+  my-holder of
     north~ east~ west~ 3 exits-cave-description paragraph
     endof
   north~ of
@@ -1406,7 +1407,7 @@ location-27~ :init  ( -- )
 
 : describe-location-28  ( -- )
   sight case
-  my-location of
+  my-holder of
     location-28~ ^full-name s" se extiende de norte a este." txt+
     leader~ conversations?
     if  s" Hace de albergue para los refugiados."
@@ -1460,7 +1461,7 @@ location-28~ :init  ( -- )
 
 : describe-location-29  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" Cual escalera de caracol gigante,"
     goes-down-into-the-deep$ comma+ txt+
     s" dejando a los refugiados al oeste." txt+
@@ -1494,7 +1495,7 @@ location-29~ :init  ( -- )
 
 : describe-location-30  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" Se eleva en la penumbra."
     s" La" txt+ cave$ txt+ gets-narrower(f)$ txt+
     s" ahora como para una sola persona, hacia el este." txt+
@@ -1520,7 +1521,7 @@ location-30~ :init  ( -- )
 
 : describe-location-31  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" En este pasaje grandes rocas se encuentran entre las columnas de un arco de medio punto."
     paragraph
     endof
@@ -1559,7 +1560,7 @@ location-31~ :init  ( -- )
 
 : describe-location-32  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" El camino ahora no excede de dos palmos de cornisa sobre un abismo insondable."
     s" El soporte de roca gira en forma de «U» de oeste a sur." txt+
     paragraph
@@ -1587,7 +1588,7 @@ location-32~ :init  ( -- )
 
 : describe-location-33  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" El paso se va haciendo menos estrecho a medida que se avanza hacia el sur, para entonces comenzar hacia el este."
     paragraph
     endof
@@ -1618,7 +1619,7 @@ location-33~ :init  ( -- )
 
 : describe-location-34  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" El paso" gets-wider$ txt+ s" de oeste a norte," txt+
     s" y guijarros mojados y mohosos tachonan el suelo de roca." txt+
     paragraph
@@ -1647,7 +1648,7 @@ location-34~ :init  ( -- )
 
 : describe-location-35  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" Un puente" s{ s" se tiende" s" cruza" }s txt+ s" de norte a sur sobre el curso del agua." txt+
     s" Unas resbaladizas escaleras" txt+ (they)-go-down$ txt+ s" hacia el oeste." txt+
     paragraph
@@ -1679,7 +1680,7 @@ location-35~ :init  ( -- )
 
 : describe-location-36  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" Una" s{ s" ruidosa" s" estruendosa" s" ensordecedora" }s txt+
     s" corriente" txt+ goes-down$ txt+
     s{ s" con" s" siguiendo" }s txt+ s" el" txt+ pass-way$ txt+
@@ -1708,7 +1709,7 @@ location-36~ :init  ( -- )
 
 : describe-location-37  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" El agua" goes-down$ txt+ s" por un canal" 50%nullify txt+
     from-the(m)$ txt+ s" oeste con" txt+
     s{ s" renovadas fuerzas" s" renovada energía" s" renovado ímpetu" }s txt+ comma+
@@ -1742,7 +1743,7 @@ location-37~ :init  ( -- )
 
 : describe-location-38  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" Cae el agua hacia el este,"
     s{ s" descendiendo" s" bajando" }s txt+
     s{ s" con mucha fuerza" s" con gran fuerza" s" fuertemente" }s txt+
@@ -1777,7 +1778,7 @@ location-38~ :init  ( -- )
 
 : describe-location-39  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" Musgoso y rocoso, con la cortina de agua"
     s{ s" tras de ti," s" a tu espalda," }s txt+
     s{ s" el nivel" s" la altura" }s txt+ s" del agua ha" txt+
@@ -1805,7 +1806,7 @@ location-39~ :init  ( -- )
 
 : describe-location-40  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" Una gran explanada enlosetada contempla un bello panorama de estalactitas."
     s" Unos casi imperceptibles escalones conducen al este." txt+
     paragraph
@@ -1845,7 +1846,7 @@ location-40~ :init  ( -- )
 
 : describe-location-41  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" El ídolo parece un centinela siniestro de una gran roca que se encuentra al sur."
     s" Se puede" txt+ to-go-back$ txt+ toward$ txt+ s" la explanada hacia el oeste." txt+
     paragraph
@@ -1873,7 +1874,7 @@ location-41~ :init  ( -- )
 
 : describe-location-42  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" Como un pasillo que corteja el canal de agua, a su lado, baja de norte a sur."
     paragraph
     endof
@@ -1902,7 +1903,7 @@ location-42~ :init  ( -- )
 
 : describe-location-43  ( -- )
   sight case
-  my-location of
+  my-holder of
     ^the-pass-way$ s" sigue de norte a sur." txt+
     paragraph
     endof
@@ -1936,7 +1937,7 @@ location-43~ :init  ( -- )
 
 : describe-location-44  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" Unas escaleras" s{ s" dan" s" permiten el" }s txt+ s{ s" paso" s" acceso" }s txt+
     s" a un" txt+ beautiful(m)$ txt+ s" lago interior, hacia el oeste." txt+
     s" Al norte, un oscuro y"
@@ -1967,7 +1968,7 @@ location-44~ :init  ( -- )
 
 : describe-location-45  ( -- )
   sight case
-  my-location of
+  my-holder of
     ^narrow(mp)$ pass-ways$ txt+
     s" permiten ir al oeste, al este y al sur." txt+
     paragraph
@@ -2003,7 +2004,7 @@ location-45~ :init  ( -- )
 
 : describe-location-46  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" Un catre, algunas velas y una mesa es todo lo que"
     s{ s" tiene" s" posee" }s s" Ambrosio" rnd2swap txt+ txt+
     period+  paragraph
@@ -2026,7 +2027,7 @@ location-46~ :init  ( -- )
 
 : describe-location-47  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" Por el oeste,"
     door~ full-name txt+ door~ «open»|«closed» txt+ comma+
     door~ is-open? if  \ La puerta está abierta
@@ -2073,7 +2074,7 @@ location-47~ :init  ( -- )
 
 : describe-location-48  ( -- )
   sight case
-  my-location of
+  my-holder of
     s{ s" Apenas si" s" Casi no" }s
     s{ s" se puede" s" es posible" }s txt+
     s" reconocer la entrada de la cueva, al este." txt+
@@ -2112,7 +2113,7 @@ location-48~ :init  ( -- )
 
 : describe-location-49  ( -- )
   sight case
-  my-location of
+  my-holder of
     ^the-path$ s" recorre" txt+ s" toda" 50%nullify txt+
     s" esta" txt+ s{ s" parte" s" zona" }s txt+
     s" del bosque de este a oeste." txt+
@@ -2138,7 +2139,7 @@ location-49~ :init  ( -- )
 
 : describe-location-50  ( -- )
   sight case
-  my-location of
+  my-holder of
     s" El camino norte" s{ s" que sale" s" que parte" s" procedente" }s txt+
     s" de Westmorland se" s{ s" interna" s" adentra" }s txt+ s" en el bosque," txt+
     s" aunque en tu estado no puedes ir." txt+
@@ -2163,7 +2164,7 @@ location-50~ :init  ( -- )
 
 : describe-location-51  ( -- )
   sight case
-  my-location of
+  my-holder of
     ^the-village$ s" bulle de actividad con el mercado en el centro de la plaza," txt+
     s" donde se encuentra el castillo." txt+
     paragraph
@@ -2362,6 +2363,12 @@ in~ :init  ( -- )
   s" adentro" self~ name!
   self~ have-no-article
   in-exit> self~ ~direction !  ;
+
+\ ==============================================================
+\ Change log
+
+\ 2017-11-10: Update to Talanto 0.62.0: replace field notation
+\ "location" with "holder".
 
 \ vim:filetype=gforth:fileencoding=utf-8
 

@@ -5,7 +5,8 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2017
 
-\ Last modified 201711072219
+\ Last modified 201711102248
+\ See change log at the end of the file
 
 \ Note: The comments of the code are in Spanish.
 
@@ -117,7 +118,7 @@ defer do-and  ( -- )
   \ Mira un ente.
 
 : do-look-by-default  ( -- a )
-  main-complement my-location by-default  ;
+  main-complement my-holder by-default  ;
   \ Devuelve qué mirar.  Si falta el complemento principal, usar el
   \ escenario.
 
@@ -239,7 +240,7 @@ false [if]
 :noname  ( -- )
   out-str str-clear
   #listed off
-  my-location dup free-exits #free-exits !
+  my-holder dup free-exits #free-exits !
   last-exit> 1+ first-exit> do
     [debug-do-exits] [??] ~~
     dup i + @
@@ -273,7 +274,7 @@ false [if]
 : (list-exits)  ( -- )
   out-str str-clear
   #listed off
-  my-location free-exits
+  my-holder free-exits
   dup >r shuffle r>  dup #free-exits !
   0 ?do  exit>list  loop  .exits  ;
   \ Crea la lista de salidas y la imprime
@@ -283,7 +284,7 @@ false [if]
 :noname  ( -- )
   ?no-tool-complement
   main-complement ?dup if
-    dup my-location <> swap direction 0= and ?? nonsense.error
+    dup my-holder <> swap direction 0= and ?? nonsense.error
   then  describe-exits
   ; is do-exits
   \ Lista las salidas posibles de la localización del protagonista.
@@ -1213,7 +1214,7 @@ false [if]
   location-08~ am-i-there?  \ ¿En el desfiladero?
   if  s" [Escalar en el desfiladero]" narrate exit
   then
-  my-location is-indoor-location?
+  my-holder is-indoor-location?
   if  s" [Escalar en un interior]" narrate exit
   then
   nothing-to-climb  ;
@@ -1844,7 +1845,7 @@ false [if]
   \ XXX TODO -- hacer que la llave se pueda transportar
 
 : conversation-2-with-ambrosio  ( -- )
-  location-45~ 1- location-47~ 1+ my-location within
+  location-45~ 1- location-47~ 1+ my-holder within
   ?? (conversation-2-with-ambrosio)  ;
   \ Tercera conversación con Ambrosio, si se dan las condiciones.
   \ XXX TODO -- simplificar la condición
@@ -2072,8 +2073,8 @@ immediate
   #>entity r@ ~north-exit !
   r@ ~familiar !
   r@ ~visits !
-  #>entity r@ ~previous-location !
-  #>entity r@ ~location !
+  #>entity r@ ~previous-holder !
+  #>entity r@ ~holder !
   r@ ~owner !
   r@ ~bitfields /bitfields 1- 0 do  tuck i + c!  -1 +loop drop
   r@ ~times-open !
@@ -2146,8 +2147,8 @@ restore-wordlists
   r@ times-open n>file
   r@ ~bitfields /bitfields bounds do  i c@ n>file  loop
   r@ owner n>file
-  r@ location entity>file
-  r@ previous-location entity>file
+  r@ holder entity>file
+  r@ previous-holder entity>file
   r@ visits n>file
   r@ familiar n>file
   r@ north-exit entity>file
@@ -2227,7 +2228,7 @@ restore-wordlists
 
 : continue-the-loaded-game  ( -- )
   scene-break new-page
-  my-location describe-location  ;
+  my-holder describe-location  ;
   \ Continúa el juego en el punto que se acaba de restaurar.
 
 : load-the-game  ( ca len -- )
@@ -2275,11 +2276,16 @@ restore-wordlists
 \ Acciones de configuración
 
 : recolor  ( -- )
-  init-colors  new-page  my-location describe  ;
+  init-colors  new-page  my-holder describe  ;
   \ XXX TODO rename
 
 defer finish  ( -- )
   \ XXX TODO rename
 
-\ vim:filetype=gforth:fileencoding=utf-8
+\ ==============================================================
+\ Change log
 
+\ 2017-11-10: Update to Talanto 0.62.0: replace field notation
+\ "location" with "holder".
+
+\ vim:filetype=gforth:fileencoding=utf-8

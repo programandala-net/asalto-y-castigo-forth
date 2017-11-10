@@ -7,7 +7,7 @@
 \
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 \
-\ Last modified 201711081926
+\ Last modified 201711102251
 
 \ ==============================================================
 \ Credits
@@ -144,8 +144,9 @@ forth-wordlist set-current
 
 : run  ( -- )  init-session session farewell  ;
 
-\ run  \ XXX TMP
-\ cr .( Escribe RUN para jugar) cr  \ XXX TMP
+cr .( Escribe RUN para jugar) cr  \ XXX TMP
+
+run  \ XXX TMP
 
 \ ==============================================================
 \ Debug

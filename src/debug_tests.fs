@@ -6,6 +6,7 @@
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 
 \ Last modified 201607171847
+\ See change log at the end of the file
 
 \ Note: The comments of the code are in Spanish.
 
@@ -52,7 +53,7 @@
 : test-location-description  ( a -- )
   \ Comprueba todas las descripciones de un ente escenario.
   cr ." = Descripción de escenario =======" cr
-  dup my-location!
+  dup my-holder!
   describe-location check-stack
   cr ." == Mirar al norte:" cr
   north~ describe-direction check-stack
@@ -122,6 +123,12 @@
   bla$ s& bla$ s& bla$ s& bla$ s& bla$ s& bla$ s& bla$ s& bla$ s&
   bla$ s& bla$ s& bla$ s& bla$ s& bla$ s& bla$ s& bla$ s& bla$ s&
   narrate  ;
+
+\ ==============================================================
+\ Change log
+
+\ 2017-11-10: Update to Talanto 0.62.0: replace field notation
+\ "location" with "holder".
 
 \ vim:filetype=gforth:fileencoding=utf-8
 

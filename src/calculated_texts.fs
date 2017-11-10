@@ -5,7 +5,8 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2017
 
-\ Last modified 201711072219
+\ Last modified 201711102248
+\ See change log at the end of the file
 
 \ Note: The comments of the code are in Spanish.
 
@@ -156,7 +157,7 @@ set-current
 \ Elementos básicos usados en las descripciones
 
 : this-narrow-cave-pass$  ( -- ca len )
-  my-location dup is-known? if    not-distant-article
+  my-holder dup is-known? if    not-distant-article
                             else  undefined-article
                             then  narrow-cave-pass$ txt+  ;
   \ Devuelve una variante de «estrecho tramo de cueva», con el
@@ -541,5 +542,11 @@ create 'cave-descriptions
 
 : a-high-narrow-pass-way$  ( -- ca len )
   s" un" narrow(m)$ txt+ pass-way$ txt+ s" elevado" txt+  ;
+
+\ ==============================================================
+\ Change log
+
+\ 2017-11-10: Update to Talanto 0.62.0: replace field notation
+\ "location" with "holder".
 
 \ vim:filetype=gforth:fileencoding=utf-8

@@ -6,6 +6,7 @@
 \ Author: Marcos Cruz (programandala.net), 2011..2017
 
 \ Last modified 201707071927
+\ See change log at the end of the file
 
 \ Note: Most comments of the code are in Spanish.
 
@@ -82,7 +83,7 @@ require talanto/last-complements.es.fs
   \ el protagonista aún no conoce a Ambrosio.
 
 : unambiguous-cave  ( -- a | 0 )
-  cave~ my-location location-10~ location-47~ between and ?dup ?exit
+  cave~ my-holder location-10~ location-47~ between and ?dup ?exit
   cave-entrance~ dup is-accessible? and ?dup ?exit
   0  ;
   \ Devuelve el ente _a_ adecuado a la palabra «cueva»
@@ -1371,5 +1372,11 @@ player-wordlist dup >order set-current
   \ XXX TMP -- Para usar durante el desarrollo.
 
 restore-wordlists
+
+\ ==============================================================
+\ Change log
+
+\ 2017-11-10: Update to Talanto 0.62.0: replace field notation
+\ "location" with "holder".
 
 \ vim:filetype=gforth:fileencoding=utf-8
