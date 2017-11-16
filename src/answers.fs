@@ -17,7 +17,8 @@ get-current forth-wordlist set-current
 \ http://programandala.net/en.program.galope.html
 
 require galope/fifty-percent-nullify.fs   \ `50%nullify`
-require galope/plus-plus.fs               \ `++`
+require galope/one-minus-store.fs         \ `1-!`
+require galope/one-plus-store.fs          \ `1+!`
 require galope/question-execute.fs        \ `?execute`
 require galope/question-question.fs       \ `??`
 require galope/s-curly-bracket.fs         \ `s{`
@@ -102,14 +103,14 @@ variable #answer
   #answer @ 0> ?? yes-but-no.error  ;
   \ Provoca error si antes había habido síes.
 
-: answer-no  ( -- )  error-if-previous-yes  #answer --  ;
+: answer-no  ( -- )  error-if-previous-yes  #answer 1-!  ;
   \ Anota una respuesta negativa.
 
 : error-if-previous-not  ( -- )
   #answer @ 0< ?? no-but-yes.error  ;
   \ Provoca error si antes había habido noes.
 
-: answer-yes  ( -- )  error-if-previous-not  #answer ++  ;
+: answer-yes  ( -- )  error-if-previous-not  #answer 1+!  ;
   \ Anota una respuesta afirmativa.
 
 wordlist  dup constant answer-wordlist  set-current
@@ -158,5 +159,11 @@ restore-wordlists
 : no?  ( xt -- f )  answer 0<  ;
   \ ¿Es negativa la respuesta a una pregunta binaria cuyo texto
   \ es imprimido por _xt_?
+
+\ ==============================================================
+\ Change log
+
+\ 2017-11-16: Update to Galope 0.138.1: replace `++` with `1+!`, and
+\ `--` with `1-!`.
 
 \ vim:filetype=gforth:fileencoding=utf-8

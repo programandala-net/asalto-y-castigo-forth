@@ -7,7 +7,7 @@
 \
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 \
-\ Last modified 201711102251
+\ Last modified 201711160140
 
 \ ==============================================================
 \ Credits
@@ -49,7 +49,7 @@ require galope/tilde-tilde.fs    \ improved `~~`
 
 require talanto/wordlists.fs
 
-$6C constant parser-id
+$1C5C constant parser-id
   \ Identifier of the parser that will be used from Talanto.
 
 include version.fs
@@ -78,7 +78,7 @@ s" calculated_texts.fs" including
 s" lists.fs" including
 require talanto/errors.fs
 require talanto/error_conditions.fs
-require talanto/parser.6c.fs
+require talanto/parser.1c5c.fs
 require talanto/last-complements.es.fs
 s" language_errors.fs" including
 s" config.fs" including
@@ -163,4 +163,11 @@ run  \ XXX TMP
 \ i0 cr  \ XXX TMP -- for debugging
 
 \ s" debug_tests.fs" including
+
+\ ==============================================================
+\ Change log
+
+\ 2017-11-16: Update parser's name and id after changes in Talanto.
+
+\ vim:filetype=gforth
 

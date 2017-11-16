@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2017
 
-\ Last modified 201711102248
+\ Last modified 201711160145
 \ See change log at the end of the file
 
 \ Note: The comments of the code are in Spanish.
@@ -21,8 +21,9 @@ require galope/any-question.fs            \ `any?`
 require galope/bracket-false.fs           \ `[false]`
 require galope/choose.fs                  \ `choose`
 require galope/fifty-percent-nullify.fs   \ `50%nullify`
-require galope/plus-plus.fs               \ `++`
+require galope/one-plus-store.fs          \ `1+!`
 require galope/question-keep.fs           \ `?keep`
+require galope/question-one-plus-store.fs \ `?1+!`
 require galope/question-question.fs       \ `??`
 require galope/s-curly-bracket.fs         \ `s{`
 require galope/shuffle.fs                 \ `shuffle`
@@ -216,7 +217,7 @@ variable #free-exits
   [debug-do-exits] [if]  cr ." exit>list" cr .stack  [then]  \ XXX INFORMER
   exit-separator$ out-str str-append-string
   exits-table@ full-name out-str str-append-string
-  #listed ++
+  #listed 1+!
   [debug-do-exits] [if]  cr .stack  [then]  ;  \ XXX INFORMER
   \ Lista una salida.
   \ u = Puntero a un campo de dirección (desplazamiento relativo desde
@@ -1522,7 +1523,7 @@ false [if]
 
 : talked-to-the-leader  ( -- )
   leader~ conversations++
-  recent-talks-to-the-leader ?++  ;
+  recent-talks-to-the-leader ?1+!  ;
   \ Aumentar el contador de conversaciones con el jefe de los refugiados.
 
 : we-are-refugees$  ( -- ca len )
@@ -1571,13 +1572,13 @@ false [if]
 
 : the-leader-forbids-the-stone  ( -- )
   the-leader-warns-about-the-stone
-  stone-forbidden? ?++  \ Recordarlo
+  stone-forbidden? ?1+!  \ Recordarlo
   gesture-about-the-stone$ narrate narration-break
   a-man-takes-the-stone  ;
   \ El jefe te avisa de que no puedes pasar con la piedra y te la quita.
 
 : the-leader-forbids-the-sword  ( -- )
-  the-leader-warns-about-the-sword  sword-forbidden? ?++  ;
+  the-leader-warns-about-the-sword  sword-forbidden? ?1+!  ;
   \ El jefe te avisa de que no puedes pasar con la espada.
   \ El programa recuerda este hecho incrementando un contador.
 
@@ -2287,5 +2288,8 @@ defer finish  ( -- )
 
 \ 2017-11-10: Update to Talanto 0.62.0: replace field notation
 \ "location" with "holder".
+\
+\ 2017-11-16: Update to Galope 0.138.1: replace `++` with `1+!`, and
+\ `?++` with `?1+!`.
 
 \ vim:filetype=gforth:fileencoding=utf-8
