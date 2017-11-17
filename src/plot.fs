@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2017
 
-\ Last modified 201711102240
+\ Last modified 201711171347
 \ See change log at the end of the file
 
 \ Note: The comments of the code are in Spanish.
@@ -783,7 +783,7 @@ here swap - cell / constant battle-phases
   \ Devuelve una descripción de tus soldados en la aldea arrasada.
 
 : soldiers-steal-spite-of-officers  ( -- )
-  soldiers-steal-spite-of-officers$ period+ paragraph  ;
+  soldiers-steal-spite-of-officers$ period+ /ltype  ;
   \ Describe a tus soldados en la aldea arrasada.
 
 : will-follow-you-forever$  ( -- ca len )
@@ -795,7 +795,7 @@ here swap - cell / constant battle-phases
   \ sin citarlos.
 
 : will-follow-you-forever  ( ca len -- )
-  will-follow-you-forever$ txt+ period+ paragraph  ;
+  will-follow-you-forever$ txt+ period+ /ltype  ;
   \ Completa e imprime la descripción de soldados u oficiales, cuyo
   \ sujeto es _ca len_.
 
@@ -815,6 +815,8 @@ here swap - cell / constant battle-phases
 
 \ 2017-11-10: Update to Talanto 0.62.0: replace field notation
 \ "location" with "holder".
+\
+\ 2017-11-17: Update from Galope's deprecated module <print.fs> to
+\ <l-type.fs>.
 
 \ vim:filetype=gforth:fileencoding=utf-8
-

@@ -3,9 +3,9 @@
 \ This file is part of _Asalto y castigo_
 \ http://programandala.net/es.programa.asalto_y_castigo.forth.html
 
-\ Author: Marcos Cruz (programandala.net), 2011..2016
+\ Author: Marcos Cruz (programandala.net), 2011..2017
 
-\ Last modified 201607221417
+\ Last modified 201711171345
 
 \ Note: The comments of the code are in Spanish.
 
@@ -138,7 +138,7 @@ restore-wordlists
   \ si se produjo un error).
 
 : .question  ( xt -- )
-  question-color execute paragraph  ;
+  question-color execute /ltype  ;
   \ Imprime la pregunta cuyo texto devuelve la ejecución de _xt_.
 
 : accept-answer  ( -- ca len )  answer-wordlist accept-input  ;
@@ -165,5 +165,8 @@ restore-wordlists
 
 \ 2017-11-16: Update to Galope 0.138.1: replace `++` with `1+!`, and
 \ `--` with `1-!`.
+\
+\ 2017-11-17: Update from Galope's deprecated module <print.fs> to
+\ <l-type.fs>.
 
 \ vim:filetype=gforth:fileencoding=utf-8

@@ -90,12 +90,13 @@ wordlist dup constant config-wordlist
   \ Configura si se usan las comillas castellanas en las citas.
 
 : espacios_de_indentación  ( u -- )
-  max-indentation min /indentation !  ;
+  max-indentation min to indentation1 ;
   \ Fija la indentación de los párrafos.
 
 : indentar_primera_línea_de_pantalla  ( f -- )
-  indent-first-line-too? !  ;
-  \ Configura si se indentará también la línea superior de la pantalla, si un párrafo empieza en ella.
+  indent-top !  ;
+  \ Configura si se indentará también la línea superior de la
+  \ pantalla, si un párrafo empieza en ella.
 
 : indentar_prestos_de_pausa  ( f -- )
   indent-pause-prompts? !  ;
@@ -103,7 +104,8 @@ wordlist dup constant config-wordlist
 
 : borrar_pantalla_para_escenarios  ( f -- )
   location-page? !  ;
-  \ Configura si se borra la pantalla al entrar en un escenario o describirlo.
+  \ Configura si se borra la pantalla al entrar en un escenario o
+  \ describirlo.
 
 : borrar_pantalla_para_escenas  ( f -- )
   scene-page? !  ;
@@ -224,8 +226,8 @@ restore-wordlists
   location-page? on
   cr? off
   ignore-unknown-words? off
-  default-indentation /indentation !
-  indent-first-line-too? on
+  default-indentation to indentation1
+  indent-top on
   -1 narration-break-seconds !
   -1 scene-break-seconds !
   scene-page? on

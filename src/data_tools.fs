@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2017
 
-\ Last modified 201711072219
+\ Last modified 201711171347
 \ See change log at the end of the file
 
 \ Note: Most comments of the code are in Spanish.
@@ -44,7 +44,7 @@ defer default-description  ( -- )
   \ Descripción predeterminada de los entes
   \ para los que no se ha creado una palabra propia de descripción.
 
-: (default-description)  ( -- )  ^is-normal$ paragraph  ;
+: (default-description)  ( -- )  ^is-normal$ /ltype  ;
   \ Comportamiento predeterminado de la descripción predeterminada de
   \ los entes para los que no se ha creado una palabra propia de
   \ descripción.
@@ -60,7 +60,7 @@ defer default-description  ( -- )
 
 : .location-name  ( a -- )
   [debug-map] [if]  dup  [then]
-  name xcapitalized location-name-color paragraph
+  name xcapitalized location-name-color /ltype
   \ [debug-map] [ true or ] [if]
   [true] [if]
     dup entity># location-01~ entity># - 1+ ."  [#" 0 .r ." ]"
@@ -117,7 +117,7 @@ defer default-description  ( -- )
   \ XXX TODO -- rewrite
 
 : uninteresting-direction  ( -- )
-  uninteresting-direction$ paragraph  ;
+  uninteresting-direction$ /ltype  ;
   \ Muestra la descripción de la direcciones que no tienen nada especial.
 
 \ ==============================================================
@@ -125,5 +125,8 @@ defer default-description  ( -- )
 
 \ 2017-11-10: Update to Talanto 0.62.0: replace field notation
 \ "location" with "holder".
+\
+\ 2017-11-17: Update from Galope's deprecated module <print.fs> to
+\ <l-type.fs>.
 
 \ vim:filetype=gforth:fileencoding=utf-8

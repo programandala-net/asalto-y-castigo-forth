@@ -3,9 +3,9 @@
 \ This file is part of _Asalto y castigo_
 \ http://programandala.net/es.programa.asalto_y_castigo.forth.html
 
-\ Author: Marcos Cruz (programandala.net), 2011..2016
+\ Author: Marcos Cruz (programandala.net), 2011..2017
 
-\ Last modified 201607111413
+\ Last modified 201711171339
 
 \ Note: The comments of the code are in Spanish.
 
@@ -17,10 +17,10 @@ get-current forth-wordlist set-current
 \ http://programandala.net/en.program.galope.html
 
 require galope/bracket-false.fs       \ `[false]`
-require galope/ink.fs                 \ `ink`
-require galope/paper.fs               \ `paper`
 require galope/colors.fs              \ color constants
-require galope/print.fs               \ justified printing
+require galope/ink.fs                 \ `ink`
+require galope/l-type.fs              \ `ltype`, `/ltype`, etc.
+require galope/paper.fs               \ `paper`
 require galope/question-question.fs   \ `??`
 require galope/system-colors.fs       \ `system-colors`
 
@@ -258,7 +258,7 @@ false [if]  \ XXX TODO
 [defined] background-paper [if]  \ XXX TMP -- experimental
 
 : (color-background)  ( u -- )
-  paper print_home
+  paper lhome
   [false] [if]  \ Por líneas, más lento
     rows 0 do  i ?? cr [ cols ] literal spaces  loop
   [else]  \ Pantalla entera, más rápido
@@ -281,7 +281,7 @@ false [if]  \ XXX TODO
 [then]
 
 : new-page  ( -- )
-  color-background print_home  ;
+  color-background lhome  ;
   \ Borra la pantalla y sitúa el cursor en su origen.
 
 : clear-screen-for-location  ( -- )
@@ -291,5 +291,11 @@ false [if]  \ XXX TODO
 : init-screen  ( -- )
   trm+reset init-colors  ;
   \ Prepara la pantalla la primera vez.
+
+\ ==============================================================
+\ Change log
+\
+\ 2017-11-17: Replace Galope's deprecated module <print.fs> with
+\ <l-type.fs>.
 
 \ vim:filetype=gforth:fileencoding=utf-8

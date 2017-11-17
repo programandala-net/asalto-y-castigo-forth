@@ -3,9 +3,9 @@
 \ This file is part of _Asalto y castigo_
 \ http://programandala.net/es.programa.asalto_y_castigo.forth.html
 
-\ Author: Marcos Cruz (programandala.net), 2011..2016
+\ Author: Marcos Cruz (programandala.net), 2011..2017
 
-\ Last modified 201607171847
+\ Last modified 201711171338
 \ See change log at the end of the file
 
 \ Note: The comments of the code are in Spanish.
@@ -15,31 +15,6 @@
 
 \ Esta sección contiene código para probar el programa sin interactuar
 \ con el juego, para detectar mejor posibles errores.
-
-: pp  ( -- )
-  page ." first para. press any key or wait 3 seconds."
-  3 (break) ." second para"  ;
-  \ this does not work fine!
-
-: ww  ( -- )
-  \ this works fine
-  page ." first para. press any key or wait 3 seconds."
-  3 wait ." second para"  ;
-
-: tt  ( -- )
-  page ." first para. press any key or wait 3 seconds."
-  trm+erase-line print_start_of_line
-  ." second para"  ;
-
-: -pp  ( -- )
-  \ this works fine
-  page ." first para. press any key or wait."
-  -3 (break) ." second para"  ;
-
-: -ww  ( -- )
-  \ this works fine
-  page ." first para. press any key or wait"
-  -3 wait ." second para"  ;
 
 : check-stack1  ( -- )
   \ Provoca un error -3 («stack overflow») si la pila no tiene solo un
@@ -129,6 +104,8 @@
 
 \ 2017-11-10: Update to Talanto 0.62.0: replace field notation
 \ "location" with "holder".
+\
+\ 2017-11-17: Remove words of Galope's deprecated module <print.fs>,
+\ and words removed from <printing.fs>.
 
 \ vim:filetype=gforth:fileencoding=utf-8
-

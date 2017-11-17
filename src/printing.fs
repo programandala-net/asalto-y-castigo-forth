@@ -3,9 +3,9 @@
 \ This file is part of _Asalto y castigo_
 \ http://programandala.net/es.programa.asalto_y_castigo.forth.html
 
-\ Author: Marcos Cruz (programandala.net), 2011..2016
+\ Author: Marcos Cruz (programandala.net), 2011..2017
 
-\ Last modified 201607212141
+\ Last modified 201711172056
 
 \ Note: The comments of the code are in Spanish.
 
@@ -18,7 +18,7 @@ get-current forth-wordlist set-current
 
 require galope/bracket-false.fs       \ `[false]`
 require galope/column.fs              \ `column`
-require galope/print.fs               \ justified printing
+require galope/l-type.fs              \ `ltype`, `/ltype`, etc.
 require galope/question-question.fs   \ `??`
 require galope/row.fs                 \ `row`
 require galope/sconstant.fs           \ `sconstant`
@@ -34,56 +34,15 @@ require ffl/str.fs
 set-current
 
 \ ==============================================================
-
-variable #lines
-  \ Número de línea del texto que se imprimirá.
-
-variable scroll
-  \ Indicador de que la impresión no debe parar.
-
-\ ==============================================================
 \ Presto de pausa en la impresión de párrafos
 
-svariable scroll-prompt  \ Guardará el presto de pausa
+svariable scroll-prompt ( -- ca )
+  \ Presto de pausa.
 
 : scroll-prompt$  ( -- ca len )  scroll-prompt count  ;
   \ Devuelve el presto de pausa.
 
-1 value /scroll-prompt
-  \ Número de líneas de intervalo para mostrar un presto.
-
-: scroll-prompt-key  ( -- )  key  bl =  scroll !  ;
-  \ Espera la pulsación de una tecla
-  \ y actualiza con ella el estado del desplazamiento.
-
-: .scroll-prompt  ( -- )
-  trm+save-cursor  scroll-prompt-color
-  scroll-prompt$ type  scroll-prompt-key
-  trm+erase-line  trm+restore-cursor  ;
-  \ Imprime el presto de pausa, espera una tecla y borra el presto.
-
-: (scroll-prompt?)  ( n -- f )
-  dup 1+ #lines @ <>
-  swap /scroll-prompt mod 0=  and  ;
-  \ ¿Se necesita imprimir un presto para la línea actual _n_ del
-  \ párrafo que se está imprimiendo?  Se tienen que cumplir dos
-  \ condiciones.  1) ¿Es distinta de la última?; 2) ¿Y el intervalo es
-  \ correcto?.
-  \
-  \ XXX TODO factorizar para no tener que comentar las condiciones.
-
-: scroll-prompt?  ( n -- f )
-  scroll @ if  drop false  else  (scroll-prompt?)  then  ;
-  \ ¿Se necesita imprimir un presto para la línea actual _n_ del
-  \ párrafo que se está imprimiendo?  Si el valor de `scroll` es
-  \ «verdadero», se devuelve «falso»; si no, se comprueban las otras
-  \ condiciones.
-
-: .scroll-prompt?  ( n -- )  scroll-prompt? ?? .scroll-prompt  ;
-  \ Si _n_ es la línea actual del párrafo que se está imprimiendo,
-  \ imprime un presto y espera la pulsación de una tecla.
-  \
-  \ XXX TODO -- no se usa
+' scroll-prompt$ is lprompt$
 
 \ ==============================================================
 \ Impresión de párrafos justificados
@@ -96,32 +55,17 @@ svariable scroll-prompt  \ Guardará el presto de pausa
   \ Indentación máxima de la primera línea de cada párrafo
   \ (en caracteres).
 
-variable /indentation
-  \ Indentación en curso de la primera línea de cada párrafo
-  \ (en caracteres).
-
-variable indent-first-line-too?
-  \ ¿Se indentará también la línea superior de la pantalla,
-  \ si un párrafo empieza en ella?
-
-: not-first-line?  ( -- f )  row 0>  ;
-  \ ¿El cursor no está en la primera línea?
-
-: indentation?  ( -- f )  not-first-line? indent-first-line-too? @ or  ;
-  \ ¿Indentar la línea actual?
-
-: (indent)  ( -- )  /indentation @ print_indentation  ;
-  \ Indenta.
-
-: indent  ( -- )  indentation? ?? (indent)  ;
-  \ Indenta si es necesario.
-
 : background-line  ( -- )  background-color cols spaces  ;
   \ Colorea una línea con el color de fondo.
 
-: ((print_cr))  ( -- )
+false [if]
+
+  \ XXX OLD -- 2017-11-17: It seems this in no longer needed on Gforth
+  \ 0.7.9.
+
+: (cr)  ( -- )
   cr trm+save-current-state background-line
-  trm+restore-current-state  ;
+     trm+restore-current-state  ;
   \ Salto de línea alternativo para los párrafos justificados.
   \ Colorea la nueva línea con el color de fondo, lo que parchea
   \ el problema de que las nuevas líneas volvían a aparecer
@@ -130,37 +74,24 @@ variable indent-first-line-too?
   \ background-color cols #printed @ - spaces  \ final de línea
   \ blue paper cols #printed @ - spaces key drop  \ XXX INFORMER
 
-' ((print_cr)) is (print_cr)
-  \ Redefinir `(print_cr)` (de galope/print.fs).
+' (cr) is ((lcr))
 
-: cr+  ( -- )
-  [false] [if]  \ XXX OLD
-    print_cr indent
-  [else]  \ XXX NEW
-    \ XXX TODO -- pruebas para solucionar problema de la línea en blanco
-    \ row last-row <> column or ?? print_cr indent
-    column 0<> ?? print_cr indent
-  [then]  ;
-  \ Hace un salto de línea y una indentación, para el sistema
-  \ de impresión de textos justificados.
-
-: paragraph  ( ca len -- )  cr+ print  ;
-  \ Imprime un texto _ca len_ justificado como inicio de un párrafo.
+[then]
 
 : language-error.  ( ca len -- )
-  language-error-color paragraph system-colors  ;
+  language-error-color /ltype system-colors  ;
   \ Imprime una cadena como un informe de error lingüístico.
 
 : action-error.  ( ca len -- )
-  action-error-color paragraph system-colors  ;
+  action-error-color /ltype system-colors  ;
   \ Imprime una cadena como un informe de error de un comando.
 
 : system-error.  ( ca len -- )
-  system-error-color paragraph system-colors  ;
+  system-error-color /ltype system-colors  ;
   \ Imprime una cadena como un informe de error del sistema.
 
 : narrate  ( ca len -- )
-  narration-color paragraph system-colors  ;
+  narration-color /ltype system-colors  ;
   \ Imprime una cadena como una narración.
 
 \ ==============================================================
@@ -173,12 +104,20 @@ variable indent-pause-prompts?
   indent-pause-prompts? @ ?? indent  ;
   \ Indenta antes de un presto, si es necesario.
 
-: .prompt  ( ca len -- )  print_cr indent-prompt print  ;
-  \ Imprime un presto.
-
 : wait  ( +n|-n -- )  dup 0< if  key 2drop  else  seconds  then  ;
   \ Hace una pausa de _+n_ segundos (o _-n_ para una pausa sin fin
   \ hasta la pulsación de una tecla).
+
+' wait is lprompt-pause
+
+: .prompt  ( +n|-n ca len -- )
+  [false] [if]
+    lcr indent-prompt ltype
+  [else]
+    ((lcr)) next-lrow no-ltyped indent-prompt this-lprompt indent
+  [then]
+  ;
+  \ Imprime un presto _ca len_ con segundos de pausa _+n|-n_.
 
 variable narration-break-seconds
   \ Segundos de espera en las pausas de la narración.
@@ -189,33 +128,14 @@ svariable narration-prompt
 : narration-prompt$  ( -- ca len )  narration-prompt count  ;
   \ Devuelve el presto usado en las pausas de la narración.
 
-: .narration-prompt  ( -- )
+: .narration-prompt  ( +n|-n -- )
   narration-prompt-color narration-prompt$ .prompt  ;
-  \ Imprime el presto de fin de escena.
-
-: (break)  ( n -- )
-  [false] [if]
-    \ XXX OLD -- antiguo. versión primera, que no coloreaba la línea
-    ?key-pause  trm+erase-line print_start_of_line
-  [else]
-    \ XXX NEW
-    ?key-pause  print_start_of_line
-    trm+save-current-state background-line trm+restore-current-state
-  [then]  ;
-  \ Si _n_ es menor de cero, haz una pausa indefinida hasta la
-  \ pulsación de una tecla; de otro modo haz una pausa de _n_ segundos
-  \ o hasta la pulsación de una tecla.  Después borra la línea en que
-  \ se ha mostrado el presto de pausa y restaura la situación de
-  \ impresión para no afectar al siguiente párrafo.
-
-: (narration-break)  ( +n|-n -- )
-  .narration-prompt (break)  ;
-  \ Alto en la narración: Muestra un presto y hace una pausa de
-  \ _+n_ segundos (o _-n_ para hacer una pausa indefinida hasta la
-  \ pulsación de una tecla).
+  \ Alto en la narración: Muestra el presto de fin de escena y hace
+  \ una pausa de _+n_ segundos (o _-n_ para hacer una pausa indefinida
+  \ hasta la pulsación de una tecla).
 
 : narration-break  ( -- )
-  narration-break-seconds @ ?dup ?? (narration-break)  ;
+  narration-break-seconds @ ?dup ?? .narration-prompt ;
   \ Alto en la narración, si es preciso.
 
 variable scene-break-seconds
@@ -227,22 +147,22 @@ svariable scene-prompt
 : scene-prompt$  ( -- ca len )  scene-prompt count  ;
   \ Devuelve el presto de cambio de escena.
 
-: .scene-prompt  ( -- )
+: .scene-prompt  ( +n|-n -- )
   scene-prompt-color scene-prompt$ .prompt  ;
-  \ Imprime el presto de fin de escena.
+  \ Muestra el presto de escena y hace una pausa de _+n_ segundos (o
+  \ _-n_ para hacer una pausa indefinida hasta la pulsación de una
+  \ tecla).
 
 : (scene-break)  ( +n|-n -- )
-  .scene-prompt (break)  scene-page? @ ?? new-page  ;
-  \ Final de escena: Muestra un presto y hace una pausa de
+  .scene-prompt scene-page? @ ?? new-page  ;
+  \ Final de escena: Muestra el presto de escena y hace una pausa de
   \ _+n_ segundos (o _-n_ para hacer una pausa indefinida hasta la
-  \ pulsación de una tecla).
+  \ pulsación de una tecla).  Si está así configurado, también borra
+  \ la pantalla al final.
 
 : scene-break  ( -- )
   scene-break-seconds @ ?dup ?? (scene-break)  ;
   \ Final de escena, si es preciso.
-
-: about-pause  ( -- )  20 (break)  ;
-  \ Pausa tras los créditos.
 
 \ ==============================================================
 \ Impresión de citas de diálogos
@@ -312,8 +232,14 @@ false [if]  \ XXX OLD -- obsoleto
   \ Pone comillas o raya a una cita de un diálogo.
 
 : speak  ( ca len -- )
-  quoted speech-color paragraph system-colors  ;
+  quoted speech-color /ltype system-colors  ;
   \ Imprime una cita de un diálogo.
+
+\ ==============================================================
+\ Change log
+
+\ 2017-11-17: Start replacing the left-justified printing system that
+\ was written for the game with Galope's module <l-type.fs>.
 
 \ vim:filetype=gforth:fileencoding=utf-8
 

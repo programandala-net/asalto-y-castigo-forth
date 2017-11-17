@@ -1,8 +1,10 @@
-= Tareas pendientes de Asalto y castigo
-:revdate: 2017-11-07
+= To-do list of _Asalto y castigo_
+:revdate: 2017-11-17
 
-// Programación {{{1
-== Programación
+Note: Most texts are in Spanish.
+
+// Programming {{{1
+== Programming
 
 2017-07-31:
 
@@ -636,22 +638,22 @@ debido a la oscuridad".
 
 - Acción de quemar, prender.
 
-// Vocabulario {{{1
-== Vocabulario
+// Vocabulary {{{1
+== Vocabulary
 
 .2016-07-14:
 
 Hacer que ciertas palabras no tengan efecto si el ente que representan
 no es conocido.
 
-// Textos {{{1
-== Textos
+// Texts {{{1
+== Texts
 
 En las descripciones, mencionar el objeto descrito, para que los
 textos resulten más claros en las órdenes compuestas.
 
-// Trama y puzles {{{1
-== Trama y puzles
+// Plot and puzzles {{{1
+== Plot and puzzles
 
 2011..2012:
 
@@ -674,8 +676,8 @@ espada.
 Posibilidad de perder la capa al nadar si no la llevamos
 puesta.
 
-// Código fuente {{{1
-== Código fuente
+// Source code {{{1
+== Source code
 
 Unificar los comentarios de palabras que devuelven cadenas de texto:
 
@@ -703,8 +705,23 @@ Move <data_advanced_interface.fs> to Talanto.
 
 Update source code style.
 
-// Notas {{{1
-== Notas
+// Library {{{1
+== Library
+
+.2017-11-17
+
+Move `wait` to Galope.
+Remove `?key-pause`, which does the same.
+
+// Display {{{1
+== Display
+
+- 2017-11-17: Reduce number of configurable prompts.
+- 2017-11-17: Finnish the integration of `ltype`'s prompt into
+  <printing.fs>.
+
+// Notes {{{1
+== Notes
 
 // Esbozo de acciones y (seudo)preposiciones {{{2
 === Esbozo de acciones y (seudo)preposiciones

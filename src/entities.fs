@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2017
 
-\ Last modified 201711072219
+\ Last modified 201711171715
 \ See change log at the end of the file
 
 \ Note: The comments of the code are in Spanish.
@@ -34,7 +34,7 @@ set-current
 : describe-ulfius  ( -- )
   s" Sientes sobre ti la carga de tanto"
   s{ s" sucedido" s" acontecido" s" acontecido" s" vivido" }s txt+
-  period+ paragraph  ;
+  period+ /ltype  ;
 
 ulfius~ :init  ( -- )
   ['] describe-ulfius self~ be-describer
@@ -52,7 +52,7 @@ ulfius~ :init  ( -- )
   if    s" Ambrosio"
         s" es un hombre de mediana edad, que te mira afable." txt+
   else  s" Es de mediana edad y mirada afable."
-  then  paragraph  ;
+  then  /ltype  ;
 
 ambrosio~ :init  ( -- )
   ['] describe-ambrosio self~ be-describer
@@ -66,7 +66,7 @@ ambrosio~ :init  ( -- )
   leader~ conversations?
   if    s" Es el jefe de los refugiados."
   else  s" Es un anciano."
-  then  paragraph  ;
+  then  /ltype  ;
   \ XXX TODO -- elaborar esto según la trama
 
 leader~ :init  ( -- )
@@ -135,7 +135,7 @@ officers~ :init  ( -- )
   my-holder case
   location-28~ of  describe-present-refugees  endof
   location-29~ of  s" Todos los refugiados quedaron atrás."
-                   paragraph  endof
+                   /ltype  endof
   endcase  ;
   \ XXX TODO -- ampliar el texto
 
@@ -153,7 +153,7 @@ refugees~ :init  ( -- )
   s" justo en la mitad del puente." txt+
   idol~ is-unknown?
   if  s" Debe de sostener algo importante." txt+   then
-  paragraph  ;
+  /ltype  ;
 
 altar~ :init  ( -- )
   ['] describe-altar self~ be-describer
@@ -163,7 +163,7 @@ altar~ :init  ( -- )
 
 : describe-arch  ( -- )
   s" Un sólido arco de piedra, de una sola pieza."
-  paragraph  ;
+  /ltype  ;
   \ XXX TODO -- mejorar texto
 
 arch~ :init  ( -- )
@@ -176,7 +176,7 @@ arch~ :init  ( -- )
   s{ s" Parece poco" s" No tiene el aspecto de ser muy"
   s" No parece especialmente" }s
   s{ s" confortable" s" cómod" bed~ adjective-ending s+ }s txt+ period+
-  paragraph  ;
+  /ltype  ;
 
 bed~ :init  ( -- )
   ['] describe-bed self~ be-describer
@@ -186,7 +186,7 @@ bed~ :init  ( -- )
 
 : describe-bridge  ( -- )
   s" Está semipodrido."
-  paragraph  ;
+  /ltype  ;
   \ XXX TODO -- mejorar texto
 
 bridge~ :init  ( -- )
@@ -197,7 +197,7 @@ bridge~ :init  ( -- )
 
 : describe-candles  ( -- )
   s" Están muy consumidas."
-  paragraph  ;
+  /ltype  ;
 
 candles~ :init  ( -- )
   ['] describe-candles self~ be-describer
@@ -209,7 +209,7 @@ candles~ :init  ( -- )
   the-cave-entrance-is-hidden$
   you-were-lucky-discovering-it$ txt+
   it's-your-last-hope$ txt+
-  paragraph  ;
+  /ltype  ;
 
 cave-entrance~ :init  ( -- )
   ['] describe-cave-entrance self~ be-describer
@@ -218,7 +218,7 @@ cave-entrance~ :init  ( -- )
 : describe-cloak  ( -- )
   s" Tu capa de general, de fina lana"
   s{ s" tintada de negro." s" negra." }s txt+
-  paragraph  ;
+  /ltype  ;
 
 cloak~ :init  ( -- )
   ['] describe-cloak self~ be-describer
@@ -245,7 +245,7 @@ cuirasse~ :init  ( -- )
     else  s"  y tiene un gran candado"
     then  s+ lock-found
   then  period+
-  s" Está" txt+ door~ «open»|«closed» txt+ period+ paragraph  ;
+  s" Está" txt+ door~ «open»|«closed» txt+ period+ /ltype  ;
 
 door~ :init  ( -- )
   ['] describe-door self~ be-describer
@@ -256,7 +256,7 @@ door~ :init  ( -- )
 
 : describe-emerald  ( -- )
   s" Es preciosa."
-  paragraph  ;
+  /ltype  ;
 
 emerald~ :init  ( -- )
   ['] describe-emerald self~ be-describer
@@ -284,7 +284,7 @@ emerald~ :init  ( -- )
     s" la una sobre la otra"
     s" las unas sobre las otras"
   }s txt+ period+
-  paragraph  ;
+  /ltype  ;
 
 fallen-away~ :init  ( -- )
   ['] describe-fallen-away self~ be-describer
@@ -296,7 +296,7 @@ fallen-away~ :init  ( -- )
   s" Son las banderas britana y sajona:"
   s" Dos dragones rampantes," txt+
   s" rojo y blanco respectivamente, enfrentados." txt+
-  paragraph  ;
+  /ltype  ;
 
 flags~ :init  ( -- )
   ['] describe-flags self~ be-describer
@@ -306,7 +306,7 @@ flags~ :init  ( -- )
 
 : describe-flint  ( -- )
   s" Es una piedra dura y afilada."
-  paragraph  ;
+  /ltype  ;
 
 flint~ :init  ( -- )
   ['] describe-flint self~ be-describer
@@ -328,7 +328,7 @@ flint~ :init  ( -- )
     s{ s" no ha sido abierta en" s" lleva cerrada"
     s" ha permanecido cerrada" s" durante" 50%nullify txt+ }s
     s" mucho tiempo." txt+
-  then  paragraph  ;
+  then  /ltype  ;
 
 grass~ :init  ( -- )
   ['] describe-grass self~ be-describer
@@ -337,7 +337,7 @@ grass~ :init  ( -- )
 
 : describe-idol  ( -- )
   s" El ídolo tiene dos agujeros por ojos."
-  paragraph  ;
+  /ltype  ;
 
 idol~ :init  ( -- )
   ['] describe-idol self~ be-describer
@@ -347,7 +347,7 @@ idol~ :init  ( -- )
 
 : describe-key  ( -- )
   s" Es una llave grande, de hierro herrumboso."
-  paragraph  ;
+  /ltype  ;
 
 key~ :init  ( -- )
   ['] describe-key self~ be-describer
@@ -359,7 +359,7 @@ key~ :init  ( -- )
   s{ s" La" s" Un rayo de" }s
   s" luz entra por un resquicio," txt+
   s" y sus caprichosos reflejos te maravillan." txt+
-  paragraph  ;
+  /ltype  ;
 
 lake~ :init  ( -- )
   ['] describe-lake self~ be-describer
@@ -372,7 +372,7 @@ lake~ :init  ( -- )
   s" Está" txt+ s{ s" fijad" s" unid" }s txt+ lock~ adjective-ending+
   s" a la puerta y" txt+
   lock~ «open»|«closed» txt+ period+
-  paragraph  ;
+  /ltype  ;
 
 lock~ :init  ( -- )
   ['] describe-lock self~ be-describer
@@ -385,7 +385,7 @@ lock~ :init  ( -- )
   s" Es un tronco"
   s{ s" recio," s" resistente," s" fuerte," }s txt+
   but$ txt+ s{ s" liviano." s" ligero." }s txt+
-  paragraph  ;
+  /ltype  ;
 
 log~ :init  ( -- )
   ['] describe-log self~ be-describer
@@ -395,7 +395,7 @@ log~ :init  ( -- )
 : describe-piece  ( -- )
   s" Un pequeño" s{ s" retal" s" pedazo" s" trozo" s" resto" }s txt+
   of-your-ex-cloak$ txt+
-  paragraph  ;
+  /ltype  ;
 
 piece~ :init  ( -- )
   ['] describe-piece self~ be-describer
@@ -407,7 +407,7 @@ piece~ :init  ( -- )
   s" Un" s{ s" retal" s" pedazo" s" trozo" }s txt+
   s{ s" un poco" s" algo" }s 50%nullify txt+ s" grande" txt+
   of-your-ex-cloak$ txt+
-  paragraph  ;
+  /ltype  ;
 
 rags~ :init  ( -- )
   ['] describe-rags self~ be-describer
@@ -430,12 +430,12 @@ rags~ :init  ( -- )
   was-the-cave-entrance-discovered? if
     s" , que" it-looks-impassable$ txt+ comma+ 50%nullify s+
     the-cave-entrance-is-visible$ txt+
-    period+ paragraph
+    period+ /ltype
   else
     it-looks-impassable$ txt+
     ravine-wall~ is-known?
     if    you-maybe-discover-the-cave-entrance
-    else  period+ paragraph
+    else  period+ /ltype
     then
   then  ;
 
@@ -450,7 +450,7 @@ ravine-wall~ :init  ( -- )
   location-31~ has-north-exit?
   if  (rocks)-on-the-floor$ xcapitalized
   else  (rocks)-clue$
-  then  period+ paragraph  ;
+  then  period+ /ltype  ;
 
 rocks~ :init  ( -- )
   ['] describe-rocks self~ be-describer
@@ -460,7 +460,7 @@ rocks~ :init  ( -- )
 
 : describe-snake  ( -- )
   s" Una serpiente grande, muy atenta a tu más mínimo movimiento."
-  paragraph  ;
+  /ltype  ;
 
 snake~ :init  ( -- )
   ['] describe-snake self~ be-describer
@@ -472,7 +472,7 @@ snake~ :init  ( -- )
 
 : describe-stone  ( -- )
   s" Recia y pesada, pero no muy grande, de forma piramidal."
-  paragraph  ;
+  /ltype  ;
 
 stone~ :init  ( -- )
   ['] describe-stone self~ be-describer
@@ -484,7 +484,7 @@ stone~ :init  ( -- )
   s{ s" fiel herramienta" s" arma fiel" }s txt+ s" en" txt+
   s{ s" mil" s" incontables" s" innumerables" }s txt+
   s" batallas." txt+
-  paragraph  ;
+  /ltype  ;
 
 sword~ :init  ( -- )
   ['] describe-sword self~ be-describer
@@ -494,7 +494,7 @@ sword~ :init  ( -- )
 
 : describe-table  ( -- )
   s" Es pequeña y de" s{ s" basta" s" tosca" }s txt+ s" madera." txt+
-  paragraph  ;
+  /ltype  ;
 
 table~ :init  ( -- )
   ['] describe-table self~ be-describer
@@ -504,7 +504,7 @@ table~ :init  ( -- )
 
 : describe-thread  ( -- )
   s" Un hilo" of-your-ex-cloak$ txt+
-  paragraph  ;
+  /ltype  ;
 
 thread~ :init  ( -- )
   ['] describe-thread self~ be-describer
@@ -512,7 +512,7 @@ thread~ :init  ( -- )
 
 : describe-torch  ( -- )
   s" Está" torch~ is-lighted?
-  if  s" encendida."  else  s" apagada."  then  txt+ paragraph  ;
+  if  s" encendida."  else  s" apagada."  then  txt+ /ltype  ;
 
 torch~ :init  ( -- )
   ['] describe-torch self~ be-describer
@@ -523,7 +523,7 @@ torch~ :init  ( -- )
 : describe-waterfall  ( -- )
   s" No ves nada por la cortina de agua."
   s" El lago es muy poco profundo." txt+
-  paragraph  ;
+  /ltype  ;
 
 waterfall~ :init  ( -- )
   ['] describe-waterfall self~ be-describer
@@ -551,7 +551,7 @@ waterfall~ :init  ( -- )
     s" Lo único que" remains$ txt+ s" por hacer" 50%nullify txt+ s" es" txt+
     s" No" remains$ txt+ s{ s" más" s" otra cosa" }s txt+ s" que" txt+
     }s txt+ to-go-back$ txt+ s" al sur, a casa." txt+
-    paragraph
+    /ltype
     endof
   south~ of
     2 random if \ Versión 0:
@@ -563,7 +563,7 @@ waterfall~ :init  ( -- )
     else  \ Versión 1:
       s" Muy lejos de aquí está tu" home$ txt+ comma+
       s" y el camino empieza detrás de aquella colina." txt+
-    then  paragraph
+    then  /ltype
     endof
   up~ of
     s{ s" pronto" s" sin compasión" s" de inmediato" }s
@@ -581,7 +581,7 @@ waterfall~ :init  ( -- )
     s" poder hacer un último esfuerzo por" 50%nullify txt+
     s" escapar" txt+ but|and$ txt+ s" no supieran cómo" txt+ 50%nullify s+
     s" ..." s+
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -608,16 +608,16 @@ location-01~ :init  ( -- )
     s" la" txt+
     s" espesa" s" fría" both?& s" niebla de la aldea sajona arrasada al norte, a tus pies." txt+
     ^the-path$ txt+ goes-down$ txt+ toward-the(m)$ txt+ s" oeste." txt+
-    paragraph
+    /ltype
     endof
   north~ of
     s" La" poor-village$ txt+ s" sajona" txt+ s" , arrasada," 50%nullify s+ s" agoniza bajo la" txt+
     s" espesa" s" fría" both?& s" niebla." txt+
-    paragraph
+    /ltype
     endof
   west~ of
     ^the-path$ goes-down$ txt+ s" por la" txt+ s" ladera de la" 50%nullify txt+ s" colina." txt+
-    paragraph
+    /ltype
     endof
   down~ of
     location-02~ down-exit location-02~ north-exit =
@@ -658,15 +658,15 @@ location-02~ :init  ( -- )
     ^the-path$ s" avanza por el valle," txt+
     s" desde la parte alta, al este," txt+
     s" a una zona" txt+ very-or-null$ txt+ s" boscosa, al oeste." txt+
-    paragraph
+    /ltype
     endof
   east~ of
     ^the-path$ s" se pierde en la parte alta del valle." txt+
-    paragraph
+    /ltype
     endof
   west~ of
     s" Una zona" very-or-null$ txt+ s" boscosa." txt+
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -683,15 +683,15 @@ location-03~ :init  ( -- )
   my-holder of
     s" Una senda parte al oeste, a la sierra por el paso del Perro,"
     s" y otra hacia el norte, por un frondoso bosque que la rodea." txt+
-    paragraph
+    /ltype
     endof
   north~ of
     ^a-path$ surrounds$ txt+ s" la sierra a través de un frondoso bosque." txt+
-    paragraph
+    /ltype
     endof
   west~ of
     ^a-path$ leads$ txt+ toward-the(f)$ txt+ s" sierra por el paso del Perro." txt+
-    paragraph
+    /ltype
     endof
   down~ of  endof
   up~ of  endof
@@ -713,17 +713,17 @@ location-04~ :init  ( -- )
     s" el bosque que rodea la sierra." txt+
     s" La salida se abre" txt+
     toward-the(m)$ txt+ s" sur." txt+
-    paragraph
+    /ltype
     endof
   south~ of
     s" Se ve la salida del bosque."
-    paragraph
+    /ltype
     endof
   west~ of
     s" El bosque se extiende"
     s{ s" exhuberante" s" frondoso" }s txt+
     s" alrededor de la sierra." txt+
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -741,7 +741,7 @@ location-05~ :init  ( -- )
     s" Jirones de niebla se enzarcen en frondosas ramas y arbustos."
     ^the-path$ txt+ s" serpentea entre raíces, de un luminoso este" txt+
     toward-the(m)$ txt+ s" oeste." txt+
-    paragraph
+    /ltype
     endof
   east~ of
     s" De la linde del bosque"
@@ -750,11 +750,11 @@ location-05~ :init  ( -- )
     s{ s" claridad" s" luminosidad" }s txt+
     s" entre" txt+
     s{ s" el follaje" s" la vegetación" }s txt+ period+
-    paragraph
+    /ltype
     endof
   west~ of
     s" La niebla parece más" s" densa" s" oscura" both?& period+
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -773,18 +773,18 @@ location-06~ :init  ( -- )
     s" El" txt+ s{ s" inquietante" s" sobrecogedor" }s txt+
     s" desfiladero" txt+ s{ s" tuerce" s" gira" }s txt+
     s" de este a sur." txt+
-    paragraph
+    /ltype
     endof
   south~ of
     ^the-path$ s" gira" txt+ in-that-direction$ txt+ period+
-    paragraph
+    /ltype
     endof
   east~ of
     s" La estrecha senda es" s{ s" engullida" s" tragada" }s txt+
     s" por las" txt+
     s" fauces" s{ s" frondosas" s" exhuberantes" }s rnd2swap txt+ txt+
     s" del bosque." txt+
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -803,13 +803,13 @@ location-07~ :init  ( -- )
     s" junto a una" txt+
     s{  s" pared" rocky(f)$ txt+ s" rocosa pared" }s txt+ period+
       \ XXX TODO -- completar con entrada a caverna, tras ser descubierta
-    paragraph
+    /ltype
     endof
   north~ of
     s" El camino" s{ s" tuerce" s" gira" }s txt+
       \ XXX TODO -- independizar gira/tuerce
     s" hacia el inquietante paso del Perro." txt+
-    paragraph
+    /ltype
     endof
   south~ of
     s{ ^in-that-direction$ s" Hacia el sur" }s
@@ -819,13 +819,13 @@ location-07~ :init  ( -- )
     was-the-cave-entrance-discovered? if
       comma+ s" en la" txt+ s{ s" que" s" cual" }s txt+
       the-cave-entrance-is-visible$ txt+
-      period+ paragraph
+      period+ /ltype
     else
       ravine-wall~ is-known? if
         s" que" it-looks-impassable$ txt+ 50%nullify txt+
         you-maybe-discover-the-cave-entrance
       else
-        period+ paragraph  ravine-wall~ familiar++
+        period+ /ltype  ravine-wall~ familiar++
       then
     then
     endof
@@ -851,16 +851,16 @@ location-08~ :init  ( -- )
     s" desde los" txt+ s" verdes" s" valles" rnd2swap txt+ txt+ s" al este." txt+
     ^but$ txt+ s" un" txt+ s{ s" gran" s" enorme" }s 50%nullify txt+ s" derrumbe" txt+
     (it)-blocks$ txt+ s" el paso hacia" txt+ s{ s" el oeste." s" la sierra." }s txt+
-    paragraph
+    /ltype
     endof
   east~ of
     ^can-see$ s" la salida del bosque." txt+
-    paragraph
+    /ltype
     endof
   west~ of
     s" Un gran derrumbe" (it)-blocks$ txt+ the-pass$ txt+
     toward$ txt+ s" la sierra." txt+
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -876,11 +876,11 @@ location-09~ :init  ( -- )
   sight case
   my-holder of
     s" El estrecho paso se adentra hacia el oeste, desde la boca, al norte."
-    paragraph
+    /ltype
     endof
   north~ of
     s" La boca de la gruta conduce al exterior."
-    paragraph
+    /ltype
     endof
   east~ of
   endof
@@ -931,7 +931,7 @@ location-10~ :init  ( -- )
         }s
     }s 50%nullify txt+ s" exterior." txt+
     s" No hay" txt+ s{ s" otra" s" más" }s txt+ s" salida que el este." txt+
-    paragraph
+    /ltype
     endof
   east~ of
     s" De la entrada de la gruta"
@@ -940,7 +940,7 @@ location-10~ :init  ( -- )
     s" que hace brillar" txt+
     s{ s" el agua" s" las aguas" s" la superficie" }s txt+
     s" del lago." txt+
-    paragraph
+    /ltype
   endof
   uninteresting-direction
   endcase  ;
@@ -962,18 +962,18 @@ location-11~ :init  ( -- )
     s" estancia se abre hacia el oeste," txt+
     s" y se estrecha hasta" txt+ s{ s" morir" s" terminar" }s txt+
     s" , al este, en una" s+ s{ s" parte" s" zona" }s txt+ s" de agua." txt+
-    paragraph
+    /ltype
     endof
   east~ of
     s{ s" La estancia" s" El lugar" }s
     s" se estrecha hasta " txt+
     s{ s" morir" s" terminar" }s txt+
     s" en una" txt+ s{ s" parte" s" zona" }s txt+ s" de agua." txt+
-    paragraph
+    /ltype
   endof
   west~ of
     s" Se vislumbra la continuación de la cueva."
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -994,15 +994,15 @@ location-12~ :init  ( -- )
     s{ s" semioscuridad" s" penumbra" }s txt+
     s" a un puente cubierto de podredumbre" txt+
     s" sobre el lecho de un canal, de este a oeste." txt+
-    paragraph
+    /ltype
     endof
   east~ of
     s" Se vislumbra el inicio de la cueva."
-    paragraph
+    /ltype
   endof
   west~ of
     s" Se vislumbra un recodo de la cueva."
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1020,13 +1020,13 @@ location-13~ :init  ( -- )
   sight case
   my-holder of
     s" La iridiscente cueva gira de este a sur."
-    paragraph
+    /ltype
     endof
   south~ of
-    you-glimpse-the-cave$ paragraph
+    you-glimpse-the-cave$ /ltype
     endof
   east~ of
-    you-glimpse-the-cave$ paragraph
+    you-glimpse-the-cave$ /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1045,22 +1045,22 @@ location-14~ :init  ( -- )
     s" sobre un lecho arenoso." txt+
     s" Al este, un agujero del que llega" txt+
     s{ s" algo de luz." s" claridad." }s txt+
-    paragraph
+    /ltype
     endof
   north~ of
     you-glimpse-the-cave$
     s" La cueva" goes-up$ txt+ in-that-direction$ txt+ period+
-    paragraph
+    /ltype
     endof
   south~ of
     you-glimpse-the-cave$
     s" La cueva" goes-down$ txt+ in-that-direction$ txt+ period+
-    paragraph
+    /ltype
     endof
   east~ of
     s{ s" La luz" s" Algo de luz" s" Algo de claridad" }s
     s" procede de esa dirección." txt+
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1078,18 +1078,18 @@ location-15~ :init  ( -- )
     s" Como un acueducto, el agua"
     goes-down$ txt+ s" con gran fuerza de norte a este," txt+
     s" aunque la salida practicable es la del oeste." txt+
-    paragraph
+    /ltype
     endof
   north~ of
     s" El agua" goes-down$ txt+ s" con gran fuerza" txt+ from-that-way$ txt+ period+
-    paragraph
+    /ltype
     endof
   east~ of
     s" El agua" goes-down$ txt+ s" con gran fuerza" txt+ that-way$ txt+ period+
-    paragraph
+    /ltype
     endof
   west~ of
-    s" Es la única salida." paragraph
+    s" Es la única salida." /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1118,15 +1118,15 @@ location-16~ :init  ( -- )
   my-holder of
     s" Muchas estalactitas se agrupan encima de tu cabeza,"
     s" y se abren cual arco de entrada hacia el este y sur." txt+
-    paragraph
+    /ltype
     endof
   north~ of
     you-glimpse-the-cave$
-    paragraph
+    /ltype
     endof
   up~ of
     s" Las estalactitas se agrupan encima de tu cabeza."
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1153,15 +1153,15 @@ location-17~ :init  ( -- )
     altar~ is-known?
     if    s" está" txt+
     else  s{ s" hay" s" es posible ver" s" puede verse" }s txt+
-    then  altar~ full-name txt+ period+ paragraph
+    then  altar~ full-name txt+ period+ /ltype
     endof
   east~ of
     s" El arco de piedra se extiende" that-way$ txt+ period+
-    paragraph
+    /ltype
     endof
   west~ of
     s" El arco de piedra se extiende" that-way$ txt+ period+
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1186,19 +1186,19 @@ location-18~ :init  ( -- )
     s" fondo" txt+ s{ s" se oye" s" se escucha" s" puede oírse" }s txt+
     s" un gran estruendo." txt+
       \ XXX TODO -- hacer variaciones de todo este texto
-    paragraph
+    /ltype
     endof
   north~ of
-    ^water-from-there$ period+ paragraph
+    ^water-from-there$ period+ /ltype
     endof
   east~ of
-    water-that-way$ paragraph
+    water-that-way$ /ltype
     endof
   west~ of
     s" Se puede" to-go-back$ txt+
     toward-the(m)$ txt+ s" arco de piedra" txt+
     in-that-direction$ txt+ period+
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1213,16 +1213,16 @@ location-19~ :init  ( -- )
 : describe-location-20  ( -- )
   sight case
   my-holder of
-    north~ south~ east~ 3 exits-cave-description paragraph
+    north~ south~ east~ 3 exits-cave-description /ltype
     endof
   north~ of
-    cave-exit-description$ paragraph
+    cave-exit-description$ /ltype
     endof
   south~ of
-    cave-exit-description$ paragraph
+    cave-exit-description$ /ltype
     endof
   east~ of
-    cave-exit-description$ paragraph
+    cave-exit-description$ /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1246,16 +1246,16 @@ location-20~ :init  ( -- )
 : describe-location-21  ( -- )
   sight case
   my-holder of
-    east~ west~ south~ 3 exits-cave-description paragraph
+    east~ west~ south~ 3 exits-cave-description /ltype
     endof
   south~ of
-    cave-exit-description$ paragraph
+    cave-exit-description$ /ltype
     endof
   east~ of
-    cave-exit-description$ paragraph
+    cave-exit-description$ /ltype
     endof
   west~ of
-    cave-exit-description$ paragraph
+    cave-exit-description$ /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1270,16 +1270,16 @@ location-21~ :init  ( -- )
 : describe-location-22  ( -- )
   sight case
   my-holder of
-    south~ east~ west~ 3 exits-cave-description paragraph
+    south~ east~ west~ 3 exits-cave-description /ltype
     endof
   south~ of
-    cave-exit-description$ paragraph
+    cave-exit-description$ /ltype
     endof
   east~ of
-    cave-exit-description$ paragraph
+    cave-exit-description$ /ltype
     endof
   west~ of
-    cave-exit-description$ paragraph
+    cave-exit-description$ /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1294,13 +1294,13 @@ location-22~ :init  ( -- )
 : describe-location-23  ( -- )
   sight case
   my-holder of
-    west~ south~ 2 exits-cave-description paragraph
+    west~ south~ 2 exits-cave-description /ltype
     endof
   south~ of
-    cave-exit-description$ paragraph
+    cave-exit-description$ /ltype
     endof
   west~ of
-    cave-exit-description$ paragraph
+    cave-exit-description$ /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1315,13 +1315,13 @@ location-23~ :init  ( -- )
 : describe-location-24  ( -- )
   sight case
   my-holder of
-    east~ north~ 2 exits-cave-description paragraph
+    east~ north~ 2 exits-cave-description /ltype
     endof
   north~ of
-    cave-exit-description$ paragraph
+    cave-exit-description$ /ltype
     endof
   east~ of
-    cave-exit-description$ paragraph
+    cave-exit-description$ /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1336,13 +1336,13 @@ location-24~ :init  ( -- )
 : describe-location-25  ( -- )
   sight case
   my-holder of
-    north~ south~ east~ west~ 4 exits-cave-description paragraph
+    north~ south~ east~ west~ 4 exits-cave-description /ltype
     endof
   east~ of
-    cave-exit-description$ paragraph
+    cave-exit-description$ /ltype
     endof
   west~ of
-    cave-exit-description$ paragraph
+    cave-exit-description$ /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1357,16 +1357,16 @@ location-25~ :init  ( -- )
 : describe-location-26  ( -- )
   sight case
   my-holder of
-    north~ east~ west~ 3 exits-cave-description paragraph
+    north~ east~ west~ 3 exits-cave-description /ltype
     endof
   north~ of
-    cave-exit-description$ paragraph
+    cave-exit-description$ /ltype
     endof
   east~ of
-    cave-exit-description$ paragraph
+    cave-exit-description$ /ltype
     endof
   west~ of
-    cave-exit-description$ paragraph
+    cave-exit-description$ /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1384,16 +1384,16 @@ location-26~ :init  ( -- )
 : describe-location-27  ( -- )
   sight case
   my-holder of
-    north~ east~ west~ 3 exits-cave-description paragraph
+    north~ east~ west~ 3 exits-cave-description /ltype
     endof
   north~ of
-    cave-exit-description$ paragraph
+    cave-exit-description$ /ltype
     endof
   east~ of
-    cave-exit-description$ paragraph
+    cave-exit-description$ /ltype
     endof
   west~ of
-    cave-exit-description$ paragraph
+    cave-exit-description$ /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1424,20 +1424,20 @@ location-27~ :init  ( -- )
     else
       s" Hay" txt+ s{ s" dos" s" unas" }s txt+ s" banderas." txt+
     then
-    paragraph
+    /ltype
     endof
   north~ of
     location-28~ has-east-exit?
     if    s" Es por donde viniste."
     else  s" Es la única salida."
-    then  paragraph
+    then  /ltype
     endof
   east~ of
     ^the-refugees$
     location-28~ has-east-exit?
     if    they-let-you-pass$ txt+
     else  they-don't-let-you-pass$ txt+
-    then  period+ paragraph
+    then  period+ /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1465,15 +1465,15 @@ location-28~ :init  ( -- )
     s" Cual escalera de caracol gigante,"
     goes-down-into-the-deep$ comma+ txt+
     s" dejando a los refugiados al oeste." txt+
-    paragraph
+    /ltype
     endof
   west~ of
     over-there$ s" están los refugiados." txt+
-    paragraph
+    /ltype
     endof
   down~ of
     s" La espiral" goes-down-into-the-deep$ txt+ period+
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1499,15 +1499,15 @@ location-29~ :init  ( -- )
     s" Se eleva en la penumbra."
     s" La" txt+ cave$ txt+ gets-narrower(f)$ txt+
     s" ahora como para una sola persona, hacia el este." txt+
-    paragraph
+    /ltype
     endof
   east~ of
     s" La" cave$ txt+ gets-narrower(f)$ txt+ period+
-    paragraph
+    /ltype
     endof
   up~ of
     s" La" cave$ txt+ s" se eleva en la penumbra." txt+
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1523,17 +1523,17 @@ location-30~ :init  ( -- )
   sight case
   my-holder of
     s" En este pasaje grandes rocas se encuentran entre las columnas de un arco de medio punto."
-    paragraph
+    /ltype
     endof
   north~ of
     s" Las rocas" location-31~ has-north-exit?
     if  (rocks)-on-the-floor$
     else  (they)-block$ the-pass$ txt+
-    then  txt+ period+ paragraph
+    then  txt+ period+ /ltype
     endof
   west~ of
     ^that-way$ s" se encuentra el inicio de la espiral." txt+
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1563,15 +1563,15 @@ location-31~ :init  ( -- )
   my-holder of
     s" El camino ahora no excede de dos palmos de cornisa sobre un abismo insondable."
     s" El soporte de roca gira en forma de «U» de oeste a sur." txt+
-    paragraph
+    /ltype
     endof
   south~ of
     ^the-path$ s" gira" txt+ that-way$ txt+ period+
-    paragraph
+    /ltype
     endof
   west~ of
     ^the-path$ s" gira" txt+ that-way$ txt+ period+
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1590,20 +1590,20 @@ location-32~ :init  ( -- )
   sight case
   my-holder of
     s" El paso se va haciendo menos estrecho a medida que se avanza hacia el sur, para entonces comenzar hacia el este."
-    paragraph
+    /ltype
     endof
   north~ of
     ^the-path$ s" se estrecha" txt+ that-way$ txt+ period+
-    paragraph
+    /ltype
     endof
   south~ of
     ^the-path$ gets-wider$ txt+ that-way$ txt+
     s" y entonces gira hacia el este." txt+
-    paragraph
+    /ltype
     endof
   east~ of
     ^the-path$ gets-wider$ txt+ that-way$ txt+ period+
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1622,15 +1622,15 @@ location-33~ :init  ( -- )
   my-holder of
     s" El paso" gets-wider$ txt+ s" de oeste a norte," txt+
     s" y guijarros mojados y mohosos tachonan el suelo de roca." txt+
-    paragraph
+    /ltype
     endof
   north~ of
     ^the-path$ gets-wider$ txt+ that-way$ txt+ period+
-    paragraph
+    /ltype
     endof
   west~ of
     ^the-path$ s" se estrecha" txt+ that-way$ txt+ period+
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1651,19 +1651,19 @@ location-34~ :init  ( -- )
   my-holder of
     s" Un puente" s{ s" se tiende" s" cruza" }s txt+ s" de norte a sur sobre el curso del agua." txt+
     s" Unas resbaladizas escaleras" txt+ (they)-go-down$ txt+ s" hacia el oeste." txt+
-    paragraph
+    /ltype
     endof
   north~ of
-    bridge-that-way$ paragraph
+    bridge-that-way$ /ltype
     endof
   south~ of
-    bridge-that-way$ paragraph
+    bridge-that-way$ /ltype
     endof
   west~ of
-    stairway-to-river$ paragraph
+    stairway-to-river$ /ltype
     endof
   down~ of
-    stairway-to-river$ paragraph
+    stairway-to-river$ /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1686,16 +1686,16 @@ location-35~ :init  ( -- )
     s{ s" con" s" siguiendo" }s txt+ s" el" txt+ pass-way$ txt+
     s" elevado desde el oeste, y forma un meandro arenoso." txt+
     s" Unas escaleras" txt+ (they)-go-up$ txt+ toward-the(m)$ txt+ s" este." txt+
-    paragraph
+    /ltype
     endof
   east~ of
-    stairway-that-way$ paragraph
+    stairway-that-way$ /ltype
     endof
   west~ of
-    ^water-from-there$ period+ paragraph
+    ^water-from-there$ period+ /ltype
     endof
   up~ of
-    stairway-that-way$ paragraph
+    stairway-that-way$ /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1719,17 +1719,17 @@ location-36~ :init  ( -- )
     }s txt+ s" que" txt+ lets-you$ txt+ to-keep-going$ txt+
     toward-the(m)$ s" este" txt+
     toward-the(m)$ s" oeste" txt+ rnd2swap s" o" txt+ 2swap txt+ txt+
-    period+ paragraph
+    period+ /ltype
     endof
   east~ of
     ^the-pass-way$ s" elevado" 50%nullify txt+ lets-you$ txt+ to-keep-going$ txt+ that-way$ txt+ period+
-    paragraph
+    /ltype
     endof
   west~ of
     water-from-there$
     the-pass-way$ s" elevado" 50%nullify txt+ lets-you$ txt+ to-keep-going$ txt+ that-way$ txt+
     both s" también" txt+ xcapitalized period+
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1752,15 +1752,15 @@ location-37~ :init  ( -- )
     s{ s" embalsarse" s" haberse embalsado" }s txt+
     s" en un lago" txt+
     s{ s" no muy" s" no demasiado" s" poco" }s txt+ s" profundo." txt+
-    paragraph
+    /ltype
     endof
   east~ of
-    water-that-way$ paragraph
+    water-that-way$ /ltype
     endof
   west~ of
     ^water-from-there$
     s" , de" s+ waterfall~ full-name txt+ period+
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1785,10 +1785,10 @@ location-38~ :init  ( -- )
     s{ s" subido" s" crecido" }s txt+
     s{ s" un poco" s" algo" }s txt+ s" en este" txt+
     s{ s" curioso" s" extraño" }s txt+ s" hueco." txt+
-    paragraph
+    /ltype
     endof
   east~ of
-    s" Es la única salida." paragraph
+    s" Es la única salida." /ltype
       \ XXX TODO -- variar
     endof
   uninteresting-direction
@@ -1809,15 +1809,15 @@ location-39~ :init  ( -- )
   my-holder of
     s" Una gran explanada enlosetada contempla un bello panorama de estalactitas."
     s" Unos casi imperceptibles escalones conducen al este." txt+
-    paragraph
+    /ltype
     endof
   south~ of
     ^that-way$ s" se va" txt+ toward-the(m)$ txt+ s" puente." txt+
-    paragraph
+    /ltype
     endof
   east~ of
     s" Los escalones" (they)-lead$ txt+ that-way$ txt+ period+
-    paragraph
+    /ltype
     endof
   up~ of
     s{ s" Sobre" s" Por encima de" }s
@@ -1825,11 +1825,11 @@ location-39~ :init  ( -- )
     s{ s" exhibe" s" extiende" s" disfruta" }s txt+
     s" un" txt+ beautiful(m)$ txt+
     s{ s" panorama" s" paisaje" }s txt+ s" de estalactitas." txt+
-    paragraph
+    /ltype
     endof
   down~ of
     s" Es una" s{ s" gran" s" buena" }s txt+ s" explanada enlosetada." txt+
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1849,16 +1849,16 @@ location-40~ :init  ( -- )
   my-holder of
     s" El ídolo parece un centinela siniestro de una gran roca que se encuentra al sur."
     s" Se puede" txt+ to-go-back$ txt+ toward$ txt+ s" la explanada hacia el oeste." txt+
-    paragraph
+    /ltype
     endof
   south~ of
     s" Hay una" s" roca" s" enorme" rnd2swap txt+ txt+
     that-way$ txt+ period+
-    paragraph
+    /ltype
     endof
   west~ of
     s" Se puede volver" toward$ txt+ s" la explanada" txt+ that-way$ txt+ period+
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1876,12 +1876,12 @@ location-41~ :init  ( -- )
   sight case
   my-holder of
     s" Como un pasillo que corteja el canal de agua, a su lado, baja de norte a sur."
-    paragraph
+    /ltype
     endof
   north~ of
     ^the-pass-way$ goes-up$ txt+ that-way$ txt+
     s" , de donde" s{ s" corre" s" procede" s" viene" s" proviene" }s txt+ s" el agua." txt+ s+
-    paragraph
+    /ltype
     endof
   south~ of
     ^the-pass-way$ goes-down$ txt+ that-way$ txt+
@@ -1889,7 +1889,7 @@ location-41~ :init  ( -- )
     s" hacia un lugar en que" txt+
     s{ s" se aprecia" s" puede apreciarse" s" se distingue" }s txt+
     s" un aumento de luz." txt+
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1905,18 +1905,18 @@ location-42~ :init  ( -- )
   sight case
   my-holder of
     ^the-pass-way$ s" sigue de norte a sur." txt+
-    paragraph
+    /ltype
     endof
   north~ of
     ^the-pass-way$ s" continúa" txt+ that-way$ txt+ period+
-    paragraph
+    /ltype
     endof
   south~ of
     snake~ is-here?
     if  a-snake-blocks-the-way$
     else  ^the-pass-way$ s" continúa" txt+ that-way$ txt+
     then  period+
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1942,15 +1942,15 @@ location-43~ :init  ( -- )
     s" a un" txt+ beautiful(m)$ txt+ s" lago interior, hacia el oeste." txt+
     s" Al norte, un oscuro y"
     narrow(m)$ txt+ pass-way$ txt+ goes-up$ txt+ period+ 50%nullify txt+
-    paragraph
+    /ltype
     endof
   north~ of
     s" Un pasaje oscuro y" narrow(m)$ txt+ goes-up$ txt+ that-way$ txt+ period+
-    paragraph
+    /ltype
     endof
   west~ of
     s" Las escaleras" (they)-lead$ txt+ that-way$ txt+ s" , hacia el lago" 50%nullify s+ period+
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -1971,24 +1971,24 @@ location-44~ :init  ( -- )
   my-holder of
     ^narrow(mp)$ pass-ways$ txt+
     s" permiten ir al oeste, al este y al sur." txt+
-    paragraph
+    /ltype
     endof
   south~ of
     ^a-narrow-pass-way$ s" permite ir" txt+ that-way$ txt+
     s" , de donde" s+ s{ s" proviene" s" procede" }s txt+
     s{ s" una gran" s" mucha" }s txt+ s" luminosidad." txt+
-    paragraph
+    /ltype
     endof
   west~ of
     ^a-narrow-pass-way$ leads$ txt+ that-way$ txt+ period+
-    paragraph
+    /ltype
     endof
   east~ of
     ^a-narrow-pass-way$ leads$ txt+ that-way$ txt+ period+
     s" , de donde" s{ s" proviene" s" procede" }s txt+
     s{ s" algo de" s" una poca" s" un poco de" }s txt+
     s{ s" claridad" s" luz" }s txt+ period+ s+
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -2007,13 +2007,13 @@ location-45~ :init  ( -- )
   my-holder of
     s" Un catre, algunas velas y una mesa es todo lo que"
     s{ s" tiene" s" posee" }s s" Ambrosio" rnd2swap txt+ txt+
-    period+  paragraph
+    period+  /ltype
     endof
   east~ of
     s" La salida"
     s{ s" de la casa" s" del hogar" }s s" de Ambrosio" txt+ 50%nullify txt+
     s" está" txt+ that-way$ txt+ period+
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -2040,17 +2040,17 @@ location-46~ :init  ( -- )
       else  s" parece ser" txt+
       then  s" la salida de la cueva." txt+
     then
-    paragraph
+    /ltype
     endof
   north~ of
-    s" Hay salida" that-way$ txt+ period+ paragraph
+    s" Hay salida" that-way$ txt+ period+ /ltype
       \ XXX TODO -- variar el texto
     endof
   west~ of
     door~ is-open?
     if    s" La luz diurna entra por la puerta."
     else  s" Se adivina la luz diurna al otro lado de la puerta."
-    then  paragraph
+    then  /ltype
       \ XXX TODO -- variar el texto
     endof
   uninteresting-direction
@@ -2080,7 +2080,7 @@ location-47~ :init  ( -- )
     s" reconocer la entrada de la cueva, al este." txt+
     ^the-path$ txt+ s{ s" parte" s" sale" }s txt+
     s" del bosque hacia el oeste." txt+
-    paragraph
+    /ltype
     endof
   east~ of
     s" La entrada de la cueva" s{
@@ -2093,11 +2093,11 @@ location-47~ :init  ( -- )
     else
       s{ s" especialmente" s" sobre todo" }s txt+ when-the-door$ txt+
       s{ s" no está abierta" s" está cerrada" }s txt+ like-now$+
-    then  period+ paragraph
+    then  period+ /ltype
     endof
   west~ of
     ^the-path$ s{ s" parte" s" sale" }s txt+ s" del bosque" txt+ in-that-direction$ txt+
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -2117,16 +2117,16 @@ location-48~ :init  ( -- )
     ^the-path$ s" recorre" txt+ s" toda" 50%nullify txt+
     s" esta" txt+ s{ s" parte" s" zona" }s txt+
     s" del bosque de este a oeste." txt+
-    paragraph
+    /ltype
     endof
   east~ of
     ^the-path$ leads$ txt+
     s" al bosque a la entrada de la cueva." txt+
-    paragraph
+    /ltype
     endof
   west~ of
     ^the-path$ s" continúa" txt+ in-that-direction$ txt+ period+
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -2143,15 +2143,15 @@ location-49~ :init  ( -- )
     s" El camino norte" s{ s" que sale" s" que parte" s" procedente" }s txt+
     s" de Westmorland se" s{ s" interna" s" adentra" }s txt+ s" en el bosque," txt+
     s" aunque en tu estado no puedes ir." txt+
-    paragraph
+    /ltype
     endof
   south~ of
     s{ s" ¡Westmorland!" s" Westmorland..." }s
-    paragraph
+    /ltype
     endof
   east~ of
     ^can-see$ s" el sendero del bosque." txt+
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -2167,11 +2167,11 @@ location-50~ :init  ( -- )
   my-holder of
     ^the-village$ s" bulle de actividad con el mercado en el centro de la plaza," txt+
     s" donde se encuentra el castillo." txt+
-    paragraph
+    /ltype
     endof
   north~ of
     s" El camino norte" of-the-village$ txt+ leads$ txt+ s" hasta el bosque." txt+
-    paragraph
+    /ltype
     endof
   uninteresting-direction
   endcase  ;
@@ -2189,7 +2189,7 @@ location-51~ :init  ( -- )
 
 : describe-cave  ( -- )
   s" La cueva es húmeda y sombría."
-  paragraph  ;
+  /ltype  ;
   \ XXX TODO -- mejorar
 
 cave~ :init  ( -- )
@@ -2199,7 +2199,7 @@ cave~ :init  ( -- )
 
 : describe-ceiling  ( -- )
   s" El techo es muy bonito."
-  paragraph  ;
+  /ltype  ;
   \ XXX TODO
 
 ceiling~ :init  ( -- )
@@ -2211,7 +2211,7 @@ ceiling~ :init  ( -- )
   s" Los estratocúmulos que traen la nieve y que cuelgan sobre la Tierra"
   s" en la estación del frío se han alejado por el momento. " txt+
     \ XXX TMP
-  2 random if  paragraph  else  2drop sky~ describe  then  ;
+  2 random if  /ltype  else  2drop sky~ describe  then  ;
     \ XXX TODO -- comprobar
 
 clouds~ :init  ( -- )
@@ -2224,8 +2224,8 @@ clouds~ :init  ( -- )
 
 : describe-floor  ( -- )
   am-i-outdoor?
-  if    s" [El suelo fuera es muy bonito.]" paragraph
-  else  s" [El suelo dentro es muy bonito.]" paragraph  then  ;
+  if    s" [El suelo fuera es muy bonito.]" /ltype
+  else  s" [El suelo dentro es muy bonito.]" /ltype  then  ;
   \ XXX TMP
   \ XXX TODO
 
@@ -2237,7 +2237,7 @@ floor~ :init  ( -- )
 
 : describe-sky  ( -- )
   s" [El cielo es muy bonito.]"
-  paragraph  ;
+  /ltype  ;
   \ XXX TODO
   \ XXX TMP
 
@@ -2250,7 +2250,7 @@ sky~ :init  ( -- )
 
 : describe-wall  ( -- )
   s" [La pared es muy bonita.]"
-  paragraph  ;
+  /ltype  ;
   \ XXX TODO
   \ XXX TMP
 
@@ -2281,7 +2281,7 @@ inventory~ :init  ( -- )
   battle# @
   if    s" [Enemigo en batalla.]"
   else  s" [Enemigo en paz.]"
-  then  paragraph  ;
+  then  /ltype  ;
   \ XXX TMP
   \ XXX TODO -- inconcluso
 
@@ -2340,8 +2340,8 @@ up~ :init  ( -- )
 
 : describe-down  ( -- )
   am-i-outdoor?
-  if    s" [El suelo exterior es muy bonito.]" paragraph
-  else  s" [El suelo interior es muy bonito.]" paragraph
+  if    s" [El suelo exterior es muy bonito.]" /ltype
+  else  s" [El suelo interior es muy bonito.]" /ltype
   then  ;
   \ XXX TMP
   \ XXX TODO
@@ -2369,6 +2369,9 @@ in~ :init  ( -- )
 
 \ 2017-11-10: Update to Talanto 0.62.0: replace field notation
 \ "location" with "holder".
+\
+\ 2017-11-17: Update from Galope's deprecated module <print.fs> to
+\ <l-type.fs>.
 
 \ vim:filetype=gforth:fileencoding=utf-8
 

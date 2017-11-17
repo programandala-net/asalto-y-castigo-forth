@@ -7,7 +7,7 @@
 \
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 \
-\ Last modified 201711160140
+\ Last modified 201711171719
 
 \ ==============================================================
 \ Credits
@@ -157,7 +157,7 @@ run  \ XXX TMP
 \ cr .( test done) cr cr
 
 : i0  ( -- )
-  init-session init-game  s" Data are ready." paragraph  ;
+  init-session init-game  s" Data are ready." /ltype  ;
   \ XXX TMP -- for debugging
 
 \ i0 cr  \ XXX TMP -- for debugging
@@ -168,6 +168,8 @@ run  \ XXX TMP
 \ Change log
 
 \ 2017-11-16: Update parser's name and id after changes in Talanto.
+\
+\ 2017-11-17: Update from Galope's deprecated module <print.fs> to
+\ <l-type.fs>.
 
 \ vim:filetype=gforth
-

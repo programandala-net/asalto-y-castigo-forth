@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2017
 
-\ Last modified 201711091725
+\ Last modified 201711171346
 \ See change log at the end of the file
 
 \ ==============================================================
@@ -37,7 +37,7 @@ svariable command-prompt ( -- a )
 : command-prompt$  ( -- ca len )  command-prompt count  ;
 
 : /command  ( -- u )
-  cols /indentation @ - 1-
+  cols indentation1 - 1-
   cr-after-command-prompt? @ 0= abs command-prompt$ nip * -
   cr-after-command-prompt? @ 0= space-after-command-prompt? @ and abs -  ;
   \ Return the maximun length of a command.  The calculation is done
@@ -49,9 +49,9 @@ svariable command-prompt ( -- a )
   \ carriage return.
 
 : .command-prompt  ( -- )
-  command-prompt$ command-prompt-color paragraph
+  command-prompt$ command-prompt-color /ltype
   cr-after-command-prompt? @
-  if    cr+
+  if    lcr
   else  space-after-command-prompt?
         if  background-color space  then
   then  ;
@@ -101,5 +101,8 @@ svariable command-prompt ( -- a )
 \ English and improve documentation.
 \
 \ 2017-11-09: Update requirements to Galope 0.120.0.
+\
+\ 2017-11-17: Update from Galope's deprecated module <print.fs> to
+\ <l-type.fs>.
 
 \ vim:filetype=gforth:fileencoding=utf-8
