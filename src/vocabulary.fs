@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2017
 
-\ Last modified 201707071927
+\ Last modified 201711172315
 \ See change log at the end of the file
 
 \ Note: Most comments of the code are in Spanish.
@@ -1371,6 +1371,8 @@ player-wordlist dup >order set-current
 : #bye ( -- ) bye ;
   \ XXX TMP -- Para usar durante el desarrollo.
 
+: #.s ( -- ) .s ;
+
 restore-wordlists
 
 \ ==============================================================
@@ -1378,5 +1380,7 @@ restore-wordlists
 
 \ 2017-11-10: Update to Talanto 0.62.0: replace field notation
 \ "location" with "holder".
+\
+\ 2017-11-17: Add `#.s`.
 
 \ vim:filetype=gforth:fileencoding=utf-8
