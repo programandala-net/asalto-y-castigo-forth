@@ -59,11 +59,11 @@ true dup constant [old-method] immediate
 \ ----------------------------------------------
 \ Comprobación de la pila
 
-: depth-warning  ( -- )
-  cr ." Aviso: La pila no está vacía. Contenido: "  ;
+: depth-warning ( -- )
+  cr ." Aviso: La pila no está vacía. Contenido: " ;
 
-: ?.s  ( -- )
-  depth if  depth-warning .s cr  key drop  then  ;
+: ?.s ( -- )
+  depth if  depth-warning .s cr  key drop  then ;
   \ Imprime el contenido de la pila si no está vacía.
 
 \ ----------------------------------------------
@@ -71,8 +71,8 @@ true dup constant [old-method] immediate
 
 \ XXX OLD -- no se usa
 
-: fatal-error  ( f ca len -- )
-  rot if  ." Error fatal: " type cr bye  else  2drop  then  ;
+: fatal-error ( f ca len -- )
+  rot if  ." Error fatal: " type cr bye  else  2drop  then ;
   \ Si el indicador _f_ es distinto de cero,
   \ informa de un error _ca len_ y sale del sistema.
 
@@ -81,36 +81,36 @@ true dup constant [old-method] immediate
 
 \ XXX OLD
 
-: .stack  ( -- )
+: .stack ( -- )
   [false] [if]  \ XXX OLD
     ." Pila" depth
     if    ." :" .s ." ( " depth . ." )"
     else  ."  vacía."  then
   [else]  \ XXX NEW
     depth if  cr ." Pila: " .s cr  then
-  [then]  ;
+  [then] ;
   \ Imprime el estado de la pila.
 
-: .sb  ( -- )
-  ." Espacio para cadenas:" unused-stringer ?  ;
+: .sb ( -- )
+  ." Espacio para cadenas:" unused-stringer ? ;
   \ Imprime el estado del almacén circular de cadenas.
 
-: .system-status  ( -- )
-  ( .sb ) .stack  ;
+: .system-status ( -- )
+ ( .sb ) .stack ;
   \ Muestra el estado del sistema.
 
-: .debug-message  ( ca len -- )
-  dup if  cr type cr  else  2drop  then  ;
+: .debug-message ( ca len -- )
+  dup if  cr type cr  else  2drop  then ;
   \ Imprime el mensaje del punto de chequeo, si no está vacío.
 
-: debug-pause  ( -- )
-  [debug-pause] [if]  depth ?? key drop [then]  ;
+: debug-pause ( -- )
+  [debug-pause] [if]  depth ?? key drop [then] ;
   \ Pausa tras mostrar la información de depuración.
 
 defer debug-color
 
-: debug  ( ca len -- )
-  debug-color .debug-message .system-status debug-pause  ;
+: debug ( ca len -- )
+  debug-color .debug-message .system-status debug-pause ;
   \ Punto de chequeo: imprime un mensaje y muestra el estado del sistema.
 
 \ vim:filetype=gforth:fileencoding=utf-8

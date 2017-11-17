@@ -51,85 +51,85 @@ require talanto/well-done.fs
 
 ' narrate is type-well-done
 
-:noname  ( -- ca len )
+:noname ( -- ca len )
   s{ s" Hecho." s" Bien." }s  ; is well-done$
   \ Mensaje genérico de que una acción se ha realizado.
 
-: ?well-done  ( ca len -- )
-  3 random 0= if  2drop well-done  else  well-done-this  then  ;
+: ?well-done ( ca len -- )
+  3 random 0= if  2drop well-done  else  well-done-this  then ;
   \ Informa de que una acción se ha realizado, bien con el mensaje _ca
   \ len_ o, al azar (33% de probabilidades), con un mensaje genérico.
 
 \ ==============================================================
 \ Comprobación de los requisitos de las acciones
 
-: by-default  ( x1 x2 -- x1 | x2 )
-  over if  drop  else  nip  then  ;
+: by-default ( x1 x2 -- x1 | x2 )
+  over if  drop  else  nip  then ;
   \ Return _x2_ if _x1_ is zero.
 
 \ ==============================================================
 \ Acciones
 
-defer do-attack  ( -- )
-defer do-break  ( -- )
-defer do-climb  ( -- )
-defer do-close  ( -- )
-defer do-do  ( -- )
-defer do-drop  ( -- )
-defer do-examine  ( -- )
-defer do-exits  ( -- )
-defer do-frighten  ( -- )
-defer do-go  ( -- )
-defer do-go-ahead  ( -- )
-defer do-go-back  ( -- )
-defer do-go-down  ( -- )
-defer do-go-east  ( -- )
-defer do-go-in  ( -- )
-defer do-go-north  ( -- )
-defer do-go|do-break  ( -- )
-defer do-go-out  ( -- )
-defer do-go-south  ( -- )
-defer do-go-up  ( -- )
-defer do-go-west  ( -- )
-defer do-hit  ( -- )
-defer do-introduce-yourself  ( -- )
-defer do-inventory  ( -- )
-defer do-kill  ( -- )
-defer do-look  ( -- )
-defer do-look-to-direction  ( -- )
-defer do-look-yourself  ( -- )
-defer do-make  ( -- )
-defer do-open  ( -- )
-defer do-put-on  ( -- )
-defer do-search  ( -- )
-defer do-sharpen  ( -- )
-defer do-speak  ( -- )
-defer do-swim  ( -- )
-defer do-take  ( -- )
-defer do-take|do-eat  ( -- )  \ XXX TODO -- cambiar do-eat por ingerir
-defer do-take-off  ( -- )
-defer do-and  ( -- )
+defer do-attack ( -- )
+defer do-break ( -- )
+defer do-climb ( -- )
+defer do-close ( -- )
+defer do-do ( -- )
+defer do-drop ( -- )
+defer do-examine ( -- )
+defer do-exits ( -- )
+defer do-frighten ( -- )
+defer do-go ( -- )
+defer do-go-ahead ( -- )
+defer do-go-back ( -- )
+defer do-go-down ( -- )
+defer do-go-east ( -- )
+defer do-go-in ( -- )
+defer do-go-north ( -- )
+defer do-go|do-break ( -- )
+defer do-go-out ( -- )
+defer do-go-south ( -- )
+defer do-go-up ( -- )
+defer do-go-west ( -- )
+defer do-hit ( -- )
+defer do-introduce-yourself ( -- )
+defer do-inventory ( -- )
+defer do-kill ( -- )
+defer do-look ( -- )
+defer do-look-to-direction ( -- )
+defer do-look-yourself ( -- )
+defer do-make ( -- )
+defer do-open ( -- )
+defer do-put-on ( -- )
+defer do-search ( -- )
+defer do-sharpen ( -- )
+defer do-speak ( -- )
+defer do-swim ( -- )
+defer do-take ( -- )
+defer do-take|do-eat ( -- ) \ XXX TODO -- cambiar do-eat por ingerir
+defer do-take-off ( -- )
+defer do-and ( -- )
 
 \ ----------------------------------------------
 \ Mirar, examinar y registrar
 
-: (do-look)  ( a -- )
+: (do-look) ( a -- )
   dup describe
-  dup is-location? ?? .present familiar++  ;
+  dup is-location? ?? .present familiar++ ;
   \ Mira un ente.
 
-: do-look-by-default  ( -- a )
-  main-complement my-holder by-default  ;
+: do-look-by-default ( -- a )
+  main-complement my-holder by-default ;
   \ Devuelve qué mirar.  Si falta el complemento principal, usar el
   \ escenario.
 
-:noname  ( -- )
+:noname ( -- )
   ?no-tool-complement
   do-look-by-default dup ?lookable (do-look)
   ; is do-look
   \  Acción de mirar.
 
-:noname  ( -- )
+:noname ( -- )
   ?no-tool-complement
   main-complement protagonist~ by-default
   (do-look)
@@ -138,7 +138,7 @@ defer do-and  ( -- )
   \  XXX TODO -- factorizar la operación de elegir un ente
   \  predeterminado `by-default`.
 
-:noname  ( -- )
+:noname ( -- )
   ?no-tool-complement
   main-complement
   if    main-complement ?direction
@@ -147,12 +147,12 @@ defer do-and  ( -- )
   ; is do-look-to-direction
   \  Acción de otear.
 
-:noname  ( -- )
+:noname ( -- )
   do-look
   ; is do-examine
   \ Acción de examinar.
 
-:noname  ( -- )
+:noname ( -- )
   do-look
   ; is do-search
   \ Acción de registrar.
@@ -170,50 +170,50 @@ create do-exits-table-index  #exits cells allot
 variable #free-exits
   \ Contador de las salidas posibles.
 
-: no-exit$  ( -- ca len )
+: no-exit$ ( -- ca len )
   s" No hay"
-  s{ s" salidas" s" salida" s" ninguna salida" }s txt+  ;
+  s{ s" salidas" s" salida" s" ninguna salida" }s txt+ ;
   \ Devuelve mensaje usado cuando no hay salidas que listar.
 
-: go-out$  ( -- ca len )
-  s{ s" salir" s" seguir" }s  ;
+: go-out$ ( -- ca len )
+  s{ s" salir" s" seguir" }s ;
 
 : go-out-to& ( ca len -- ca1 len1 )
-  go-out$ txt+ s" hacia" txt+  ;
+  go-out$ txt+ s" hacia" txt+ ;
 
-: one-exit-only$  ( -- ca len )
+: one-exit-only$ ( -- ca len )
   s{
   s" La única salida" possible1$ txt+ s" es" txt+ s" hacia" 50%nullify txt+
   ^only$ s" hay salida" txt+ possible1$ txt+ s" hacia" txt+
   ^only$ s" es posible" txt+ go-out-to&
   ^only$ s" se puede" txt+ go-out-to&
-  }s  ;
+  }s ;
   \ Devuelve mensaje usado cuando solo hay una salidas que listar.
 
-: possible-exits$  ( -- ca len )
-  s" salidas" possible2$ txt+  ;
+: possible-exits$ ( -- ca len )
+  s" salidas" possible2$ txt+ ;
 
-: several-exits$  ( -- ca len )
+: several-exits$ ( -- ca len )
   s{
   s" Hay" possible-exits$ txt+ s" hacia" txt+
   s" Las" possible-exits$ txt+ s" son" txt+
-  }s  ;
+  }s ;
   \ Devuelve mensaje usado cuando hay varias salidas que listar.
 
-: .exits  ( -- )
+: .exits ( -- )
   #listed @ case
     0 of  no-exit$  endof
     1 of  one-exit-only$  endof
     several-exits$ rot
   endcase
-  out-str str-prepend-txt out-str str-get period+ narrate  ;
+  out-str str-prepend-txt out-str str-get period+ narrate ;
   \ Imprime las salidas posibles.
 
-: exit-separator$  ( -- ca len )
-  #free-exits @ #listed @ list-separator$  ;
+: exit-separator$ ( -- ca len )
+  #free-exits @ #listed @ list-separator$ ;
   \ Devuelve el separador adecuado a la salida actual.
 
-: exit>list  ( u -- )
+: exit>list ( u -- )
   [debug-do-exits] [if]  cr ." exit>list" cr .stack  [then]  \ XXX INFORMER
   exit-separator$ out-str str-append-string
   exits-table@ full-name out-str str-append-string
@@ -228,7 +228,7 @@ false [if]
   \ XXX OLD -- Primera versión: Las salidas se listan siempre en el
   \ mismo orden en el que están definidas en las fichas.
 
-: free-exits  ( a -- u )
+: free-exits ( a -- u )
   [debug-do-exits] [if]  cr ." free-exits" cr .stack  [then]  \ XXX INFORMER
   0 swap
   ~first-exit /exits bounds do
@@ -238,7 +238,7 @@ false [if]
   [debug-do-exits] [if]  cr .stack  [then]  ;  \ XXX INFORMER
   \ Devuelve el número de salidas posibles de un ente.
 
-:noname  ( -- )
+:noname ( -- )
   out-str str-clear
   #listed off
   my-holder dup free-exits #free-exits !
@@ -261,7 +261,7 @@ false [if]
   \ Ente del que queremos calcular las salidas libres (para
   \ simplificar el manejo de la pila en el bucle).
 
-: free-exits  ( a -- a1 ... au u )
+: free-exits ( a -- a1 ... au u )
   [debug-do-exits] [if]  cr ." free-exits" cr .stack  [then]  \ XXX INFORMER
   to this-location  depth >r
   last-exit> 1+ first-exit> do
@@ -272,17 +272,17 @@ false [if]
   \ Devuelve el número de salidas _u_ posibles de un ente _a_.
   \ _a1 ... au_ son los entes de salida del ente _a_.
 
-: (list-exits)  ( -- )
+: (list-exits) ( -- )
   out-str str-clear
   #listed off
   my-holder free-exits
   dup >r shuffle r>  dup #free-exits !
-  0 ?do  exit>list  loop  .exits  ;
+  0 ?do  exit>list  loop  .exits ;
   \ Crea la lista de salidas y la imprime
 
 ' (list-exits) is describe-exits
 
-:noname  ( -- )
+:noname ( -- )
   ?no-tool-complement
   main-complement ?dup if
     dup my-holder <> swap direction 0= and ?? nonsense.error
@@ -295,28 +295,28 @@ false [if]
 \ ----------------------------------------------
 \ Ponerse y quitarse prendas
 
-: >you-take-it$  ( a -- ca len )
+: >you-take-it$ ( a -- ca len )
   s{ s" Recoges" s" Tomas" s" Coges" }s
-  rot full-name txt+  ;
+  rot full-name txt+ ;
   \ XXX TODO -- configurar español americano
 
-: >you-put-on$  ( a -- ca len )
-  s" Te pones" rot full-name txt+ period+  ;
+: >you-put-on$ ( a -- ca len )
+  s" Te pones" rot full-name txt+ period+ ;
 
-: silently-do-take  ( -- )
-  show-well-done off  do-take  show-well-done on  ;
+: silently-do-take ( -- )
+  show-well-done off  do-take  show-well-done on ;
 
-: (do-put-on)  ( a -- )
+: (do-put-on) ( a -- )
   dup is-hold?
   if    dup >you-put-on$
   else  silently-do-take
         dup dup >you-take-it$ s" y te" txt+
         rot direct-pronoun txt+ s" pones." txt+
-  then  ( a ca len ) rot be-worn well-done-this  ;
+  then ( a ca len ) rot be-worn well-done-this ;
   \ Ponerse una prenda.
   \ XXX TODO -- mejorar el mensaje
 
-:noname  ( -- )
+:noname ( -- )
   ?no-tool-complement
   ?main-complement
   main-complement ?not-worn-by-me
@@ -325,22 +325,22 @@ false [if]
   ; is do-put-on
   \ Acción de ponerse una prenda.
 
-: >you-take-off-it$  ( a -- ca len )
-  s" Te quitas" rot full-name txt+  ;
+: >you-take-off-it$ ( a -- ca len )
+  s" Te quitas" rot full-name txt+ ;
 
-: you-take-off-main-complement$  ( -- ca len )
-  main-complement >you-take-off-it$  ;
+: you-take-off-main-complement$ ( -- ca len )
+  main-complement >you-take-off-it$ ;
 
-: do-take-off-done$  ( -- ca len )
-  you-take-off-main-complement$ period+  ;
+: do-take-off-done$ ( -- ca len )
+  you-take-off-main-complement$ period+ ;
   \ Devuelve el mensaje que informa de que el protagonista se ha
   \ quitado el complemento principal, una prenda.
 
-: (do-take-off)  ( a -- )
-  be-not-worn  do-take-off-done$ well-done-this  ;
+: (do-take-off) ( a -- )
+  be-not-worn  do-take-off-done$ well-done-this ;
   \ Quitarse una prenda.
 
-:noname  ( -- )
+:noname ( -- )
   ?no-tool-complement
   ?main-complement
   main-complement ?worn-by-me
@@ -355,53 +355,53 @@ false [if]
 \ : cannot-take-the-altar  \ No se puede tomar el altar
 \   s" [el altar no se toca]" narrate  \ XXX TMP
 \   impossible
-\   ;
+\  ;
 \ : cannot-take-the-flags  \ No se puede tomar las banderas
 \   s" [las banderas no se tocan]" narrate  \ XXX TMP
 \   nonsense.error
-\   ;
+\  ;
 \ : cannot-take-the-idol  \ No se puede tomar el ídolo
 \   s" [el ídolo no se toca]" narrate  \ XXX TMP
 \   impossible
-\   ;
+\  ;
 \ : cannot-take-the-door  \ No se puede tomar la puerta
 \   s" [la puerta no se toca]" narrate  \ XXX TMP
 \   impossible
-\   ;
+\  ;
 \ : cannot-take-the-fallen-away  \ No se puede tomar el derrumbe
 \   s" [el derrumbe no se toca]" narrate  \ XXX TMP
 \   nonsense.error
-\   ;
+\  ;
 \ : cannot-take-the-snake  \ No se puede tomar la serpiente
 \   s" [la serpiente no se toca]" narrate  \ XXX TMP
 \   dangerous
-\   ;
+\  ;
 \ : cannot-take-the-lake  \ No se puede tomar el lago
 \   s" [el lago no se toca]" narrate  \ XXX TMP
 \   nonsense.error
-\   ;
+\  ;
 \ : cannot-take-the-lock  \ No se puede tomar el candado
 \   s" [el candado no se toca]" narrate  \ XXX TMP
 \   impossible
-\   ;
+\  ;
 \ : cannot-take-the-water-fall  \ No se puede tomar la cascada
 \   s" [la cascada no se toca]" narrate  \ XXX TMP
 \   nonsense.error
-\   ;
+\  ;
 
-: cannot-take-the-flags.error  ( -- )
+: cannot-take-the-flags.error ( -- )
   no-reason-for$ s" ofender a" txt+
   talked-to-the-leader?
   if    s" los refugiados."
   else  s{ s" esta gente." s" estas personas." s" nadie." }s
-  then  txt+ action-error  ;
+  then  txt+ action-error ;
 
-: (do-take)  ( a -- )
+: (do-take) ( a -- )
   dup be-hold dup familiar++
-  >you-take-it$ period+ well-done-this  ;
+  >you-take-it$ period+ well-done-this ;
   \ Toma un ente _a_.
 
-: ?do-take  ( a -- )
+: ?do-take ( a -- )
   case
     altar~       of  impossible.error             endof
     door~        of  do-not-worry.error           endof
@@ -412,14 +412,14 @@ false [if]
     lock~        of  impossible.error             endof
     snake~       of  dangerous.error              endof
     waterfall~   of  nonsense.error               endof
-  endcase  ;
+  endcase ;
 
-: cannot-take-a-human  ( -- )
+: cannot-take-a-human ( -- )
   no-reason-for$
   s{ s" molestar" s" incomodar" s" ofender" }s txt+
   main-complement direct-pronoun s+ period+ narrate ;
 
-:noname  ( -- )
+:noname ( -- )
   ?main-complement
   main-complement ?not-hold
   main-complement ?here
@@ -431,31 +431,31 @@ false [if]
   ; is do-take
   \ Toma un ente, si es posible.
 
-: >do-drop-done$  ( a -- ca1 len1 ) { object }
+: >do-drop-done$ ( a -- ca1 len1 ) { object }
   s{ s" Te desprendes de" s" Dejas" }s
-  object full-name txt+ period+  ;
+  object full-name txt+ period+ ;
 
-: silently-do-take-off  ( -- )
-  show-well-done off  do-take-off  show-well-done on  ;
+: silently-do-take-off ( -- )
+  show-well-done off  do-take-off  show-well-done on ;
 
-: (do-drop)  ( a -- ) { object }
+: (do-drop) ( a -- ) { object }
   object is-worn?
   if    silently-do-take-off
         you-take-off-main-complement$ s" y" txt+
         s{ s" te desprendes de" object personal-pronoun txt+
         object direct-pronoun s" dejas" txt+ }s txt+ period+
   else  object >do-drop-done$
-  then  ( ca len )  object be-here  well-done-this  ;
+  then ( ca len ) object be-here  well-done-this ;
   \ Deja un ente _a_ que está en inventario.
 
-:noname  ( -- )
+:noname ( -- )
   \ Acción de dejar.
   ?main-complement
   main-complement ?hold
   main-complement (do-drop)
   ; is do-drop
 
-:noname  ( -- )
+:noname ( -- )
   \ Acción de desambiguación.
   \ XXX TODO
   do-take
@@ -464,122 +464,122 @@ false [if]
 \ ----------------------------------------------
 \ Cerrar y abrir
 
-: first-close-the-door  ( -- )
+: first-close-the-door ( -- )
   s" cierras" s" primero" rnd2swap txt+ xcapitalized
   door~ full-name txt+ period+ narrate
-  door~ be-closed  ;
+  door~ be-closed ;
   \ Informa de que la puerta está abierta
   \ y hay que cerrarla antes de poder cerrar el candado.
 
-: .the-key-fits  ( -- )
+: .the-key-fits ( -- )
   s" La llave gira fácilmente dentro del candado."
-  narrate  ;
+  narrate ;
   \ XXX TODO -- nuevo texto, quitar «fácilmente»
 
-: close-the-lock  ( -- )
+: close-the-lock ( -- )
   lock~ ?accessible
   key~ ?this-tool
   lock~ ?open
   key~ ?hold
   door~ is-open? ?? first-close-the-door
-  lock~ be-closed  .the-key-fits  ;
+  lock~ be-closed  .the-key-fits ;
   \ Cerrar el candado, si es posible.
   \ XXX TODO gestionar la herramienta
 
-: .the-door-closes  ( -- )
+: .the-door-closes ( -- )
   s" La puerta"
   s{ s" rechina" s" emite un chirrido" }s txt+
   s{ s" mientras la cierras" s" al cerrarse" }s txt+
-  period+ narrate  ;
+  period+ narrate ;
   \ Muestra el mensaje de cierre de la puerta.
 
-: (close-the-door)  ( -- )
+: (close-the-door) ( -- )
   door~ be-closed .the-door-closes
   location-47~ location-48~ w|<-->|
-  location-47~ location-48~ o|<-->|  ;
+  location-47~ location-48~ o|<-->| ;
   \ Cerrar la puerta.
 
-: close-and-lock-the-door  ( -- )
+: close-and-lock-the-door ( -- )
   door~ ?open  key~ ?hold
-  (close-the-door) close-the-lock  ;
+  (close-the-door) close-the-lock ;
   \ Cerrar la puerta, si está abierta, y el candado.
 
-: just-close-the-door  ( -- )
-  door~ ?open (close-the-door)  ;
+: just-close-the-door ( -- )
+  door~ ?open (close-the-door) ;
   \ Cerrar la puerta, sin candarla, si está abierta.
 
-: close-the-door  ( -- )
+: close-the-door ( -- )
   door~ ?accessible
   tool-complement ?dup
   if    key~ ?this-tool
         close-and-lock-the-door
-  else  just-close-the-door  then  ;
+  else  just-close-the-door  then ;
   \ Cerrar la puerta, si es posible.
 
-: close-it  ( a -- )
+: close-it ( a -- )
   case
     door~ of  close-the-door  endof
     lock~ of  close-the-lock  endof
     nonsense.error
-  endcase  ;
+  endcase ;
   \ Cerrar un ente, si es posible.
 
-:noname  ( -- )
+:noname ( -- )
   ?main-complement
   main-complement close-it
   ; is do-close
   \ Acción de cerrar.
 
-: the-door-is-locked  ( -- )
+: the-door-is-locked ( -- )
   lock~ ^full-name s" bloquea la puerta." txt+
   narrate
-  lock-found  ;
+  lock-found ;
   \ Informa de que la puerta está cerrada por el candado.
   \ XXX TODO -- añadir variantes
 
-: unlock-the-door  ( -- )
+: unlock-the-door ( -- )
   the-door-is-locked
   key~ ?needed
   lock~ dup be-open
-  ^pronoun s" abres con" txt+ key~ full-name txt+ period+ narrate  ;
+  ^pronoun s" abres con" txt+ key~ full-name txt+ period+ narrate ;
   \ Abrir la puerta candada, si es posible.
   \ XXX TODO -- falta mensaje adecuado sobre la llave que gira
 
-: open-the-lock  ( -- )
+: open-the-lock ( -- )
   lock~ ?accessible
   key~ ?this-tool
   lock~ ?closed
   key~ ?needed
-  lock~ be-open  well-done  ;
+  lock~ be-open  well-done ;
   \ Abrir el candado, si es posible.
   \ XXX TODO -- abrirlo aunque no se indique herramienta, si tenemos
   \ la llave.
 
-: the-plants$  ( -- ca len )
-  s" las hiedras" s" las hierbas" both  ;
+: the-plants$ ( -- ca len )
+  s" las hiedras" s" las hierbas" both ;
   \ Devuelve las plantas que la puerta rompe al abrirse.
   \ XXX TODO -- hacerlas visibles
 
-: the-door-breaks-the-plants-0$  ( -- ca len )
+: the-door-breaks-the-plants-0$ ( -- ca len )
   s{ s" mientras" s" al tiempo que" }s
-  the-plants$ txt+ s" se rompen en su trazado" txt+  ;
+  the-plants$ txt+ s" se rompen en su trazado" txt+ ;
   \ Devuelve el mensaje sobre la rotura de las plantas por la puerta
   \ (primera variante).
 
-: the-door-breaks-the-plants-1$  ( -- ca len )
-  s" rompiendo" the-plants$ txt+ s" a su paso" txt+  ;
+: the-door-breaks-the-plants-1$ ( -- ca len )
+  s" rompiendo" the-plants$ txt+ s" a su paso" txt+ ;
   \ Devuelve el mensaje sobre la rotura de las plantas por la puerta
   \ (segunda variante).
 
-: the-door-breaks-the-plants$  ( -- ca len )
+: the-door-breaks-the-plants$ ( -- ca len )
   ['] the-door-breaks-the-plants-0$
-  ['] the-door-breaks-the-plants-1$ 2 choose execute  ;
+  ['] the-door-breaks-the-plants-1$ 2 choose execute ;
   \ Devuelve el mensaje sobre la rotura de las plantas por la puerta.
 
-: the-door-sounds$  ( -- ca len )
-  s{ s" rechinando" s" con un chirrido" }s  ;
+: the-door-sounds$ ( -- ca len )
+  s{ s" rechinando" s" con un chirrido" }s ;
 
-: ambrosio-byes  ( -- )
+: ambrosio-byes ( -- )
   s" Ambrosio, alegre, se despide de ti:" narrate
   s{
   s{ s" Tengo" s" Ten" }s s" por seguro" txt+
@@ -599,57 +599,57 @@ false [if]
   s" , te das cuenta de que" s+ s" Ambrosio" 50%nullify txt+
   s" , misteriosamente," 50%nullify s+
   s{ s" ha desaparecido" s" se ha marchado" s" se ha ido" s" ya no está" }s txt+
-  period+ narrate  ;
+  period+ narrate ;
   \ Ambrosio se despide cuando se abre la puerta por primera vez.
 
-: the-door-opens-first-time$  ( -- ca len )
+: the-door-opens-first-time$ ( -- ca len )
   s" La puerta" s{ s" cede" s" se abre" }s txt+
   s{ s" despacio" s" poco a poco" s" lentamente" }s txt+
   s" y no sin" txt+
   s{ s" dificultad" s" ofrecer resistencia" }s txt+ comma+
   the-door-sounds$ comma+ txt+
-  the-door-breaks-the-plants$ txt+ period+  ;
+  the-door-breaks-the-plants$ txt+ period+ ;
   \ Devuelve el mensaje de apertura de la puerta
   \ la primera vez.
 
-: the-door-opens-once-more$  ( -- ca len )
-  s" La puerta se abre" the-door-sounds$ txt+ period+  ;
+: the-door-opens-once-more$ ( -- ca len )
+  s" La puerta se abre" the-door-sounds$ txt+ period+ ;
   \ Devuelve el mensaje de apertura de la puerta
   \ la segunda y siguientes veces.
 
-: .the-door-opens  ( -- )
+: .the-door-opens ( -- )
   door~ times-open
   if    the-door-opens-once-more$ narrate
-  else  the-door-opens-first-time$ narrate ambrosio-byes  then  ;
+  else  the-door-opens-first-time$ narrate ambrosio-byes  then ;
   \ Muestra el mensaje de apertura de la puerta.
 
-: (open-the-door)  ( -- )
+: (open-the-door) ( -- )
   key~ ?this-tool  \ XXX TODO ¿por qué aquí?
   lock~ is-closed? ?? unlock-the-door
   location-47~ location-48~ w<-->
   location-47~ location-48~ o<-->
   .the-door-opens
   door~ dup be-open times-open++
-  grass~ be-here  ;
+  grass~ be-here ;
   \ Abrir la puerta, que está cerrada.
 
-: open-the-door  ( -- )
+: open-the-door ( -- )
   door~ ?accessible
   door~ ?open
   ?no-tool-complement
-  (open-the-door)  ;
+  (open-the-door) ;
   \ Abrir la puerta, si es posible.
 
-: open-it  ( a -- )
+: open-it ( a -- )
   dup familiar++
   case
     door~ of  open-the-door  endof
     lock~ of  open-the-lock  endof
     nonsense.error
-  endcase  ;
+  endcase ;
   \ Abrir un ente, si es posible.
 
-:noname  ( -- )
+:noname ( -- )
   ?main-complement
   main-complement open-it
   ; is do-open
@@ -658,35 +658,35 @@ false [if]
 \ ----------------------------------------------
 \ Agredir
 
-: the-snake-runs-away$  ( -- ca len )
+: the-snake-runs-away$ ( -- ca len )
   s" la serpiente" txt+
   s{ s" huye" s" se aleja" s" se esconde"
      s" se da a la fuga" s" se quita de enmedio"
      s" se aparta" s" escapa" }s txt+
-  s{ null$ s" asustada" s" atemorizada" }s txt+ period+  ;
+  s{ null$ s" asustada" s" atemorizada" }s txt+ period+ ;
   \ Texto de que la serpiente huye.
 
-: the-snake-runs-away  ( ca len -- )
-  the-snake-runs-away$ txt+ narrate snake~ vanish  ;
+: the-snake-runs-away ( ca len -- )
+  the-snake-runs-away$ txt+ narrate snake~ vanish ;
 
-: attack-the-snake  ( -- )
+: attack-the-snake ( -- )
   sword~ ?needed
   s{ s" Sorprendida por" s" Ante" }s
-  s" los amenazadores tajos," the-snake-runs-away  ;
+  s" los amenazadores tajos," the-snake-runs-away ;
   \ Atacar la serpiente.
   \ XXX TODO -- gestionar la herramienta
 
-: (do-attack)  ( a -- )
+: (do-attack) ( a -- )
   case
     snake~    of  attack-the-snake  endof
     ambrosio~ of  no-reason.error   endof
     leader~   of  no-reason.error   endof
     soldiers~ of  no-reason.error   endof
     do-not-worry.error
-  endcase  ;
+  endcase ;
   \ Atacar un ser vivo.
 
-:noname  ( -- )
+:noname ( -- )
   ?main-complement
   main-complement ?living
   main-complement ?accessible
@@ -694,18 +694,18 @@ false [if]
   ; is do-attack
   \ Acción de atacar.
 
-: (do-frighten)  ( a -- )
+: (do-frighten) ( a -- )
   case
     snake~    of  attack-the-snake  endof
     ambrosio~ of  no-reason.error   endof
     leader~   of  no-reason.error   endof
     soldiers~ of  no-reason.error   endof
     do-not-worry.error
-  endcase  ;
+  endcase ;
   \ Asustar un ser vivo.
   \ XXX TODO diferenciar de atacar
 
-:noname  ( -- )
+:noname ( -- )
   ?main-complement
   main-complement ?beast
   main-complement ?accessible
@@ -713,26 +713,26 @@ false [if]
   ; is do-frighten
   \ Acción de asustar.
 
-: kill-the-snake  ( -- )
+: kill-the-snake ( -- )
   sword~ ?needed
   s{ s" Sorprendida por" s" Ante" }s
-  s" los amenazadores tajos," the-snake-runs-away  ;
+  s" los amenazadores tajos," the-snake-runs-away ;
   \ Matar la serpiente.
   \ XXX TODO -- gestionar herramienta
   \ XXX TODO -- diferenciar de atacar
 
-: (do-kill)  ( a -- )
+: (do-kill) ( a -- )
   case
     snake~    of  kill-the-snake   endof
     ambrosio~ of  no-reason.error  endof
     leader~   of  no-reason.error  endof
     soldiers~ of  no-reason.error  endof
     do-not-worry.error
-  endcase  ;
+  endcase ;
   \ Matar un ser vivo.
   \ XXX TODO diferenciar de atacar
 
-:noname  ( -- )
+:noname ( -- )
   ?main-complement
   main-complement ?living
   main-complement ?accessible
@@ -741,66 +741,66 @@ false [if]
   \ Acción de matar.
   \ XXX TODO diferenciar de atacar
 
-: cloak-piece  ( a -- )
-  2 random if  be-here  else  be-hold  then  ;
+: cloak-piece ( a -- )
+  2 random if  be-here  else  be-hold  then ;
   \ Hace aparecer un resto de la capa rota de forma aleatoria:
   \ en el escenario o en el inventario.
   \ XXX TODO -- mejorar con mensajes, ejemplo:
   \ s" Un hilo se ha desprendido al cortar la capa con la espada."
 
-: cloak-pieces  ( -- )
-  rags~ cloak-piece  thread~ cloak-piece  piece~ cloak-piece  ;
+: cloak-pieces ( -- )
+  rags~ cloak-piece  thread~ cloak-piece  piece~ cloak-piece ;
   \ Hace aparecer los restos de la capa rota de forma aleatoria:
   \ en el escenario o en el inventario.
 
-: take-sword-if-needed  ( -- )
-  sword~ is-not-hold? if  sword~ (do-take)  then  ;
+: take-sword-if-needed ( -- )
+  sword~ is-not-hold? if  sword~ (do-take)  then ;
 
-: shatter-the-cloak-with-the-sword  ( -- )
+: shatter-the-cloak-with-the-sword ( -- )
   take-sword-if-needed
   using$ sword~ full-name txt+ comma+
   s" rasgas" txt+ cloak~ full-name txt+ period+ narrate
-  cloak-pieces  cloak~ vanish  ;
+  cloak-pieces  cloak~ vanish ;
 
-: objects-that-could-cut  ( -- a#1..a#n n )
+: objects-that-could-cut ( -- a#1..a#n n )
   arch~ cuirasse~ emerald~ flint~ idol~ key~
-  lock~ rocks~ stone~ table~ torch~  11  ;
+  lock~ rocks~ stone~ table~ torch~  11 ;
   \ Entities that could be used to cut something, not including the
   \ sword.
 
-: could-cut?  ( a -- f )  objects-that-could-cut any?  ;
+: could-cut? ( a -- f ) objects-that-could-cut any? ;
   \ Could entity _a_ be used to cut something (without considering the
   \ sword)?
 
-: shatter-the-cloak-with-a-useless-tool  ( a -- )
-  dup ?accessible useless-tool.error  ;
+: shatter-the-cloak-with-a-useless-tool ( a -- )
+  dup ?accessible useless-tool.error ;
 
-: shatter-the-cloak-with-a-tool  ( a -- )
+: shatter-the-cloak-with-a-tool ( a -- )
   dup is-living-being? ?? nonsense.error
   dup could-cut? ?? shatter-the-cloak-with-a-useless-tool
   sword~ ?this-tool
   sword~ ?accessible
-  shatter-the-cloak-with-the-sword  ;
+  shatter-the-cloak-with-the-sword ;
 
-: shatter-the-cloak-without-a-explicit-tool  ( -- )
+: shatter-the-cloak-without-a-explicit-tool ( -- )
   sword~ is-not-accessible? ?? not-by-hand.error
-  shatter-the-cloak-with-the-sword  ;
+  shatter-the-cloak-with-the-sword ;
 
-: try-to-shatter-the-cloak  ( -- )
+: try-to-shatter-the-cloak ( -- )
   tool-complement ?dup
   if    shatter-the-cloak-with-a-tool
-  else  shatter-the-cloak-without-a-explicit-tool  then  ;
+  else  shatter-the-cloak-without-a-explicit-tool  then ;
   \ Intenta romper la capa.
 
-: (do-break)  ( a -- )
+: (do-break) ( a -- )
   case
     snake~ of  kill-the-snake            endof  \ XXX TMP
     cloak~ of  try-to-shatter-the-cloak  endof
     do-not-worry.error
-  endcase  ;
+  endcase ;
   \ Romper un ente.
 
-:noname  ( -- )
+:noname ( -- )
   ?main-complement
   main-complement ?accessible
   \ main-complement ?breakable  \ XXX TODO
@@ -808,29 +808,29 @@ false [if]
   ; is do-break
   \ Acción de romper.
 
-: lit-the-torch  ( -- )
+: lit-the-torch ( -- )
   s" Poderosas chispas salen del choque entre espada y pedernal,"
   s" encendiendo la antorcha." txt+ narrate
-  torch~ be-lighted  ;
+  torch~ be-lighted ;
   \ XXX TODO -- variar el texto
 
-: hit-the-flint  ( -- )
+: hit-the-flint ( -- )
   flint~ ?accessible
   sword~ be-hold
   using$ sword~ full-name txt+ comma+
   s" golpeas" txt+ flint~ full-name txt+ period+ narrate
-  lit-the-torch  ;
+  lit-the-torch ;
 
-: (do-hit)  ( a -- )
+: (do-hit) ( a -- )
   case
     snake~ of  kill-the-snake            endof
     cloak~ of  try-to-shatter-the-cloak  endof
     flint~ of  hit-the-flint             endof
     do-not-worry.error
-  endcase  ;
+  endcase ;
   \ Golpear un ente.
 
-:noname  ( -- )
+:noname ( -- )
   ?main-complement
   main-complement ?accessible
   main-complement (do-hit)
@@ -838,15 +838,15 @@ false [if]
   ; is do-hit
   \ Acción de golpear.
 
-: log-already-sharpened$  ( -- ca len )
+: log-already-sharpened$ ( -- ca len )
   s" Ya" s{ s" lo afilaste antes"
             s" está afilado de antes"
             s" tiene una buena punta"
             s" quedó antes bien afilado"
-         }s txt+  ;
+         }s txt+ ;
   \ Devuelve una variante de «Ya está afilado».
 
-: no-need-to-do-it-again$  ( -- ca len )
+: no-need-to-do-it-again$ ( -- ca len )
   s{
   s" no es necesario"
   s" no hace" s" ninguna" 50%nullify txt+ s" falta" txt+
@@ -862,47 +862,47 @@ false [if]
   s" hacerlo"
   s" volver a hacerlo"
   s" repetirlo"
-  }s txt+ again$ txt+  ;
+  }s txt+ again$ txt+ ;
   \ Devuelve una variante de «no hace falta hacerlo otra vez».
 
-: ^no-need-to-do-it-again$  ( -- ca len )
-  no-need-to-do-it-again$ xcapitalized  ;
+: ^no-need-to-do-it-again$ ( -- ca len )
+  no-need-to-do-it-again$ xcapitalized ;
   \ Devuelve una variante de «No hace falta hacerlo otra vez».
 
-: log-already-sharpened-0$  ( -- ca len )
+: log-already-sharpened-0$ ( -- ca len )
   log-already-sharpened$ xcapitalized period+
-  ^no-need-to-do-it-again$ period+ txt+  ;
+  ^no-need-to-do-it-again$ period+ txt+ ;
   \ Devuelve mensaje de que el tronco ya estaba afilado (variante 0).
 
-: log-already-sharpened-1$  ( -- ca len )
+: log-already-sharpened-1$ ( -- ca len )
   ^no-need-to-do-it-again$ period+ txt+
-  log-already-sharpened$ xcapitalized period+ txt+  ;
+  log-already-sharpened$ xcapitalized period+ txt+ ;
   \ Devuelve mensaje de que el tronco ya estaba afilado (variante 1).
 
-: log-already-sharpened  ( -- )
+: log-already-sharpened ( -- )
   ['] log-already-sharpened-0$
-  ['] log-already-sharpened-1$ 2 choose execute  narrate  ;
+  ['] log-already-sharpened-1$ 2 choose execute  narrate ;
   \ Informa de que el tronco ya estaba afilado.
 
-: sharpen-the-log  ( -- )
+: sharpen-the-log ( -- )
   hacked-the-log? @
   if    log-already-sharpened
-  else  hacked-the-log? on  well-done  then  ;
+  else  hacked-the-log? on  well-done  then ;
   \ Afila el tronco.
   \ XXX TODO -- distinguir herramientas
 
-: sharpen-the-sword  ( -- )  ;
+: sharpen-the-sword ( -- ) ;
   \ Afila la espada.
   \ XXX TODO -- inconcluso
 
-: (do-sharpen)  ( a -- )
+: (do-sharpen) ( a -- )
   case
     sword~ of  sharpen-the-sword  endof
     log~ of  sharpen-the-log  endof
-  endcase  ;
+  endcase ;
   \ Afila un ente que puede ser afilado.
 
-:noname  ( -- )
+:noname ( -- )
   \ Acción de afilar.
   ?main-complement
   main-complement ?accessible
@@ -914,19 +914,19 @@ false [if]
 \ ----------------------------------------------
 \ Movimiento
 
-: do-go-if-possible  ( a -- )
+: do-go-if-possible ( a -- )
   dup ?direction  dup exit-from-here ?dup
   if    nip enter-location
   else  impossible-move-to-it.error
-  then  ;
+  then ;
   \ Comprueba si el movimiento hacia un supuesto ente de dirección _a_
   \ es posible y si es así lo efectúa.
 
-: simply-do-go  ( -- )  s" Ir sin rumbo...?" narrate  ;
+: simply-do-go ( -- ) s" Ir sin rumbo...?" narrate ;
   \ Ir sin dirección específica.
   \ XXX TODO -- inconcluso
 
-:noname  ( -- )
+:noname ( -- )
   [debug] [if]  s" Al entrar en `do-go`" debug  [then]  \ XXX INFORMER
   ?no-tool-complement
   main-complement ?dup
@@ -935,63 +935,63 @@ false [if]
   ; is do-go
   \ Acción de ir.
 
-:noname  ( -- )
+:noname ( -- )
   ?no-tool-complement
   north~ ?this-main-complement
   north~ do-go-if-possible
   ; is do-go-north
   \ Acción de ir al norte.
 
-:noname  ( -- )
+:noname ( -- )
   ?no-tool-complement
   south~ ?this-main-complement
   south~ do-go-if-possible
   ; is do-go-south
   \ Acción de ir al sur.
 
-:noname  ( -- )
+:noname ( -- )
   ?no-tool-complement
   east~ ?this-main-complement
   east~ do-go-if-possible
   ; is do-go-east
   \ Acción de ir al este.
 
-:noname  ( -- )
+:noname ( -- )
   ?no-tool-complement
   west~ ?this-main-complement
   west~ do-go-if-possible
   ; is do-go-west
   \ Acción de ir al oeste.
 
-:noname  ( -- )
+:noname ( -- )
   ?no-tool-complement
   up~ ?this-main-complement
   up~ do-go-if-possible
   ; is do-go-up
   \ Acción de ir hacia arriba.
 
-:noname  ( -- )
+:noname ( -- )
   ?no-tool-complement
   down~ ?this-main-complement
   down~ do-go-if-possible
   ; is do-go-down
   \ Acción de ir hacia abajo.
 
-:noname  ( -- )
+:noname ( -- )
   ?no-tool-complement
   out~ ?this-main-complement
   out~ do-go-if-possible
   ; is do-go-out
   \ Acción de ir hacia fuera.
 
-: enter-the-cave-entrance  ( -- )
+: enter-the-cave-entrance ( -- )
   cave-entrance~ ?accessible
   if    in~ do-go-if-possible
   else  cave-entrance~ cannot-be-seen.error
-  then  ;
+  then ;
   \ XXX FIXME -- dónde se actualiza `what` aquí?
 
-:noname  ( -- )
+:noname ( -- )
   ?no-tool-complement
   main-complement cave-entrance~ =
   if  enter-the-cave-entrance exit  then
@@ -1001,7 +1001,7 @@ false [if]
   \ Acción de ir hacia dentro.
   \ XXX TODO añadir lago, agua y otros
 
-:noname  ( -- )
+:noname ( -- )
   ?no-tool-complement
   ?no-main-complement
   s" [voy hacia atrás, pero es broma]" narrate \ XXX TMP
@@ -1009,7 +1009,7 @@ false [if]
   \ Acción de ir hacia atrás.
   \ XXX TODO
 
-:noname  ( -- )
+:noname ( -- )
   ?no-tool-complement
   ?no-main-complement
   s" [voy hacia delante, pero es broma]" narrate \ XXX TMP
@@ -1020,9 +1020,9 @@ false [if]
 \ ----------------------------------------------
 \ Partir (desambiguación)
 
-:noname  ( -- )
+:noname ( -- )
   main-complement ?dup
-  if  ( a )
+  if ( a )
     is-direction? if  do-go  else  do-break  then
   else
     tool-complement if do-break  else  simply-do-go  then
@@ -1033,46 +1033,46 @@ false [if]
 \ ----------------------------------------------
 \ Nadar
 
-: in-a-different-place$  ( -- ca len )
+: in-a-different-place$ ( -- ca len )
   s" en un" txt+ place$
   s{ s" desconocido" s" nuevo" s" diferente" }s txt+
   s" en otra parte"
   s" en otro lugar"
-  3 2choose  ;
+  3 2choose ;
   \ Devuelve una variante de «en un lugar diferente».
 
-: you-emerge$  ( -- ca len )
+: you-emerge$ ( -- ca len )
   s{ s" Consigues" s" Logras" }s
   s{ s" emerger," s" salir a la superficie," }s txt+
   though$ txt+ in-a-different-place$ txt+
-  s" de la" txt+ cave$ txt+ s" ..." s+  ;
+  s" de la" txt+ cave$ txt+ s" ..." s+ ;
   \ Devuelve mensaje sobre la salida a la superficie.
 
-: swiming$  ( -- ca len )
+: swiming$ ( -- ca len )
   s" Buceas" s{ s" pensando en" s" deseando"
   s" con la esperanza de" s" con la intención de" }s txt+
   s{ s" avanzar," s" huir," s" escapar,"  s" salir," }s txt+
-  s" aunque" txt+ s{ s" perdido." s" desorientado." }s txt+  ;
+  s" aunque" txt+ s{ s" perdido." s" desorientado." }s txt+ ;
   \ Devuelve mensaje sobre el buceo.
 
-: drop-the-cuirasse$  ( f -- ca len )
+: drop-the-cuirasse$ ( f -- ca len )
   s{ s" te desprendes de ella" s" te deshaces de ella"
   s" la dejas caer" s" la sueltas" }s
   rot if
     s{ s" Rápidamente" s" Sin dilación"
     s" Sin dudarlo" s{ null$ s" un momento" s" un instante" }s txt+
     }s 2swap txt+
-  then  period+  ;
+  then  period+ ;
   \ Devuelve mensaje sobre deshacerse de la coraza dentro del agua.
   \ El indicador _f_ es cierto si el resultado debe ser el inicio de
   \ una frase.
 
-: you-leave-the-cuirasse$  ( -- ca len )
+: you-leave-the-cuirasse$ ( -- ca len )
   cuirasse~ is-worn-by-me?
   if  s{ s" Como puedes," s" No sin dificultad," }s
       s{ s" logras quitártela" s" te la quitas" }s txt+
       s" y" txt+ false drop-the-cuirasse$ txt+
-  else  true drop-the-cuirasse$  then  ;
+  else  true drop-the-cuirasse$  then ;
   \ Devuelve mensaje sobre quitarse y soltar la coraza dentro del agua.
 
 : (you-sink-0)$ ( -- ca len )
@@ -1081,7 +1081,7 @@ false [if]
   }s s" sin remedio" 50%nullify txt+ s" hacia" txt+
   s{ s" el fondo" s" las profundidades" }s txt+
   s{ s" por el" s" debido al" s" arrastrado por" s" a causa del" }s txt+
-  s" peso de tu coraza" txt+  ;
+  s" peso de tu coraza" txt+ ;
   \ Devuelve la primera versión del mensaje sobre hundirse con la coraza.
 
 : (you-sink-1)$ ( -- ca len )
@@ -1092,26 +1092,26 @@ false [if]
   s" hacia el fondo"
   s" hacia las profundidades"
   s" hacia abajo"
-  }s txt+  ;
+  }s txt+ ;
   \ Devuelve la segunda versión del mensaje sobre hundirse con la coraza.
 
 : you-sink$ ( -- ca len )
   ['] (you-sink-0)$
-  ['] (you-sink-1)$ 2 choose execute period+  ;
+  ['] (you-sink-1)$ 2 choose execute period+ ;
   \ Devuelve mensaje sobre hundirse con la coraza.
 
-: you-swim-with-cuirasse$  ( -- ca len )
-  you-sink$ you-leave-the-cuirasse$ txt+  ;
+: you-swim-with-cuirasse$ ( -- ca len )
+  you-sink$ you-leave-the-cuirasse$ txt+ ;
   \  Devuelve mensaje inicial sobre nadar con coraza.
 
-: you-swim$  ( -- ca len )
+: you-swim$ ( -- ca len )
   cuirasse~ is-hold?
   if  you-swim-with-cuirasse$  cuirasse~ vanish
   else  null$
-  then  swiming$ txt+  ;
+  then  swiming$ txt+ ;
   \  Devuelve mensaje sobre nadar.
 
-:noname  ( -- )
+:noname ( -- )
   location-11~ am-i-there?
   if    clear-screen-for-location
         you-swim$ narrate narration-break
@@ -1126,7 +1126,7 @@ false [if]
 \ ----------------------------------------------
 \ Escalar
 
-: you-try-climbing-the-fallen-away  ( -- )
+: you-try-climbing-the-fallen-away ( -- )
   s{ s" Aunque" s" A pesar de que" }s
   s{  s" parece no haber salida"
       s" el obstáculo parece insuperable"
@@ -1149,11 +1149,11 @@ false [if]
   s{  s" escalarlo" s" vencerlo" s" atravesarlo"
       s" superarlo" s" pasarlo"
       s{ s" pasar" s" cruzar" }s s" al otro lado" txt+
-  }s txt+  period+ narrate narration-break  ;
+  }s txt+  period+ narrate narration-break ;
   \ Imprime la primera parte del mensaje
   \ previo al primer intento de escalar el derrumbe.
 
-: you-can-not-climb-the-fallen-away  ( -- )
+: you-can-not-climb-the-fallen-away ( -- )
   ^but$
   s{  s{ s" pronto" s" enseguida" }s s" has de" txt+
       s" no tardas mucho en"
@@ -1166,49 +1166,49 @@ false [if]
         s{ s" el" s" este" }s s" capricho" txt+
         s{ s" la" s" esta" }s s" mudanza" txt+
     }s s" de" txt+ s" la diosa" 50%nullify txt+ s" Fortuna" txt+
-  }s txt+ s" ..." s+ narrate narration-break  ;
+  }s txt+ s" ..." s+ narrate narration-break ;
   \ Imprime la segunda parte del mensaje
   \ previo al primer intento de escalar el derrumbe.
 
-: do-climb-the-fallen-away-first  ( -- )
+: do-climb-the-fallen-away-first ( -- )
   you-try-climbing-the-fallen-away
-  you-can-not-climb-the-fallen-away  ;
+  you-can-not-climb-the-fallen-away ;
   \ Imprime el mensaje
   \ previo al primer intento de escalar el derrumbe.
 
-: climbing-the-fallen-away$  ( -- ca len )
+: climbing-the-fallen-away$ ( -- ca len )
   s{ s" pasar" s" escalar" s" subir por" }s
   s{
     s" el derrumbe"
     s{ s" el muro" s" la pared" s" el montón" }s s" de" txt+ rocks$ txt+
     s" las" rocks$ txt+
-  }s txt+  ;
+  }s txt+ ;
   \ Devuelve el mensaje de error de que es imposible escalar el
   \ derrumbe.
 
-: do-climb-the-fallen-away  ( -- )
+: do-climb-the-fallen-away ( -- )
   \ Escalar el derrumbe.
   climbed-the-fallen-away? @ 0= ?? do-climb-the-fallen-away-first
   climbed-the-fallen-away? on
-  climbing-the-fallen-away$ that-is-impossible.error  ;
+  climbing-the-fallen-away$ that-is-impossible.error ;
 
-: do-climb-this-here-if-possible  ( a -- )  ;
+: do-climb-this-here-if-possible ( a -- ) ;
   \ Escalar el ente indicado, que está presente, si es posible.
   \ XXX TODO -- inconcluso
 
-: do-climb-if-possible  ( a -- )
+: do-climb-if-possible ( a -- )
   dup is-here?
   if    drop s" [escalar eso]" narrate
   else  drop s" [no está aquí eso para escalarlo]" narrate
-  then  ;
+  then ;
   \ Escalar el ente indicado si es posible.
   \ XXX TODO -- inconcluso
 
-: nothing-to-climb  ( -- )
-  s" [No hay nada que escalar]" narrate  ;
+: nothing-to-climb ( -- )
+  s" [No hay nada que escalar]" narrate ;
   \ XXX TODO -- inconcluso
 
-: do-climb-something  ( -- )
+: do-climb-something ( -- )
   location-09~ am-i-there?  \ ¿Ante el derrumbe?
   if  do-climb-the-fallen-away exit
   then
@@ -1218,11 +1218,11 @@ false [if]
   my-holder is-indoor-location?
   if  s" [Escalar en un interior]" narrate exit
   then
-  nothing-to-climb  ;
+  nothing-to-climb ;
   \ Escalar algo no especificado.
   \ XXX TODO -- inconcluso
 
-:noname  ( -- )
+:noname ( -- )
   main-complement ?dup
   if  do-climb-if-possible  else  do-climb-something  then
   ; is do-climb
@@ -1232,29 +1232,29 @@ false [if]
 \ ----------------------------------------------
 \ Inventario
 
-: anything-with-you$  ( -- ca len )
+: anything-with-you$ ( -- ca len )
   s" nada" with-you$ ?dup if   2 random ?? 2swap txt+
-                          else  drop  then  ;
+                          else  drop  then ;
   \ Devuelve una variante de «nada contigo».
 
-: you-are-carrying-nothing$  ( -- ca len )
-  s" No" you-carry$ anything-with-you$ period+ txt+ txt+  ;
+: you-are-carrying-nothing$ ( -- ca len )
+  s" No" you-carry$ anything-with-you$ period+ txt+ txt+ ;
   \ Devuelve mensaje para sustituir a un inventario vacío.
 
-: ^you-are-carrying$  ( -- ca len )
-  ^you-carry$ with-you$ txt+  ;
+: ^you-are-carrying$ ( -- ca len )
+  ^you-carry$ with-you$ txt+ ;
   \ Devuelve mensaje para encabezar la lista de inventario,
   \ con la primera letra mayúscula.
 
-: you-are-carrying$  ( -- ca len )  you-carry$ with-you$ txt+  ;
+: you-are-carrying$ ( -- ca len ) you-carry$ with-you$ txt+ ;
   \ Devuelve mensaje para encabezar la lista de inventario.
 
-: you-are-carrying-only$  ( -- ca len )
+: you-are-carrying-only$ ( -- ca len )
   2 random if    ^you-are-carrying$ only-or-null$ txt+
-           else  ^only-or-null$ you-are-carrying$ txt+  then  ;
+           else  ^only-or-null$ you-are-carrying$ txt+  then ;
   \ Devuelve mensaje para encabezar una lista de inventario de un solo elemento.
 
-:noname  ( -- )
+:noname ( -- )
   protagonist~ content-list
   #listed @ case
     0 of  you-are-carrying-nothing$ 2swap txt+ endof
@@ -1269,13 +1269,13 @@ false [if]
 \ ----------------------------------------------
 \ Hacer
 
-:noname  ( -- )
+:noname ( -- )
   main-complement
   if  nonsense.error  else  do-not-worry.error  then
   ; is do-make
   \ Acción de hacer (fabricar).
 
-:noname  ( -- )
+:noname ( -- )
   main-complement inventory~ =
   if  do-inventory  else  do-make  then
   ; is do-do
@@ -1287,7 +1287,7 @@ false [if]
 \ ..............................
 \ Conversaciones con el líder de los refugiados
 
-: a-man-takes-the-stone  ( -- )
+: a-man-takes-the-stone ( -- )
   s{  s" Un hombre" s" Un refugiado"
       s" Uno de los" s{ s" hombres" s" refugiados" }s txt+
   }s s{ s" se adelanta,"
@@ -1305,28 +1305,28 @@ false [if]
     s" se la lleva"
     s{ s" se marcha" s" se va" s" desaparece" }s s" con ella" 50%nullify txt+
   }s txt+ period+ narrate
-  location-18~ stone~ be-there  ;
+  location-18~ stone~ be-there ;
   \ Un hombre te quita la piedra.
 
-: gets-angry$  ( -- ca len )
-  s" se" s{ s" irrita" s" enfada" s" enoja" s" enfurece" }s txt+  ;
+: gets-angry$ ( -- ca len )
+  s" se" s{ s" irrita" s" enfada" s" enoja" s" enfurece" }s txt+ ;
   \ Devuelve una variante de «se enfada».
 
-: the-leader-gets-angry$  ( -- ca len )
+: the-leader-gets-angry$ ( -- ca len )
   s{ s" Al verte" s" Viéndote" s" Tras verte" }s
   s{ s" llegar" s" aparecer" s" venir" }s txt+
   again$ stone-forbidden? @ ?keep txt+
   s" con la piedra," txt+
-  s" el" txt+ old-man$ txt+ gets-angry$ txt+  ;
+  s" el" txt+ old-man$ txt+ gets-angry$ txt+ ;
   \ Devuelve una variante de «El líder se enfada».
   \ XXX OLD -- yo no se usa.
 
-: the-leader-gets-angry  ( -- )
-  the-leader-gets-angry$ period+ narrate  ;
+: the-leader-gets-angry ( -- )
+  the-leader-gets-angry$ period+ narrate ;
   \ Mensaje de que el líder se enfada.
   \ XXX OLD -- ya no se usa.
 
-: warned-once$  ( -- ca len )
+: warned-once$ ( -- ca len )
   s{
   s" antes"
   s" en la ocasión anterior"
@@ -1335,9 +1335,9 @@ false [if]
   s" la otra vez"
   s" la vez anterior"
   s" una vez"
-  }s  ;
+  }s ;
 
-: warned-twice$  ( -- ca len )
+: warned-twice$ ( -- ca len )
   s{
   s" antes"
   s" dos veces"
@@ -1348,9 +1348,9 @@ false [if]
   s" las otras veces"
   s" más de una vez"
   s" un par de veces"
-  }s  ;
+  }s ;
 
-: warned-several-times$  ( -- ca len )
+: warned-several-times$ ( -- ca len )
   s{
   s" en las otras ocasiones"
   s" en más de dos ocasiones"
@@ -1362,9 +1362,9 @@ false [if]
   s" más de un par de veces"
   s" otras veces"
   s" varias veces"
-  }s  ;
+  }s ;
 
-: warned-many-times$  ( -- ca len )
+: warned-many-times$ ( -- ca len )
   s{
   s" demasiadas veces"
   s" en demasiadas ocasiones"
@@ -1379,9 +1379,9 @@ false [if]
   s" muchas veces"
   s" otras veces"
   s" varias veces"
-  }s  ;
+  }s ;
 
-: times-warned  ( u -- ca1 len1 )
+: times-warned ( u -- ca1 len1 )
   { times }  \ Variable local
   true case
     times 0 = of  null$  endof
@@ -1389,9 +1389,9 @@ false [if]
     times 2 = of  warned-twice$  endof
     times 6 < of  warned-several-times$  endof
     warned-many-times$ rot
-  endcase  ;
+  endcase ;
 
-: already-warned$  ( -- ca len )
+: already-warned$ ( -- ca len )
   s" ya" 50%nullify
   s{
     s" fuisteis" s{ s" avisado" s" advertido" }s txt+ s" de ello" 50%nullify txt+
@@ -1399,16 +1399,16 @@ false [if]
     s" os lo" s{ s" hicimos saber" s" advertimos" }s txt+
     s" os lo" s{ s" hice saber" s" advertí" }s txt+
     s" se os" s{ s" hizo saber" s" dejó claro" }s txt+
-  }s txt+  ;
+  }s txt+ ;
   \ Mensaje de que el líder ya te advirtió sobre un objeto.
   \ XXX TODO -- elaborar más
 
-: already-warned  ( u -- ca1 len1 )
-  times-warned already-warned$ rnd2swap txt+ period+ xcapitalized  ;
+: already-warned ( u -- ca1 len1 )
+  times-warned already-warned$ rnd2swap txt+ period+ xcapitalized ;
   \ Mensaje de que el líder ya te advirtió sobre un objeto,
   \ con indicación al azar del número de veces.
 
-: you-can-not-take-the-stone$  ( -- ca len )
+: you-can-not-take-the-stone$ ( -- ca len )
   s{ s" No" s" En modo alguno" s" De ninguna" way$ txt+ s" De ningún modo" }s
   s" podemos" txt+
   s{
@@ -1424,19 +1424,19 @@ false [if]
       }s txt+
   }s txt+ s" la" s" piedra del druida"
   2dup stone~ fs-name!
-  txt+ txt+ period+  ;
+  txt+ txt+ period+ ;
   \ Devuelve el mensaje de que no te puedes llevar la piedra.
   \ También cambia el nombre de la piedra.
 
-: gesture-about-the-stone$  ( -- ca len )
+: gesture-about-the-stone$ ( -- ca len )
   s" y" 50%nullify s{ s" entonces" s" a continuación" s" seguidamente" }s txt+ xcapitalized
   s" hace un" txt+
   s" pequeño" 50%nullify txt+ s" gesto" txt+ s" con la mano," 50%nullify txt+
   s" casi imperceptible" 50%nullify txt+
-  s" ..." s+  ;
+  s" ..." s+ ;
   \ Mensaje de que el líder hace un gesto sobre la piedra.
 
-: the-stone-must-be-in-its-place$  ( -- ca len )
+: the-stone-must-be-in-its-place$ ( -- ca len )
   s" La piedra" s{ s" ha de" s" debe" s" tiene que" }s txt+
   s{ s" ser devuelta" s" devolverse" to-go-back$ }s txt+
   s{
@@ -1444,59 +1444,59 @@ false [if]
     s" al lugar al que pertenece"
     s" al lugar del que nunca debió" s{ s" salir" s" ser sacada" s" ser arrancada" }s txt+
     s" al lugar que nunca debió" s{ s" abandonar" s" haber abandonado" }s txt+
-  }s txt+  ;
+  }s txt+ ;
   \ El líder dice que la piedra debe ser devuelta.
 
-: the-leader-warns-about-the-stone  ( -- )
+: the-leader-warns-about-the-stone ( -- )
   stone-forbidden? @ already-warned
   you-can-not-take-the-stone$
   the-stone-must-be-in-its-place$ rnd2swap txt+ txt+
-  period+ speak  ;
+  period+ speak ;
   \ El líder habla acerca de la piedra.
 
-: the-leader-points-to-the-north$  ( -- ca len )
+: the-leader-points-to-the-north$ ( -- ca len )
   leader~ ^full-name
   s{ s" alza" s" extiende" s" levanta" }s txt+
   s{ s" su" s" el" }s txt+ s" brazo" txt+
   s{ s" indicando" s" en dirección" s" señalando" }s txt+
-  toward-the(m)$ txt+ s" norte." txt+  ;
+  toward-the(m)$ txt+ s" norte." txt+ ;
   \ El líder se enfada y apunta al norte.
   \ XXX TODO -- crear ente "brazo" aquí, o activarlo como sinómino del anciano
 
-: the-leader-points-to-the-north  ( -- )
-  the-leader-points-to-the-north$ narrate  ;
+: the-leader-points-to-the-north ( -- )
+  the-leader-points-to-the-north$ narrate ;
   \ El líder se enfada y apunta al norte.
 
-: nobody-passes-with-arms$  ( -- ca len )
+: nobody-passes-with-arms$ ( -- ca len )
   s{ s" Nadie" s" Ningún hombre" }s
   s{ s" con" s" llevando" s" portando" s" portador de"
   s" que porte" s" que lleve" }s txt+
   s{ s" armas" s" un arma" s" una espada" }s txt+
   with-him$ txt+ s{ s" debe" s" puede" s" podrá" }s txt+
-  s" pasar." txt+  ;
+  s" pasar." txt+ ;
   \ El líder dice que nadie pasa con armas.
 
-: the-leader-warns-about-the-sword  ( -- )
+: the-leader-warns-about-the-sword ( -- )
   the-leader-points-to-the-north
   sword-forbidden? @ already-warned
-  nobody-passes-with-arms$ txt+ speak  ;
+  nobody-passes-with-arms$ txt+ speak ;
   \ El líder habla acerca de la espada.
 
-: the-leader-points-to-the-east  ( -- )
+: the-leader-points-to-the-east ( -- )
   s" El" old-man$ txt+ comma+
   s{ s" confiado" s" calmado" s" sereno" s" tranquilo" }s txt+ comma+
   s{ s" indica" s" señala" }s txt+
   s{ toward-the(m)$ s" en dirección al" }s txt+ s" este y" txt+
   s{  s" te" 50%nullify s" dice" txt+
       s" pronuncia las siguientes palabras"
-  }s txt+ colon+ narrate  ;
+  }s txt+ colon+ narrate ;
   \ El líder apunta al este.
 
-: something-had-been-forbidden?  ( -- f )
-  sword-forbidden? @ stone-forbidden? @ or  ;
+: something-had-been-forbidden? ( -- f )
+  sword-forbidden? @ stone-forbidden? @ or ;
   \ Se le prohibió alguna vez al protagonista pasar con algo prohibido?
 
-: go-in-peace  ( -- )
+: go-in-peace ( -- )
   s{ s" Ya que" s" Puesto que" s" Dado que" s" Pues" }s
   something-had-been-forbidden? if
     s{ s" esta vez" s" ahora" s" en esta ocasión" s" por fin" s" finalmente" }s txt+
@@ -1504,114 +1504,114 @@ false [if]
   s{ s" vienes" s" llegas" s" has venido" s" has llegado" }s txt+
   s" en paz, puedes" txt+
   s{ s" ir" s" marchar" s" continuar" s" tu camino" 50%nullify txt+ }s txt+
-  s" en paz." txt+ speak  ;
+  s" en paz." txt+ speak ;
   \ El líder dice que puedes ir en paz.
 
-: the-refugees-let-you-go  ( -- )
+: the-refugees-let-you-go ( -- )
   s" todos" 50%nullify s" los refugiados" txt+ xcapitalized
   s" se apartan y" txt+ s" te" 50%nullify txt+
   s{  s" permiten" s{ s" el paso" s" pasar" }s txt+
       s" dejan" s" libre" s" el" s{ s" paso" s" camino" }s txt+ rnd2swap txt+
-  }s txt+ toward-the(m)$ txt+ s" este." txt+ narrate  ;
+  }s txt+ toward-the(m)$ txt+ s" este." txt+ narrate ;
   \ Los refugiados te dejan pasar.
 
-: the-leader-lets-you-go  ( -- )
+: the-leader-lets-you-go ( -- )
   location-28~ location-29~ e-->
   the-leader-points-to-the-east
-  go-in-peace the-refugees-let-you-go  ;
+  go-in-peace the-refugees-let-you-go ;
   \ El jefe deja marchar al protagonista.
 
-: talked-to-the-leader  ( -- )
+: talked-to-the-leader ( -- )
   leader~ conversations++
-  recent-talks-to-the-leader ?1+!  ;
+  recent-talks-to-the-leader ?1+! ;
   \ Aumentar el contador de conversaciones con el jefe de los refugiados.
 
-: we-are-refugees$  ( -- ca len )
+: we-are-refugees$ ( -- ca len )
   s" todos" 50%nullify s" nosotros" 50%nullify rnd2swap txt+
   s" somos refugiados de" txt+ xcapitalized
   s{ s" la gran" s" esta terrible" }s txt+ s" guerra." txt+
-  s" refugio" location-28~ ms-name!  ;
+  s" refugio" location-28~ ms-name! ;
   \ Mensaje «Somos refugiados».
 
-: we-are-refugees  ( -- )
-  we-are-refugees$ we-want-peace$ txt+ speak narration-break  ;
+: we-are-refugees ( -- )
+  we-are-refugees$ we-want-peace$ txt+ speak narration-break ;
   \ Somos refugiados.
 
-: the-leader-trusts  ( -- )
+: the-leader-trusts ( -- )
   s" El" old-man$ txt+ s" asiente" txt+
   s{ s" confiado" s" con confianza" }s txt+ s" y," txt+
   s" con un suave gesto" txt+ s" de su mano" 50%nullify txt+ comma+
   s" te interrumpe para" txt+
   s{  s" explicar" s{ s" te" s" se" null$ }s s+
       s" presentarse" s" contarte" s" decir" s" te" 50%nullify s+
-  }s txt+ colon+ narrate  ;
+  }s txt+ colon+ narrate ;
   \ El líder te corta, confiado.
 
-: untrust$  ( -- ca len )
-  s{ s" desconfianza" s" nerviosismo" s" impaciencia" }s  ;
+: untrust$ ( -- ca len )
+  s{ s" desconfianza" s" nerviosismo" s" impaciencia" }s ;
 
-: the-leader-does-not-trust  ( -- )
+: the-leader-does-not-trust ( -- )
   s" El" old-man$ txt+ s" asiente" txt+ s" con la cabeza" 50%nullify txt+ comma+
   s{  s" desconfiado" s" nervioso" s" impaciente"
       s" mostrando" s" claros" 50%nullify txt+ s" signos de" txt+ untrust$ txt+
       s{ s" dando" s" con" }s s" claras" 50%nullify txt+ s" muestras de" txt+ untrust$ txt+
-  }s txt+ comma+ s" y te interrumpe:" txt+ narrate  ;
+  }s txt+ comma+ s" y te interrumpe:" txt+ narrate ;
   \ El líder te corta, desconfiado.
 
-: the-leader-introduces-himself  ( -- )
+: the-leader-introduces-himself ( -- )
   do-you-hold-something-forbidden?
   if    the-leader-does-not-trust
   else  the-leader-trusts
-  then  we-are-refugees  ;
+  then  we-are-refugees ;
   \ El líder se presenta.
 
-: first-conversation-with-the-leader  ( -- )
+: first-conversation-with-the-leader ( -- )
   my-name-is$ s" Ulfius y..." txt+ speak talked-to-the-leader
-  the-leader-introduces-himself  ;
+  the-leader-introduces-himself ;
   \ XXX TODO -- elaborar mejor el texto
 
-: the-leader-forbids-the-stone  ( -- )
+: the-leader-forbids-the-stone ( -- )
   the-leader-warns-about-the-stone
   stone-forbidden? ?1+!  \ Recordarlo
   gesture-about-the-stone$ narrate narration-break
-  a-man-takes-the-stone  ;
+  a-man-takes-the-stone ;
   \ El jefe te avisa de que no puedes pasar con la piedra y te la quita.
 
-: the-leader-forbids-the-sword  ( -- )
-  the-leader-warns-about-the-sword  sword-forbidden? ?1+!  ;
+: the-leader-forbids-the-sword ( -- )
+  the-leader-warns-about-the-sword  sword-forbidden? ?1+! ;
   \ El jefe te avisa de que no puedes pasar con la espada.
   \ El programa recuerda este hecho incrementando un contador.
 
-: the-leader-checks-what-you-carry  ( -- )
+: the-leader-checks-what-you-carry ( -- )
   true case
     stone~ is-accessible? of  the-leader-forbids-the-stone  endof
     sword~ is-accessible? of  the-leader-forbids-the-sword  endof
     the-leader-lets-you-go
-  endcase  ;
+  endcase ;
   \ El jefe controla lo que llevas.
   \ XXX TODO -- mejorar para que se pueda pasar si dejamos el objeto
   \ en el suelo o se lo damos
 
-: insisted-once$  ( -- ca len )
-  s{ s" antes" s" una vez" }s  ;
+: insisted-once$ ( -- ca len )
+  s{ s" antes" s" una vez" }s ;
   \ XXX TODO -- inconcluso
 
-: insisted-twice$  ( -- ca len )
-  s{ s" antes" s" dos veces" s" un par de veces" }s  ;
+: insisted-twice$ ( -- ca len )
+  s{ s" antes" s" dos veces" s" un par de veces" }s ;
   \ XXX TODO -- inconcluso
 
-: insisted-several-times$  ( -- ca len )
+: insisted-several-times$ ( -- ca len )
   s{ s" las otras" s" más de dos" s" más de un par de" s" varias" }s
-  s" veces" txt+  ;
+  s" veces" txt+ ;
   \ XXX TODO -- inconcluso
 
-: insisted-many-times$  ( -- ca len )
+: insisted-many-times$ ( -- ca len )
   s{  s" demasiadas" s" incontables" s" innumerables"
       s" las otras" s" muchas" s" varias"
-  }s  s" veces" txt+  ;
+  }s  s" veces" txt+ ;
   \ XXX TODO -- inconcluso
 
-: times-insisted  ( u -- ca1 len1 )
+: times-insisted ( u -- ca1 len1 )
   { times }
   true case
     times 0 = of  null$  endof  \ XXX OLD -- innecesario
@@ -1619,61 +1619,61 @@ false [if]
     times 2 = of  insisted-twice$  endof
     times 6 < of  insisted-several-times$  endof
     insisted-many-times$ rot
-  endcase  ;
+  endcase ;
   \ XXX TODO -- inconcluso
 
-: please-don't-insist$  ( -- ca len )
+: please-don't-insist$ ( -- ca len )
   s{ s" os ruego que" s" os lo ruego," s" he de rogaros que" }s
-  s" no insistáis" txt+  ;
+  s" no insistáis" txt+ ;
   \ Mensaje de que por favor no insistas.
 
-: don't-insist$  ( -- ca len )
+: don't-insist$ ( -- ca len )
   s" ya" 50%nullify
   s{
     s" habéis sido" s{ s" avisado" s" advertido" }s txt+
     s" os lo he" s" mos" 50%nullify s+ s{ s" hecho saber" s" advertido" s" dejado claro" }s txt+
     s" se os ha" s{ s" hecho saber" s" advertido" s" dejado claro" }s txt+
-  }s txt+  ;
+  }s txt+ ;
   \ XXX TODO -- inconcluso
 
-: don't-insist  ( -- )
-  times-insisted don't-insist$ rnd2swap txt+ period+ xcapitalized  ;
+: don't-insist ( -- )
+  times-insisted don't-insist$ rnd2swap txt+ period+ xcapitalized ;
   \ XXX TODO -- inconcluso
 
-: the-leader-ignores-you  ( -- )  ;
+: the-leader-ignores-you ( -- ) ;
   \ El líder te ignora.
   \ XXX TODO
 
-: (talk-to-the-leader)  ( -- )
+: (talk-to-the-leader) ( -- )
   leader~ no-conversations?
   ?? first-conversation-with-the-leader
-  the-leader-checks-what-you-carry  ;
+  the-leader-checks-what-you-carry ;
   \ Hablar con el jefe.
 
-: talk-to-the-leader  ( -- )
+: talk-to-the-leader ( -- )
   recent-talks-to-the-leader @
   if    the-leader-ignores-you
-  else  (talk-to-the-leader)  then  ;
+  else  (talk-to-the-leader)  then ;
   \ Hablar con el jefe, si se puede.
 
 \ ..............................
 \ Conversaciones con Ambrosio
 
-: talked-to-ambrosio  ( -- )  ambrosio~ conversations++  ;
+: talked-to-ambrosio ( -- ) ambrosio~ conversations++ ;
   \ Aumentar el contador de conversaciones con Ambrosio.
 
-: be-ambrosio's-name  ( ca len -- )
+: be-ambrosio's-name ( ca len -- )
   ambrosio~ ms-name!
   ambrosio~ have-no-article
-  ambrosio~ have-personal-name  ;
+  ambrosio~ have-personal-name ;
   \ Le pone a ambrosio su nombre de pila _ca len_.
 
-: ambrosio-introduces-himself  ( -- )
+: ambrosio-introduces-himself ( -- )
   s" Hola, Ulfius."
   my-name-is$ txt+ s" Ambrosio" 2dup be-ambrosio's-name
-  period+ txt+ speak  ;
+  period+ txt+ speak ;
 
-: you-cry  ( -- )
+: you-cry ( -- )
   s" Por" s" primera" s" vez" rnd2swap txt+ txt+ s" en" txt+
   s{ s" mucho" s" largo" }s txt+ s" tiempo, te sientas y" txt+
   s" le" 50%nullify txt+ s{ s" cuentas" s" narras" s" relatas" }s txt+
@@ -1681,9 +1681,9 @@ false [if]
   s{ s" sucedido" s" pasado" s" ocurrido" }s txt+ period+
   s" Y, tras tanto" txt+ s" pesar" 50%nullify txt+ s{ s" acontecido" s" vivido" }s txt+
   s" , lloras" s+ s{ s" desconsoladamente" s" sin consuelo" }s txt+
-  period+ narrate  ;
+  period+ narrate ;
 
-: ambrosio-proposes-a-deal  ( -- )
+: ambrosio-proposes-a-deal ( -- )
   s" Ambrosio te propone un" s{ s" trato" s" acuerdo" }s txt+ comma+
   s{  the-that(m)$ s" aceptas" txt+
       s" con el" that(m)$ txt+ s{ s" consientes" s" estás de acuerdo" }s txt+
@@ -1695,9 +1695,9 @@ false [if]
   s" para" txt+ s" el éxito de" 50%nullify txt+
   s{ s" la" s" tal" s" dicha" }s txt+ s{ s" misión" s" empresa" }s txt+
   s" , te son entregados." s+ narrate
-  torch~ be-hold  flint~ be-hold  ;
+  torch~ be-hold  flint~ be-hold ;
 
-: ambrosio-let's-go  ( -- )
+: ambrosio-let's-go ( -- )
   s{  s" Bien"
       s{ s" Venga" s" Vamos" }s s" pues" 50%nullify txt+
   }s comma+ s" Ambrosio," txt+
@@ -1716,32 +1716,32 @@ false [if]
       s" ya" 50%nullify s" no hay nadie" txt+
       s" ya" 50%nullify s" no ves a nadie" txt+
       s" es como si se lo hubiera tragado la tierra"
-  }s txt+ period+ narrate  ;
+  }s txt+ period+ narrate ;
 
-: ambrosio-is-gone  ( -- )
+: ambrosio-is-gone ( -- )
   s{  suddenly|then$ s" piensas" rnd2swap txt+ s" en el" txt+
       suddenly|then$ s" caes en la cuenta" rnd2swap txt+ s" del" txt+
   }s xcapitalized s" hecho" s" curioso" rnd2swap txt+ txt+ s" de que" txt+
   s{  s{ s" supiera" s" conociera" }s s{ s" cómo te llamas" s" tu nombre" }s txt+
       s" te llamara por tu nombre"
-  }s txt+ s" ..." s+ narrate  ;
+  }s txt+ s" ..." s+ narrate ;
 
-: (conversation-0-with-ambrosio)  ( -- )
+: (conversation-0-with-ambrosio) ( -- )
   s" Hola, buen hombre." speak
   ambrosio-introduces-himself scene-break
   you-cry scene-break
   ambrosio-proposes-a-deal narration-break
   ambrosio-let's-go narration-break
   ambrosio-is-gone
-  talked-to-ambrosio  ;
+  talked-to-ambrosio ;
   \ Primera conversación con Ambrosio.
 
-: conversation-0-with-ambrosio  ( -- )
+: conversation-0-with-ambrosio ( -- )
   location-19~ am-i-there?
-  ?? (conversation-0-with-ambrosio)  ;
+  ?? (conversation-0-with-ambrosio) ;
   \ Primera conversación con Ambrosio, si se dan las condiciones.
 
-: i-am-stuck-in-the-cave$  ( -- ca len )
+: i-am-stuck-in-the-cave$ ( -- ca len )
   s{  s" por desgracia" s" desgraciadamente" s" desafortunadamente"
       s" tristemente" s" lamentablemente"
   }s 50%nullify s{ s" estoy" s" me encuentro" s" me hallo" }s txt+ xcapitalized
@@ -1750,17 +1750,17 @@ false [if]
   s{ s" debido a" s" por causa de" s" por influjo de" }s txt+
   s{ s" una" s" cierta" }s txt+ s" magia de" txt+
   s{ s" maligno" s" maléfico" s" malvado" s" terrible" }s txt+
-  s" poder." txt+  ;
+  s" poder." txt+ ;
 
-: you-must-follow-your-way$  ( -- ca len )
+: you-must-follow-your-way$ ( -- ca len )
   s{ s" En cuanto" s" Por lo que respecta" }s txt+
   s" al camino, vos" txt+
   s{ s" habéis de" s" debéis" s" habréis de" }s txt+
   s{ s" recorrer" s" seguir" s" hacer " }s txt+ s" el vuestro," txt+
   s{ s" ver" s" mirar" s" contemplar" }s s" lo" 50%nullify s+
-  s" todo con vuestros" txt+ s" propios" 50%nullify txt+ s" ojos." txt+  ;
+  s" todo con vuestros" txt+ s" propios" 50%nullify txt+ s" ojos." txt+ ;
 
-: ambrosio-explains  ( -- )
+: ambrosio-explains ( -- )
   s" Ambrosio"
   s{  s" parece meditar un instante"
       s" asiente ligeramente con la cabeza"
@@ -1769,41 +1769,41 @@ false [if]
       s" se explica"
   }s txt+
   colon+ narrate
-  i-am-stuck-in-the-cave$ you-must-follow-your-way$ txt+ speak  ;
+  i-am-stuck-in-the-cave$ you-must-follow-your-way$ txt+ speak ;
 
-: i-can-not-understand-it$  ( -- ca len )
+: i-can-not-understand-it$ ( -- ca len )
   s" no"
   s{  s" lo" 50%nullify s{ s" entiendo" s" comprendo" }s txt+
       s{ s" alcanzo" s" acierto" }s s" a" txt+
          s{ s" entender" s" comprender" }s txt+ s" lo" 50%nullify s+
-  }s txt+  ;
+  }s txt+ ;
 
-: you-shake-your-head  ( -- )
+: you-shake-your-head ( -- )
   s{ s" Sacudes" s" Mueves" s" Haces un gesto con" }s s" la cabeza" txt+
   s{  s{ s" poniendo"  s" dejando" }s
         s{ s" clara" s" de manifiesto" s" patente" s" manifiesta" }s txt+
       s{ s" manifestando" s" delatando" s" mostrando" }s s" claramente" 50%nullify txt+
   }s s" tu" txt+
   s{ s" sorpresa" s" perplejidad" s" resignación" s" incredulidad" }s txt+ 50%nullify txt+
-  colon+ narrate  ;
+  colon+ narrate ;
 
-: you-don't-understand  ( -- )
+: you-don't-understand ( -- )
   s{  i-can-not-understand-it$ s" , la verdad" 50%nullify s+
       s{ s" la verdad" s" lo cierto" }s s" es que" txt+
         i-can-not-understand-it$ txt+
       s{ s" en verdad" s" realmente" s" verdaderamente" }s
         i-can-not-understand-it$ txt+
-  }s xcapitalized speak  ;
+  }s xcapitalized speak ;
 
-: you-already-had-the-key$  ( -- ca len )
+: you-already-had-the-key$ ( -- ca len )
   s{
     s" La llave, Ambrosio, estaba ya en vuestro poder."
     s" Vos, Ambrosio, estabais ya en posesión de la llave."
     s" Vos, Ambrosio, ya teníais la llave en vuestro poder."
-  }s  ;
+  }s ;
   \ XXX TODO -- ampliar y variar
 
-: you-know-other-way$  ( -- ca len )
+: you-know-other-way$ ( -- ca len )
   s" Y" s{ s" por lo demás" s" por otra parte" }s 50%nullify txt+
   s{ s" es" s" parece" }s txt+
   s{ s" obvio" s" evidente" s" claro" s" indudable" }s txt+
@@ -1811,25 +1811,25 @@ false [if]
   s{ s" un" s" algún" s" otro" }s txt+ s" camino" txt+
   s{  s" más" s{ s" corto" s" directo" s" fácil" s" llevadero" }s txt+
       s" menos" s{ s" largo" s" luengo" s" difícil" s" pesado" }s txt+
-  }s txt+ period+  ;
+  }s txt+ period+ ;
 
-: you-reproach-ambrosio  ( -- )
-  you-already-had-the-key$ you-know-other-way$ txt+ speak  ;
+: you-reproach-ambrosio ( -- )
+  you-already-had-the-key$ you-know-other-way$ txt+ speak ;
   \ Reprochas a Ambrosio acerca de la llave y el camino.
 
-: (conversation-1-with-ambrosio)  ( -- )
+: (conversation-1-with-ambrosio) ( -- )
   you-reproach-ambrosio ambrosio-explains
   you-shake-your-head you-don't-understand
-  talked-to-ambrosio  ;
+  talked-to-ambrosio ;
   \ Segunda conversación con Ambrosio.
 
-: conversation-1-with-ambrosio  ( -- )
+: conversation-1-with-ambrosio ( -- )
   location-46~ am-i-there?
   ambrosio-follows? 0=  and
-  ?? (conversation-1-with-ambrosio)  ;
+  ?? (conversation-1-with-ambrosio) ;
   \ Segunda conversación con Ambrosio, si se dan las condiciones.
 
-: ambrosio-gives-you-the-key  ( -- )
+: ambrosio-gives-you-the-key ( -- )
   s{ s" Por favor," s" Os lo ruego," }s
   s" Ulfius," txt+
   s" cumplid vuestra" s{ s" promesa." s" palabra." }s txt+
@@ -1837,17 +1837,17 @@ false [if]
   s{ null$ s" en vuestra mano" s" en vuestras manos" s" con vos" }s txt+
   s" y abrid" txt+ s" la puerta de" 50%nullify txt+ this|the(f)$ txt+ s" cueva." txt+
   speak
-  key~ be-hold  ;
+  key~ be-hold ;
 
-: (conversation-2-with-ambrosio)  ( -- )
+: (conversation-2-with-ambrosio) ( -- )
   ambrosio-gives-you-the-key
-  ambrosio-follows? on  talked-to-ambrosio  ;
+  ambrosio-follows? on  talked-to-ambrosio ;
   \ Tercera conversación con Ambrosio.
   \ XXX TODO -- hacer que la llave se pueda transportar
 
-: conversation-2-with-ambrosio  ( -- )
+: conversation-2-with-ambrosio ( -- )
   location-45~ 1- location-47~ 1+ my-holder within
-  ?? (conversation-2-with-ambrosio)  ;
+  ?? (conversation-2-with-ambrosio) ;
   \ Tercera conversación con Ambrosio, si se dan las condiciones.
   \ XXX TODO -- simplificar la condición
 
@@ -1855,12 +1855,12 @@ false [if]
 
   \ XXX OLD -- Primera versión, con una estructura `case`
 
-: (talk-to-ambrosio)  ( -- )
+: (talk-to-ambrosio) ( -- )
   ambrosio~ conversations case
     0 of  conversation-0-with-ambrosio  endof
     1 of  conversation-1-with-ambrosio  endof
     2 of  conversation-2-with-ambrosio  endof
-  endcase  ;
+  endcase ;
   \ Hablar con Ambrosio.
   \ XXX TODO -- Implementar qué hacer cuando ya no hay más
   \ conversaciones.
@@ -1878,16 +1878,16 @@ create conversations-with-ambrosio
   \ XXX TODO -- Implementar qué hacer cuando ya no hay más
   \ conversaciones.
 
-: (talk-to-ambrosio)  ( -- )
-  ambrosio~ conversations cells conversations-with-ambrosio + perform  ;
+: (talk-to-ambrosio) ( -- )
+  ambrosio~ conversations cells conversations-with-ambrosio + perform ;
   \ Hablar con Ambrosio.
   \ XXX FIXME comprobar el máximo de conversaciones
 
 [then]
 
-: talk-to-ambrosio  ( -- )
+: talk-to-ambrosio ( -- )
   ambrosio~ ?here
-  (talk-to-ambrosio)  ;
+  (talk-to-ambrosio) ;
   \ Hablar con Ambrosio, si se puede.
   \ XXX TODO -- esto debería comprobarse en `do-speak` o
   \ `do-speak-if-possible`.
@@ -1895,48 +1895,48 @@ create conversations-with-ambrosio
 \ ..............................
 \ Conversaciones sin éxito
 
-: talk-to-something  ( a -- )
+: talk-to-something ( a -- )
   2 random
   if    drop nonsense.error
   else  full-name s" hablar con" 2swap txt+
         that-is-nonsense.error
-  then  ;
+  then ;
   \ Hablar con un ente que no es un personaje.
   \ XXX TODO
 
-: talk-to-yourself$  ( -- ca len )
+: talk-to-yourself$ ( -- ca len )
   s{  s" hablar" s{ s" solo" s" con uno mismo" }s txt+
       s" hablarse" s{ s" a sí" s" a uno" }s txt+ s" mismo" 50%nullify txt+
-  }s  ;
+  }s ;
   \ Devuelve una variante de «hablar solo».
 
-: talk-to-yourself  ( -- )
-  talk-to-yourself$  that-is-nonsense.error  ;
+: talk-to-yourself ( -- )
+  talk-to-yourself$  that-is-nonsense.error ;
   \ Hablar solo.
 
 \ ..............................
 \ Acciones
 
-: do-speak-if-possible  ( a -- )
+: do-speak-if-possible ( a -- )
   [debug] [if]  s" En `do-speak-if-possible`" debug  [then]  \ XXX INFORMER
   case
     leader~ of  talk-to-the-leader  endof
     ambrosio~ of  talk-to-ambrosio  endof
     dup talk-to-something
-  endcase  ;
+  endcase ;
   \ Hablar con un ente si es posible.
 
-: (do-speak)  ( a | 0 -- )
-  ?dup if  do-speak-if-possible  else  talk-to-yourself  then  ;
+: (do-speak) ( a | 0 -- )
+  ?dup if  do-speak-if-possible  else  talk-to-yourself  then ;
   \ Hablar con alguien o solo.
 
-: (you-speak-to)  ( a -- )
+: (you-speak-to) ( a -- )
   dup familiar++
-  s" Hablas con" rot full-name txt+ colon+ narrate  ;
+  s" Hablas con" rot full-name txt+ colon+ narrate ;
 
-: you-speak-to  ( a | 0 -- )  ?dup ?? (you-speak-to)  ;
+: you-speak-to ( a | 0 -- ) ?dup ?? (you-speak-to) ;
 
-:noname  ( -- )
+:noname ( -- )
   [debug] [??] debug  \ XXX INFORMER
   ?no-main-complement
   secondary-complement whom by-default
@@ -1945,7 +1945,7 @@ create conversations-with-ambrosio
   \ Acción de hablar.
   \ XXX TODO -- revisar
 
-:noname  ( -- )
+:noname ( -- )
   main-complement unknown-whom by-default (do-speak)
   ; is do-introduce-yourself
   \ Acción de presentarse a alguien.
@@ -1953,7 +1953,7 @@ create conversations-with-ambrosio
 \ ----------------------------------------------
 \ Acción especial «y»
 
-:noname  ( -- )
+:noname ( -- )
   action if  execute-action init-parser  then
   reuse-previous-action on  ; is do-and
 
@@ -1970,12 +1970,12 @@ false [if]
   \ XXX TODO -- pendiente
   \ XXX OLD
 
-: yyyymmddhhmmss$  ( -- ca len )
-  time&date >yyyymmddhhmmss  ;
+: yyyymmddhhmmss$ ( -- ca len )
+  time&date >yyyymmddhhmmss ;
   \ Devuelve la fecha y hora actuales como una cadena en formato
   \ «aaaammddhhmmss».
 
-: file-name$  ( -- ca len )
+: file-name$ ( -- ca len )
   \ Devuelve el nombre con que se grabará el juego.
   s" ayc-" yyyymmddhhmmss$ s+ s" .exe" windows? and s+  ;  \ Añadir
   sufijo si estamos en Windows
@@ -1984,13 +1984,13 @@ defer reenter
 
 svariable filename
 
-: (save-the-game)  ( -- )
+: (save-the-game) ( -- )
 \ false to spf-init?  \ Desactivar la inicialización del sistema
 \ true to console?  \ Activar el modo de consola (no está claro en el manual)
 \ false to gui?  \ Desactivar el modo gráfico (no está claro en el manual)
   ['] reenter to <main>  \ Actualizar la palabra que se ejecutará al arrancar
 \ file-name$ save  new-page
-  file-name$ filename place filename count save  ;
+  file-name$ filename place filename count save ;
   \ Graba el juego.
   \ XXX TODO -- no está decidido el sistema que se usará para salvar
   \ las partidas
@@ -2000,7 +2000,7 @@ svariable filename
 : save-the-game
   ?no-main-complement
   action ? key drop  \ XXX INFORMER
-  (save-the-game)  ;
+  (save-the-game) ;
   \ Acción de salvar el juego.
 
 [then]
@@ -2011,17 +2011,17 @@ svariable game-file-name
 variable game-file-id
   \ Identificador del fichero en que se graba la partida.
 
-: game-file-name$  ( -- ca len )  game-file-name count  ;
+: game-file-name$ ( -- ca len ) game-file-name count ;
   \ Devuelve el nombre del fichero en que se graba la partida.
 
-: close-game-file  ( -- )
-  game-file-id @ close-file abort" Close file error."  ;
+: close-game-file ( -- )
+  game-file-id @ close-file abort" Close file error." ;
   \ Cierra el fichero en que se grabó la partida.
   \ XXX TODO -- mensaje de error definitivo
 
-: create-game-file  ( ca len -- )
+: create-game-file ( ca len -- )
   r/w create-file abort" Create file error."
-  game-file-id !  ;
+  game-file-id ! ;
   \ Crea un fichero de nambre _ca len_ para grabar una partida
   \ (sobreescribiendo otro que tuviera el mismo nombre).
   \ XXX TODO -- mensaje de error definitivo
@@ -2029,23 +2029,23 @@ variable game-file-id
 wordlist constant restore-wordlist
   \ Palabras de restauración de una partida.
 
-: read-game-file  ( ca len -- )
-  restore-wordlist 1 set-order  included  restore-wordlists  ;
+: read-game-file ( ca len -- )
+  restore-wordlist 1 set-order  included  restore-wordlists ;
   \ Lee el fichero de configuración de nombre _ca len_.
   \ XXX TODO -- comprobar la existencia del fichero y atrapar errores
   \ al leerlo
 
-: >file/  ( ca len -- )
-  game-file-id @ write-line abort" Write file error"  ;
+: >file/ ( ca len -- )
+  game-file-id @ write-line abort" Write file error" ;
   \ Escribe una línea en el fichero de la partida.
   \ XXX TODO -- mensaje de error definitivo
 
-: cr>file  ( -- )  s" " >file/  ;
+: cr>file ( -- ) s" " >file/ ;
   \ Escribe un final de línea en el fichero de la partida.
 
-: >file  ( ca len -- )
+: >file ( ca len -- )
   space+
-  game-file-id @ write-file abort" Write file error"  ;
+  game-file-id @ write-file abort" Write file error" ;
   \ Escribe una cadena en el fichero de la partida.
   \ XXX TODO -- mensaje de error definitivo
 
@@ -2060,7 +2060,7 @@ immediate
 
 ' s" alias s"
 
-: load-entity  ( x0 ... xn u -- )
+: load-entity ( x0 ... xn u -- )
   #>entity >r
   \ cr .s  \ XXX INFORMER
   r@ ~direction !
@@ -2081,67 +2081,67 @@ immediate
   r@ ~times-open !
   r@ ~conversations !
   \ 2dup cr type .s  \ XXX INFORMER
-  r> name!  ;
+  r> name! ;
   \ Restaura los datos de un ente cuyo número ordinal es _u_.  _x0 ...
   \ xn_ son los datos del ente, en orden inverso a como los crea la
   \ palabra `save-entity`.
   \ XXX TODO -- reescribir, recuperando en bruto todas las celdas del
   \ registro, sin distinguir campos
 
-: load-plot  ( x0 ... xn -- )
+: load-plot ( x0 ... xn -- )
   recent-talks-to-the-leader !
   sword-forbidden? !
   stone-forbidden? !
   hacked-the-log? !
   climbed-the-fallen-away? !
   battle# !
-  ambrosio-follows? !  ;
+  ambrosio-follows? ! ;
   \ Restaura las variables de la trama.
   \ Debe hacerse en orden alfabético inverso.
 
 restore-wordlists
 
-: string>file  ( ca len -- )
-  s\" s\" " 2swap s+ s\" \"" s+ >file  ;
+: string>file ( ca len -- )
+  s\" s\" " 2swap s+ s\" \"" s+ >file ;
   \ Escribe una cadena en el fichero de la partida.
 
-: f>string  ( f -- ca len )
-  if  s" true"  else  s" false"  then  ;
+: f>string ( f -- ca len )
+  if  s" true"  else  s" false"  then ;
   \ Convierte un indicador binario en su nombre de constante.
 
-: f>file  ( f -- )  f>string >file  ;
+: f>file ( f -- ) f>string >file ;
   \ Escribe un indicador binario en el fichero de la partida.
 
-: n>string  ( n -- ca len )
-  s>d swap over dabs <# #s rot sign #> >stringer  ;
+: n>string ( n -- ca len )
+  s>d swap over dabs <# #s rot sign #> >stringer ;
   \ Convierte un número con signo en una cadena.
 
-: u>string ( u -- ca len )  s>d <# #s #> >stringer  ;
+: u>string ( u -- ca len ) s>d <# #s #> >stringer ;
   \ Convierte un número sin signo en una cadena.
 
-: 00>s  ( u -- ca1 len1 )  s>d <# # #s #> >stringer  ;
+: 00>s ( u -- ca1 len1 ) s>d <# # #s #> >stringer ;
   \ Convierte un número sin signo en una cadena (de dos dígitos como mínimo).
 
-: 00>s+  ( u ca1 len1 -- ca2 len2 )  rot 00>s s+  ;
+: 00>s+ ( u ca1 len1 -- ca2 len2 ) rot 00>s s+ ;
   \ Añade a una cadena un número tras convertirlo en cadena.
 
-: yyyy-mm-dd-hh:mm:ss$  ( -- ca len )
+: yyyy-mm-dd-hh:mm:ss$ ( -- ca len )
   time&date 00>s hyphen+ 00>s+ hyphen+ 00>s+ space+
-  00>s+ colon+ 00>s+ colon+ 00>s+  ;
+  00>s+ colon+ 00>s+ colon+ 00>s+ ;
   \ Devuelve la fecha y hora actuales como una cadena en formato
   \ «aaaa-mm-dd-hh:mm:ss».
 
-: n>file  ( n -- )  n>string >file  ;
+: n>file ( n -- ) n>string >file ;
   \ Escribe un número con signo en el fichero de la partida.
 
-: entity>file  ( a -- )  entity># n>file  ;
+: entity>file ( a -- ) entity># n>file ;
   \ Escribe la referencia a un ente _a_ en el fichero de la partida.
   \ Esta palabra es necesaria porque no es posible guardar y restaurar
   \ las direcciones de ficha de los entes, pues variarán con cada
   \ sesión de juego. Hay que guardar los números ordinales de las
   \ fichas y con ellos calcular sus direcciones durante la restauración.
 
-: save-entity  ( u -- )
+: save-entity ( u -- )
   dup #>entity >r
   r@ name string>file
   r@ conversations n>file
@@ -2168,23 +2168,23 @@ restore-wordlists
   \ XXX TODO -- reescribir, grabando en bruto todas las celdas del
   \ registro, sin distinguir campos
 
-: rule>file  ( -- )
-  s" \ ----------------------------------------------------" >file/  ;
+: rule>file ( -- )
+  s" \ ----------------------------------------------------" >file/ ;
   \ Escribe una línea de separación en el fichero de la partida.
 
-: section>file  ( ca len -- )
-  cr>file rule>file s" \ " >file >file/ rule>file cr>file  ;
+: section>file ( ca len -- )
+  cr>file rule>file s" \ " >file >file/ rule>file cr>file ;
   \ Escribe el título de una sección en el fichero de la partida.
 
-: save-entities  ( -- )
-  s" Entes" section>file #entities 0 do  i save-entity  loop  ;
+: save-entities ( -- )
+  s" Entes" section>file #entities 0 do  i save-entity  loop ;
   \ Escribe los datos de los entes en el fichero de la partida.
 
-: save-config  ( -- )  s" Configuración" section>file  ;
+: save-config ( -- ) s" Configuración" section>file ;
   \ Escribe los valores de configuración en el fichero de la partida.
   \ XXX TODO
 
-: save-plot  ( -- )
+: save-plot ( -- )
   s" Trama" section>file
   ambrosio-follows? @ f>file
   battle# @ n>file
@@ -2193,46 +2193,46 @@ restore-wordlists
   stone-forbidden? @ f>file
   sword-forbidden? @ f>file
   recent-talks-to-the-leader @ n>file
-  s" load-plot" >file/  ;
+  s" load-plot" >file/ ;
   \ Escribe las variables de la trama en el fichero de la partida.
   \ Debe hacerse en orden alfabético.  Escribe también la palabra que
   \ hará la restauración de la trama
 
-: file-header  ( -- )
+: file-header ( -- )
   s" \ Datos de restauración de una partida de «Asalto y castigo»"
   >file/
   s" \ (http://pragramandala.net/es.programa.asalto_y_castigo.forth.html)"
   >file/
-  s" \ Fichero creado en" yyyy-mm-dd-hh:mm:ss$ txt+ >file/  ;
+  s" \ Fichero creado en" yyyy-mm-dd-hh:mm:ss$ txt+ >file/ ;
   \ Escribe la cabecera del fichero de la partida.
 
-: write-game-file  ( -- )
-  file-header save-entities save-config save-plot  ;
+: write-game-file ( -- )
+  file-header save-entities save-config save-plot ;
   \ Escribe el contenido del fichero de la partida.
 
-: fs+  ( ca1 len1 -- ca2 len2 )  s" .fs" s+  ;
+: fs+ ( ca1 len1 -- ca2 len2 ) s" .fs" s+ ;
   \ Añade la extensión «.fs» a un nombre de fichero _ca1 len1_.
 
-: ?fs+  ( ca1 len1 -- ca1 len1 | ca2 len2 )
-  s" .fs" ends? ?exit  fs+  ;
+: ?fs+ ( ca1 len1 -- ca1 len1 | ca2 len2 )
+  s" .fs" ends? ?exit  fs+ ;
   \ Añade la extensión «.fs» a un nombre de fichero _ca1 len1_,
   \ si no la tiene ya.
 
-: (save-the-game)  ( ca len -- )
-  ?fs+ create-game-file write-game-file close-game-file  ;
+: (save-the-game) ( ca len -- )
+  ?fs+ create-game-file write-game-file close-game-file ;
   \ Salva la partida.
 
-: save-the-game  ( ca len -- )
+: save-the-game ( ca len -- )
   \ ?no-main-complement \ XXX TODO
-  (save-the-game)  ;
+  (save-the-game) ;
   \ Acción de salvar la partida.
 
-: continue-the-loaded-game  ( -- )
+: continue-the-loaded-game ( -- )
   scene-break new-page
-  my-holder describe-location  ;
+  my-holder describe-location ;
   \ Continúa el juego en el punto que se acaba de restaurar.
 
-: load-the-game  ( ca len -- )
+: load-the-game ( ca len -- )
   \ ?no-main-complement  \ XXX TODO
   restore-wordlist 1 set-order
   [debug-filing] [??] ~~
@@ -2253,7 +2253,7 @@ restore-wordlists
   restore-wordlists
   [debug-filing] [??] ~~
   ?dup if
-    ( ca len u2 ) nip nip
+   ( ca len u2 ) nip nip
     case  \ XXX TMP
       2 of  s" Fichero no encontrado." narrate  endof
       s" Error al intentar leer el fichero." narrate
@@ -2268,7 +2268,7 @@ restore-wordlists
     s" Error al intentar restaurar la entrada tras leer el fichero." narrate
   then
   [debug-filing] [??] ~~
-  continue-the-loaded-game  ;
+  continue-the-loaded-game ;
   \ Acción de salvar la partida.
   \ XXX FIXME -- no funciona bien?
   \ XXX TODO -- probarlo
@@ -2276,11 +2276,11 @@ restore-wordlists
 \ ----------------------------------------------
 \ Acciones de configuración
 
-: recolor  ( -- )
-  init-colors  new-page  my-holder describe  ;
+: recolor ( -- )
+  init-colors  new-page  my-holder describe ;
   \ XXX TODO rename
 
-defer finish  ( -- )
+defer finish ( -- )
   \ XXX TODO rename
 
 \ ==============================================================

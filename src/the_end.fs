@@ -24,58 +24,58 @@ set-current
 
 \ ==============================================================
 
-: success?  ( -- f )  location-51~ am-i-there?  ;
+: success? ( -- f ) location-51~ am-i-there? ;
   \ ¿Ha completado con éxito su misión el protagonista?
 
 false [if]
 
-: battle-phases  ( -- u )  5 random 7 +  ;
+: battle-phases ( -- u ) 5 random 7 + ;
   \ Devuelve el número máximo de fases de la batalla
   \ (número al azar, de 8 a 11).
   \ XXX TODO -- no usado
 
 [then]
 
-: failure?  ( -- f )  battle# @ battle-phases >  ;
+: failure? ( -- f ) battle# @ battle-phases > ;
   \ ¿Ha fracasado el protagonista?
 
-: .bye  ( -- )  s" ¡Adiós!" narrate  ;
+: .bye ( -- ) s" ¡Adiós!" narrate ;
   \ Mensaje final cuando el jugador no quiere jugar otra partida.
   \ XXX TMP
 
-: farewell  ( -- )  new-page .bye bye  ;
+: farewell ( -- ) new-page .bye bye ;
   \ Abandona el programa.
 
-: play-again?$  ( -- ca len )
+: play-again?$ ( -- ca len )
   s{ s" ¿Quieres" s" ¿Te" s{ s" animas a" s" apetece" }s txt+ }s
-  s{ s" jugar" s" empezar" }s txt+  again?$ txt+  ;
+  s{ s" jugar" s" empezar" }s txt+  again?$ txt+ ;
   \ Devuelve la pregunta que se hace al jugador tras haber completado
   \ con éxito el juego.
 
-: retry?0$  ( -- ca len )
+: retry?0$ ( -- ca len )
   s" ¿Tienes"
-  s{ s" fuerzas" s" arrestos" s" agallas" s" energías" s" ánimos" }s txt+  ;
+  s{ s" fuerzas" s" arrestos" s" agallas" s" energías" s" ánimos" }s txt+ ;
   \ Devuelve una variante para el comienzo de la pregunta que se hace
   \ al jugador tras haber fracasado.
 
-: retry?1$  ( -- ca len )
+: retry?1$ ( -- ca len )
   s{ s" ¿Te quedan" s" ¿Guardas" s" ¿Conservas" }s
-  s{ s" fuerzas" s" energías" s" ánimos" }s txt+  ;
+  s{ s" fuerzas" s" energías" s" ánimos" }s txt+ ;
   \ Devuelve una variante para el comienzo de la pregunta que se hace
   \ al jugador tras haber fracasado.
 
-: retry?$  ( -- ca len )
+: retry?$ ( -- ca len )
   s{ retry?0$ retry?1$ }s s" para" txt+
-  s{ s" jugar" s" probar" s" intentarlo" }s txt+ again?$ txt+  ;
+  s{ s" jugar" s" probar" s" intentarlo" }s txt+ again?$ txt+ ;
   \ Devuelve la pregunta que se hace al jugador tras haber fracasado.
 
-: enough?  ( -- f )
-  success? if  ['] play-again?$  else  ['] retry?$  then  cr no?  ;
+: enough? ( -- f )
+  success? if  ['] play-again?$  else  ['] retry?$  then  cr no? ;
   \ ¿Prefiere el jugador no jugar otra partida?
   \ XXX TODO -- hacer que la pregunta varíe si la respuesta es incorrecta
   \ Para ello, pasar como parámetro el _xt_ que crea la cadena.
 
-: surrender?$  ( -- ca len )
+: surrender?$ ( -- ca len )
   s{
   s" ¿Quieres"
   s" ¿En serio quieres"
@@ -86,37 +86,37 @@ false [if]
   s" dejarlo?"
   s" rendirte?"
   s" abandonar?"
-  }s txt+  ;
+  }s txt+ ;
   \ Devuelve la pregunta de si el jugador quiere dejar el juego.
 
-: surrender?  ( -- f )
-  ['] surrender?$ yes?  ;
+: surrender? ( -- f )
+  ['] surrender?$ yes? ;
   \ ¿Quiere el jugador dejar el juego?
 
-: game-over?  ( -- f )  success? failure? or  ;
+: game-over? ( -- f ) success? failure? or ;
   \ ¿Se terminó ya el juego?
 
-: the-favorite-says$  ( -- ca len )
+: the-favorite-says$ ( -- ca len )
   s" te" s{ s" indica" s" hace saber" }s txt+
-  s" el valido" txt+  ;
+  s" el valido" txt+ ;
 
-: do-not-disturb$  ( -- ca len )
+: do-not-disturb$ ( -- ca len )
   s" ha" s{
   s" ordenado"
   s" dado órdenes de"
   s" dado" s" la" 50%nullify txt+ s" orden de" txt+
   }s txt+ s" que" txt+ s{ s" nadie" s" no se" }s txt+
-  s" lo moleste" txt+ comma+  ;
+  s" lo moleste" txt+ comma+ ;
 
-: favorite's-speech$  ( -- ca len )
+: favorite's-speech$ ( -- ca len )
   s" El rey"  castilian-quotes? @
   if    rquote$ s+ comma+ the-favorite-says$ txt+ comma+
         lquote$ do-not-disturb$ s+ txt+
   else  dash$ the-favorite-says$ s+ dash$ s+ comma+ txt+
         do-not-disturb$ txt+
-  then  s" pues sufre una amarga tristeza." txt+  ;
+  then  s" pues sufre una amarga tristeza." txt+ ;
 
-: the-happy-end  ( -- )
+: the-happy-end ( -- )
   s" Agotado, das parte en el castillo de tu llegada"
   s" y de lo que ha pasado." txt+
   narrate  narration-break
@@ -130,22 +130,22 @@ false [if]
   s" Es lo poco que puedes hacer." txt+
   narrate  narration-break
   s" Te has ganado un buen descanso."
-  narrate  ;
+  narrate ;
   \ Final del juego con éxito.
 
-: ransom$  ( -- ca len )
-  s" un" s{ s" buen" s" suculento" }s txt+ s" rescate" txt+  ;
+: ransom$ ( -- ca len )
+  s" un" s{ s" buen" s" suculento" }s txt+ s" rescate" txt+ ;
 
-: my-lucky-day$  ( -- ca len )
+: my-lucky-day$ ( -- ca len )
   s{  s" Hoy" s{ s" es" s" parece ser" s" sin duda es" s" al parecer es" }s txt+
       s{  s" Sin duda" s" No cabe duda de que"
           s" Parece que" s" Por lo que parece"
       }s s" hoy es" txt+
   }s s{ s" un" s" mi" }s txt+ s" día" txt+
-  s{ s" de suerte" s" afortunado" }s txt+ s" ..." s+  ;
+  s{ s" de suerte" s" afortunado" }s txt+ s" ..." s+ ;
   \ Texto de las palabras del general enemigo.
 
-: enemy-speech$  ( -- ca len )
+: enemy-speech$ ( -- ca len )
   my-lucky-day$
   s{ s" Bien, bien..." s" Excelente..." }s txt+
   s{  s" Por el gran Ulfius"
@@ -155,12 +155,12 @@ false [if]
       s" Del gran Ulfius" s{ s" podremos" s" lograremos" }s txt+
         s{ s" sacar" s" obtener" }s txt+
         s{ ransom$ s{ s" alguna" s" una" }s s" buena ventaja" txt+ }s txt+
-  }s txt+  ;
+  }s txt+ ;
 
-: enemy-speech  ( -- )  enemy-speech$ period+  speak  ;
+: enemy-speech ( -- ) enemy-speech$ period+  speak ;
   \ Palabras del general enemigo.
 
-: the-sad-end  ( -- )
+: the-sad-end ( -- )
   s" Los sajones"
   \ XXX TODO -- añadir también el siguiente escenario, el lago
   location-10~ am-i-there? if
@@ -183,26 +183,26 @@ false [if]
       s" con una" s{ s" amplia" s" cruel" s" despectiva" }s txt+ s" sonrisa" txt+
   }s txt+ comma+
   s{  s" exclama" s" dice" }s txt+ colon+ xcapitalized narrate
-  narration-break enemy-speech  ;
+  narration-break enemy-speech ;
   \ Final del juego con fracaso.
 
-: the-end  ( -- )
-  success? if  the-happy-end  else  the-sad-end  then  scene-break  ;
+: the-end ( -- )
+  success? if  the-happy-end  else  the-sad-end  then  scene-break ;
   \ Mensaje final del juego.
 
 
-: retry?  ( -- f )  ['] retry?$ yes?  ;
+: retry? ( -- f ) ['] retry?$ yes? ;
   \ Pregunta al jugador si quiere volver a intentarlo y devuelve la
   \ respuesta en el indicador _f_.
 
-defer adventure  ( -- )
+defer adventure ( -- )
 
-: (finish)  ( -- )  retry? if  adventure  else  farewell  then  ;
+: (finish) ( -- ) retry? if  adventure  else  farewell  then ;
   \ Acción de abandonar el juego, ya confirmada por el jugador.
   \ Pregunta al jugador si quiere volver a intentarlo; si es así,
   \ inicia una nueva partida; de otro modo sale del programa.
 
-:noname  ( -- )  surrender? ?? (finish)  ; is finish
+:noname ( -- ) surrender? ?? (finish)  ; is finish
   \ Acción de abandonar el juego. Pide confirmación.
 
 \ vim:filetype=gforth:fileencoding=utf-8

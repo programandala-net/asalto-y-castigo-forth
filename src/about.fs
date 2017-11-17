@@ -22,14 +22,14 @@ set-current
 
 \ ==============================================================
 
-: based-on  ( -- )
+: based-on ( -- )
   s" «Asalto y castigo» está basado"
   s" en el programa homónimo escrito en BASIC en 2009 por" txt+
   s" Baltasar el Arquero (http://caad.es/baltasarq/)." txt+
-  /ltype  ;
+  /ltype ;
   \ Muestra un texto sobre el programa original.
 
-: license  ( -- )
+: license ( -- )
   s" (C) 2011-2016 Marcos Cruz (programandala.net)" /ltype
   s" «Asalto y castigo» es un programa libre;"
   s" puedes distribuirlo y/o modificarlo bajo los términos de" txt+
@@ -37,10 +37,10 @@ set-current
   s" por la Free Software Foundation (Fundación para los Programas Libres)," txt+
   s" bien en su versión 2 o, a tu elección, cualquier versión posterior" txt+
   s" (http://gnu.org/licenses/)." txt+ \ XXX TODO -- confirmar
-  /ltype  ;
+  /ltype ;
   \ Muestra un texto sobre la licencia.
 
-: program  ( -- )
+: program ( -- )
   /paragraph 0 to /paragraph
   s" «Asalto y castigo»" /ltype
   s" Versión" /ltype version ltype
@@ -48,10 +48,10 @@ set-current
                to /paragraph ;
   \ Muestra el nombre y versión del programa.
 
-: about  ( -- )
+: about ( -- )
   new-page about-color
   program license based-on
-  scene-break  ;
+  scene-break ;
   \ Muestra información sobre el programa.
 
 \ ==============================================================
@@ -61,4 +61,3 @@ set-current
 \ <l-type.fs>.
 
 \ vim:filetype=gforth:fileencoding=utf-8
-

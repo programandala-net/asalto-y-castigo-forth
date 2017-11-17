@@ -55,7 +55,7 @@ $1C5C constant parser-id
 include version.fs
 include debug_tools.fs
 
-: including  ( ca len -- )  2dup cr type included ?.s  ;
+: including ( ca len -- ) 2dup cr type included ?.s ;
   \ Include file _ca len_ and check the stack.
   \ XXX TMP -- for debugging
 
@@ -95,14 +95,14 @@ s" intro.fs" including
 \ ==============================================================
 \ Principal
 
-: init-session  ( -- )  restore-wordlists  init-screen  ;
+: init-session ( -- ) restore-wordlists  init-screen ;
   \ Initialize the session.
 
-: init-parser/game  ( -- )  erase-last-complements  ;
+: init-parser/game ( -- ) erase-last-complements ;
   \ Initialize the parser before every game.
   \ XXX TODO -- move to other file
 
-: init-game-for-debugging  ( -- )
+: init-game-for-debugging ( -- )
   \ location-01~ enter-location
   \ location-08~ enter-location  \ ambush
   \ location-43~ enter-location    \ snake
@@ -118,31 +118,31 @@ s" intro.fs" including
   idol~ be-hold
   flint~ be-hold
   torch~ be-hold
-  ;
+ ;
   \ Special situations.
   \ XXX TMP -- for debugging.
 
-: init-game  ( -- )
+: init-game ( -- )
   randomize
   init-parser/game init-entities init-plot
   get-config new-page
   \ init-game-for-debugging exit  \ XXX TMP -- for debugging
   about cr intro  \ XXX TMP -- commented out for debugging
-  location-01~ enter-location  ;
+  location-01~ enter-location ;
   \ Initialization needed before every game.
 
-: cycle  ( -- )  accept-command obey  ;
+: cycle ( -- ) accept-command obey ;
 
-: game  ( -- )  begin  cycle plot game-over?  until  ;
+: game ( -- ) begin  cycle plot game-over?  until ;
 
-: session  ( -- )  begin  init-game game the-end  enough?  until  ;
+: session ( -- ) begin  init-game game the-end  enough?  until ;
 
 \ ==============================================================
 \ Boot
 
 forth-wordlist set-current
 
-: run  ( -- )  init-session session farewell  ;
+: run ( -- ) init-session session farewell ;
 
 cr .( Escribe RUN para jugar) cr  \ XXX TMP
 
@@ -156,8 +156,8 @@ run  \ XXX TMP
 \ ' zx (execute-action)
 \ cr .( test done) cr cr
 
-: i0  ( -- )
-  init-session init-game  s" Data are ready." /ltype  ;
+: i0 ( -- )
+  init-session init-game  s" Data are ready." /ltype ;
   \ XXX TMP -- for debugging
 
 \ i0 cr  \ XXX TMP -- for debugging

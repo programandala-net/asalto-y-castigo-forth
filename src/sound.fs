@@ -19,19 +19,19 @@
 \ que usamos en las pruebas. Los comandos para la consola del sistema
 \ operativo se pasan con la palabra SYSTEM de Gforth.
 
-: clear-sound-track  ( -- )  s" mocp --clear" system  ;
+: clear-sound-track ( -- ) s" mocp --clear" system ;
   \ Limpia la lista de sonidos.
 
-: add-sound-track  ( ca len -- )  s" mocp --add" 2swap s& system  ;
+: add-sound-track ( ca len -- ) s" mocp --add" 2swap s& system ;
   \ Añade un fichero de sonido a la lista de sonidos.
 
-: play-sound-track  ( -- )  s" mocp --play" system  ;
+: play-sound-track ( -- ) s" mocp --play" system ;
   \ Inicia la reproducción de la lista de sonidos.
 
-: stop-sound-track  ( -- )  s" mocp --stop" system  ;
+: stop-sound-track ( -- ) s" mocp --stop" system ;
   \ Detiene la reproducción de la lista de sonidos.
 
-: next-sound-track  ( -- )  s" mocp --forward" system  ;
+: next-sound-track ( -- ) s" mocp --forward" system ;
   \ Salta al siguiente elemento de la lista de sonidos.
 
 \ vim:filetype=gforth:fileencoding=utf-8

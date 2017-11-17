@@ -31,53 +31,53 @@ set-current
 \ ----------------------------------------------
 \ Ente protagonista
 
-: describe-ulfius  ( -- )
+: describe-ulfius ( -- )
   s" Sientes sobre ti la carga de tanto"
   s{ s" sucedido" s" acontecido" s" acontecido" s" vivido" }s txt+
-  period+ /ltype  ;
+  period+ /ltype ;
 
-ulfius~ :init  ( -- )
+ulfius~ :init ( -- )
   ['] describe-ulfius self~ be-describer
   s" Ulfius" self~ ms-name!
   self~ be-human
   self~ have-personal-name
   self~ have-no-article
-  location-01~ self~ be-there  ;
+  location-01~ self~ be-there ;
 
 \ ----------------------------------------------
 \ Entes personaje
 
-: describe-ambrosio  ( -- )
+: describe-ambrosio ( -- )
   ambrosio~ conversations
   if    s" Ambrosio"
         s" es un hombre de mediana edad, que te mira afable." txt+
   else  s" Es de mediana edad y mirada afable."
-  then  /ltype  ;
+  then  /ltype ;
 
-ambrosio~ :init  ( -- )
+ambrosio~ :init ( -- )
   ['] describe-ambrosio self~ be-describer
   s" hombre" self~ ms-name!
   self~ be-character
   self~ be-human
-  location-19~ self~ be-there  ;
+  location-19~ self~ be-there ;
   \ N.B. El nombre cambiará a «Ambrosio» durante el juego.
 
-: describe-leader  ( -- )
+: describe-leader ( -- )
   leader~ conversations?
   if    s" Es el jefe de los refugiados."
   else  s" Es un anciano."
-  then  /ltype  ;
+  then  /ltype ;
   \ XXX TODO -- elaborar esto según la trama
 
-leader~ :init  ( -- )
+leader~ :init ( -- )
   ['] describe-leader self~ be-describer
   s" anciano" self~ ms-name!
   self~ be-character
   self~ be-human
   self~ be-not-listed
-  location-28~ self~ be-there  ;
+  location-28~ self~ be-there ;
 
-: describe-soldiers  ( -- )
+: describe-soldiers ( -- )
   true case
     still-in-the-village? of  soldiers-steal-spite-of-officers  endof
 \   back-to-the-village? of  soldiers-go-home  endof
@@ -86,18 +86,18 @@ leader~ :init  ( -- )
 \   battle? of  battle-phase  endof
     \ XXX TODO -- no usado. redundante, porque tras la descripción se
     \ mostrará otra vez la situación de la batalla
-  endcase  ;
+  endcase ;
   \ Describe a tus soldados.
 
-soldiers~ :init  ( -- )
+soldiers~ :init ( -- )
   ['] describe-soldiers self~ be-describer
   s" soldados" self~ mp-name!
   self~ be-human
   self~ familiar++
   self~ be-decoration
-  self~ belongs-to-protagonist  ;
+  self~ belongs-to-protagonist ;
 
-: describe-officers  ( -- )
+: describe-officers ( -- )
   true case
     still-in-the-village? of  ^officers-forbid-to-steal$  endof
 \   back-to-the-village? of  officers-go-home  endof
@@ -106,18 +106,18 @@ soldiers~ :init  ( -- )
 \   battle? of  battle-phase  endof
     \ XXX TODO -- no usado. redundante, porque tras la descripción se
     \ mostrará otra vez la situación de la batalla
-  endcase  ;
+  endcase ;
   \ Describe a tus soldados.
 
-officers~ :init  ( -- )
+officers~ :init ( -- )
   ['] describe-officers self~ be-describer
   s" oficiales" self~ mp-name!
   self~ be-human
   self~ familiar++
   self~ be-decoration
-  self~ belongs-to-protagonist  ;
+  self~ belongs-to-protagonist ;
 
-: describe-present-refugees  ( -- )
+: describe-present-refugees ( -- )
   talked-to-the-leader?
   if    s" Los refugiados son"
   else  s" Hay"
@@ -129,114 +129,114 @@ officers~ :init  ( -- )
   do-you-hold-something-forbidden?
   if    the-refugees-don't-trust$
   else  the-refugees-trust$
-  then  txt+ period+ narrate  ;
+  then  txt+ period+ narrate ;
 
-: describe-refugees  ( -- )
+: describe-refugees ( -- )
   my-holder case
   location-28~ of  describe-present-refugees  endof
   location-29~ of  s" Todos los refugiados quedaron atrás."
                    /ltype  endof
-  endcase  ;
+  endcase ;
   \ XXX TODO -- ampliar el texto
 
-refugees~ :init  ( -- )
+refugees~ :init ( -- )
   ['] describe-refugees self~ be-describer
   s" refugiados" self~ mp-name!
   self~ be-human
-  self~ be-decoration  ;
+  self~ be-decoration ;
 
 \ ----------------------------------------------
 \ Entes objeto
 
-: describe-altar  ( -- )
+: describe-altar ( -- )
   s" Está" s{ s" situado" s" colocado" }s txt+
   s" justo en la mitad del puente." txt+
   idol~ is-unknown?
   if  s" Debe de sostener algo importante." txt+   then
-  /ltype  ;
+  /ltype ;
 
-altar~ :init  ( -- )
+altar~ :init ( -- )
   ['] describe-altar self~ be-describer
   s" altar" self~ ms-name!
   self~ be-decoration
-  location-18~ self~ be-there  ;
+  location-18~ self~ be-there ;
 
-: describe-arch  ( -- )
+: describe-arch ( -- )
   s" Un sólido arco de piedra, de una sola pieza."
-  /ltype  ;
+  /ltype ;
   \ XXX TODO -- mejorar texto
 
-arch~ :init  ( -- )
+arch~ :init ( -- )
   ['] describe-arch self~ be-describer
   s" arco" self~ ms-name!
   self~ be-decoration
-  location-18~ self~ be-there  ;
+  location-18~ self~ be-there ;
 
-: describe-bed  ( -- )
+: describe-bed ( -- )
   s{ s" Parece poco" s" No tiene el aspecto de ser muy"
   s" No parece especialmente" }s
   s{ s" confortable" s" cómod" bed~ adjective-ending s+ }s txt+ period+
-  /ltype  ;
+  /ltype ;
 
-bed~ :init  ( -- )
+bed~ :init ( -- )
   ['] describe-bed self~ be-describer
   s" catre" self~ ms-name!
   location-46~ self~ be-there
-  self~ ambrosio~ be-owner  ;
+  self~ ambrosio~ be-owner ;
 
-: describe-bridge  ( -- )
+: describe-bridge ( -- )
   s" Está semipodrido."
-  /ltype  ;
+  /ltype ;
   \ XXX TODO -- mejorar texto
 
-bridge~ :init  ( -- )
+bridge~ :init ( -- )
   ['] describe-bridge self~ be-describer
   s" puente" self~ ms-name!
   self~ be-decoration
-  location-13~ self~ be-there  ;
+  location-13~ self~ be-there ;
 
-: describe-candles  ( -- )
+: describe-candles ( -- )
   s" Están muy consumidas."
-  /ltype  ;
+  /ltype ;
 
-candles~ :init  ( -- )
+candles~ :init ( -- )
   ['] describe-candles self~ be-describer
   s" velas" self~ fp-name!
   location-46~ self~ be-there
-  self~ ambrosio~ be-owner  ;
+  self~ ambrosio~ be-owner ;
 
-: describe-cave-entrance  ( -- )
+: describe-cave-entrance ( -- )
   the-cave-entrance-is-hidden$
   you-were-lucky-discovering-it$ txt+
   it's-your-last-hope$ txt+
-  /ltype  ;
+  /ltype ;
 
-cave-entrance~ :init  ( -- )
+cave-entrance~ :init ( -- )
   ['] describe-cave-entrance self~ be-describer
-  s" entrada a una cueva" self~ fs-name!  ;
+  s" entrada a una cueva" self~ fs-name! ;
 
-: describe-cloak  ( -- )
+: describe-cloak ( -- )
   s" Tu capa de general, de fina lana"
   s{ s" tintada de negro." s" negra." }s txt+
-  /ltype  ;
+  /ltype ;
 
-cloak~ :init  ( -- )
+cloak~ :init ( -- )
   ['] describe-cloak self~ be-describer
   s" capa" self~ fs-name!
   self~ be-wearable
   self~ belongs-to-protagonist
   self~ be-worn
-  self~ be-hold  ;
+  self~ be-hold ;
 
-cuirasse~ :init  ( -- )
+cuirasse~ :init ( -- )
   \ ['] describe-cuirasse self~ be-describer
   s" coraza" self~ fs-name!
   self~ be-wearable
   self~ belongs-to-protagonist
   self~ be-hold
-  self~ be-worn  ;
+  self~ be-worn ;
 
-: describe-door  ( -- )
+: describe-door ( -- )
   door~ times-open if  s" Es"  else  s" Parece"  then
   s" muy" 50%nullify txt+ s{ s" recia" s" gruesa" s" fuerte" }s txt+
   location-47~ am-i-there? if
@@ -245,25 +245,25 @@ cuirasse~ :init  ( -- )
     else  s"  y tiene un gran candado"
     then  s+ lock-found
   then  period+
-  s" Está" txt+ door~ «open»|«closed» txt+ period+ /ltype  ;
+  s" Está" txt+ door~ «open»|«closed» txt+ period+ /ltype ;
 
-door~ :init  ( -- )
+door~ :init ( -- )
   ['] describe-door self~ be-describer
   s" puerta" self~ fs-name!
   self~ be-closed
   location-47~ self~ be-there
-  self~ ambrosio~ be-owner  ;
+  self~ ambrosio~ be-owner ;
 
-: describe-emerald  ( -- )
+: describe-emerald ( -- )
   s" Es preciosa."
-  /ltype  ;
+  /ltype ;
 
-emerald~ :init  ( -- )
+emerald~ :init ( -- )
   ['] describe-emerald self~ be-describer
   s" esmeralda" self~ fs-name!
-  location-39~ self~ be-there  ;
+  location-39~ self~ be-there ;
 
-: describe-fallen-away  ( -- )
+: describe-fallen-away ( -- )
   s{
     s" Muchas," s" Muchísimas," s" Numerosas,"
     s" Un gran número de" s" Una gran cantidad de"
@@ -284,35 +284,35 @@ emerald~ :init  ( -- )
     s" la una sobre la otra"
     s" las unas sobre las otras"
   }s txt+ period+
-  /ltype  ;
+  /ltype ;
 
-fallen-away~ :init  ( -- )
+fallen-away~ :init ( -- )
   ['] describe-fallen-away self~ be-describer
   s" derrumbe" self~ ms-name!
   self~ be-decoration
-  location-09~ self~ be-there  ;
+  location-09~ self~ be-there ;
 
-: describe-flags  ( -- )
+: describe-flags ( -- )
   s" Son las banderas britana y sajona:"
   s" Dos dragones rampantes," txt+
   s" rojo y blanco respectivamente, enfrentados." txt+
-  /ltype  ;
+  /ltype ;
 
-flags~ :init  ( -- )
+flags~ :init ( -- )
   ['] describe-flags self~ be-describer
   s" banderas" self~ fp-name!
   self~ be-decoration
-  location-28~ self~ be-there  ;
+  location-28~ self~ be-there ;
 
-: describe-flint  ( -- )
+: describe-flint ( -- )
   s" Es una piedra dura y afilada."
-  /ltype  ;
+  /ltype ;
 
-flint~ :init  ( -- )
+flint~ :init ( -- )
   ['] describe-flint self~ be-describer
-  s" pedernal" self~ ms-name!  ;
+  s" pedernal" self~ ms-name! ;
 
-: describe-grass  ( -- )
+: describe-grass ( -- )
   door~ times-open if
     s" Está" grass~ verb-number-ending+
     s" aplastad" grass~ adjective-ending+ txt+
@@ -328,103 +328,103 @@ flint~ :init  ( -- )
     s{ s" no ha sido abierta en" s" lleva cerrada"
     s" ha permanecido cerrada" s" durante" 50%nullify txt+ }s
     s" mucho tiempo." txt+
-  then  /ltype  ;
+  then  /ltype ;
 
-grass~ :init  ( -- )
+grass~ :init ( -- )
   ['] describe-grass self~ be-describer
   s" hierba" self~ fs-name!
-  self~ be-decoration  ;
+  self~ be-decoration ;
 
-: describe-idol  ( -- )
+: describe-idol ( -- )
   s" El ídolo tiene dos agujeros por ojos."
-  /ltype  ;
+  /ltype ;
 
-idol~ :init  ( -- )
+idol~ :init ( -- )
   ['] describe-idol self~ be-describer
   s" ídolo" self~ ms-name!
   self~ be-decoration
-  location-41~ self~ be-there  ;
+  location-41~ self~ be-there ;
 
-: describe-key  ( -- )
+: describe-key ( -- )
   s" Es una llave grande, de hierro herrumboso."
-  /ltype  ;
+  /ltype ;
 
-key~ :init  ( -- )
+key~ :init ( -- )
   ['] describe-key self~ be-describer
   s" llave" self~ fs-name!
   location-46~ self~ be-there
-  self~ ambrosio~ be-owner  ;
+  self~ ambrosio~ be-owner ;
 
-: describe-lake  ( -- )
+: describe-lake ( -- )
   s{ s" La" s" Un rayo de" }s
   s" luz entra por un resquicio," txt+
   s" y sus caprichosos reflejos te maravillan." txt+
-  /ltype  ;
+  /ltype ;
 
-lake~ :init  ( -- )
+lake~ :init ( -- )
   ['] describe-lake self~ be-describer
   s" lago" self~ ms-name!
   self~ be-decoration
-  location-44~ self~ be-there  ;
+  location-44~ self~ be-there ;
 
-: describe-lock  ( -- )
+: describe-lock ( -- )
   s" Es grande y parece" s{ s" fuerte." s" resistente." }s txt+
   s" Está" txt+ s{ s" fijad" s" unid" }s txt+ lock~ adjective-ending+
   s" a la puerta y" txt+
   lock~ «open»|«closed» txt+ period+
-  /ltype  ;
+  /ltype ;
 
-lock~ :init  ( -- )
+lock~ :init ( -- )
   ['] describe-lock self~ be-describer
   s" candado" self~ ms-name!
   self~ be-decoration
   self~ be-closed
-  self~ ambrosio~ be-owner  ;
+  self~ ambrosio~ be-owner ;
 
-: describe-log  ( -- )
+: describe-log ( -- )
   s" Es un tronco"
   s{ s" recio," s" resistente," s" fuerte," }s txt+
   but$ txt+ s{ s" liviano." s" ligero." }s txt+
-  /ltype  ;
+  /ltype ;
 
-log~ :init  ( -- )
+log~ :init ( -- )
   ['] describe-log self~ be-describer
   s" tronco" self~ ms-name!
-  location-15~ self~ be-there  ;
+  location-15~ self~ be-there ;
 
-: describe-piece  ( -- )
+: describe-piece ( -- )
   s" Un pequeño" s{ s" retal" s" pedazo" s" trozo" s" resto" }s txt+
   of-your-ex-cloak$ txt+
-  /ltype  ;
+  /ltype ;
 
-piece~ :init  ( -- )
+piece~ :init ( -- )
   ['] describe-piece self~ be-describer
-  s" trozo de tela" self~ ms-name!  ;
+  s" trozo de tela" self~ ms-name! ;
   \ XXX TODO -- ojo con este «de tela»: «tela» es sinónimo de trozo;
   \ hay que contemplar estos casos en el cálculo de los genitivos.
 
-: describe-rags  ( -- )
+: describe-rags ( -- )
   s" Un" s{ s" retal" s" pedazo" s" trozo" }s txt+
   s{ s" un poco" s" algo" }s 50%nullify txt+ s" grande" txt+
   of-your-ex-cloak$ txt+
-  /ltype  ;
+  /ltype ;
 
-rags~ :init  ( -- )
+rags~ :init ( -- )
   ['] describe-rags self~ be-describer
-  s" harapo" self~ ms-name!  ;
+  s" harapo" self~ ms-name! ;
 
-: you-discover-the-cave-entrance  ( -- )
+: you-discover-the-cave-entrance ( -- )
   you-discover-the-cave-entrance$ period+ narrate
-  open-the-cave-entrance  cave-entrance~ be-here  ;
+  open-the-cave-entrance  cave-entrance~ be-here ;
   \ Descubres la cueva.
 
-: you-maybe-discover-the-cave-entrance  ( ca len -- )
+: you-maybe-discover-the-cave-entrance ( ca len -- )
   s" ..." s+ narrate
-  3 random if  narration-break you-discover-the-cave-entrance  then  ;
+  3 random if  narration-break you-discover-the-cave-entrance  then ;
   \ Descubres la cueva con un 66% de probabilidad.
   \ ca len = Texto introductorio
 
-: describe-ravine-wall  ( -- )
+: describe-ravine-wall ( -- )
   s" en" was-the-cave-entrance-discovered? ?keep
   s" la pared" txt+ rocky(f)$ txt+ xcapitalized
   was-the-cave-entrance-discovered? if
@@ -437,99 +437,99 @@ rags~ :init  ( -- )
     if    you-maybe-discover-the-cave-entrance
     else  period+ /ltype
     then
-  then  ;
+  then ;
 
-ravine-wall~ :init  ( -- )
+ravine-wall~ :init ( -- )
   ['] describe-ravine-wall self~ be-describer
   s" pared" rocky(f)$ txt+ self~ fs-name!
   location-08~ self~ be-there
   self~ be-not-listed  \ XXX OLD -- innecesario
-  self~ be-decoration  ;
+  self~ be-decoration ;
 
-: describe-rocks  ( -- )
+: describe-rocks ( -- )
   location-31~ has-north-exit?
   if  (rocks)-on-the-floor$ xcapitalized
   else  (rocks)-clue$
-  then  period+ /ltype  ;
+  then  period+ /ltype ;
 
-rocks~ :init  ( -- )
+rocks~ :init ( -- )
   ['] describe-rocks self~ be-describer
   s" rocas" self~ fp-name!
   self~ be-decoration
-  location-31~ self~ be-there  ;
+  location-31~ self~ be-there ;
 
-: describe-snake  ( -- )
+: describe-snake ( -- )
   s" Una serpiente grande, muy atenta a tu más mínimo movimiento."
-  /ltype  ;
+  /ltype ;
 
-snake~ :init  ( -- )
+snake~ :init ( -- )
   ['] describe-snake self~ be-describer
   s" serpiente" self~ fs-name!
   self~ be-animal
-  location-43~ self~ be-there  ;
+  location-43~ self~ be-there ;
   \ XXX TODO -- distinguir si está muerta; en el programa original no
   \ hace falta
 
-: describe-stone  ( -- )
+: describe-stone ( -- )
   s" Recia y pesada, pero no muy grande, de forma piramidal."
-  /ltype  ;
+  /ltype ;
 
-stone~ :init  ( -- )
+stone~ :init ( -- )
   ['] describe-stone self~ be-describer
   s" piedra" self~ fs-name!
-  location-18~ self~ be-there  ;
+  location-18~ self~ be-there ;
 
-: describe-sword  ( -- )
+: describe-sword ( -- )
   s{ s" Legado" s" Herencia" }s s" de tu padre," txt+
   s{ s" fiel herramienta" s" arma fiel" }s txt+ s" en" txt+
   s{ s" mil" s" incontables" s" innumerables" }s txt+
   s" batallas." txt+
-  /ltype  ;
+  /ltype ;
 
-sword~ :init  ( -- )
+sword~ :init ( -- )
   ['] describe-sword self~ be-describer
   s" espada" self~ fs-name!
   self~ belongs-to-protagonist
-  self~ be-hold  ;
+  self~ be-hold ;
 
-: describe-table  ( -- )
+: describe-table ( -- )
   s" Es pequeña y de" s{ s" basta" s" tosca" }s txt+ s" madera." txt+
-  /ltype  ;
+  /ltype ;
 
-table~ :init  ( -- )
+table~ :init ( -- )
   ['] describe-table self~ be-describer
   s" mesa" self~ fs-name!
   location-46~ self~ be-there
-  self~ ambrosio~ be-owner  ;
+  self~ ambrosio~ be-owner ;
 
-: describe-thread  ( -- )
+: describe-thread ( -- )
   s" Un hilo" of-your-ex-cloak$ txt+
-  /ltype  ;
+  /ltype ;
 
-thread~ :init  ( -- )
+thread~ :init ( -- )
   ['] describe-thread self~ be-describer
-  s" hilo" self~ ms-name!  ;
+  s" hilo" self~ ms-name! ;
 
-: describe-torch  ( -- )
+: describe-torch ( -- )
   s" Está" torch~ is-lighted?
-  if  s" encendida."  else  s" apagada."  then  txt+ /ltype  ;
+  if  s" encendida."  else  s" apagada."  then  txt+ /ltype ;
 
-torch~ :init  ( -- )
+torch~ :init ( -- )
   ['] describe-torch self~ be-describer
   s" antorcha" self~ fs-name!
   self~ be-light-source
-  self~ be-not-lighted  ;
+  self~ be-not-lighted ;
 
-: describe-waterfall  ( -- )
+: describe-waterfall ( -- )
   s" No ves nada por la cortina de agua."
   s" El lago es muy poco profundo." txt+
-  /ltype  ;
+  /ltype ;
 
-waterfall~ :init  ( -- )
+waterfall~ :init ( -- )
   ['] describe-waterfall self~ be-describer
   s" cascada" self~ fs-name!
   self~ be-decoration
-  location-38~ self~ be-there  ;
+  location-38~ self~ be-there ;
 
 \ ----------------------------------------------
 \ Entes escenario
@@ -541,7 +541,7 @@ waterfall~ :init  ( -- )
 \ permite describir lo que hay más allá de cada escenario en
 \ cualquier dirección.
 
-: describe-location-01  ( -- )
+: describe-location-01 ( -- )
   sight case
   my-holder of
     s" No ha quedado nada en pie, ni piedra sobre piedra."
@@ -584,23 +584,23 @@ waterfall~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-: after-describing-location-01  ( -- )
+: after-describing-location-01 ( -- )
   soldiers~ be-here
   still-in-the-village?
-  if  celebrating  else  going-home  then  ;
+  if  celebrating  else  going-home  then ;
 
-location-01~ :init  ( -- )
+location-01~ :init ( -- )
   self~ be-location
   ['] describe-location-01 self~ be-describer
   ['] after-describing-location-01 self~ be-after-description-plotter
   s" aldea sajona" self~ fs-name!
-  0 location-02~ 0 0 0 0 0 0 self~ set-exits  ;
+  0 location-02~ 0 0 0 0 0 0 self~ set-exits ;
 
   \ XXX TODO -- crear colina en los tres primeros escenarios
 
-: describe-location-02  ( -- )
+: describe-location-02 ( -- )
   sight case
   my-holder of
     s" Sobre" s" la cima de" 50%nullify txt+
@@ -624,25 +624,25 @@ location-01~ :init  ( -- )
     if  north~  else  west~  then  describe
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-: from-the-village?  ( -- f )
-  location-01~ protagonist~ was-there?  ;
+: from-the-village? ( -- f )
+  location-01~ protagonist~ was-there? ;
   \ ¿Venimos de la aldea?
 
-: after-describing-location-02  ( -- )
+: after-describing-location-02 ( -- )
   location-02~  from-the-village?
   if  location-03~  else  location-01~  then  d-->
-  soldiers~ be-here going-home  ;
+  soldiers~ be-here going-home ;
   \ Decide hacia dónde conduce la dirección "hacia abajo",
   \ según el escenario de procedencia.
 
-location-02~ :init  ( -- )
+location-02~ :init ( -- )
   self~ be-location
   ['] describe-location-02 self~ be-describer
   ['] after-describing-location-02 self~ be-after-description-plotter
   s" cima de la colina" self~ fs-name!
-  location-01~ 0 0 location-03~ 0 0 0 0 self~ set-exits  ;
+  location-01~ 0 0 location-03~ 0 0 0 0 self~ set-exits ;
 
   \ N.B. Desde el escenario 02, uno puede bajar por el sur o por el
   \ oeste; esto se decide al azar cada vez que se entra en el
@@ -652,7 +652,7 @@ location-02~ :init  ( -- )
 
   \ XXX TODO -- crear entes en escenario 2: aldea, niebla
 
-: describe-location-03  ( -- )
+: describe-location-03 ( -- )
   sight case
   my-holder of
     ^the-path$ s" avanza por el valle," txt+
@@ -669,16 +669,16 @@ location-02~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-03~ :init  ( -- )
+location-03~ :init ( -- )
   self~ be-location
   ['] describe-location-03 self~ be-describer
   ['] soldiers-are-here self~ be-after-description-plotter
   s" camino entre colinas" self~ ms-name!
-  0 0 location-02~ location-04~ 0 0 0 0 self~ set-exits  ;
+  0 0 location-02~ location-04~ 0 0 0 0 self~ set-exits ;
 
-: describe-location-04  ( -- )
+: describe-location-04 ( -- )
   sight case
   my-holder of
     s" Una senda parte al oeste, a la sierra por el paso del Perro,"
@@ -696,16 +696,16 @@ location-03~ :init  ( -- )
   down~ of  endof
   up~ of  endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-04~ :init  ( -- )
+location-04~ :init ( -- )
   self~ be-location
   ['] describe-location-04 self~ be-describer
   ['] soldiers-are-here self~ be-after-description-plotter
   s" cruce de caminos" self~ ms-name!
-  location-05~ 0 location-03~ location-09~ 0 0 0 0 self~ set-exits  ;
+  location-05~ 0 location-03~ location-09~ 0 0 0 0 self~ set-exits ;
 
-: describe-location-05  ( -- )
+: describe-location-05 ( -- )
   sight case
   my-holder of
     ^toward-the(m)$ s" oeste se extiende" txt+
@@ -726,16 +726,16 @@ location-04~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-05~ :init  ( -- )
+location-05~ :init ( -- )
   self~ be-location
   ['] describe-location-05 self~ be-describer
   ['] soldiers-are-here self~ be-after-description-plotter
   s" linde del bosque" self~ fs-name!
-  0 location-04~ 0 location-06~ 0 0 0 0 self~ set-exits  ;
+  0 location-04~ 0 location-06~ 0 0 0 0 self~ set-exits ;
 
-: describe-location-06  ( -- )
+: describe-location-06 ( -- )
   sight case
   my-holder of
     s" Jirones de niebla se enzarcen en frondosas ramas y arbustos."
@@ -757,16 +757,16 @@ location-05~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-06~ :init  ( -- )
+location-06~ :init ( -- )
   self~ be-location
   ['] describe-location-06 self~ be-describer
   ['] soldiers-are-here self~ be-after-description-plotter
   s" bosque" self~ ms-name!
-  0 0 location-05~ location-07~ 0 0 0 0 self~ set-exits  ;
+  0 0 location-05~ location-07~ 0 0 0 0 self~ set-exits ;
 
-: describe-location-07  ( -- )
+: describe-location-07 ( -- )
   sight case
   my-holder of
     s" Abruptamente, el bosque desaparece y deja paso a un estrecho camino entre altas rocas."
@@ -787,16 +787,16 @@ location-06~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-07~ :init  ( -- )
+location-07~ :init ( -- )
   self~ be-location
   ['] describe-location-07 self~ be-describer
   ['] soldiers-are-here self~ be-after-description-plotter
   s" paso del Perro" self~ ms-name!
-  0 location-08~ location-06~ 0 0 0 0 0 self~ set-exits  ;
+  0 location-08~ location-06~ 0 0 0 0 0 self~ set-exits ;
 
-: describe-location-08  ( -- )
+: describe-location-08 ( -- )
   sight case
   my-holder of
     ^the-pass-way$ s" entre el desfiladero sigue de norte a este" txt+
@@ -830,21 +830,21 @@ location-07~ :init  ( -- )
     then
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-: after-describing-location-08  ( -- )
-  soldiers-are-here pass-still-open? ?? ambush  ;
+: after-describing-location-08 ( -- )
+  soldiers-are-here pass-still-open? ?? ambush ;
 
-location-08~ :init  ( -- )
+location-08~ :init ( -- )
   self~ be-location
   ['] describe-location-08 self~ be-describer
   ['] after-describing-location-08 self~ be-after-description-plotter
   s" desfiladero" self~ ms-name!
-  location-07~ 0 0 0 0 0 0 0 self~ set-exits  ;
+  location-07~ 0 0 0 0 0 0 0 self~ set-exits ;
 
   \ XXX TODO -- crear pared y roca y desfiladero en escenario 08
 
-: describe-location-09  ( -- )
+: describe-location-09 ( -- )
   sight case
   my-holder of
     ^the-path$ goes-down$ txt+ s" hacia la agreste sierra, al oeste," txt+
@@ -863,16 +863,16 @@ location-08~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-09~ :init  ( -- )
+location-09~ :init ( -- )
   self~ be-location
   ['] describe-location-09 self~ be-describer
   ['] soldiers-are-here self~ be-after-description-plotter
   s" derrumbe" self~ ms-name!
-  0 0 location-04~ 0 0 0 0 0 self~ set-exits  ;
+  0 0 location-04~ 0 0 0 0 0 self~ set-exits ;
 
-: describe-location-10  ( -- )
+: describe-location-10 ( -- )
   sight case
   my-holder of
     s" El estrecho paso se adentra hacia el oeste, desde la boca, al norte."
@@ -885,9 +885,9 @@ location-09~ :init  ( -- )
   east~ of
   endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-: after-describing-location-10  ( -- )
+: after-describing-location-10 ( -- )
   s" entrada a la cueva" cave-entrance~ fs-name!
   cave-entrance~ familiar++
   location-08~ my-previous-holder = if  \ Venimos del exterior
@@ -897,18 +897,18 @@ location-09~ :init  ( -- )
     you-think-you're-safe$ txt+
     but-it's-an-impression$ 50%nullify s+
     period+ narrate
-  then  ;
+  then ;
   \ XXX TODO -- si venimos del interior, mostrar otros textos
 
-location-10~ :init  ( -- )
+location-10~ :init ( -- )
   self~ be-location
   ['] describe-location-10 self~ be-describer
   ['] after-describing-location-10 self~ be-after-description-plotter
   s" gruta de entrada" self~ fs-name!
   self~ be-indoor-location
-  location-08~ 0 0 location-11~ 0 0 0 0 self~ set-exits  ;
+  location-08~ 0 0 location-11~ 0 0 0 0 self~ set-exits ;
 
-: describe-location-11  ( -- )
+: describe-location-11 ( -- )
   sight case
   my-holder of
     s" Una" s{
@@ -943,19 +943,19 @@ location-10~ :init  ( -- )
     /ltype
   endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-11~ :init  ( -- )
+location-11~ :init ( -- )
   self~ be-location
   ['] describe-location-11 self~ be-describer
   ['] lake-is-here self~ be-after-description-plotter
   s" gran lago" self~ ms-name!
   self~ be-indoor-location
-  0 0 location-10~ 0 0 0 0 0 self~ set-exits  ;
+  0 0 location-10~ 0 0 0 0 0 self~ set-exits ;
 
   \ XXX TODO -- crear ente. estancia y aguas en escenario 11
 
-: describe-location-12  ( -- )
+: describe-location-12 ( -- )
   sight case
   my-holder of
     s" Una" s{ s" gran" s" amplia" }s txt+
@@ -976,18 +976,18 @@ location-11~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-12~ :init  ( -- )
+location-12~ :init ( -- )
   self~ be-location
   ['] describe-location-12 self~ be-describer
   s" salida del paso secreto" self~ fs-name!
   self~ be-indoor-location
-  0 0 0 location-13~ 0 0 0 0 self~ set-exits  ;
+  0 0 0 location-13~ 0 0 0 0 self~ set-exits ;
 
   \ XXX TODO -- crear ente agua en escentario 12
 
-: describe-location-13  ( -- )
+: describe-location-13 ( -- )
   sight case
   my-holder of
     s" La sala se abre en"
@@ -1005,18 +1005,18 @@ location-12~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-13~ :init  ( -- )
+location-13~ :init ( -- )
   self~ be-location
   ['] describe-location-13 self~ be-describer
   s" puente semipodrido" self~ ms-name!
   self~ be-indoor-location
-  0 0 location-12~ location-14~ 0 0 0 0 self~ set-exits  ;
+  0 0 location-12~ location-14~ 0 0 0 0 self~ set-exits ;
 
   \ XXX TODO -- crear ente. canal, agua, lecho(~catre) en escenario 14
 
-: describe-location-14  ( -- )
+: describe-location-14 ( -- )
   sight case
   my-holder of
     s" La iridiscente cueva gira de este a sur."
@@ -1029,16 +1029,16 @@ location-13~ :init  ( -- )
     you-glimpse-the-cave$ /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-14~ :init  ( -- )
+location-14~ :init ( -- )
   self~ be-location
   ['] describe-location-14 self~ be-describer
   s" recodo de la cueva" self~ ms-name!
   self~ be-indoor-location
-  0 location-15~ location-13~ 0 0 0 0 0 self~ set-exits  ;
+  0 location-15~ location-13~ 0 0 0 0 0 self~ set-exits ;
 
-: describe-location-15  ( -- )
+: describe-location-15 ( -- )
   sight case
   my-holder of
     s" La gruta" goes-down$ txt+ s" de norte a sur" txt+
@@ -1063,16 +1063,16 @@ location-14~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-15~ :init  ( -- )
+location-15~ :init ( -- )
   self~ be-location
   ['] describe-location-15 self~ be-describer
   s" pasaje arenoso" self~ ms-name!
   self~ be-indoor-location
-  location-14~ location-17~ location-16~ 0 0 0 0 0 self~ set-exits  ;
+  location-14~ location-17~ location-16~ 0 0 0 0 0 self~ set-exits ;
 
-: describe-location-16  ( -- )
+: describe-location-16 ( -- )
   sight case
   my-holder of
     s" Como un acueducto, el agua"
@@ -1092,28 +1092,28 @@ location-15~ :init  ( -- )
     s" Es la única salida." /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-: after-describing-location-16  ( -- )
+: after-describing-location-16 ( -- )
   s" En la distancia, por entre los resquicios de las rocas,"
   s" y allende el canal de agua, los sajones" txt+
   s{ s" intentan" s" se esfuerzan en" s" tratan de" s" se afanan en" }s txt+
   s{ s" hallar" s" buscar" s" localizar" }s txt+
   s" la salida que encontraste por casualidad." txt+
-  narrate  ;
+  narrate ;
 
-location-16~ :init  ( -- )
+location-16~ :init ( -- )
   self~ be-location
   ['] describe-location-16 self~ be-describer
   ['] after-describing-location-16 self~ be-after-description-plotter
   s" pasaje del agua" self~ ms-name!
   self~ be-indoor-location
-  0 0 0 location-15~ 0 0 0 0 self~ set-exits  ;
+  0 0 0 location-15~ 0 0 0 0 self~ set-exits ;
 
   \ XXX TODO -- el examen del agua aquí debe dar más pistas en
   \ escenario 16
 
-: describe-location-17  ( -- )
+: describe-location-17 ( -- )
   sight case
   my-holder of
     s" Muchas estalactitas se agrupan encima de tu cabeza,"
@@ -1129,18 +1129,18 @@ location-16~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-17~ :init  ( -- )
+location-17~ :init ( -- )
   self~ be-location
   ['] describe-location-17 self~ be-describer
   s" estalactitas" self~ fs-name!
   self~ be-indoor-location
-  location-15~ location-20~ location-18~ 0 0 0 0 0 self~ set-exits  ;
+  location-15~ location-20~ location-18~ 0 0 0 0 0 self~ set-exits ;
 
   \ XXX TODO -- crear ente. estalactitas en escenario 17
 
-: describe-location-18  ( -- )
+: describe-location-18 ( -- )
   sight case
   my-holder of
     s" Un arco de piedra se extiende,"
@@ -1164,18 +1164,18 @@ location-17~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-18~ :init  ( -- )
+location-18~ :init ( -- )
   self~ be-location
   ['] describe-location-18 self~ be-describer
   s" puente de piedra" self~ ms-name!
   self~ be-indoor-location
-  0 0 location-19~ location-17~ 0 0 0 0 self~ set-exits  ;
+  0 0 location-19~ location-17~ 0 0 0 0 self~ set-exits ;
 
   \ XXX TODO -- crear ente. puente, arco en escenario 18
 
-: describe-location-19  ( -- )
+: describe-location-19 ( -- )
   sight case
   my-holder of
     ^the-water-current$ comma+
@@ -1201,16 +1201,16 @@ location-18~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-19~ :init  ( -- )
+location-19~ :init ( -- )
   self~ be-location
   ['] describe-location-19 self~ be-describer
   s" recodo arenoso del canal" self~ ms-name!
   self~ be-indoor-location
-  0 0 0 location-18~ 0 0 0 0 self~ set-exits  ;
+  0 0 0 location-18~ 0 0 0 0 self~ set-exits ;
 
-: describe-location-20  ( -- )
+: describe-location-20 ( -- )
   sight case
   my-holder of
     north~ south~ east~ 3 exits-cave-description /ltype
@@ -1225,25 +1225,25 @@ location-19~ :init  ( -- )
     cave-exit-description$ /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-: can-be-entered-location-20?  ( -- f )
+: can-be-entered-location-20? ( -- f )
   location-17~ am-i-there? no-torch? and
-  dup 0= swap ?? dark-cave  ;
+  dup 0= swap ?? dark-cave ;
 
-location-20~ :init  ( -- )
+location-20~ :init ( -- )
   self~ be-location
   ['] describe-location-20 self~ be-describer
   ['] can-be-entered-location-20? self~ ~enter-checker !
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
-  location-17~ location-22~ location-25~ 0 0 0 0 0 self~ set-exits  ;
+  location-17~ location-22~ location-25~ 0 0 0 0 0 self~ set-exits ;
 
   \ XXX TODO -- aplicar el filtro de la antorcha a todos los
   \ escenarios afectados, quizá en una capa superior
   \ sight no-torch? 0= abs *  case
 
-: describe-location-21  ( -- )
+: describe-location-21 ( -- )
   sight case
   my-holder of
     east~ west~ south~ 3 exits-cave-description /ltype
@@ -1258,16 +1258,16 @@ location-20~ :init  ( -- )
     cave-exit-description$ /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-21~ :init  ( -- )
+location-21~ :init ( -- )
   self~ be-location
   ['] describe-location-21 self~ be-describer
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
-  0 location-27~ location-23~ location-20~ 0 0 0 0 self~ set-exits  ;
+  0 location-27~ location-23~ location-20~ 0 0 0 0 self~ set-exits ;
 
-: describe-location-22  ( -- )
+: describe-location-22 ( -- )
   sight case
   my-holder of
     south~ east~ west~ 3 exits-cave-description /ltype
@@ -1282,16 +1282,16 @@ location-21~ :init  ( -- )
     cave-exit-description$ /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-22~ :init  ( -- )
+location-22~ :init ( -- )
   self~ be-location
   ['] describe-location-22 self~ be-describer
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
-  0 location-24~ location-27~ location-22~ 0 0 0 0 self~ set-exits  ;
+  0 location-24~ location-27~ location-22~ 0 0 0 0 self~ set-exits ;
 
-: describe-location-23  ( -- )
+: describe-location-23 ( -- )
   sight case
   my-holder of
     west~ south~ 2 exits-cave-description /ltype
@@ -1303,16 +1303,16 @@ location-22~ :init  ( -- )
     cave-exit-description$ /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-23~ :init  ( -- )
+location-23~ :init ( -- )
   self~ be-location
   ['] describe-location-23 self~ be-describer
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
-  0 location-25~ 0 location-21~ 0 0 0 0 self~ set-exits  ;
+  0 location-25~ 0 location-21~ 0 0 0 0 self~ set-exits ;
 
-: describe-location-24  ( -- )
+: describe-location-24 ( -- )
   sight case
   my-holder of
     east~ north~ 2 exits-cave-description /ltype
@@ -1324,16 +1324,16 @@ location-23~ :init  ( -- )
     cave-exit-description$ /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-24~ :init  ( -- )
+location-24~ :init ( -- )
   self~ be-location
   ['] describe-location-24 self~ be-describer
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
-  location-22~ 0 location-26~ 0 0 0 0 0 self~ set-exits  ;
+  location-22~ 0 location-26~ 0 0 0 0 0 self~ set-exits ;
 
-: describe-location-25  ( -- )
+: describe-location-25 ( -- )
   sight case
   my-holder of
     north~ south~ east~ west~ 4 exits-cave-description /ltype
@@ -1345,16 +1345,16 @@ location-24~ :init  ( -- )
     cave-exit-description$ /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-25~ :init  ( -- )
+location-25~ :init ( -- )
   self~ be-location
   ['] describe-location-25 self~ be-describer
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
-  location-22~ location-28~ location-23~ location-21~ 0 0 0 0 self~ set-exits  ;
+  location-22~ location-28~ location-23~ location-21~ 0 0 0 0 self~ set-exits ;
 
-: describe-location-26  ( -- )
+: describe-location-26 ( -- )
   sight case
   my-holder of
     north~ east~ west~ 3 exits-cave-description /ltype
@@ -1369,19 +1369,19 @@ location-25~ :init  ( -- )
     cave-exit-description$ /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-26~ :init  ( -- )
+location-26~ :init ( -- )
   self~ be-location
   ['] describe-location-26 self~ be-describer
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
-  location-26~ 0 location-20~ location-27~ 0 0 0 0 self~ set-exits  ;
+  location-26~ 0 location-20~ location-27~ 0 0 0 0 self~ set-exits ;
 
   \ XXX TODO -- crear ente. pasaje/camino/senda tramo/cueva (en todos
   \ los tramos)
 
-: describe-location-27  ( -- )
+: describe-location-27 ( -- )
   sight case
   my-holder of
     north~ east~ west~ 3 exits-cave-description /ltype
@@ -1396,16 +1396,16 @@ location-26~ :init  ( -- )
     cave-exit-description$ /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-27~ :init  ( -- )
+location-27~ :init ( -- )
   self~ be-location
   ['] describe-location-27 self~ be-describer
   s" tramo de cueva" self~ ms-name!
   self~ be-indoor-location
-  location-27~ 0 0 location-25~ 0 0 0 0 self~ set-exits  ;
+  location-27~ 0 0 location-25~ 0 0 0 0 self~ set-exits ;
 
-: describe-location-28  ( -- )
+: describe-location-28 ( -- )
   sight case
   my-holder of
     location-28~ ^full-name s" se extiende de norte a este." txt+
@@ -1440,26 +1440,26 @@ location-27~ :init  ( -- )
     then  period+ /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-: after-describing-location-28  ( -- )
+: after-describing-location-28 ( -- )
   location-28~ no-exit e-->  \ Cerrar la salida hacia el este
   recent-talks-to-the-leader off
   refugees~ be-here
   the-refugees-surround-you$ narrate
-  the-leader-looks-at-you$ narrate  ;
+  the-leader-looks-at-you$ narrate ;
 
-location-28~ :init  ( -- )
+location-28~ :init ( -- )
   self~ be-location
   ['] describe-location-28 self~ be-describer
   ['] after-describing-location-28 self~ be-after-description-plotter
   s" amplia estancia" self~ fs-name!
   self~ be-indoor-location
-  location-26~ 0 0 0 0 0 0 0 self~ set-exits  ;
+  location-26~ 0 0 0 0 0 0 0 self~ set-exits ;
   \ XXX TODO -- crear ente. estancia(para todos),albergue y refugio
   \ (tras hablar con anciano) en escenario 28
 
-: describe-location-29  ( -- )
+: describe-location-29 ( -- )
   sight case
   my-holder of
     s" Cual escalera de caracol gigante,"
@@ -1476,24 +1476,24 @@ location-28~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-: after-describing-location-29  ( -- )
-  refugees~ be-here  ;
+: after-describing-location-29 ( -- )
+  refugees~ be-here ;
   \ Para que sean visibles en la distancia
 
-location-29~ :init  ( -- )
+location-29~ :init ( -- )
   self~ be-location
   ['] describe-location-29 self~ be-describer
   ['] after-describing-location-29 self~ be-after-description-plotter
   s" espiral" self~ fs-name!
   self~ be-indoor-location
-  0 0 0 location-28~ 0 location-30~ 0 0 self~ set-exits  ;
+  0 0 0 location-28~ 0 location-30~ 0 0 self~ set-exits ;
 
   \ XXX TODO -- crear ente. escalera/espiral, refugiados en escenario
   \ 29
 
-: describe-location-30  ( -- )
+: describe-location-30 ( -- )
   sight case
   my-holder of
     s" Se eleva en la penumbra."
@@ -1510,16 +1510,16 @@ location-29~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-30~ :init  ( -- )
+location-30~ :init ( -- )
   self~ be-location
   ['] describe-location-30 self~ be-describer
   s" inicio de la espiral" self~ ms-name!
   self~ be-indoor-location
-  0 0 location-31~ 0 location-29~ 0 0 0 self~ set-exits  ;
+  0 0 location-31~ 0 location-29~ 0 0 0 self~ set-exits ;
 
-: describe-location-31  ( -- )
+: describe-location-31 ( -- )
   sight case
   my-holder of
     s" En este pasaje grandes rocas se encuentran entre las columnas de un arco de medio punto."
@@ -1536,29 +1536,29 @@ location-30~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-: after-describing-location-31  ( -- )
+: after-describing-location-31 ( -- )
   \ XXX TODO -- mover a la descripción
   location-31~ has-north-exit? if
     s" Las rocas yacen desmoronadas a lo largo del"
     pass-way$ txt+ period+
   else
     s" Las rocas" (they)-block$ txt+ s" el paso." txt+
-  then  narrate  ;
+  then  narrate ;
 
-location-31~ :init  ( -- )
+location-31~ :init ( -- )
   self~ be-location
   ['] describe-location-31 self~ be-describer
   ['] after-describing-location-31 self~ be-after-description-plotter
   s" puerta norte" self~ fs-name!
   self~ be-indoor-location
-  0 0 0 location-30~ 0 0 0 0 self~ set-exits  ;
+  0 0 0 location-30~ 0 0 0 0 self~ set-exits ;
 
   \ XXX TODO -- crear ente. arco, columnas, hueco/s(entre rocas) en
   \ escenario 31
 
-: describe-location-32  ( -- )
+: describe-location-32 ( -- )
   sight case
   my-holder of
     s" El camino ahora no excede de dos palmos de cornisa sobre un abismo insondable."
@@ -1574,19 +1574,19 @@ location-31~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-32~ :init  ( -- )
+location-32~ :init ( -- )
   self~ be-location
   ['] describe-location-32 self~ be-describer
   s" precipicio" self~ ms-name!
   self~ be-indoor-location
-  0 location-33~ 0 location-31~ 0 0 0 0 self~ set-exits  ;
+  0 location-33~ 0 location-31~ 0 0 0 0 self~ set-exits ;
 
   \ XXX TODO -- crear ente. precipicio, abismo, cornisa, camino,
   \ roca/s en escenario 32
 
-: describe-location-33  ( -- )
+: describe-location-33 ( -- )
   sight case
   my-holder of
     s" El paso se va haciendo menos estrecho a medida que se avanza hacia el sur, para entonces comenzar hacia el este."
@@ -1606,18 +1606,18 @@ location-32~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-33~ :init  ( -- )
+location-33~ :init ( -- )
   self~ be-location
   ['] describe-location-33 self~ be-describer
   s" pasaje de salida" self~ ms-name!
   self~ be-indoor-location
-  location-32~ 0 location-34~ 0 0 0 0 0 self~ set-exits  ;
+  location-32~ 0 location-34~ 0 0 0 0 0 self~ set-exits ;
 
   \ XXX TODO -- crear ente. camino/paso/sendero en escenario 33
 
-: describe-location-34  ( -- )
+: describe-location-34 ( -- )
   sight case
   my-holder of
     s" El paso" gets-wider$ txt+ s" de oeste a norte," txt+
@@ -1633,20 +1633,20 @@ location-33~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-34~ :init  ( -- )
+location-34~ :init ( -- )
   self~ be-location
   ['] describe-location-34 self~ be-describer
   s" pasaje de gravilla" self~ ms-name!
   self~ be-indoor-location
-  location-35~ 0 0 location-33~ 0 0 0 0 self~ set-exits  ;
+  location-35~ 0 0 location-33~ 0 0 0 0 self~ set-exits ;
 
   \ XXX TODO -- crear ente. camino/paso/sendero, guijarros, moho,
   \ roca, suelo, gravillla en escenario 34
 
 
-: describe-location-35  ( -- )
+: describe-location-35 ( -- )
   sight case
   my-holder of
     s" Un puente" s{ s" se tiende" s" cruza" }s txt+ s" de norte a sur sobre el curso del agua." txt+
@@ -1666,19 +1666,19 @@ location-34~ :init  ( -- )
     stairway-to-river$ /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-35~ :init  ( -- )
+location-35~ :init ( -- )
   self~ be-location
   ['] describe-location-35 self~ be-describer
   s" puente sobre el acueducto" self~ ms-name!
   self~ be-indoor-location
-  location-40~ location-34~ 0 location-36~ 0 location-36~ 0 0 self~ set-exits  ;
+  location-40~ location-34~ 0 location-36~ 0 location-36~ 0 0 self~ set-exits ;
 
   \ XXX TODO -- crear ente. escaleras, puente, río/curso/agua en
   \ escenario 35
 
-: describe-location-36  ( -- )
+: describe-location-36 ( -- )
   sight case
   my-holder of
     s" Una" s{ s" ruidosa" s" estruendosa" s" ensordecedora" }s txt+
@@ -1698,16 +1698,16 @@ location-35~ :init  ( -- )
     stairway-that-way$ /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-36~ :init  ( -- )
+location-36~ :init ( -- )
   self~ be-location
   ['] describe-location-36 self~ be-describer
   s" remanso" self~ ms-name!
   self~ be-indoor-location
-  0 0 location-35~ location-37~ location-35~ 0 0 0 self~ set-exits  ;
+  0 0 location-35~ location-37~ location-35~ 0 0 0 self~ set-exits ;
 
-: describe-location-37  ( -- )
+: describe-location-37 ( -- )
   sight case
   my-holder of
     s" El agua" goes-down$ txt+ s" por un canal" 50%nullify txt+
@@ -1732,16 +1732,16 @@ location-36~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-37~ :init  ( -- )
+location-37~ :init ( -- )
   self~ be-location
   ['] describe-location-37 self~ be-describer
   s" canal de agua" self~ ms-name!
   self~ be-indoor-location
-  0 0 location-36~ location-38~ 0 0 0 0 self~ set-exits  ;
+  0 0 location-36~ location-38~ 0 0 0 0 self~ set-exits ;
 
-: describe-location-38  ( -- )
+: describe-location-38 ( -- )
   sight case
   my-holder of
     s" Cae el agua hacia el este,"
@@ -1763,20 +1763,20 @@ location-37~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-38~ :init  ( -- )
+location-38~ :init ( -- )
   self~ be-location
   ['] describe-location-38 self~ be-describer
   ['] lake-is-here self~ be-after-description-plotter
   s" gran cascada" self~ fs-name!
   self~ be-indoor-location
-  0 0 location-37~ location-39~ 0 0 0 0 self~ set-exits  ;
+  0 0 location-37~ location-39~ 0 0 0 0 self~ set-exits ;
 
   \ XXX TODO -- el artículo de «cascada» debe depender también de si
   \ se ha visitado el escenario 39 o este mismo 38
 
-: describe-location-39  ( -- )
+: describe-location-39 ( -- )
   sight case
   my-holder of
     s" Musgoso y rocoso, con la cortina de agua"
@@ -1792,19 +1792,19 @@ location-38~ :init  ( -- )
       \ XXX TODO -- variar
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-39~ :init  ( -- )
+location-39~ :init ( -- )
   self~ be-location
   ['] describe-location-39 self~ be-describer
   s" interior de la cascada" self~ ms-name!
   self~ be-indoor-location
-  0 0 location-38~ 0 0 0 0 0 self~ set-exits  ;
+  0 0 location-38~ 0 0 0 0 0 self~ set-exits ;
 
   \ XXX TODO -- crear ente. musgo, cortina, agua, hueco en escenario
   \ 39
 
-: describe-location-40  ( -- )
+: describe-location-40 ( -- )
   sight case
   my-holder of
     s" Una gran explanada enlosetada contempla un bello panorama de estalactitas."
@@ -1832,19 +1832,19 @@ location-39~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-40~ :init  ( -- )
+location-40~ :init ( -- )
   self~ be-location
   ['] describe-location-40 self~ be-describer
   s" explanada" self~ fs-name!
   self~ be-indoor-location
-  0 location-35~ location-41~ 0 0 0 0 0 self~ set-exits  ;
+  0 location-35~ location-41~ 0 0 0 0 0 self~ set-exits ;
 
   \ XXX TODO -- crear ente. losas y losetas, estalactitas, panorama,
   \ escalones en escenario 40
 
-: describe-location-41  ( -- )
+: describe-location-41 ( -- )
   sight case
   my-holder of
     s" El ídolo parece un centinela siniestro de una gran roca que se encuentra al sur."
@@ -1861,18 +1861,18 @@ location-40~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-41~ :init  ( -- )
+location-41~ :init ( -- )
   self~ be-location
   ['] describe-location-41 self~ be-describer
   self~ be-indoor-location
   s" ídolo" self~ ms-name!
-  0 0 0 location-40~ 0 0 0 0 self~ set-exits  ;
+  0 0 0 location-40~ 0 0 0 0 self~ set-exits ;
 
   \ XXX TODO -- crear ente. roca, centinela en escenario 41
 
-: describe-location-42  ( -- )
+: describe-location-42 ( -- )
   sight case
   my-holder of
     s" Como un pasillo que corteja el canal de agua, a su lado, baja de norte a sur."
@@ -1892,16 +1892,16 @@ location-41~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-42~ :init  ( -- )
+location-42~ :init ( -- )
   self~ be-location
   ['] describe-location-42 self~ be-describer
   s" pasaje estrecho" self~ ms-name!
   self~ be-indoor-location
-  location-41~ location-43~ 0 0 0 0 0 0 self~ set-exits  ;
+  location-41~ location-43~ 0 0 0 0 0 0 self~ set-exits ;
 
-: describe-location-43  ( -- )
+: describe-location-43 ( -- )
   sight case
   my-holder of
     ^the-pass-way$ s" sigue de norte a sur." txt+
@@ -1919,23 +1919,23 @@ location-42~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-: after-describing-location-43  ( -- )
+: after-describing-location-43 ( -- )
   snake~ is-here? if
     a-snake-blocks-the-way$ period+
     narrate
-  then  ;
+  then ;
 
-location-43~ :init  ( -- )
+location-43~ :init ( -- )
   self~ be-location
   ['] describe-location-43 self~ be-describer
   ['] after-describing-location-43 self~ be-after-description-plotter
   s" pasaje de la serpiente" self~ ms-name!
   self~ be-indoor-location
-  location-42~ 0 0 0 0 0 0 0 self~ set-exits  ;
+  location-42~ 0 0 0 0 0 0 0 self~ set-exits ;
 
-: describe-location-44  ( -- )
+: describe-location-44 ( -- )
   sight case
   my-holder of
     s" Unas escaleras" s{ s" dan" s" permiten el" }s txt+ s{ s" paso" s" acceso" }s txt+
@@ -1953,20 +1953,20 @@ location-43~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-44~ :init  ( -- )
+location-44~ :init ( -- )
   self~ be-location
   ['] describe-location-44 self~ be-describer
   ['] lake-is-here self~ be-after-description-plotter
   s" lago interior" self~ ms-name!
   self~ be-indoor-location
-  location-43~ 0 0 location-45~ 0 0 0 0 self~ set-exits  ;
+  location-43~ 0 0 location-45~ 0 0 0 0 self~ set-exits ;
 
   \ XXX TODO -- crear ente. lago, escaleras, pasaje, lago en escenario
   \ 44
 
-: describe-location-45  ( -- )
+: describe-location-45 ( -- )
   sight case
   my-holder of
     ^narrow(mp)$ pass-ways$ txt+
@@ -1991,18 +1991,18 @@ location-44~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-45~ :init  ( -- )
+location-45~ :init ( -- )
   self~ be-location
   ['] describe-location-45 self~ be-describer
   s" cruce de pasajes" self~ ms-name!
   self~ be-indoor-location
-  0 location-47~ location-44~ location-46~ 0 0 0 0 self~ set-exits  ;
+  0 location-47~ location-44~ location-46~ 0 0 0 0 self~ set-exits ;
 
   \ XXX TODO -- crear ente. pasaje/camino/paso/senda en escenario 45
 
-: describe-location-46  ( -- )
+: describe-location-46 ( -- )
   sight case
   my-holder of
     s" Un catre, algunas velas y una mesa es todo lo que"
@@ -2016,16 +2016,16 @@ location-45~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-46~ :init  ( -- )
+location-46~ :init ( -- )
   self~ be-location
   ['] describe-location-46 self~ be-describer
   s" hogar de Ambrosio" self~ ms-name!
   self~ be-indoor-location
-  0 0 location-45~ 0 0 0 0 0 self~ set-exits  ;
+  0 0 location-45~ 0 0 0 0 0 self~ set-exits ;
 
-: describe-location-47  ( -- )
+: describe-location-47 ( -- )
   sight case
   my-holder of
     s" Por el oeste,"
@@ -2054,25 +2054,25 @@ location-46~ :init  ( -- )
       \ XXX TODO -- variar el texto
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-47~ :init  ( -- )
+location-47~ :init ( -- )
   self~ be-location
   ['] describe-location-47 self~ be-describer
   ['] door-is-here self~ be-after-description-plotter
   s" salida de la cueva" self~ fs-name!
   self~ be-indoor-location
-  location-45~ 0 0 0 0 0 0 0 self~ set-exits  ;
+  location-45~ 0 0 0 0 0 0 0 self~ set-exits ;
 
   \ XXX TODO -- descripción inacabada de escenario 47
 
-: when-the-door$  ( -- ca len )
-  s" cuando" s{ s" la" s" su" }s txt+ s" puerta" txt+  ;
+: when-the-door$ ( -- ca len )
+  s" cuando" s{ s" la" s" su" }s txt+ s" puerta" txt+ ;
 
-: like-now$+  ( ca1 len1 -- ca1 len1 | ca2 len2 )
-  s" , como ahora" 50%nullify s+  ;
+: like-now$+ ( ca1 len1 -- ca1 len1 | ca2 len2 )
+  s" , como ahora" 50%nullify s+ ;
 
-: describe-location-48  ( -- )
+: describe-location-48 ( -- )
   sight case
   my-holder of
     s{ s" Apenas si" s" Casi no" }s
@@ -2100,18 +2100,18 @@ location-47~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-48~ :init  ( -- )
+location-48~ :init ( -- )
   self~ be-location
   ['] describe-location-48 self~ be-describer
   ['] door-is-here self~ be-after-description-plotter
   s" bosque a la entrada" self~ ms-name!
-  0 0 location-47~ location-49~ 0 0 0 0 self~ set-exits  ;
+  0 0 location-47~ location-49~ 0 0 0 0 self~ set-exits ;
 
   \ XXX TODO -- crear ente. cueva en escenario 48
 
-: describe-location-49  ( -- )
+: describe-location-49 ( -- )
   sight case
   my-holder of
     ^the-path$ s" recorre" txt+ s" toda" 50%nullify txt+
@@ -2129,15 +2129,15 @@ location-48~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-49~ :init  ( -- )
+location-49~ :init ( -- )
   self~ be-location
   ['] describe-location-49 self~ be-describer
   s" sendero del bosque" self~ ms-name!
-  0 0 location-48~ location-50~ 0 0 0 0 self~ set-exits  ;
+  0 0 location-48~ location-50~ 0 0 0 0 self~ set-exits ;
 
-: describe-location-50  ( -- )
+: describe-location-50 ( -- )
   sight case
   my-holder of
     s" El camino norte" s{ s" que sale" s" que parte" s" procedente" }s txt+
@@ -2154,15 +2154,15 @@ location-49~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-50~ :init  ( -- )
+location-50~ :init ( -- )
   self~ be-location
   ['] describe-location-50 self~ be-describer
   s" camino norte" self~ ms-name!
-  0 location-51~ location-49~ 0 0 0 0 0 self~ set-exits  ;
+  0 location-51~ location-49~ 0 0 0 0 0 self~ set-exits ;
 
-: describe-location-51  ( -- )
+: describe-location-51 ( -- )
   sight case
   my-holder of
     ^the-village$ s" bulle de actividad con el mercado en el centro de la plaza," txt+
@@ -2174,122 +2174,122 @@ location-50~ :init  ( -- )
     /ltype
     endof
   uninteresting-direction
-  endcase  ;
+  endcase ;
 
-location-51~ :init  ( -- )
+location-51~ :init ( -- )
   self~ be-location
   ['] describe-location-51 self~ be-describer
   s" Westmorland" self~ fs-name!
   self~ have-no-article
-  location-50~ 0 0 0 0 0 0 0 self~ set-exits  ;
+  location-50~ 0 0 0 0 0 0 0 self~ set-exits ;
   \ XXX TODO -- crear ente. mercado, plaza, villa, pueblo, castillo
 
 \ ----------------------------------------------
 \ Entes globales
 
-: describe-cave  ( -- )
+: describe-cave ( -- )
   s" La cueva es húmeda y sombría."
-  /ltype  ;
+  /ltype ;
   \ XXX TODO -- mejorar
 
-cave~ :init  ( -- )
+cave~ :init ( -- )
   ['] describe-cave self~ be-describer
-  s" cueva" self~ fs-name!  ;
+  s" cueva" self~ fs-name! ;
   \ self~ be-global-indoor \ XXX OLD
 
-: describe-ceiling  ( -- )
+: describe-ceiling ( -- )
   s" El techo es muy bonito."
-  /ltype  ;
+  /ltype ;
   \ XXX TODO
 
-ceiling~ :init  ( -- )
+ceiling~ :init ( -- )
   ['] describe-ceiling self~ be-describer
   s" techo" self~ ms-name!
-  self~ be-global-indoor  ;
+  self~ be-global-indoor ;
 
-: describe-clouds  ( -- )
+: describe-clouds ( -- )
   s" Los estratocúmulos que traen la nieve y que cuelgan sobre la Tierra"
   s" en la estación del frío se han alejado por el momento. " txt+
     \ XXX TMP
-  2 random if  /ltype  else  2drop sky~ describe  then  ;
+  2 random if  /ltype  else  2drop sky~ describe  then ;
     \ XXX TODO -- comprobar
 
-clouds~ :init  ( -- )
+clouds~ :init ( -- )
   ['] describe-clouds self~ be-describer
   s" nubes" self~ fp-name!
-  self~ be-global-outdoor  ;
+  self~ be-global-outdoor ;
   \ XXX TODO:
   \ Distinguir no solo interiores, sino escenarios en
   \ que se puede vislumbrar el exterior.
 
-: describe-floor  ( -- )
+: describe-floor ( -- )
   am-i-outdoor?
   if    s" [El suelo fuera es muy bonito.]" /ltype
-  else  s" [El suelo dentro es muy bonito.]" /ltype  then  ;
+  else  s" [El suelo dentro es muy bonito.]" /ltype  then ;
   \ XXX TMP
   \ XXX TODO
 
-floor~ :init  ( -- )
+floor~ :init ( -- )
   ['] describe-floor self~ be-describer
   s" suelo" self~ ms-name!
   self~ be-global-indoor
-  self~ be-global-outdoor  ;
+  self~ be-global-outdoor ;
 
-: describe-sky  ( -- )
+: describe-sky ( -- )
   s" [El cielo es muy bonito.]"
-  /ltype  ;
+  /ltype ;
   \ XXX TODO
   \ XXX TMP
 
-sky~ :init  ( -- )
+sky~ :init ( -- )
   ['] describe-sky self~ be-describer
   s" cielo" self~ ms-name!
-  self~ be-global-outdoor  ;
+  self~ be-global-outdoor ;
   \ XXX TODO
   \ XXX TMP
 
-: describe-wall  ( -- )
+: describe-wall ( -- )
   s" [La pared es muy bonita.]"
-  /ltype  ;
+  /ltype ;
   \ XXX TODO
   \ XXX TMP
 
-wall~ :init  ( -- )
+wall~ :init ( -- )
   ['] describe-wall self~ be-describer
   s" pared" self~ ms-name!
-  self~ be-global-indoor  ;
+  self~ be-global-indoor ;
 
 \ ----------------------------------------------
 \ Entes virtuales
 
-defer describe-exits  ( -- )
+defer describe-exits ( -- )
 
-exits~ :init  ( -- )
+exits~ :init ( -- )
   ['] describe-exits self~ be-describer
   s" salida" self~ fs-name!
   self~ be-global-outdoor
-  self~ be-global-indoor  ;
+  self~ be-global-indoor ;
 
-defer describe-inventory  ( -- )
+defer describe-inventory ( -- )
 
-inventory~ :init  ( -- )
+inventory~ :init ( -- )
   ['] describe-inventory self~ be-describer
   self~ be-global-outdoor
-  self~ be-global-indoor  ;
+  self~ be-global-indoor ;
 
-: describe-enemy  ( -- )
+: describe-enemy ( -- )
   battle# @
   if    s" [Enemigo en batalla.]"
   else  s" [Enemigo en paz.]"
-  then  /ltype  ;
+  then  /ltype ;
   \ XXX TMP
   \ XXX TODO -- inconcluso
 
-enemy~ :init  ( -- )
+enemy~ :init ( -- )
   ['] describe-enemy self~ be-describer
   s" enemigos" self~ mp-name!
   self~ be-human
-  self~ be-decoration  ;
+  self~ be-decoration ;
   \ XXX TODO -- inconcluso
 
 \ ----------------------------------------------
@@ -2302,67 +2302,67 @@ enemy~ :init  ( -- )
 \ (pues todos los valores posibles son diferentes de cero)
 \ y para hacer los cálculos en las acciones de movimiento.
 
-north~ :init  ( -- )
+north~ :init ( -- )
   \ ['] describe-north self~ be-describer
   s" norte" self~ ms-name!
   self~ have-definite-article
-  north-exit> self~ ~direction !  ;
+  north-exit> self~ ~direction ! ;
 
-south~ :init  ( -- )
+south~ :init ( -- )
   \ ['] describe-south self~ be-describer
   s" sur" self~ ms-name!
   self~ have-definite-article
-  south-exit> self~ ~direction !  ;
+  south-exit> self~ ~direction ! ;
 
-east~ :init  ( -- )
+east~ :init ( -- )
   \ ['] describe-east self~ be-describer
   s" este" self~ ms-name!
   self~ have-definite-article
-  east-exit> self~ ~direction !  ;
+  east-exit> self~ ~direction ! ;
 
-west~ :init  ( -- )
+west~ :init ( -- )
   \ ['] describe-west self~ be-describer
   s" oeste" self~ name!
   self~ have-definite-article
-  west-exit> self~ ~direction !  ;
+  west-exit> self~ ~direction ! ;
 
-: describe-up  ( -- )
+: describe-up ( -- )
   am-i-outdoor?
   if  sky~ describe
   else  ceiling~ describe
-  then  ;
+  then ;
 
-up~ :init  ( -- )
+up~ :init ( -- )
   ['] describe-up self~ be-describer
   s" arriba" self~ name!
   self~ have-no-article
-  up-exit> self~ ~direction !  ;
+  up-exit> self~ ~direction ! ;
 
-: describe-down  ( -- )
+: describe-down ( -- )
   am-i-outdoor?
   if    s" [El suelo exterior es muy bonito.]" /ltype
   else  s" [El suelo interior es muy bonito.]" /ltype
-  then  ;
+  then ;
   \ XXX TMP
   \ XXX TODO
 
-down~ :init  ( -- )
+down~ :init ( -- )
   ['] describe-down self~ be-describer
   s" abajo" self~ name!
   self~ have-no-article
-  down-exit> self~ ~direction !  ;
+  down-exit> self~ ~direction ! ;
 
-out~ :init  ( -- )
+out~ :init ( -- )
   \ ['] describe-out self~ be-describer
   s" afuera" self~ name!
   self~ have-no-article
-  out-exit> self~ ~direction !  ;
+  out-exit> self~ ~direction ! ;
 
-in~ :init  ( -- )
+in~ :init ( -- )
   \ ['] describe-in self~ be-describer
   s" adentro" self~ name!
   self~ have-no-article
-  in-exit> self~ ~direction !  ;
+  in-exit> self~ ~direction ! ;
 
 \ ==============================================================
 \ Change log

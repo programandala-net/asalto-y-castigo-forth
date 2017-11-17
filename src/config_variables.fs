@@ -61,12 +61,12 @@ variable cr-after-command-prompt?
 \ ==============================================================
 \ Textos calculados relacionados
 
-: player-gender-ending$  ( -- ca len )
-  c" oa" woman-player? @ abs 1+ chars + 1  ;
+: player-gender-ending$ ( -- ca len )
+  c" oa" woman-player? @ abs 1+ chars + 1 ;
   \ Devuelve en _ca len_ la terminación «a» u «o» según el sexo del jugador.
 
-: player-gender-ending$+  ( ca1 len1 -- ca2 len2 )
-  player-gender-ending$ s+  ;
+: player-gender-ending$+ ( ca1 len1 -- ca2 len2 )
+  player-gender-ending$ s+ ;
   \ Añade a una cadena _ca1 len1_ la terminación «a» u «o» según el
   \ sexo del jugador, devolviendo el resultado en _ca2 len2_.
 
