@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2017
 
-\ Last modified 201711172056
+\ Last modified 201711172251
 
 \ Note: The comments of the code are in Spanish.
 
@@ -111,12 +111,7 @@ variable indent-pause-prompts?
 ' wait is lprompt-pause
 
 : .prompt  ( +n|-n ca len -- )
-  [false] [if]
-    lcr indent-prompt ltype
-  [else]
-    ((lcr)) next-lrow no-ltyped indent-prompt this-lprompt indent
-  [then]
-  ;
+  ((lcr)) next-lrow no-ltyped indent-prompt this-lprompt ;
   \ Imprime un presto _ca len_ con segundos de pausa _+n|-n_.
 
 variable narration-break-seconds
@@ -129,7 +124,8 @@ svariable narration-prompt
   \ Devuelve el presto usado en las pausas de la narración.
 
 : .narration-prompt  ( +n|-n -- )
-  narration-prompt-color narration-prompt$ .prompt  ;
+  narration-prompt-color
+  narration-prompt$ .prompt previous-lrow ;
   \ Alto en la narración: Muestra el presto de fin de escena y hace
   \ una pausa de _+n_ segundos (o _-n_ para hacer una pausa indefinida
   \ hasta la pulsación de una tecla).
@@ -148,7 +144,7 @@ svariable scene-prompt
   \ Devuelve el presto de cambio de escena.
 
 : .scene-prompt  ( +n|-n -- )
-  scene-prompt-color scene-prompt$ .prompt  ;
+  scene-prompt-color scene-prompt$ .prompt previous-lrow ;
   \ Muestra el presto de escena y hace una pausa de _+n_ segundos (o
   \ _-n_ para hacer una pausa indefinida hasta la pulsación de una
   \ tecla).
@@ -238,8 +234,7 @@ false [if]  \ XXX OLD -- obsoleto
 \ ==============================================================
 \ Change log
 
-\ 2017-11-17: Start replacing the left-justified printing system that
-\ was written for the game with Galope's module <l-type.fs>.
+\ 2017-11-17: Replace the ad-hoc left-justified printing system with
+\ Galope's module <l-type.fs>.
 
 \ vim:filetype=gforth:fileencoding=utf-8
-
