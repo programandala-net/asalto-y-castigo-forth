@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2017
 
-\ Last modified 201711172251
+\ Last modified 201711181224
 
 \ Note: The comments of the code are in Spanish.
 
@@ -111,7 +111,7 @@ variable indent-pause-prompts?
 ' wait is lprompt-pause
 
 : .prompt ( +n|-n ca len -- )
-  ((lcr)) next-lrow no-ltyped indent-prompt this-lprompt ;
+  ((lcr)) next-lrow no-ltyped indent-prompt lprompted ;
   \ Imprime un presto _ca len_ con segundos de pausa _+n|-n_.
 
 variable narration-break-seconds
@@ -236,5 +236,7 @@ false [if]  \ XXX OLD -- obsoleto
 
 \ 2017-11-17: Replace the ad-hoc left-justified printing system with
 \ Galope's module <l-type.fs>.
+\
+\ 2017-11-18: Update to Galope 0.141.0.
 
 \ vim:filetype=gforth:fileencoding=utf-8
