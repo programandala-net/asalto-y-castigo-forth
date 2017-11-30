@@ -1,5 +1,5 @@
 = To-do list of _Asalto y castigo_
-:revdate: 2017-11-17
+:revdate: 2017-11-24
 
 Note: Most texts are in Spanish.
 
@@ -720,6 +720,10 @@ Update source code style.
 
 Move `wait` to Galope.
 Remove `?key-pause`, which does the same.
+
+.2017-11-24
+
+Replace `yyyy-mm-dd-hh:mm:ss$` with the corresponding word from Galope.
 
 // Display {{{1
 == Display
