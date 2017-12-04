@@ -5,7 +5,7 @@
 
 \ Author: Marcos Cruz (programandala.net), 2011..2017
 
-\ Last modified 201711181224
+\ Last modified 201712041706
 
 \ Note: The comments of the code are in Spanish.
 
@@ -20,9 +20,9 @@ require galope/bracket-false.fs       \ `[false]`
 require galope/column.fs              \ `column`
 require galope/l-type.fs              \ `ltype`, `/ltype`, etc.
 require galope/question-question.fs   \ `??`
+require galope/question-seconds.fs    \ `?seconds`
 require galope/row.fs                 \ `row`
 require galope/sconstant.fs           \ `sconstant`
-require galope/seconds.fs             \ `seconds`
 require galope/svariable.fs           \ `svariable`
 require galope/system-colors.fs       \ `system-colors`
 
@@ -104,7 +104,7 @@ variable indent-pause-prompts?
   indent-pause-prompts? @ ?? indent ;
   \ Indenta antes de un presto, si es necesario.
 
-: wait ( +n|-n -- ) dup 0< if  key 2drop  else  seconds  then ;
+: wait ( +n|-n -- ) dup 0< if  key 2drop  else  ?seconds  then ;
   \ Hace una pausa de _+n_ segundos (o _-n_ para una pausa sin fin
   \ hasta la pulsación de una tecla).
 
@@ -238,5 +238,8 @@ false [if]  \ XXX OLD -- obsoleto
 \ Galope's module <l-type.fs>.
 \
 \ 2017-11-18: Update to Galope 0.141.0.
+\
+\ 2017-12-04: Update to Galope 0.157.0: Replace `seconds` with
+\ `?seconds`.
 
 \ vim:filetype=gforth:fileencoding=utf-8
