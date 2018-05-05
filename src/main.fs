@@ -7,7 +7,7 @@
 \
 \ Author: Marcos Cruz (programandala.net), 2011..2016
 \
-\ Last modified 201711171719
+\ Last modified 201805052247
 
 \ ==============================================================
 \ Credits
@@ -68,16 +68,28 @@ s" random_texts.fs" including
 s" key_input.fs" including
 s" printing.fs" including
 s" command_input.fs" including
-require talanto/entity.fs
-require talanto/entity_structure.fs
-require talanto/entity_structure_interface.fs
+
+require talanto/entity.fs \ XXX TODO -- Move from Talanto.
+\ s" entity.fs" including
+
+require talanto/entity_structure.fs \ XXX TODO -- Move from Talanto.
+\ s" entity_structure.fs" including
+
+require talanto/entity_structure_interface.fs \ XXX TODO -- Move from Talanto.
+\ s" entity_structure_interface.fs" including
+
 s" entity_identifiers.fs" including
 s" data_advanced_interface.fs" including
 s" data_tools.fs" including
 s" calculated_texts.fs" including
 s" lists.fs" including
-require talanto/errors.fs
-require talanto/error_conditions.fs
+
+require talanto/errors.fs \ XXX TODO -- Move from Talanto.
+\ s" errors.fs" including
+
+require talanto/error_conditions.fs \ XXX TODO -- Move from Talanto.
+\ s" error_conditions.fs" including
+
 require talanto/parser.1c5c.fs
 require talanto/last-complements.es.fs
 s" language_errors.fs" including
